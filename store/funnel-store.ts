@@ -22,6 +22,7 @@ const initialDraft: SubmissionDraft = {
   intent: "",
   selectedDesignId: "",
   referenceImage: "",
+  referenceImagePath: "",
   referenceDescription: "",
   bodyAreaGroup: "",
   bodyAreaDetail: "",

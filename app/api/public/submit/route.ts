@@ -42,7 +42,6 @@ export async function POST(request: Request) {
     selectedStyle?.label ?? null,
   );
   const combinedNotes = [
-    submission.referenceDescription?.trim(),
     submission.notes?.trim(),
   ]
     .filter(Boolean)
@@ -53,6 +52,7 @@ export async function POST(request: Request) {
     await supabase.from("client_submissions").insert({
       artist_id: artist.profile.id,
       intent: submission.intent,
+      selected_design_id: submission.selectedDesignId ?? null,
       body_area_group: submission.bodyAreaGroup,
       body_area_detail: submission.bodyAreaDetail,
       size_mode: submission.sizeMode,
@@ -60,6 +60,9 @@ export async function POST(request: Request) {
       size_category: submission.sizeCategory,
       width_cm: submission.widthCm ?? null,
       height_cm: submission.heightCm ?? null,
+      reference_image_url: submission.referenceImage ?? null,
+      reference_image_path: submission.referenceImagePath ?? null,
+      reference_description: submission.referenceDescription?.trim() || null,
       style: submission.style,
       notes: combinedNotes || null,
       estimated_min: estimate.min,

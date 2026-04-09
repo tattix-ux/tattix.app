@@ -138,6 +138,7 @@ export const submissionSchema = z.object({
   intent: z.enum(intentValues as [string, ...string[]]),
   selectedDesignId: z.string().nullable().optional(),
   referenceImage: z.string().max(255).nullable().optional(),
+  referenceImagePath: z.string().max(255).nullable().optional(),
   referenceDescription: z.string().max(280).optional(),
   bodyAreaGroup: z.enum(groupValues as [string, ...string[]]),
   bodyAreaDetail: z.enum(detailValues as [string, ...string[]]),

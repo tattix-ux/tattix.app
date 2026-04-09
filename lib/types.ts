@@ -115,6 +115,7 @@ export type ClientSubmission = {
   id: string;
   artistId: string;
   intent: IntentValue;
+  selectedDesignId: string | null;
   bodyAreaGroup: BodyAreaGroupValue;
   bodyAreaDetail: BodyAreaDetailValue;
   sizeMode: SizeMode | null;
@@ -122,6 +123,9 @@ export type ClientSubmission = {
   sizeCategory: SizeValue;
   widthCm: number | null;
   heightCm: number | null;
+  referenceImageUrl: string | null;
+  referenceImagePath: string | null;
+  referenceDescription: string | null;
   style: string;
   notes: string | null;
   estimatedMin: number;
@@ -135,6 +139,7 @@ export type SubmissionDraft = {
   intent: IntentValue | "";
   selectedDesignId: string | "";
   referenceImage: string;
+  referenceImagePath: string;
   referenceDescription: string;
   bodyAreaGroup: BodyAreaGroupValue | "";
   bodyAreaDetail: BodyAreaDetailValue | "";
@@ -176,6 +181,7 @@ export type SubmissionRequest = {
   intent: IntentValue;
   selectedDesignId?: string | null;
   referenceImage?: string | null;
+  referenceImagePath?: string | null;
   referenceDescription?: string | null;
   bodyAreaGroup: BodyAreaGroupValue;
   bodyAreaDetail: BodyAreaDetailValue;

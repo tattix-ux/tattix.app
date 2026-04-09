@@ -84,10 +84,15 @@ export function buildEstimateSummary(
       ? "Hazir tasarim secimi"
       : "Ready-made design"
     : null;
+  const referencePrefix = submission.referenceImage
+    ? locale === "tr"
+      ? "referans gorsel yuklendi"
+      : "reference image uploaded"
+    : null;
 
   if (locale === "tr") {
-    return `${selectedDesignPrefix ? `${selectedDesignPrefix}, ` : ""}${placementLabel.toLowerCase()} icin ${submission.selectedDesignId ? "" : `${styleLabel.toLowerCase()} tarzda, `}${sizeLabel.toLowerCase()} olcekli bir ${intentLabel.toLowerCase()}${manualSize ? `, yaklasik ${manualSize}` : ""}.`;
+    return `${selectedDesignPrefix ? `${selectedDesignPrefix}, ` : ""}${referencePrefix ? `${referencePrefix}, ` : ""}${placementLabel.toLowerCase()} icin ${submission.selectedDesignId ? "" : `${styleLabel.toLowerCase()} tarzda, `}${sizeLabel.toLowerCase()} olcekli bir ${intentLabel.toLowerCase()}${manualSize ? `, yaklasik ${manualSize}` : ""}.`;
   }
 
-  return `${selectedDesignPrefix ? `${selectedDesignPrefix}, ` : ""}${intentLabel}, ${sizeLabel.toLowerCase()}${submission.selectedDesignId ? "" : ` ${styleLabel.toLowerCase()}`} piece for ${placementLabel.toLowerCase()}${manualSize ? ` around ${manualSize}` : ""}.`;
+  return `${selectedDesignPrefix ? `${selectedDesignPrefix}, ` : ""}${referencePrefix ? `${referencePrefix}, ` : ""}${intentLabel}, ${sizeLabel.toLowerCase()}${submission.selectedDesignId ? "" : ` ${styleLabel.toLowerCase()}`} piece for ${placementLabel.toLowerCase()}${manualSize ? ` around ${manualSize}` : ""}.`;
 }

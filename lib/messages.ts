@@ -14,6 +14,14 @@ function formatRawRange(minimum: number, maximum: number, currency: string) {
   return `${minimum} - ${maximum} ${currency}`;
 }
 
+function getReferenceUploadLine(locale: PublicLocale, uploaded: boolean) {
+  if (locale === "tr") {
+    return uploaded ? "Evet" : "Hayır";
+  }
+
+  return uploaded ? "Yes" : "No";
+}
+
 export function buildSubmissionMessage(
   submission: SubmissionRequest,
   profile: ArtistProfile,
@@ -48,7 +56,8 @@ export function buildSubmissionMessage(
   }
 
   if (submission.referenceImage) {
-    lines.push(`${labels.referenceImage}: ${submission.referenceImage}`);
+    lines.push(`${labels.referenceImage}: ${getReferenceUploadLine(locale, true)}`);
+    lines.push(`${labels.referenceImageUrl}: ${submission.referenceImage}`);
   }
 
   if (submission.referenceDescription?.trim()) {

@@ -1,8 +1,10 @@
 "use client";
 
-import { ImagePlus } from "lucide-react";
+import { useState } from "react";
+import { Expand, ImagePlus, LoaderCircle, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { intentOptions, type IntentValue } from "@/lib/constants/options";
 import {
@@ -10,6 +12,7 @@ import {
   getPublicCopy,
   type PublicLocale,
 } from "@/lib/i18n/public";
+import { uploadPublicReferenceImage } from "@/lib/supabase/storage";
 import type { ArtistFeaturedDesign } from "@/lib/types";
 import { formatCompactCurrencyRange } from "@/lib/utils";
 
@@ -27,6 +30,7 @@ function getIntentCategory(intent: IntentValue | "") {
 
 export function IntentSelectionStep({
   locale,
+  artistId,
   currency,
   intent,
   designs,
@@ -39,6 +43,7 @@ export function IntentSelectionStep({
   onReferenceDescriptionChange,
 }: {
   locale: PublicLocale;
+  artistId: string;
   currency: string;
   intent: IntentValue | "";
   designs: ArtistFeaturedDesign[];
@@ -47,10 +52,12 @@ export function IntentSelectionStep({
   referenceDescription: string;
   onIntentChange: (intent: IntentValue) => void;
   onDesignSelect: (designId: string | "") => void;
-  onReferenceImageSelect: (fileName: string) => void;
+  onReferenceImageSelect: (imageUrl: string, imagePath: string) => void;
   onReferenceDescriptionChange: (value: string) => void;
 }) {
   const copy = getPublicCopy(locale);
+  const [previewDesign, setPreviewDesign] = useState<ArtistFeaturedDesign | null>(null);
+  const [uploadingReference, setUploadingReference] = useState(false);
   const activeCategory = getIntentCategory(intent);
   const matchingDesigns = activeCategory
     ? designs.filter((design) => design.active && design.category === activeCategory)
@@ -106,10 +113,17 @@ export function IntentSelectionStep({
                 const active = selectedDesignId === design.id;
 
                 return (
-                  <button
+                  <div
                     key={design.id}
-                    type="button"
-                    onClick={() => onDesignSelect(active ? "" : design.id)}
+                    onClick={() => setPreviewDesign(design)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setPreviewDesign(design);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
                     className="rounded-[24px] border p-4 text-left transition"
                     style={{
                       borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -152,7 +166,26 @@ export function IntentSelectionStep({
                         )}
                       </p>
                     ) : null}
-                  </button>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setPreviewDesign(design);
+                        }}
+                      >
+                        <Expand className="size-4" />
+                        {copy.viewDesignDetails}
+                      </Button>
+                      {active ? (
+                        <span className="text-xs font-medium" style={{ color: "var(--artist-primary)" }}>
+                          {locale === "tr" ? "Seçili tasarım" : "Selected design"}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -183,26 +216,50 @@ export function IntentSelectionStep({
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
                   <ImagePlus className="size-4" />
                   {copy.uploadReference}
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
-                    className="hidden"
-                    onChange={(event) => {
-                      const fileName = event.target.files?.[0]?.name;
-                      if (fileName) {
-                        onReferenceImageSelect(fileName);
-                      }
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                </label>
-                {referenceImage ? (
-                  <Badge variant="muted">
-                    {copy.referenceSelected}: {referenceImage}
-                  </Badge>
-                ) : null}
-              </div>
-            </div>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            className="hidden"
+                            onChange={async (event) => {
+                              const file = event.target.files?.[0];
+                              if (!file) {
+                                return;
+                              }
+
+                              setUploadingReference(true);
+                              try {
+                                const uploaded = await uploadPublicReferenceImage(file, artistId);
+                                onReferenceImageSelect(uploaded.publicUrl, uploaded.path);
+                              } finally {
+                                setUploadingReference(false);
+                                event.currentTarget.value = "";
+                              }
+                            }}
+                          />
+                        </label>
+                        {uploadingReference ? (
+                          <Badge variant="muted">
+                            <LoaderCircle className="mr-1 size-3 animate-spin" />
+                            {locale === "tr" ? "Yükleniyor" : "Uploading"}
+                          </Badge>
+                        ) : null}
+                        {referenceImage ? (
+                          <Badge variant="muted">
+                    {copy.referenceSelected}: {locale === "tr" ? "Hazır" : "Ready"}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      {referenceImage ? (
+                        <div className="mt-4 overflow-hidden rounded-[20px] border border-white/10">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={referenceImage}
+                            alt={locale === "tr" ? "Yüklenen referans" : "Uploaded reference"}
+                            className="h-44 w-full object-cover"
+                          />
+                        </div>
+                      ) : null}
+                    </div>
             <div>
               <p className="mb-2 text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
                 {copy.referenceDescriptionLabel}
@@ -217,6 +274,69 @@ export function IntentSelectionStep({
                   color: "var(--artist-card-text)",
                 }}
               />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {previewDesign ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center">
+          <div className="w-full max-w-xl rounded-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-white">{previewDesign.title}</p>
+                <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                  {activeCategory ? copy.chooseDesignHelp : copy.viewDesignDetails}
+                </p>
+              </div>
+              <Button type="button" variant="ghost" size="icon" onClick={() => setPreviewDesign(null)}>
+                <X className="size-4" />
+              </Button>
+            </div>
+            <div className="overflow-hidden rounded-[22px] border border-white/10 bg-white/5">
+              {previewDesign.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewDesign.imageUrl}
+                  alt={previewDesign.title}
+                  className="h-[360px] w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-[260px] items-center justify-center text-sm text-[var(--foreground-muted)]">
+                  {locale === "tr" ? "Bu tasarım için görsel yok." : "No image available for this design."}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 space-y-3">
+              <p className="text-sm leading-6 text-[var(--foreground-muted)]">
+                {previewDesign.shortDescription}
+              </p>
+              {previewDesign.priceNote ? (
+                <p className="text-sm font-medium text-[var(--accent-soft)]">{previewDesign.priceNote}</p>
+              ) : previewDesign.referencePriceMin && previewDesign.referencePriceMax ? (
+                <p className="text-sm font-medium text-[var(--accent-soft)]">
+                  {formatCompactCurrencyRange(
+                    previewDesign.referencePriceMin,
+                    previewDesign.referencePriceMax,
+                    currency,
+                  )}
+                </p>
+              ) : null}
+            </div>
+            <div className="mt-5 flex gap-3">
+              <Button
+                type="button"
+                className="flex-1"
+                onClick={() => {
+                  onDesignSelect(selectedDesignId === previewDesign.id ? "" : previewDesign.id);
+                  setPreviewDesign(null);
+                }}
+              >
+                {selectedDesignId === previewDesign.id ? copy.unselectDesign : copy.selectThisDesign}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => setPreviewDesign(null)}>
+                {locale === "tr" ? "Kapat" : "Close"}
+              </Button>
             </div>
           </div>
         </div>

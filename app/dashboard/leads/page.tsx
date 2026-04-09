@@ -14,7 +14,11 @@ export default async function DashboardLeadsPage() {
         title="Review completed briefs and follow up with context."
         description="Each finished submission stores intent, placement, style, notes, and the estimate the client saw."
       />
-      <LeadsTable leads={data.leads} currency={data.profile.currency} />
+      <LeadsTable
+        leads={data.leads}
+        currency={data.profile.currency}
+        designs={data.featuredDesigns}
+      />
     </div>
   );
 }

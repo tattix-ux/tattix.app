@@ -14,7 +14,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import {
-  getPlacementDetailLocaleLabel,
   getPublicCopy,
   getStyleLabel,
   type PublicLocale,
@@ -152,6 +151,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("intent", intent);
     setField("selectedDesignId", "");
     setField("referenceImage", "");
+    setField("referenceImagePath", "");
     setField("referenceDescription", "");
     setField("bodyAreaGroup", "");
     setField("bodyAreaDetail", "");
@@ -287,6 +287,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               {step === 1 ? (
                 <IntentSelectionStep
                   locale={locale}
+                  artistId={artist.profile.id}
                   currency={artist.profile.currency}
                   intent={draft.intent}
                   designs={activeDesigns}
@@ -298,7 +299,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     setField("selectedDesignId", designId);
                     setField("style", designId ? "custom" : draft.style);
                   }}
-                  onReferenceImageSelect={(fileName) => setField("referenceImage", fileName)}
+                  onReferenceImageSelect={(imageUrl, imagePath) => {
+                    setField("referenceImage", imageUrl);
+                    setField("referenceImagePath", imagePath);
+                  }}
                   onReferenceDescriptionChange={(value) => setField("referenceDescription", value)}
                 />
               ) : null}
