@@ -1,0 +1,601 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, Check, Copy, LoaderCircle, MessageCircle, Sparkles } from "lucide-react";
+
+import { IntentSelectionStep } from "@/components/funnel/intent-selection-step";
+import { BodyPlacementSelector } from "@/components/funnel/body-placement-selector";
+import { SizeEstimationSelector } from "@/components/funnel/size-estimation-selector";
+import { AvatarTile } from "@/components/shared/avatar-tile";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
+import {
+  getPlacementDetailLocaleLabel,
+  getPublicCopy,
+  getStyleLabel,
+  type PublicLocale,
+} from "@/lib/i18n/public";
+import type { ArtistFeaturedDesign, ArtistPageData } from "@/lib/types";
+import { buildThemeStyles } from "@/lib/theme";
+import { useFunnelStore } from "@/store/funnel-store";
+import { formatCompactCurrencyRange } from "@/lib/utils";
+
+type SubmissionResponse = {
+  estimatedMin: number;
+  estimatedMax: number;
+  summary: string;
+  disclaimer: string;
+  whatsappLink: string;
+  message: string;
+};
+
+function isReadyMadeIntent(intent: string) {
+  return intent === "flash-design" || intent === "discounted-design";
+}
+
+function requiresStyleSelection(intent: string) {
+  return Boolean(intent) && !isReadyMadeIntent(intent);
+}
+
+function findSelectedDesign(designs: ArtistFeaturedDesign[], selectedDesignId: string) {
+  return designs.find((design) => design.id === selectedDesignId) ?? null;
+}
+
+function getDelayMs() {
+  return 2200 + Math.round(Math.random() * 1200);
+}
+
+export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; locale: PublicLocale }) {
+  const {
+    step,
+    draft,
+    result,
+    submitting,
+    setField,
+    setStep,
+    setSubmitting,
+    setResult,
+    reset,
+  } = useFunnelStore();
+  const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
+
+  useEffect(() => {
+    reset();
+  }, [reset, artist.profile.slug]);
+
+  const enabledStyles = artist.styleOptions.filter((style) => style.enabled);
+  const activeDesigns = artist.featuredDesigns.filter((design) => design.active);
+  const selectedDesign = useMemo(
+    () => findSelectedDesign(activeDesigns, draft.selectedDesignId),
+    [activeDesigns, draft.selectedDesignId],
+  );
+  const copy = getPublicCopy(locale);
+  const stepMeta = copy.stepTitles.map((title, index) => ({
+    step: index + 1,
+    title,
+    description: copy.stepDescriptions[index],
+  }));
+  const progress = (Math.min(step, stepMeta.length) / stepMeta.length) * 100;
+  const introTitle =
+    artist.pageTheme.customWelcomeTitle ||
+    artist.funnelSettings.introTitle ||
+    artist.profile.welcomeHeadline ||
+    (locale === "tr" ? "Dovme fikrini kisaca paylas." : "Share your tattoo idea in a few quick steps.");
+  const introText =
+    artist.pageTheme.customIntroText ||
+    artist.profile.shortBio ||
+    artist.funnelSettings.introDescription ||
+    (locale === "tr"
+      ? "Yerlesim, boyut ve tarzi sec. Sonunda yaklasik fiyat araligini gorebilirsin."
+      : "Choose the placement, size, and style to see an approximate price range before messaging the artist.");
+  const primaryActionLabel = artist.pageTheme.customCtaLabel || copy.defaultPrimaryCta;
+  const { tokens } = buildThemeStyles(artist.pageTheme);
+  const primaryButtonClass = "border-0 shadow-none hover:opacity-95";
+  const secondaryButtonClass = "border-0 shadow-none hover:opacity-95";
+  const styleStepActive = requiresStyleSelection(draft.intent);
+
+  async function handleFinalSubmit() {
+    setSubmitting(true);
+    setResult(null);
+    setStep(6);
+
+    const requestPromise = fetch("/api/public/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        artistSlug: artist.profile.slug,
+        locale,
+        ...draft,
+      }),
+    });
+
+    const [response] = await Promise.all([
+      requestPromise,
+      new Promise((resolve) => window.setTimeout(resolve, getDelayMs())),
+    ]);
+
+    const payload = (await response.json()) as SubmissionResponse;
+    setSubmitting(false);
+
+    if (!response.ok || !payload) {
+      setStep(5);
+      return;
+    }
+
+    setResult({
+      estimatedMin: payload.estimatedMin,
+      estimatedMax: payload.estimatedMax,
+      summary: payload.summary,
+      disclaimer: payload.disclaimer,
+      whatsappLink: payload.whatsappLink,
+      message: payload.message,
+    });
+  }
+
+  async function copyMessage() {
+    if (!result) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(result.message);
+    setCopyState("copied");
+    window.setTimeout(() => setCopyState("idle"), 1800);
+  }
+
+  function handleIntentChange(intent: typeof draft.intent) {
+    setField("intent", intent);
+    setField("selectedDesignId", "");
+    setField("referenceImage", "");
+    setField("referenceDescription", "");
+    setField("bodyAreaGroup", "");
+    setField("bodyAreaDetail", "");
+    setField("approximateSizeCm", null);
+    setField("sizeCategory", "");
+    setField("widthCm", null);
+    setField("heightCm", null);
+    setField("style", isReadyMadeIntent(intent) ? "custom" : "");
+    setField("notes", "");
+  }
+
+  function handleNext() {
+    if (step === 3 && !styleStepActive) {
+      setStep(5);
+      return;
+    }
+
+    if (step < 5) {
+      setStep(step + 1);
+    }
+  }
+
+  function handleBack() {
+    if (step === 5 && !styleStepActive) {
+      setStep(3);
+      return;
+    }
+
+    setStep(Math.max(step - 1, 1));
+  }
+
+  const canAdvance =
+    (step === 1 &&
+      Boolean(
+        draft.intent &&
+          (!isReadyMadeIntent(draft.intent) || draft.selectedDesignId),
+      )) ||
+    (step === 2 && Boolean(draft.bodyAreaGroup && draft.bodyAreaDetail)) ||
+    (step === 3 && Boolean(draft.approximateSizeCm && draft.sizeCategory)) ||
+    (step === 4 && (!styleStepActive || Boolean(draft.style))) ||
+    step === 5;
+
+  return (
+    <div className="space-y-6">
+      <Card
+        className="overflow-hidden"
+        style={{
+          borderColor: "var(--artist-border)",
+          backgroundColor:
+            "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+          borderRadius: "var(--artist-radius)",
+        }}
+      >
+        <div
+          className="h-40 w-full border-b bg-grid"
+          style={
+            artist.profile.coverImageUrl
+              ? {
+                  backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.88)), url(${artist.profile.coverImageUrl})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  borderColor: "var(--artist-border)",
+                }
+              : { borderColor: "var(--artist-border)" }
+          }
+        />
+        <CardContent className="-mt-12 space-y-4 p-5 sm:p-6">
+          <AvatarTile name={artist.profile.artistName} imageUrl={artist.profile.profileImageUrl} />
+          <div className="space-y-3">
+            <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
+            <h1
+              className="text-3xl leading-tight"
+              style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
+            >
+              {introTitle}
+            </h1>
+            <p className="text-sm leading-7" style={{ color: "var(--artist-muted)" }}>
+              {introText}
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs" style={{ color: "var(--artist-muted)" }}>
+              <span>{artist.profile.instagramHandle}</span>
+              <span>•</span>
+              <span>Mobile-first intake flow</span>
+              <span>•</span>
+              <span>WhatsApp handoff ready</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card
+        style={{
+          borderColor: "var(--artist-border)",
+          backgroundColor:
+            "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+          borderRadius: "var(--artist-radius)",
+        }}
+      >
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <CardTitle style={{ color: "var(--artist-card-text)" }}>
+                {result ? copy.stepTitles[5] : stepMeta[Math.min(step, 6) - 1]?.title}
+              </CardTitle>
+              <CardDescription style={{ color: "var(--artist-card-muted)" }}>
+                {result ? copy.stepDescriptions[5] : stepMeta[Math.min(step, 6) - 1]?.description}
+              </CardDescription>
+            </div>
+            <Badge variant="muted">
+              {copy.stepLabel} {Math.min(step, 6)} / 6
+            </Badge>
+          </div>
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/6">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${progress}%`,
+                background: `linear-gradient(90deg, ${artist.pageTheme.primaryColor}, ${artist.pageTheme.secondaryColor})`,
+              }}
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${step}-${result ? "ready" : "idle"}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="space-y-4"
+            >
+              {step === 1 ? (
+                <IntentSelectionStep
+                  locale={locale}
+                  currency={artist.profile.currency}
+                  intent={draft.intent}
+                  designs={activeDesigns}
+                  selectedDesignId={draft.selectedDesignId}
+                  referenceImage={draft.referenceImage}
+                  referenceDescription={draft.referenceDescription}
+                  onIntentChange={handleIntentChange}
+                  onDesignSelect={(designId) => {
+                    setField("selectedDesignId", designId);
+                    setField("style", designId ? "custom" : draft.style);
+                  }}
+                  onReferenceImageSelect={(fileName) => setField("referenceImage", fileName)}
+                  onReferenceDescriptionChange={(value) => setField("referenceDescription", value)}
+                />
+              ) : null}
+
+              {step === 2 ? (
+                <div className="space-y-4">
+                  <BodyPlacementSelector
+                    selectedDetail={draft.bodyAreaDetail}
+                    locale={locale}
+                    onSelect={(group, detail) => {
+                      setField("bodyAreaGroup", group);
+                      setField("bodyAreaDetail", detail);
+
+                      if (!detail) {
+                        setField("approximateSizeCm", null);
+                        setField("sizeCategory", "");
+                        setField("widthCm", null);
+                        setField("heightCm", null);
+                        return;
+                      }
+
+                      const defaultSize = getPlacementSizeConstraint(detail).defaultCm;
+                      setField("sizeMode", "quick");
+                      setField("approximateSizeCm", defaultSize);
+                      setField("sizeCategory", deriveSizeCategoryFromCm(defaultSize));
+                      setField("widthCm", null);
+                      setField("heightCm", null);
+                    }}
+                  />
+                </div>
+              ) : null}
+
+              {step === 3 ? (
+                <SizeEstimationSelector
+                  selectedPlacement={draft.bodyAreaDetail}
+                  approximateSizeCm={draft.approximateSizeCm}
+                  selectedStyle={styleStepActive ? draft.style : "custom"}
+                  sizeTimeRanges={artist.pricingRules.sizeTimeRanges}
+                  locale={locale}
+                  onApproximateSizeChange={(cm) => {
+                    setField("sizeMode", "quick");
+                    setField("approximateSizeCm", cm);
+                    setField("sizeCategory", deriveSizeCategoryFromCm(cm));
+                    setField("widthCm", null);
+                    setField("heightCm", null);
+                  }}
+                />
+              ) : null}
+
+              {step === 4 && styleStepActive ? (
+                <div className="grid gap-3">
+                  {enabledStyles.map((style) => {
+                    const active = draft.style === style.styleKey;
+                    return (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => setField("style", style.styleKey)}
+                        className="rounded-[24px] border px-4 py-4 text-left transition"
+                        style={{
+                          borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                          backgroundColor: active
+                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                            : "rgba(0,0,0,0.12)",
+                          color: tokens.cardText,
+                        }}
+                      >
+                        <p className="font-medium">
+                          {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+
+              {step === 5 ? (
+                <div className="space-y-4">
+                  {selectedDesign ? (
+                    <div
+                      className="rounded-[24px] border p-4"
+                      style={{
+                        borderColor: "var(--artist-border)",
+                        backgroundColor: "rgba(0,0,0,0.12)",
+                      }}
+                    >
+                      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                        {copy.readyMadeDesign}
+                      </p>
+                      <p className="mt-2 text-base font-medium" style={{ color: "var(--artist-card-text)" }}>
+                        {selectedDesign.title}
+                      </p>
+                    </div>
+                  ) : null}
+                  <Textarea
+                    style={{
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                      borderColor: "var(--artist-border)",
+                      color: "var(--artist-card-text)",
+                    }}
+                    value={draft.notes}
+                    onChange={(event) => setField("notes", event.target.value)}
+                    placeholder={copy.notesPlaceholder}
+                  />
+                  <div
+                    className="rounded-[24px] border p-4 text-sm"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                      color: "var(--artist-card-muted)",
+                    }}
+                  >
+                    {copy.notesHelper}
+                  </div>
+                </div>
+              ) : null}
+
+              {step === 6 && !result ? (
+                <div
+                  className="rounded-[28px] border p-6"
+                  style={{
+                    borderColor: "var(--artist-border)",
+                    backgroundColor:
+                      "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+                  }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="flex size-12 items-center justify-center rounded-full"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, var(--artist-primary) 14%, transparent)",
+                        color: "var(--artist-primary)",
+                      }}
+                    >
+                      <LoaderCircle className="size-5 animate-spin" />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-lg font-medium" style={{ color: "var(--artist-card-text)" }}>
+                        {copy.calculatingTitle}
+                      </p>
+                      <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.calculatingBody}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {step === 6 && result ? (
+                <div className="space-y-5">
+                  <div
+                    className="rounded-[28px] border p-5"
+                    style={{
+                      borderColor: "color-mix(in srgb, var(--artist-primary) 28%, transparent)",
+                      backgroundColor:
+                        "color-mix(in srgb, var(--artist-primary) 12%, transparent)",
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="mt-1 size-5" style={{ color: "var(--artist-primary)" }} />
+                      <div>
+                        <p className="text-sm uppercase tracking-[0.2em]" style={{ color: "var(--artist-primary)" }}>
+                          {copy.estimatedRange}
+                        </p>
+                        <p
+                          className="mt-2 text-4xl"
+                          style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
+                        >
+                          {formatCompactCurrencyRange(
+                            result.estimatedMin,
+                            result.estimatedMax,
+                            artist.profile.currency,
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-sm" style={{ color: "var(--artist-card-text)" }}>{result.summary}</p>
+                    <p className="mt-3 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                      {result.disclaimer}
+                    </p>
+                  </div>
+                  <div className="grid gap-3">
+                    <Button asChild className="w-full">
+                      <a
+                        href={result.whatsappLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          backgroundColor: "var(--artist-primary)",
+                          color: "var(--artist-primary-foreground)",
+                        }}
+                      >
+                        <MessageCircle className="size-4" />
+                        {copy.sendWhatsapp}
+                      </a>
+                    </Button>
+                    <Button
+                      className={`w-full ${secondaryButtonClass}`}
+                      variant="secondary"
+                      onClick={copyMessage}
+                      style={{
+                        backgroundColor: "var(--artist-secondary)",
+                        color: "var(--artist-secondary-foreground)",
+                      }}
+                    >
+                      {copyState === "copied" ? (
+                        <>
+                          <Check className="size-4" />
+                          {copy.copiedForInstagram}
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="size-4" />
+                          {copy.copyMessage}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-6 flex items-center gap-3">
+            {step > 1 && step < 6 ? (
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                className={secondaryButtonClass}
+                style={{
+                  backgroundColor: "var(--artist-secondary)",
+                  color: "var(--artist-secondary-foreground)",
+                  borderColor: "transparent",
+                }}
+              >
+                <ArrowLeft className="size-4" />
+                {copy.back}
+              </Button>
+            ) : null}
+
+            {step < 5 ? (
+              <Button
+                className={`ml-auto ${primaryButtonClass}`}
+                onClick={handleNext}
+                disabled={!canAdvance}
+                style={{
+                  backgroundColor: "var(--artist-primary)",
+                  color: "var(--artist-primary-foreground)",
+                }}
+              >
+                {copy.next}
+                <ArrowRight className="size-4" />
+              </Button>
+            ) : null}
+
+            {step === 5 ? (
+              <Button
+                className={`ml-auto ${primaryButtonClass}`}
+                onClick={handleFinalSubmit}
+                disabled={submitting}
+                style={{
+                  backgroundColor: "var(--artist-primary)",
+                  color: "var(--artist-primary-foreground)",
+                }}
+              >
+                {submitting ? copy.calculating : primaryActionLabel}
+              </Button>
+            ) : null}
+
+            {step === 6 && result ? (
+              <Button
+                className={`ml-auto ${secondaryButtonClass}`}
+                variant="outline"
+                onClick={() => {
+                  reset();
+                  setCopyState("idle");
+                }}
+                style={{
+                  backgroundColor: "var(--artist-secondary)",
+                  color: "var(--artist-secondary-foreground)",
+                  borderColor: "transparent",
+                }}
+              >
+                {copy.startOver}
+              </Button>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

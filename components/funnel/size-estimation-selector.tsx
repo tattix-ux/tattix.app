@@ -1,0 +1,184 @@
+"use client";
+
+import { Sparkles } from "lucide-react";
+
+import {
+  clampCm,
+  deriveSizeCategoryFromCm,
+  getPlacementSizingGuidance,
+  getPlacementSizeConstraint,
+} from "@/lib/constants/size-estimation";
+import { getPlacementDetailLocaleLabel, getPublicCopy, type PublicLocale } from "@/lib/i18n/public";
+import type { StyleValue } from "@/lib/constants/options";
+import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
+import type { ArtistPricingRules } from "@/lib/types";
+
+function formatArtistTimeRange(
+  hours: ArtistPricingRules["sizeTimeRanges"][keyof ArtistPricingRules["sizeTimeRanges"]] | undefined,
+  locale: PublicLocale,
+) {
+  if (!hours) {
+    return null;
+  }
+
+  const formatHours = (value: number) => {
+    if (value < 1) {
+      const minutes = Math.round(value * 60);
+      return locale === "tr" ? `${minutes} dk` : `${minutes} min`;
+    }
+
+    const text = Number.isInteger(value) ? String(value) : value.toFixed(1);
+    return locale === "tr" ? `${text} saat` : `${text} hour${value === 1 ? "" : "s"}`;
+  };
+
+  return locale === "tr"
+    ? `${formatHours(hours.minHours)} - ${formatHours(hours.maxHours)}`
+    : `${formatHours(hours.minHours)} to ${formatHours(hours.maxHours)}`;
+}
+
+export function SizeEstimationSelector({
+  selectedPlacement,
+  approximateSizeCm,
+  selectedStyle,
+  sizeTimeRanges,
+  locale,
+  onApproximateSizeChange,
+}: {
+  selectedPlacement: BodyAreaDetailValue | "";
+  approximateSizeCm: number | null;
+  selectedStyle?: StyleValue | "" | null;
+  sizeTimeRanges?: ArtistPricingRules["sizeTimeRanges"];
+  locale: PublicLocale;
+  onApproximateSizeChange: (cm: number) => void;
+}) {
+  const copy = getPublicCopy(locale);
+
+  if (!selectedPlacement) {
+    return (
+      <div
+        className="rounded-[24px] border p-4"
+        style={{
+          borderColor: "var(--artist-border)",
+          backgroundColor: "rgba(0,0,0,0.12)",
+        }}
+      >
+        <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
+          {copy.selectPlacementFirst}
+        </p>
+        <p className="mt-1 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+          {copy.selectPlacementHelp}
+        </p>
+      </div>
+    );
+  }
+
+  const constraint = getPlacementSizeConstraint(selectedPlacement);
+  const safeCm = clampCm(approximateSizeCm ?? constraint.defaultCm, constraint);
+  const guidance = getPlacementSizingGuidance(selectedPlacement, safeCm, selectedStyle, locale);
+  const derivedSizeCategory = deriveSizeCategoryFromCm(safeCm);
+  const artistTimeEstimate = formatArtistTimeRange(sizeTimeRanges?.[derivedSizeCategory], locale);
+  const toneAccent =
+    guidance.tone === "caution"
+      ? "color-mix(in srgb, #f59e0b 70%, var(--artist-primary) 30%)"
+      : guidance.tone === "soft"
+        ? "color-mix(in srgb, var(--artist-secondary) 65%, white 35%)"
+        : "var(--artist-primary)";
+
+  return (
+    <div className="space-y-4">
+      <div
+        className="rounded-[24px] border p-4"
+        style={{
+          borderColor: "var(--artist-border)",
+          backgroundColor: "rgba(0,0,0,0.12)",
+        }}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
+              {copy.approximateTattooSize}
+            </p>
+            <p className="mt-1 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+              {copy.adjustSliderFor} {getPlacementDetailLocaleLabel(selectedPlacement, locale).toLowerCase()}.
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-semibold" style={{ color: "var(--artist-card-text)" }}>
+              {safeCm} cm
+            </p>
+            <p className="text-sm" style={{ color: "var(--artist-primary)" }}>
+              {copy.approxSize}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          <input
+            type="range"
+            min={constraint.minCm}
+            max={constraint.maxCm}
+            step={1}
+            value={safeCm}
+            onChange={(event) => onApproximateSizeChange(Number(event.target.value))}
+            className="h-3 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-[var(--artist-primary)]"
+            style={{
+              background: `linear-gradient(90deg, var(--artist-primary) 0%, var(--artist-primary) ${((safeCm - constraint.minCm) / (constraint.maxCm - constraint.minCm || 1)) * 100}%, rgba(255,255,255,0.08) ${((safeCm - constraint.minCm) / (constraint.maxCm - constraint.minCm || 1)) * 100}%, rgba(255,255,255,0.08) 100%)`,
+            }}
+            aria-label="Approximate tattoo size in centimeters"
+          />
+          <div
+            className="flex items-center justify-between text-xs uppercase tracking-[0.18em]"
+            style={{ color: "var(--artist-card-muted)" }}
+          >
+            <span>{constraint.minCm} cm</span>
+            <span>{copy.currentRange}</span>
+            <span>{constraint.maxCm} cm</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="rounded-[24px] border p-4"
+        style={{
+          borderColor: "var(--artist-border)",
+          backgroundColor: "rgba(0,0,0,0.12)",
+        }}
+      >
+        <div className="flex items-start gap-3">
+          <Sparkles className="mt-0.5 size-4" style={{ color: toneAccent }} />
+          <div className="space-y-3">
+            <div>
+              <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
+                {guidance.headline}
+              </p>
+              <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                {guidance.supporting}
+              </p>
+              {guidance.helperNote ? (
+                <p className="mt-2 text-xs leading-5" style={{ color: "var(--artist-muted)" }}>
+                  {guidance.helperNote}
+                </p>
+              ) : null}
+            </div>
+            {artistTimeEstimate ?? guidance.timeEstimate ? (
+              <div
+                className="rounded-[18px] border px-4 py-3"
+                style={{
+                  borderColor: "var(--artist-border)",
+                  backgroundColor: "color-mix(in srgb, var(--artist-card) 86%, transparent)",
+                }}
+              >
+                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: toneAccent }}>
+                  {copy.approximateTime}
+                </p>
+                <p className="mt-1 text-sm" style={{ color: "var(--artist-card-text)" }}>
+                  {artistTimeEstimate ?? guidance.timeEstimate}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

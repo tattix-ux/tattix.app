@@ -1,0 +1,26 @@
+import { cn } from "@/lib/utils";
+
+export function Field({
+  label,
+  description,
+  error,
+  children,
+  className,
+}: {
+  label: string;
+  description?: string;
+  error?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={cn("flex flex-col gap-2", className)}>
+      <span className="text-sm font-medium text-white">{label}</span>
+      {description ? (
+        <span className="text-xs leading-5 text-[var(--foreground-muted)]">{description}</span>
+      ) : null}
+      {children}
+      {error ? <span className="text-xs text-red-300">{error}</span> : null}
+    </label>
+  );
+}
