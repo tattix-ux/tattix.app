@@ -28,7 +28,7 @@ export function Container({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("mx-auto w-full max-w-7xl px-4 sm:px-6", className)}>{children}</div>;
+  return <div className={cn("mx-auto w-full min-w-0 max-w-full px-4 sm:max-w-7xl sm:px-6", className)}>{children}</div>;
 }
 
 export function SectionHeading({
