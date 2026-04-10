@@ -16,10 +16,17 @@ const copy = {
     blocked: "Blocked",
     title: "Unlock Pro tools",
     description:
-      "Customize Page and design management stay available after manual Pro approval.",
+      "Unlock analytics, advanced page styling, design management, and the premium tools reserved for Pro artists.",
     cta: "Upgrade",
     contact: "Contact for Pro access",
     activeMessage: "Pro access is active for this account.",
+    featuresTitle: "Pro includes",
+    features: [
+      "Analytics and conversion tracking",
+      "Advanced page customization",
+      "Featured design management",
+      "Premium creative tools as they ship",
+    ],
   },
   tr: {
     free: "Ücretsiz plan",
@@ -29,10 +36,17 @@ const copy = {
     blocked: "Engellendi",
     title: "Pro araçlarını aç",
     description:
-      "Sayfa Özelleştir ve tasarım yönetimi alanları manuel Pro onayından sonra açılır.",
+      "Analitikler, gelişmiş sayfa özelleştirme, tasarım yönetimi ve Pro’ya özel araçların kilidini aç.",
     cta: "Yükselt",
     contact: "Pro erişimi için iletişime geç",
     activeMessage: "Bu hesap için Pro erişim aktif.",
+    featuresTitle: "Pro neleri açar?",
+    features: [
+      "Analitik ve dönüşüm takibi",
+      "Gelişmiş sayfa özelleştirme",
+      "Öne çıkan tasarım yönetimi",
+      "Yayına alınan premium araçlar",
+    ],
   },
 } as const;
 
@@ -80,6 +94,16 @@ export function UpgradeCard({
 
       {!hasActivePro ? (
         <div className="mt-4 space-y-3">
+          <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
+              {labels.featuresTitle}
+            </p>
+            <div className="mt-3 space-y-2 text-sm text-[var(--foreground-muted)]">
+              {labels.features.map((item) => (
+                <p key={item}>• {item}</p>
+              ))}
+            </div>
+          </div>
           <Button type="button" className="w-full sm:w-auto" onClick={() => setShowContact(true)}>
             {labels.cta}
           </Button>

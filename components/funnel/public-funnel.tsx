@@ -236,7 +236,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="shrink-0">
-                <AvatarTile name={artist.profile.artistName} imageUrl={artist.profile.profileImageUrl} />
+                <AvatarTile
+                  name={artist.profile.artistName}
+                  imageUrl={artist.profile.profileImageUrl}
+                  planType={artist.profile.planType}
+                />
               </div>
               <div className="min-w-0">
                 <p
@@ -267,7 +271,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               }
             />
             <CardContent className="-mt-12 min-w-0 space-y-4 p-4 sm:p-6">
-              <AvatarTile name={artist.profile.artistName} imageUrl={artist.profile.profileImageUrl} />
+              <AvatarTile
+                name={artist.profile.artistName}
+                imageUrl={artist.profile.profileImageUrl}
+                planType={artist.profile.planType}
+              />
               <div className="space-y-3">
                 <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
                 <h1

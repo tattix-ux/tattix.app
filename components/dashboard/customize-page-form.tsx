@@ -71,6 +71,10 @@ export function CustomizePageForm({
   const copy =
     locale === "tr"
       ? {
+          tabs: {
+            presets: "Hazır temalar",
+            custom: "Özel stil",
+          },
           presets: "Tema hazırları",
           presetsDescription: "Önce güçlü bir hazır tema seç, sonra sadece ihtiyacın olan ayarları değiştir.",
           fonts: "Fontlar",
@@ -111,6 +115,10 @@ export function CustomizePageForm({
           image: "Görsel",
         }
       : {
+          tabs: {
+            presets: "Preset Themes",
+            custom: "Custom Styling",
+          },
           presets: "Theme Presets",
           presetsDescription: "Start with a polished preset, then fine-tune only what you need.",
           fonts: "Fonts",
@@ -151,6 +159,7 @@ export function CustomizePageForm({
           image: "Background image",
         };
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
+  const [editorTab, setEditorTab] = useState<"presets" | "custom">("presets");
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
     resolver: zodResolver(pageThemeSchema),
     defaultValues: {
@@ -395,222 +404,247 @@ export function CustomizePageForm({
 
   return (
     <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_560px]">
-      <form className="min-w-0 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="min-w-0 space-y-6 2xl:order-1" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="surface-border">
-          <CardHeader>
-            <CardTitle>{copy.presets}</CardTitle>
-            <CardDescription>{copy.presetsDescription}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-2">
-            {themePresetOptions.map((presetKey) => {
-              const preset = themePresets[presetKey];
-              const active = currentPreset === presetKey;
-
-              return (
-                <button
-                  key={presetKey}
-                  type="button"
-                  onClick={() => applyPreset(presetKey)}
-                  className={`rounded-[24px] border p-4 text-left transition ${
-                    active
-                      ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
-                      : "border-white/8 bg-black/20 hover:border-white/14 hover:bg-white/5"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-white">{preset.label}</p>
-                    <div className="flex gap-2">
-                      <span
-                        className="size-4 rounded-full border border-white/10"
-                        style={{ backgroundColor: preset.primaryColor }}
-                      />
-                      <span
-                        className="size-4 rounded-full border border-white/10"
-                        style={{ backgroundColor: preset.cardColor }}
-                      />
-                    </div>
-                  </div>
-                  <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-                    {preset.themeMode === "dark" ? copy.dark : copy.light} mode, {preset.radiusStyle} radius.
-                  </p>
-                </button>
-              );
-            })}
+          <CardContent className="flex flex-wrap gap-2 p-4">
+            <Button
+              type="button"
+              size="sm"
+              variant={editorTab === "presets" ? "secondary" : "outline"}
+              onClick={() => setEditorTab("presets")}
+            >
+              {copy.tabs.presets}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={editorTab === "custom" ? "secondary" : "outline"}
+              onClick={() => setEditorTab("custom")}
+            >
+              {copy.tabs.custom}
+            </Button>
           </CardContent>
         </Card>
 
-        <Card className="surface-border">
-          <CardHeader>
-            <CardTitle>{copy.fonts}</CardTitle>
-            <CardDescription>{copy.fontsDescription}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-5 md:grid-cols-3">
-            <Field label={copy.fontPairing}>
-              <NativeSelect {...form.register("fontPairingPreset")}>
-                {fontPairingPresetOptions.map((preset) => (
-                  <option key={preset} value={preset}>
-                    {preset.replaceAll("-", " ")}
-                  </option>
-                ))}
-              </NativeSelect>
-            </Field>
-            <Field label={copy.headingFont}>
-              <NativeSelect {...form.register("headingFont")}>
-                {headingFontOptions.map((font) => (
-                  <option key={font.value} value={font.value}>
-                    {font.label}
-                  </option>
-                ))}
-              </NativeSelect>
-            </Field>
-            <Field label={copy.bodyFont}>
-              <NativeSelect {...form.register("bodyFont")}>
-                {bodyFontOptions.map((font) => (
-                  <option key={font.value} value={font.value}>
-                    {font.label}
-                  </option>
-                ))}
-              </NativeSelect>
-            </Field>
-          </CardContent>
-        </Card>
+        {editorTab === "presets" ? (
+          <Card className="surface-border">
+            <CardHeader>
+              <CardTitle>{copy.presets}</CardTitle>
+              <CardDescription>{copy.presetsDescription}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-2">
+              {themePresetOptions.map((presetKey) => {
+                const preset = themePresets[presetKey];
+                const active = currentPreset === presetKey;
 
-        <Card className="surface-border">
-          <CardHeader>
-            <CardTitle>{copy.colors}</CardTitle>
-            <CardDescription>{copy.colorsDescription}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <ColorField
-              label={copy.backgroundColor}
-              value={currentBackgroundColor}
-              onChange={(value) => form.setValue("backgroundColor", value)}
-            />
-            <ColorField
-              label={copy.primaryColor}
-              value={currentPrimaryColor}
-              onChange={(value) => form.setValue("primaryColor", value)}
-            />
-            <ColorField
-              label={copy.secondaryColor}
-              value={currentSecondaryColor}
-              onChange={(value) => form.setValue("secondaryColor", value)}
-            />
-            <ColorField
-              label={copy.cardColor}
-              value={currentCardColor}
-              onChange={(value) => form.setValue("cardColor", value)}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="surface-border">
-          <CardHeader>
-            <CardTitle>{copy.backgrounds}</CardTitle>
-            <CardDescription>{copy.backgroundsDescription}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-5 md:grid-cols-2">
-              <Field label={copy.backgroundType}>
-                <NativeSelect {...form.register("backgroundType")}>
-                  <option value="solid">{copy.solid}</option>
-                  <option value="gradient">{copy.gradient}</option>
-                  <option value="image">{copy.image}</option>
-                </NativeSelect>
-              </Field>
-              <Field label={copy.themeMode}>
-                <NativeSelect {...form.register("themeMode")}>
-                  {themeModeOptions.map((mode) => (
-                    <option key={mode} value={mode}>
-                      {mode === "dark" ? copy.dark : copy.light}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <ColorField
-                label={copy.gradientStart}
-                value={currentGradientStart}
-                onChange={(value) => form.setValue("gradientStart", value)}
-              />
-              <ColorField
-                label={copy.gradientEnd}
-                value={currentGradientEnd}
-                onChange={(value) => form.setValue("gradientEnd", value)}
-              />
-            </div>
-            <div className="grid gap-5 md:grid-cols-3">
-              <Field
-                label={copy.backgroundImage}
-                description={copy.backgroundImageHelp}
-              >
-                <div className="space-y-3">
-                  <div
-                    className="relative flex h-28 items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5"
+                return (
+                  <button
+                    key={presetKey}
+                    type="button"
+                    onClick={() => applyPreset(presetKey)}
+                    className={`rounded-[24px] border p-4 text-left transition ${
+                      active
+                        ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
+                        : "border-white/8 bg-black/20 hover:border-white/14 hover:bg-white/5"
+                    }`}
                   >
-                    {watchedValues.backgroundImageUrl ? (
-                      <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${watchedValues.backgroundImageUrl})` }}
-                        aria-label="Background preview"
-                        role="img"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
-                        <ImagePlus className="size-5" />
-                        <span>{copy.noBackground}</span>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium text-white">{preset.label}</p>
+                      <div className="flex gap-2">
+                        <span
+                          className="size-4 rounded-full border border-white/10"
+                          style={{ backgroundColor: preset.primaryColor }}
+                        />
+                        <span
+                          className="size-4 rounded-full border border-white/10"
+                          style={{ backgroundColor: preset.cardColor }}
+                        />
                       </div>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
-                      <Upload className="size-4" />
-                      {copy.uploadImage}
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/gif"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          if (file) {
-                            void handleBackgroundUpload(file);
-                          }
-                          event.currentTarget.value = "";
-                        }}
-                      />
-                    </label>
-                    {watchedValues.backgroundImageUrl ? (
-                      <Button type="button" variant="ghost" size="sm" onClick={() => void handleBackgroundRemove()}>
-                        <X className="size-4" />
-                        {copy.removeImage}
-                      </Button>
-                    ) : null}
-                  </div>
-                  <Input placeholder="https://..." {...form.register("backgroundImageUrl")} />
-                </div>
-              </Field>
-              <Field label={copy.cardGlass}>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.45"
-                  max="0.98"
-                  {...form.register("cardOpacity")}
+                    </div>
+                    <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+                      {preset.themeMode === "dark" ? copy.dark : copy.light} mode, {preset.radiusStyle} radius.
+                    </p>
+                  </button>
+                );
+              })}
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Card className="surface-border">
+              <CardHeader>
+                <CardTitle>{copy.fonts}</CardTitle>
+                <CardDescription>{copy.fontsDescription}</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-5 md:grid-cols-3">
+                <Field label={copy.fontPairing}>
+                  <NativeSelect {...form.register("fontPairingPreset")}>
+                    {fontPairingPresetOptions.map((preset) => (
+                      <option key={preset} value={preset}>
+                        {preset.replaceAll("-", " ")}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+                <Field label={copy.headingFont}>
+                  <NativeSelect {...form.register("headingFont")}>
+                    {headingFontOptions.map((font) => (
+                      <option key={font.value} value={font.value}>
+                        {font.label}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+                <Field label={copy.bodyFont}>
+                  <NativeSelect {...form.register("bodyFont")}>
+                    {bodyFontOptions.map((font) => (
+                      <option key={font.value} value={font.value}>
+                        {font.label}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-border">
+              <CardHeader>
+                <CardTitle>{copy.colors}</CardTitle>
+                <CardDescription>{copy.colorsDescription}</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <ColorField
+                  label={copy.backgroundColor}
+                  value={currentBackgroundColor}
+                  onChange={(value) => form.setValue("backgroundColor", value)}
                 />
-              </Field>
-              <Field label={copy.radiusStyle}>
-                <NativeSelect {...form.register("radiusStyle")}>
-                  {radiusStyleOptions.map((radius) => (
-                    <option key={radius} value={radius}>
-                      {radius[0].toUpperCase() + radius.slice(1)}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
-            </div>
-          </CardContent>
-        </Card>
+                <ColorField
+                  label={copy.primaryColor}
+                  value={currentPrimaryColor}
+                  onChange={(value) => form.setValue("primaryColor", value)}
+                />
+                <ColorField
+                  label={copy.secondaryColor}
+                  value={currentSecondaryColor}
+                  onChange={(value) => form.setValue("secondaryColor", value)}
+                />
+                <ColorField
+                  label={copy.cardColor}
+                  value={currentCardColor}
+                  onChange={(value) => form.setValue("cardColor", value)}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="surface-border">
+              <CardHeader>
+                <CardTitle>{copy.backgrounds}</CardTitle>
+                <CardDescription>{copy.backgroundsDescription}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid gap-5 md:grid-cols-2">
+                  <Field label={copy.backgroundType}>
+                    <NativeSelect {...form.register("backgroundType")}>
+                      <option value="solid">{copy.solid}</option>
+                      <option value="gradient">{copy.gradient}</option>
+                      <option value="image">{copy.image}</option>
+                    </NativeSelect>
+                  </Field>
+                  <Field label={copy.themeMode}>
+                    <NativeSelect {...form.register("themeMode")}>
+                      {themeModeOptions.map((mode) => (
+                        <option key={mode} value={mode}>
+                          {mode === "dark" ? copy.dark : copy.light}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </Field>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <ColorField
+                    label={copy.gradientStart}
+                    value={currentGradientStart}
+                    onChange={(value) => form.setValue("gradientStart", value)}
+                  />
+                  <ColorField
+                    label={copy.gradientEnd}
+                    value={currentGradientEnd}
+                    onChange={(value) => form.setValue("gradientEnd", value)}
+                  />
+                </div>
+                <div className="grid gap-5 md:grid-cols-3">
+                  <Field
+                    label={copy.backgroundImage}
+                    description={copy.backgroundImageHelp}
+                  >
+                    <div className="space-y-3">
+                      <div
+                        className="relative flex h-28 items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5"
+                      >
+                        {watchedValues.backgroundImageUrl ? (
+                          <div
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${watchedValues.backgroundImageUrl})` }}
+                            aria-label="Background preview"
+                            role="img"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
+                            <ImagePlus className="size-5" />
+                            <span>{copy.noBackground}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
+                          <Upload className="size-4" />
+                          {copy.uploadImage}
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              if (file) {
+                                void handleBackgroundUpload(file);
+                              }
+                              event.currentTarget.value = "";
+                            }}
+                          />
+                        </label>
+                        {watchedValues.backgroundImageUrl ? (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => void handleBackgroundRemove()}>
+                            <X className="size-4" />
+                            {copy.removeImage}
+                          </Button>
+                        ) : null}
+                      </div>
+                      <Input placeholder="https://..." {...form.register("backgroundImageUrl")} />
+                    </div>
+                  </Field>
+                  <Field label={copy.cardGlass}>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.45"
+                      max="0.98"
+                      {...form.register("cardOpacity")}
+                    />
+                  </Field>
+                  <Field label={copy.radiusStyle}>
+                    <NativeSelect {...form.register("radiusStyle")}>
+                      {radiusStyleOptions.map((radius) => (
+                        <option key={radius} value={radius}>
+                          {radius[0].toUpperCase() + radius.slice(1)}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </Field>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={form.formState.isSubmitting}>
@@ -633,7 +667,7 @@ export function CustomizePageForm({
         ) : null}
       </form>
 
-      <div className="min-w-0 space-y-4 2xl:sticky 2xl:top-6 2xl:self-start">
+      <div className="order-first min-w-0 space-y-4 2xl:order-2 2xl:sticky 2xl:top-6 2xl:self-start">
         <Card className="surface-border">
           <CardHeader>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

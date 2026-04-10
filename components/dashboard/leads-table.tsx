@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { CheckCircle2, TrendingUp, X } from "lucide-react";
 
+import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -242,11 +243,15 @@ export function LeadsTable({
   currency,
   designs,
   locale = "en",
+  hasPro = false,
+  profilePlan = { planType: "free", accessStatus: "active" } as const,
 }: {
   leads: ClientSubmission[];
   currency: string;
   designs: ArtistFeaturedDesign[];
   locale?: PublicLocale;
+  hasPro?: boolean;
+  profilePlan?: { planType: "free" | "pro"; accessStatus: "active" | "pending" | "blocked" };
 }) {
   const copy = leadCopy[locale];
   const [localLeads, setLocalLeads] = useState(leads);
@@ -306,107 +311,113 @@ export function LeadsTable({
           <CardDescription>{copy.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="flex flex-wrap gap-2">
-            {(["7d", "30d", "90d", "all"] as const).map((item) => (
-              <Button
-                key={item}
-                type="button"
-                size="sm"
-                variant={range === item ? "secondary" : "outline"}
-                onClick={() => setRange(item)}
-              >
-                {copy.filters[item]}
-              </Button>
-            ))}
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
-                {copy.totalRequests}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-white">{filteredLeads.length}</p>
-            </div>
-            <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
-                {copy.soldRequests}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-white">{soldCount}</p>
-            </div>
-            <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
-                {copy.conversionRate}
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-white">
-                {formatConversionRate(filteredLeads.length, soldCount)}
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
-            {copy.summary(filteredLeads.length, soldCount)}
-          </div>
-
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-lg font-semibold text-white">{copy.chartTitle}</p>
-                <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.chartDescription}</p>
-              </div>
+          {hasPro ? (
+            <>
               <div className="flex flex-wrap gap-2">
-                {(["daily", "weekly", "monthly"] as const).map((item) => (
+                {(["7d", "30d", "90d", "all"] as const).map((item) => (
                   <Button
                     key={item}
                     type="button"
                     size="sm"
-                    variant={granularity === item ? "secondary" : "outline"}
-                    onClick={() => setGranularity(item)}
+                    variant={range === item ? "secondary" : "outline"}
+                    onClick={() => setRange(item)}
                   >
-                    {copy.granularity[item]}
+                    {copy.filters[item]}
                   </Button>
                 ))}
               </div>
-            </div>
 
-            <div className="mt-5 space-y-4">
-              <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
-                <span className="inline-flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-white" />
-                  {copy.requests}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-[var(--accent)]" />
-                  {copy.sold}
-                </span>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
+                    {copy.totalRequests}
+                  </p>
+                  <p className="mt-2 text-3xl font-semibold text-white">{filteredLeads.length}</p>
+                </div>
+                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
+                    {copy.soldRequests}
+                  </p>
+                  <p className="mt-2 text-3xl font-semibold text-white">{soldCount}</p>
+                </div>
+                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
+                    {copy.conversionRate}
+                  </p>
+                  <p className="mt-2 text-3xl font-semibold text-white">
+                    {formatConversionRate(filteredLeads.length, soldCount)}
+                  </p>
+                </div>
               </div>
 
-              {chartData.length === 0 ? (
-                <p className="text-sm text-[var(--foreground-muted)]">{copy.empty}</p>
-              ) : (
-                <div className="grid h-56 grid-cols-[repeat(auto-fit,minmax(52px,1fr))] items-end gap-3">
-                  {chartData.map((item) => (
-                    <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
-                      <div className="flex h-40 w-full items-end justify-center gap-1">
-                        <div
-                          className="w-3 rounded-t-full bg-white/85"
-                          style={{ height: `${Math.max((item.total / chartMax) * 100, 8)}%` }}
-                          title={`${copy.requests}: ${item.total}`}
-                        />
-                        <div
-                          className="w-3 rounded-t-full bg-[var(--accent)]"
-                          style={{ height: `${Math.max((item.sold / chartMax) * 100, item.sold ? 8 : 0)}%` }}
-                          title={`${copy.sold}: ${item.sold}`}
-                        />
-                      </div>
-                      <p className="truncate text-center text-[11px] text-[var(--foreground-muted)]">
-                        {item.label}
-                      </p>
-                    </div>
-                  ))}
+              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
+                {copy.summary(filteredLeads.length, soldCount)}
+              </div>
+
+              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-lg font-semibold text-white">{copy.chartTitle}</p>
+                    <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.chartDescription}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(["daily", "weekly", "monthly"] as const).map((item) => (
+                      <Button
+                        key={item}
+                        type="button"
+                        size="sm"
+                        variant={granularity === item ? "secondary" : "outline"}
+                        onClick={() => setGranularity(item)}
+                      >
+                        {copy.granularity[item]}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
+
+                <div className="mt-5 space-y-4">
+                  <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-white" />
+                      {copy.requests}
+                    </span>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-[var(--accent)]" />
+                      {copy.sold}
+                    </span>
+                  </div>
+
+                  {chartData.length === 0 ? (
+                    <p className="text-sm text-[var(--foreground-muted)]">{copy.empty}</p>
+                  ) : (
+                    <div className="grid h-56 grid-cols-[repeat(auto-fit,minmax(52px,1fr))] items-end gap-3">
+                      {chartData.map((item) => (
+                        <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
+                          <div className="flex h-40 w-full items-end justify-center gap-1">
+                            <div
+                              className="w-3 rounded-t-full bg-white/85"
+                              style={{ height: `${Math.max((item.total / chartMax) * 100, 8)}%` }}
+                              title={`${copy.requests}: ${item.total}`}
+                            />
+                            <div
+                              className="w-3 rounded-t-full bg-[var(--accent)]"
+                              style={{ height: `${Math.max((item.sold / chartMax) * 100, item.sold ? 8 : 0)}%` }}
+                              title={`${copy.sold}: ${item.sold}`}
+                            />
+                          </div>
+                          <p className="truncate text-center text-[11px] text-[var(--foreground-muted)]">
+                            {item.label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <UpgradeCard locale={locale} profile={profilePlan} />
+          )}
         </CardContent>
       </Card>
 

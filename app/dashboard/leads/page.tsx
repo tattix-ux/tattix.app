@@ -1,5 +1,6 @@
 import { LeadsTable } from "@/components/dashboard/leads-table";
 import { SectionHeading } from "@/components/shared/shell";
+import { hasProAccess } from "@/lib/access";
 import { getDashboardData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
@@ -28,6 +29,11 @@ export default async function DashboardLeadsPage() {
         currency={data.profile.currency}
         designs={data.featuredDesigns}
         locale={isTurkish ? "tr" : "en"}
+        hasPro={hasProAccess(data.profile)}
+        profilePlan={{
+          planType: data.profile.planType,
+          accessStatus: data.profile.accessStatus,
+        }}
       />
     </div>
   );

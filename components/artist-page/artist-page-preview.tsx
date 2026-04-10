@@ -61,6 +61,7 @@ export function ArtistPagePreview({
               <AvatarTile
                 name={artist.profile.artistName}
                 imageUrl={artist.profile.profileImageUrl}
+                planType={artist.profile.planType}
               />
               <div className="space-y-3">
                 <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
