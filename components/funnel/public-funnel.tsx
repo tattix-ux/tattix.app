@@ -417,7 +417,20 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               ) : null}
 
               {step === 4 && styleStepActive ? (
-                <div className="grid gap-2.5 sm:gap-3">
+                <div className="space-y-3">
+                  <div
+                    className="rounded-[20px] border px-4 py-3 text-sm"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                      color: "var(--artist-card-muted)",
+                    }}
+                  >
+                    {locale === "tr"
+                      ? "Stile en yakın seçeneği işaretle. Emin değilsen bilgi ikonuna dokunabilir veya kararı sanatçıyla birlikte netleştirebilirsin."
+                      : "Choose the style that feels closest. If you're unsure, tap the info icon or leave the final direction to the artist."}
+                  </div>
+                  <div className="grid gap-2.5 sm:gap-3">
                   {enabledStyles.map((style) => {
                     const active = draft.style === style.styleKey;
                     return (
@@ -448,7 +461,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           type="button"
                           aria-label={copy.styleInfoButton}
                           onClick={() => setStyleInfoKey(style.styleKey)}
-                          className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border transition"
+                          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
                           style={{
                             borderColor: "var(--artist-border)",
                             backgroundColor: "rgba(0,0,0,0.12)",
@@ -482,7 +495,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       type="button"
                       aria-label={copy.styleInfoButton}
                       onClick={() => setStyleInfoKey("not-sure-style")}
-                      className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border transition"
+                      className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
                       style={{
                         borderColor: "var(--artist-border)",
                         backgroundColor: "rgba(0,0,0,0.12)",
@@ -491,6 +504,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     >
                       <Info className="size-4" />
                     </button>
+                  </div>
                   </div>
                 </div>
               ) : null}
@@ -818,7 +832,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 <X className="size-4" />
               </Button>
             </div>
-            <p className="mt-4 text-sm leading-7 text-[var(--foreground-muted)]">
+            <p className="mt-4 text-sm leading-6 text-[var(--foreground-muted)]">
               {activeStyleInfoDescription}
             </p>
             <div className="mt-5">
