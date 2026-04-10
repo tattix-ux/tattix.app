@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
@@ -18,7 +17,6 @@ import { signUpSchema } from "@/lib/forms/schemas";
 type SignUpValues = z.infer<typeof signUpSchema>;
 
 export function SignupForm() {
-  const router = useRouter();
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -57,8 +55,7 @@ export function SignupForm() {
     }
 
     if (data.session) {
-      router.push("/dashboard/profile");
-      router.refresh();
+      window.location.assign("/dashboard/profile");
       return;
     }
 

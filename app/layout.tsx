@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthStateListener } from "@/components/auth/auth-state-listener";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -27,7 +28,10 @@ export default function RootLayout({
         } as React.CSSProperties
       }
     >
-      <body className="min-h-full overflow-x-hidden flex flex-col">{children}</body>
+      <body className="min-h-full overflow-x-hidden flex flex-col">
+        <AuthStateListener />
+        {children}
+      </body>
     </html>
   );
 }

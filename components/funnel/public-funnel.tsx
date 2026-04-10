@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Copy, LoaderCircle, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, Info, LoaderCircle, MessageCircle, Sparkles, X } from "lucide-react";
 
 import { IntentSelectionStep } from "@/components/funnel/intent-selection-step";
 import { BodyPlacementSelector } from "@/components/funnel/body-placement-selector";
@@ -17,6 +17,7 @@ import { turkeyCities } from "@/lib/constants/cities";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import {
   getPublicCopy,
+  getStyleDescription,
   getStyleLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
@@ -63,6 +64,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     reset,
   } = useFunnelStore();
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
+  const [styleInfoKey, setStyleInfoKey] = useState<string | null>(null);
   const flowCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -86,6 +88,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     [activeDesigns, draft.selectedDesignId],
   );
   const copy = getPublicCopy(locale);
+  const activeStyleInfoDescription = styleInfoKey
+    ? getStyleDescription(styleInfoKey, locale) ??
+      (locale === "tr"
+        ? "Bu stilin son yorumu sanatçıyla görüşme sırasında netleştirilebilir."
+        : "The artist can refine the final interpretation of this style during consultation.")
+    : null;
   const stepMeta = copy.stepTitles.map((title, index) => ({
     step: index + 1,
     title,
@@ -214,7 +222,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     step === 5;
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-hidden space-y-5 sm:space-y-6">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden space-y-4 sm:space-y-6">
       <Card
         className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} w-full max-w-full min-w-0`}
         style={{
@@ -263,7 +271,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               <div className="space-y-3">
                 <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
                 <h1
-                  className="text-3xl leading-tight"
+                  className="text-[1.75rem] leading-tight sm:text-3xl"
                   style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
                 >
                   {introTitle}
@@ -271,7 +279,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 <p className="text-sm leading-7" style={{ color: "var(--artist-muted)" }}>
                   {introText}
                 </p>
-                <div className="flex flex-wrap gap-2 text-xs" style={{ color: "var(--artist-muted)" }}>
+                <div className="flex flex-wrap gap-2 text-xs leading-5" style={{ color: "var(--artist-muted)" }}>
                   <span>{artist.profile.instagramHandle}</span>
                   <span>•</span>
                   <span>Mobile-first intake flow</span>
@@ -405,45 +413,77 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   {enabledStyles.map((style) => {
                     const active = draft.style === style.styleKey;
                     return (
-                      <button
+                      <div
                         key={style.id}
-                        type="button"
-                        onClick={() => {
-                          setField("style", style.styleKey);
-                          window.setTimeout(() => setStep(5), 180);
-                        }}
-                        className="rounded-[24px] border px-4 py-4 text-left transition"
-                        style={{
-                          borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                          backgroundColor: active
-                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                            : "rgba(0,0,0,0.12)",
-                          color: tokens.cardText,
-                        }}
+                        className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]"
                       >
-                        <p className="font-medium">
-                          {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
-                        </p>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setField("style", style.styleKey);
+                            window.setTimeout(() => setStep(5), 180);
+                          }}
+                          className="min-w-0 flex-1 rounded-[24px] border px-4 py-4 text-left transition"
+                          style={{
+                            borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                            backgroundColor: active
+                              ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                              : "rgba(0,0,0,0.12)",
+                            color: tokens.cardText,
+                          }}
+                        >
+                          <p className="break-words font-medium">
+                            {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                          </p>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={copy.styleInfoButton}
+                          onClick={() => setStyleInfoKey(style.styleKey)}
+                          className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border transition"
+                          style={{
+                            borderColor: "var(--artist-border)",
+                            backgroundColor: "rgba(0,0,0,0.12)",
+                            color: "var(--artist-card-text)",
+                          }}
+                        >
+                          <Info className="size-4" />
+                        </button>
+                      </div>
                     );
                   })}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setField("style", "not-sure-style");
-                      window.setTimeout(() => setStep(5), 180);
-                    }}
-                    className="rounded-[24px] border px-4 py-4 text-left transition"
-                    style={{
-                      borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
-                      backgroundColor: draft.style === "not-sure-style"
-                        ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                        : "rgba(0,0,0,0.12)",
-                      color: tokens.cardText,
-                    }}
-                  >
-                    <p className="font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
-                  </button>
+                  <div className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setField("style", "not-sure-style");
+                        window.setTimeout(() => setStep(5), 180);
+                      }}
+                      className="min-w-0 flex-1 rounded-[24px] border px-4 py-4 text-left transition"
+                      style={{
+                        borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
+                        backgroundColor: draft.style === "not-sure-style"
+                          ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                          : "rgba(0,0,0,0.12)",
+                        color: tokens.cardText,
+                      }}
+                    >
+                      <p className="break-words font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={copy.styleInfoButton}
+                      onClick={() => setStyleInfoKey("not-sure-style")}
+                      className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border transition"
+                      style={{
+                        borderColor: "var(--artist-border)",
+                        backgroundColor: "rgba(0,0,0,0.12)",
+                        color: "var(--artist-card-text)",
+                      }}
+                    >
+                      <Info className="size-4" />
+                    </button>
+                  </div>
                 </div>
               ) : null}
 
@@ -753,6 +793,34 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         </CardContent>
         </Card>
       </div>
+
+      {styleInfoKey ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-black/70 p-0 sm:items-center sm:p-4">
+          <div className="w-full max-w-full rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-md sm:rounded-[28px]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--accent-soft)]">
+                  {copy.styleInfoTitle}
+                </p>
+                <h3 className="mt-2 break-words text-lg font-semibold text-white">
+                  {getStyleLabel(styleInfoKey, locale)}
+                </h3>
+              </div>
+              <Button type="button" variant="ghost" size="icon" onClick={() => setStyleInfoKey(null)}>
+                <X className="size-4" />
+              </Button>
+            </div>
+            <p className="mt-4 text-sm leading-7 text-[var(--foreground-muted)]">
+              {activeStyleInfoDescription}
+            </p>
+            <div className="mt-5">
+              <Button type="button" className="w-full" onClick={() => setStyleInfoKey(null)}>
+                {copy.close}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

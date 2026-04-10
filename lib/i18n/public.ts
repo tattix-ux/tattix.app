@@ -46,6 +46,53 @@ const styleLabels: Record<StyleValue, LocalizedText> = {
   custom: { en: "Custom", tr: "Özel" },
 };
 
+const styleDescriptions: Record<string, LocalizedText> = {
+  "fine-line": {
+    en: "Thin, delicate lines with minimal shading and a light overall feel.",
+    tr: "İnce, zarif çizgiler ve minimum gölgelendirme ile hafif bir görünüm sunar.",
+  },
+  minimal: {
+    en: "Clean, simple compositions with very little visual noise.",
+    tr: "Temiz, sade ve gereksiz detaydan uzak kompozisyonlara odaklanır.",
+  },
+  traditional: {
+    en: "Bold outlines, classic tattoo shapes, and a timeless old-school feel.",
+    tr: "Kalın konturlar, klasik formlar ve zamansız bir old-school hissi taşır.",
+  },
+  "neo-traditional": {
+    en: "A richer version of traditional tattooing with more detail and flow.",
+    tr: "Traditional yaklaşımın daha detaylı, daha akışkan ve daha zengin bir versiyonudur.",
+  },
+  blackwork: {
+    en: "Bold black ink, strong contrast, and a graphic high-impact look.",
+    tr: "Yoğun siyah mürekkep, yüksek kontrast ve güçlü bir grafik etki sunar.",
+  },
+  realism: {
+    en: "Shaded work focused on lifelike depth, texture, and realistic detail.",
+    tr: "Gerçekçi derinlik, doku ve detay hissine odaklanan gölgeli bir tarzdır.",
+  },
+  "micro-realism": {
+    en: "Very small tattoos with realistic detail packed into a compact area.",
+    tr: "Küçük alanda gerçekçi detay taşıyan çok küçük dövmeler için uygundur.",
+  },
+  ornamental: {
+    en: "Decorative shapes, symmetry, and elegant flow inspired by ornament.",
+    tr: "Süsleme etkisi taşıyan dekoratif formlar, simetri ve zarif akış üzerine kuruludur.",
+  },
+  lettering: {
+    en: "Words, initials, or phrases where typography and spacing matter most.",
+    tr: "Kelime, harf veya cümlelerde tipografi ve boşluk kullanımının öne çıktığı stildir.",
+  },
+  "not-sure-style": {
+    en: "You can keep going without locking the style yet. The artist can refine it later.",
+    tr: "Stili şimdi netleştirmeden devam edebilirsin. Sanatçı bunu sonradan birlikte netleştirebilir.",
+  },
+  custom: {
+    en: "A flexible direction that lets the artist shape the final style with you.",
+    tr: "Sanatçının son stili seninle birlikte şekillendirmesine alan tanıyan esnek bir seçenektir.",
+  },
+};
+
 const featuredCategoryLabels: Record<FeaturedCategoryValue, LocalizedText> = {
   "discounted-designs": { en: "Discounted designs", tr: "İndirimli tasarımlar" },
   "flash-designs": { en: "Flash designs", tr: "Flash tasarımlar" },
@@ -181,6 +228,9 @@ export const publicCopy = {
     viewDesignDetails: "View details",
     selectThisDesign: "Select this design",
     unselectDesign: "Unselect design",
+    styleInfoButton: "What does this style mean?",
+    styleInfoTitle: "Style details",
+    close: "Close",
     summaryLabels: {
       intent: "Intent",
       selectedDesign: "Selected design",
@@ -271,6 +321,9 @@ export const publicCopy = {
     viewDesignDetails: "Detayları incele",
     selectThisDesign: "Bu tasarımı seç",
     unselectDesign: "Tasarımı kaldır",
+    styleInfoButton: "Bu stil ne anlama geliyor?",
+    styleInfoTitle: "Stil detayı",
+    close: "Kapat",
     summaryLabels: {
       intent: "Talep",
       selectedDesign: "Seçilen tasarım",
@@ -304,6 +357,10 @@ export function getSizeLabel(value: SizeValue, locale: PublicLocale) {
 
 export function getStyleLabel(value: StyleValue, locale: PublicLocale) {
   return styleLabels[value] ? pick(styleLabels[value], locale) : value;
+}
+
+export function getStyleDescription(value: StyleValue, locale: PublicLocale) {
+  return styleDescriptions[value] ? pick(styleDescriptions[value], locale) : null;
 }
 
 export function getFeaturedCategoryLabel(value: FeaturedCategoryValue, locale: PublicLocale) {

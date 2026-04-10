@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
@@ -17,7 +16,6 @@ import { updatePasswordSchema } from "@/lib/forms/schemas";
 type UpdateValues = z.infer<typeof updatePasswordSchema>;
 
 export function UpdatePasswordForm() {
-  const router = useRouter();
   const form = useForm<UpdateValues>({
     resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
@@ -42,8 +40,7 @@ export function UpdatePasswordForm() {
       return;
     }
 
-    router.push("/dashboard/profile");
-    router.refresh();
+    window.location.assign("/dashboard/profile");
   }
 
   return (

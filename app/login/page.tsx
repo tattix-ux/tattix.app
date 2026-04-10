@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/login-form";
 import { Logo } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
+import { getSupabaseSession } from "@/lib/supabase/server";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await getSupabaseSession();
+
+  if (session) {
+    redirect("/dashboard/profile");
+  }
+
   return (
     <AppShell>
       <Container className="py-6 sm:py-8">

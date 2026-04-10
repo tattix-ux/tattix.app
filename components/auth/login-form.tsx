@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -20,6 +21,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -31,6 +33,14 @@ export function LoginForm() {
   useEffect(() => {
     router.prefetch("/dashboard/profile");
   }, [router]);
+
+  useEffect(() => {
+    const message = searchParams.get("message");
+
+    if (message) {
+      form.setError("root", { message });
+    }
+  }, [form, searchParams]);
 
   async function onSubmit(values: LoginValues) {
     if (!isSupabaseConfigured()) {
@@ -48,7 +58,7 @@ export function LoginForm() {
       return;
     }
 
-    router.replace("/dashboard/profile");
+    window.location.assign("/dashboard/profile");
   }
 
   return (
