@@ -45,16 +45,16 @@ export const landingCopy = {
   en: {
     login: "Login",
     languageLabel: "Language",
-    badge: "Mobile-first lead funnel for tattoo artists",
-    title: "Turn your Instagram bio into a premium tattoo inquiry flow.",
+    badge: "Mobile-first inquiry flow for tattoo artists",
+    title: "Turn Instagram inquiries into an organized, manageable flow.",
     description:
-      "Tattix gives each artist a polished public page, a guided client intake, a rule-based price estimate, and a WhatsApp-ready handoff.",
+      "Tattix gives tattoo artists a guided inquiry flow, rule-based price estimation, and a WhatsApp-ready client handoff.",
     primaryCta: "Create your artist page",
-    secondaryCta: "View demo artist page",
+    secondaryCta: "Explore the live demo",
     outcomes: [
-      "Public artist page at /artist-slug",
-      "Dashboard for profile, pricing, featured designs, and leads",
-      "Supabase-backed auth, database schema, and demo seed data",
+      "Public artist page",
+      "One dashboard for inquiries, designs, and pricing",
+      "Ready-made data structure and fast setup",
     ],
     previewBadge: "Live funnel preview",
     previewSteps: "6 steps",
@@ -63,24 +63,24 @@ export const landingCopy = {
     previewOptions: ["Flash design", "Custom tattoo", "I have a design in mind"],
     pillars: [
       {
-        title: "Guided client intake",
+        title: "Guided inquiry flow",
         description:
-          "Lead clients from Instagram bio into a clean mobile flow instead of messy DMs.",
+          "Guide clients step by step to collect clear, complete tattoo requests.",
       },
       {
-        title: "Rule-based estimates",
+        title: "Rule-based price estimation",
         description:
-          "Use artist-owned pricing logic for size, style, placement, and design intent.",
+          "Generate an automatic price range based on size, style, and placement.",
       },
       {
-        title: "Clean handoff",
+        title: "Ready client handoff",
         description:
-          "Deliver a WhatsApp-ready message or copy the brief for Instagram DM follow-up.",
+          "Send the request to WhatsApp or Instagram in a single tap.",
       },
     ],
     whyEyebrow: "Why artists use Tattix",
-    whyTitle: "A cleaner front door for tattoo bookings.",
+    whyTitle: "Cleaner inquiries, clearer clients.",
     whyDescription:
-      "Built for mobile bio traffic first, with a premium dark studio feel that still stays practical for real lead handling.",
+      "Turn messy DM traffic into a guided, filtered inquiry flow.",
   },
 } as const;
