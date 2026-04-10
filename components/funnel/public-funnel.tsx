@@ -222,9 +222,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     step === 5;
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-clip space-y-4 sm:space-y-6">
+    <div className="w-full min-w-0 max-w-full overflow-x-clip space-y-3 sm:space-y-6">
       <Card
-        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full overflow-x-clip`}
+        className={`${compactArtistHeader ? "sticky top-2 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full overflow-x-clip`}
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor:
@@ -233,8 +233,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         }}
       >
         {compactArtistHeader ? (
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <div className="shrink-0">
                 <AvatarTile
                   name={artist.profile.artistName}
@@ -244,12 +244,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               </div>
               <div className="min-w-0">
                 <p
-                  className="truncate text-lg"
+                  className="truncate text-base sm:text-lg"
                   style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
                 >
                   {artist.profile.artistName}
                 </p>
-                <p className="truncate text-sm" style={{ color: "var(--artist-muted)" }}>
+                <p className="truncate text-xs sm:text-sm" style={{ color: "var(--artist-muted)" }}>
                   {artist.profile.instagramHandle}
                 </p>
               </div>
@@ -270,7 +270,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   : { borderColor: "var(--artist-border)" }
               }
             />
-            <CardContent className="-mt-12 min-w-0 space-y-4 p-4 sm:p-6">
+            <CardContent className="-mt-12 min-w-0 space-y-3 p-4 sm:space-y-4 sm:p-6">
               <AvatarTile
                 name={artist.profile.artistName}
                 imageUrl={artist.profile.profileImageUrl}
@@ -279,15 +279,15 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               <div className="space-y-3">
                 <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
                 <h1
-                  className="text-[1.75rem] leading-tight sm:text-3xl"
+                  className="text-[1.55rem] leading-tight sm:text-3xl"
                   style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
                 >
                   {introTitle}
                 </h1>
-                <p className="text-sm leading-7" style={{ color: "var(--artist-muted)" }}>
+                <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-muted)" }}>
                   {introText}
                 </p>
-                <div className="flex flex-wrap gap-2 text-xs leading-5" style={{ color: "var(--artist-muted)" }}>
+                <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] leading-4 sm:text-xs sm:leading-5" style={{ color: "var(--artist-muted)" }}>
                   <span>{artist.profile.instagramHandle}</span>
                   <span>•</span>
                   <span>Mobile-first intake flow</span>
@@ -310,13 +310,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             borderRadius: "var(--artist-radius)",
           }}
         >
-        <CardHeader className="px-4 pb-4 sm:px-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <CardHeader className="px-4 pb-3 sm:px-6 sm:pb-4">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <CardTitle className="break-words" style={{ color: "var(--artist-card-text)" }}>
+              <CardTitle className="break-words text-base sm:text-lg" style={{ color: "var(--artist-card-text)" }}>
                 {result ? copy.stepTitles[5] : stepMeta[Math.min(step, 6) - 1]?.title}
               </CardTitle>
-              <CardDescription className="break-words" style={{ color: "var(--artist-card-muted)" }}>
+              <CardDescription className="break-words text-[13px] leading-5 sm:text-sm sm:leading-6" style={{ color: "var(--artist-card-muted)" }}>
                 {result ? copy.stepDescriptions[5] : stepMeta[Math.min(step, 6) - 1]?.description}
               </CardDescription>
             </div>
@@ -324,7 +324,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               {copy.stepLabel} {Math.min(step, 6)} / 6
             </Badge>
           </div>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/6">
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/6 sm:mt-4 sm:h-2">
             <div
               className="h-full rounded-full transition-all"
               style={{
@@ -342,7 +342,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
-              className="space-y-4"
+              className="space-y-3 sm:space-y-4"
             >
               {step === 1 ? (
                 <IntentSelectionStep
@@ -371,7 +371,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               ) : null}
 
               {step === 2 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <BodyPlacementSelector
                     selectedDetail={draft.bodyAreaDetail}
                     locale={locale}
@@ -417,7 +417,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               ) : null}
 
               {step === 4 && styleStepActive ? (
-                <div className="grid gap-3">
+                <div className="grid gap-2.5 sm:gap-3">
                   {enabledStyles.map((style) => {
                     const active = draft.style === style.styleKey;
                     return (
@@ -496,7 +496,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               ) : null}
 
               {step === 5 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {selectedDesign ? (
                     <div
                       className="rounded-[24px] border p-4"
@@ -652,9 +652,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               ) : null}
 
               {step === 6 && result ? (
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   <div
-                    className="rounded-[28px] border p-5"
+                    className="rounded-[24px] border p-4 sm:rounded-[28px] sm:p-5"
                     style={{
                       borderColor: "color-mix(in srgb, var(--artist-primary) 28%, transparent)",
                       backgroundColor:
@@ -664,11 +664,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     <div className="flex items-start gap-3">
                       <Sparkles className="mt-1 size-5" style={{ color: "var(--artist-primary)" }} />
                       <div className="min-w-0">
-                        <p className="text-sm uppercase tracking-[0.2em]" style={{ color: "var(--artist-primary)" }}>
+                        <p className="text-xs uppercase tracking-[0.18em] sm:text-sm sm:tracking-[0.2em]" style={{ color: "var(--artist-primary)" }}>
                           {copy.estimatedRange}
                         </p>
                         <p
-                          className="mt-2 break-words text-3xl sm:text-4xl"
+                          className="mt-2 break-words text-[1.75rem] leading-tight sm:text-4xl"
                           style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                         >
                           {formatCompactCurrencyRange(
@@ -692,7 +692,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       {result.disclaimer}
                     </p>
                   </div>
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5 sm:gap-3">
                     <Button asChild className="w-full">
                       <a
                         href={result.whatsappLink}
@@ -734,7 +734,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:flex-row sm:items-center sm:gap-3">
             {step > 1 && step < 6 ? (
               <Button
                 variant="outline"

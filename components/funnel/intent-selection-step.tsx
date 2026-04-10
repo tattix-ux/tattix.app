@@ -82,8 +82,8 @@ export function IntentSelectionStep({
   }, [intent]);
 
   return (
-    <div className="w-full min-w-0 max-w-full space-y-4">
-      <div className="grid gap-3">
+    <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
+      <div className="grid gap-2.5 sm:gap-3">
         {intentOptions.map((option) => {
           const active = intent === option.value;
 
@@ -92,7 +92,7 @@ export function IntentSelectionStep({
               key={option.value}
               type="button"
               onClick={() => onIntentChange(option.value)}
-              className="w-full max-w-full rounded-[24px] border px-4 py-4 text-left transition"
+              className="w-full max-w-full rounded-[20px] border px-4 py-3.5 text-left transition sm:rounded-[24px] sm:py-4"
               style={{
                 borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                 backgroundColor: active
@@ -110,7 +110,7 @@ export function IntentSelectionStep({
       {activeCategory ? (
         <div
           ref={designSectionRef}
-          className="rounded-[24px] border p-4"
+          className="rounded-[22px] border p-4 sm:rounded-[24px]"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor: "rgba(0,0,0,0.12)",
@@ -127,7 +127,7 @@ export function IntentSelectionStep({
               {copy.noMatchingDesigns}
             </p>
           ) : (
-            <div className="mt-4 grid gap-3">
+            <div className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-3">
               {matchingDesigns.map((design) => {
                 const active = selectedDesignId === design.id;
 
@@ -143,7 +143,7 @@ export function IntentSelectionStep({
                     }}
                     role="button"
                     tabIndex={0}
-                    className="w-full max-w-full overflow-hidden rounded-[24px] border p-4 text-left transition"
+                    className="w-full max-w-full overflow-hidden rounded-[22px] border p-4 text-left transition sm:rounded-[24px]"
                     style={{
                       borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                       backgroundColor: active
@@ -185,7 +185,7 @@ export function IntentSelectionStep({
                         )}
                       </p>
                     ) : null}
-                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                    <div className="mt-3 flex flex-col gap-2.5 sm:mt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
                       <Button
                         type="button"
                         variant="outline"
@@ -219,7 +219,7 @@ export function IntentSelectionStep({
       {intent === "design-in-mind" ? (
         <div
           ref={referenceSectionRef}
-          className="rounded-[24px] border p-4"
+          className="rounded-[22px] border p-4 sm:rounded-[24px]"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor: "rgba(0,0,0,0.12)",

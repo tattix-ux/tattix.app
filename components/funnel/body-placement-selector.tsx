@@ -74,9 +74,9 @@ export function BodyPlacementSelector({
   }
 
   return (
-    <div className="w-full min-w-0 max-w-full space-y-4">
+    <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
       <div
-        className="rounded-[24px] border p-4"
+        className="rounded-[22px] border p-4 sm:rounded-[24px]"
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor: "rgba(0,0,0,0.12)",
@@ -88,7 +88,7 @@ export function BodyPlacementSelector({
         <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
           {copy.placementCategoryHelp}
         </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {placementCategoryOptions.map((category) => {
             const active = category.value === activeCategory;
 
@@ -97,7 +97,7 @@ export function BodyPlacementSelector({
                 key={category.value}
                 type="button"
                 onClick={() => handleCategoryToggle(category)}
-                className="w-full max-w-full rounded-[22px] border px-4 py-4 text-left transition"
+                className="w-full max-w-full rounded-[20px] border px-4 py-3.5 text-left transition sm:rounded-[22px] sm:py-4"
                 style={{
                   borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                   backgroundColor: active
@@ -123,7 +123,7 @@ export function BodyPlacementSelector({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="rounded-[24px] border p-4"
+          className="rounded-[22px] border p-4 sm:rounded-[24px]"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor: "rgba(0,0,0,0.12)",
@@ -135,7 +135,7 @@ export function BodyPlacementSelector({
           <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
             {copy.placementDetailHelpPrefix} {getPlacementCategoryLocaleLabel(detailOptions.value, locale).toLowerCase()}.
           </p>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2">
             {detailOptions.details.map((detail) => {
               const active = selectedDetail === detail;
 
@@ -149,7 +149,7 @@ export function BodyPlacementSelector({
                       active ? "" : detail,
                     )
                   }
-                  className="w-full max-w-full rounded-[20px] border px-4 py-3 text-left text-sm transition"
+                  className="w-full max-w-full rounded-[18px] border px-4 py-3 text-left text-sm transition sm:rounded-[20px]"
                   style={{
                     borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                     backgroundColor: active
@@ -167,7 +167,7 @@ export function BodyPlacementSelector({
       ) : null}
 
       <div
-        className="rounded-[24px] border p-4"
+        className="rounded-[22px] border p-4 sm:rounded-[24px]"
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor: "rgba(0,0,0,0.12)",

@@ -86,15 +86,15 @@ export function SizeEstimationSelector({
         : "var(--artist-primary)";
 
   return (
-    <div className="w-full min-w-0 max-w-full space-y-4">
+    <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
       <div
-        className="rounded-[24px] border p-4"
+        className="rounded-[22px] border p-4 sm:rounded-[24px]"
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor: "rgba(0,0,0,0.12)",
         }}
       >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
               {copy.approximateTattooSize}
@@ -104,7 +104,7 @@ export function SizeEstimationSelector({
             </p>
           </div>
           <div className="text-left sm:text-right">
-            <p className="text-2xl font-semibold" style={{ color: "var(--artist-card-text)" }}>
+            <p className="text-[1.65rem] font-semibold sm:text-2xl" style={{ color: "var(--artist-card-text)" }}>
               {safeCm} cm
             </p>
             <p className="text-sm" style={{ color: "var(--artist-primary)" }}>
@@ -113,7 +113,7 @@ export function SizeEstimationSelector({
           </div>
         </div>
 
-        <div className="mt-5 space-y-3">
+        <div className="mt-4 space-y-3 sm:mt-5">
           <input
             type="range"
             min={constraint.minCm}
@@ -139,7 +139,7 @@ export function SizeEstimationSelector({
       </div>
 
       <div
-        className="rounded-[24px] border p-4"
+        className="rounded-[22px] border p-4 sm:rounded-[24px]"
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor: "rgba(0,0,0,0.12)",
