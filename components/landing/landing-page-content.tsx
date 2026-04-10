@@ -28,18 +28,21 @@ export function LandingPageContent() {
     const storedLocale = readStoredAppLocale();
     if (storedLocale) {
       setLocale(storedLocale);
+      return;
     }
+
+    persistAppLocale("tr");
   }, []);
 
   const copy = landingCopy[locale];
 
   return (
     <AppShell>
-      <Container className="py-6 sm:py-8">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <Container className="overflow-x-clip py-5 sm:py-8">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <Logo />
-          <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 p-1">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            <div className="inline-flex w-full items-center justify-between gap-2 rounded-full border border-white/10 bg-white/6 p-1 sm:w-auto sm:justify-start">
               <span className="px-2 text-[11px] uppercase tracking-[0.18em] text-white/55">
                 {copy.languageLabel}
               </span>
@@ -65,62 +68,64 @@ export function LandingPageContent() {
                 );
               })}
             </div>
-            <Button asChild variant="ghost">
+            <Button asChild variant="ghost" className="w-full sm:w-auto">
               <Link href="/login">{copy.login}</Link>
             </Button>
           </div>
         </header>
 
-        <section className="grid gap-8 py-12 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-          <div className="space-y-6">
-            <Badge variant="accent">{copy.badge}</Badge>
-            <div className="space-y-5">
-              <h1 className="font-display text-5xl leading-[0.95] text-white sm:text-6xl">
+        <section className="grid gap-6 py-10 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-8">
+          <div className="space-y-5 sm:space-y-6">
+            <Badge variant="accent" className="max-w-full whitespace-normal text-center sm:text-left">
+              {copy.badge}
+            </Badge>
+            <div className="space-y-4 sm:space-y-5">
+              <h1 className="font-display text-[2.55rem] leading-[0.96] text-white sm:text-6xl">
                 {copy.title}
               </h1>
-              <p className="max-w-xl text-base leading-8 text-[var(--foreground-muted)] sm:text-lg">
+              <p className="max-w-xl text-[15px] leading-7 text-[var(--foreground-muted)] sm:text-lg sm:leading-8">
                 {copy.description}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/signup">
                   {copy.primaryCta}
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
-              <Button asChild variant="secondary" size="lg">
+              <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
                 <Link href={`/${siteConfig.demoSlug}`}>{copy.secondaryCta}</Link>
               </Button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
               {copy.outcomes.map((outcome) => (
-                <div key={outcome} className="flex items-center gap-3 text-sm text-white/85">
-                  <CheckCircle2 className="size-4 text-[var(--accent-soft)]" />
-                  <span>{outcome}</span>
+                <div key={outcome} className="flex items-start gap-3 text-sm leading-6 text-white/85">
+                  <CheckCircle2 className="mt-1 size-4 shrink-0 text-[var(--accent-soft)]" />
+                  <span className="min-w-0">{outcome}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <Card className="surface-border overflow-hidden">
-            <CardContent className="space-y-5 p-6">
+            <CardContent className="space-y-4 p-4 sm:space-y-5 sm:p-6">
               <div className="flex items-center justify-between gap-3">
                 <Badge variant="muted">{copy.previewBadge}</Badge>
                 <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                   {copy.previewSteps}
                 </p>
               </div>
-              <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(160deg,rgba(247,177,93,0.14),rgba(255,255,255,0.04),rgba(0,0,0,0.4))] p-5">
+              <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(160deg,rgba(247,177,93,0.14),rgba(255,255,255,0.04),rgba(0,0,0,0.4))] p-4 sm:rounded-[28px] sm:p-5">
                 <p className="text-sm uppercase tracking-[0.28em] text-[var(--accent-soft)]">
                   {copy.previewArtist}
                 </p>
-                <h2 className="mt-4 font-display text-3xl text-white">{copy.previewTitle}</h2>
-                <div className="mt-6 grid gap-3">
+                <h2 className="mt-4 font-display text-[1.7rem] leading-tight text-white sm:text-3xl">{copy.previewTitle}</h2>
+                <div className="mt-5 grid gap-2.5 sm:mt-6 sm:gap-3">
                   {copy.previewOptions.map((item, index) => (
                     <div
                       key={item}
-                      className={`rounded-[22px] border px-4 py-4 ${
+                      className={`rounded-[20px] border px-4 py-3.5 sm:rounded-[22px] sm:py-4 ${
                         index === 1
                           ? "border-[var(--accent)]/30 bg-[var(--accent)]/14"
                           : "border-white/8 bg-black/20"
@@ -131,14 +136,14 @@ export function LandingPageContent() {
                   ))}
                 </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-3">
                 {copy.pillars.map((pillar, index) => {
                   const Icon = icons[index];
 
                   return (
-                    <div key={pillar.title} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                    <div key={pillar.title} className="rounded-[20px] border border-white/8 bg-black/20 p-4 sm:rounded-[24px]">
                       <Icon className="size-5 text-[var(--accent-soft)]" />
-                      <p className="mt-4 font-medium text-white">{pillar.title}</p>
+                      <p className="mt-3 font-medium text-white">{pillar.title}</p>
                       <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
                         {pillar.description}
                       </p>
@@ -150,7 +155,7 @@ export function LandingPageContent() {
           </Card>
         </section>
 
-        <section className="space-y-8 py-12 sm:py-16">
+        <section className="space-y-6 py-10 sm:space-y-8 sm:py-16">
           <SectionHeading
             eyebrow={copy.whyEyebrow}
             title={copy.whyTitle}

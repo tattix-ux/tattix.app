@@ -89,15 +89,15 @@ export function LoginForm({ locale = "tr" }: { locale?: AppLocale }) {
   }
 
   return (
-    <Card className="surface-border">
+    <Card className="surface-border overflow-hidden">
       <CardHeader>
         <CardTitle>{copy.title}</CardTitle>
         <CardDescription>
           {copy.description}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+      <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+        <form className="space-y-4 sm:space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <Field label={copy.email} error={form.formState.errors.email?.message}>
             <Input
               type="email"
@@ -126,7 +126,7 @@ export function LoginForm({ locale = "tr" }: { locale?: AppLocale }) {
             )}
           </Button>
         </form>
-        <div className="mt-6 flex items-center justify-between text-sm text-[var(--foreground-muted)]">
+        <div className="mt-5 flex flex-col gap-2 text-sm text-[var(--foreground-muted)] sm:mt-6 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/reset-password" className="hover:text-white">
             {copy.forgotPassword}
           </Link>

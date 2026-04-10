@@ -38,7 +38,10 @@ export function LoginPageContent() {
     const storedLocale = readStoredAppLocale();
     if (storedLocale) {
       setLocale(storedLocale);
+      return;
     }
+
+    persistAppLocale("tr");
   }, []);
 
   const copy = loginPageCopy[locale];
@@ -50,11 +53,11 @@ export function LoginPageContent() {
 
   return (
     <AppShell>
-      <Container className="py-6 sm:py-8">
-        <div className="flex items-center justify-between gap-4">
+      <Container className="overflow-x-clip py-5 sm:py-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <Logo />
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 p-1">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            <div className="inline-flex w-full items-center justify-between gap-2 rounded-full border border-white/10 bg-white/6 p-1 sm:w-auto sm:justify-start">
               <span className="px-2 text-[11px] uppercase tracking-[0.18em] text-white/55">
                 {copy.languageLabel}
               </span>
@@ -77,16 +80,16 @@ export function LoginPageContent() {
                 );
               })}
             </div>
-            <Link href="/" className="text-sm text-[var(--foreground-muted)] hover:text-white">
+            <Link href="/" className="text-sm text-[var(--foreground-muted)] hover:text-white sm:self-center">
               {copy.backHome}
             </Link>
           </div>
         </div>
-        <div className="mx-auto grid min-h-[80vh] max-w-5xl gap-10 py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="space-y-5">
+        <div className="mx-auto grid max-w-5xl gap-8 py-8 sm:py-10 lg:min-h-[80vh] lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-10">
+          <div className="space-y-4 sm:space-y-5">
             <p className="text-xs uppercase tracking-[0.28em] text-[var(--accent-soft)]">{copy.eyebrow}</p>
-            <h1 className="font-display text-5xl text-white">{copy.title}</h1>
-            <p className="max-w-lg text-base leading-8 text-[var(--foreground-muted)]">
+            <h1 className="font-display text-[2.45rem] leading-[0.98] text-white sm:text-5xl">{copy.title}</h1>
+            <p className="max-w-lg text-[15px] leading-7 text-[var(--foreground-muted)] sm:text-base sm:leading-8">
               {copy.description}
             </p>
           </div>
