@@ -107,6 +107,7 @@ export function buildEstimateSummary(
       submission.selectedDesignId ? "hazır tasarım seçildi" : `${styleLabel} tarzında`,
       `${intentLabel.toLocaleLowerCase("tr-TR")} planlandı`,
       manualSize ? `yaklaşık ${manualSize}` : `${sizeLabel.toLocaleLowerCase("tr-TR")} ölçekte`,
+      submission.city?.trim() ? `şehir: ${submission.city.trim()}` : null,
       submission.referenceImage ? "referans görsel paylaşıldı" : null,
       preferredTiming ? `tercih edilen zaman: ${preferredTiming}` : null,
     ].filter(Boolean);
@@ -119,6 +120,7 @@ export function buildEstimateSummary(
     submission.selectedDesignId ? "ready-made design selected" : `${styleLabel} style`,
     intentLabel,
     manualSize ? `around ${manualSize}` : `${sizeLabel.toLocaleLowerCase("en-US")} size`,
+    submission.city?.trim() ? `city: ${submission.city.trim()}` : null,
     submission.referenceImage ? "reference image uploaded" : null,
     preferredTiming ? `preferred timing: ${preferredTiming}` : null,
   ].filter(Boolean);

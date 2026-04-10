@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { hasProAccess } from "@/lib/access";
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -23,6 +24,10 @@ export async function POST(request: Request) {
 
   if (!artist) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  }
+
+  if (!hasProAccess(artist)) {
+    return NextResponse.json({ message: "Contact for Pro access." }, { status: 403 });
   }
 
   const supabase = await createSupabaseServerClient();

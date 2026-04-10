@@ -11,17 +11,17 @@ export function PublicArtistContent({ artist }: { artist: ArtistPageData }) {
   const copy = getPublicCopy(locale);
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-5 sm:space-y-6">
       <div className="flex justify-end">
         <div
-          className="inline-flex items-center gap-2 rounded-full border px-2 py-2"
+          className="inline-flex max-w-full flex-wrap items-center justify-end gap-2 rounded-[24px] border px-2 py-2"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor:
               "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
           }}
         >
-          <span className="px-2 text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-card-muted)" }}>
+          <span className="px-2 text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--artist-card-muted)" }}>
             {copy.language}
           </span>
           {(["tr", "en"] as const).map((item) => {

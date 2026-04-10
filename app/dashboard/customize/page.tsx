@@ -1,20 +1,40 @@
 import { CustomizePageForm } from "@/components/dashboard/customize-page-form";
+import { ProFeatureGate } from "@/components/dashboard/pro-feature-gate";
 import { SectionHeading } from "@/components/shared/shell";
+import { hasProAccess } from "@/lib/access";
 import { getDashboardData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function DashboardCustomizePage() {
   const session = await getSupabaseSession();
   const data = await getDashboardData(session?.user.id ?? null);
+  const isTurkish = data.funnelSettings.defaultLanguage === "tr";
 
   return (
     <div className="space-y-6">
       <SectionHeading
-        eyebrow="Customize Page"
-        title="Style your public artist page without touching the funnel."
-        description="Preset themes, curated fonts, safe color overrides, and a live preview help you personalize the page while keeping it readable."
+        eyebrow={isTurkish ? "Sayfa görünümü" : "Customize Page"}
+        title={
+          isTurkish
+            ? "Sanatçı sayfanın görünümünü akışı bozmadan özelleştir."
+            : "Style your public artist page without touching the funnel."
+        }
+        description={
+          isTurkish
+            ? "Hazır temalar, seçilmiş fontlar ve güvenli renk ayarlarıyla sayfanı okunaklı kalacak şekilde kişiselleştir."
+            : "Preset themes, curated fonts, safe color overrides, and a live preview help you personalize the page while keeping it readable."
+        }
       />
-      <CustomizePageForm artist={data} theme={data.pageTheme} demoMode={data.demoMode} />
+      {hasProAccess(data.profile) ? (
+        <CustomizePageForm
+          artist={data}
+          theme={data.pageTheme}
+          demoMode={data.demoMode}
+          locale={isTurkish ? "tr" : "en"}
+        />
+      ) : (
+        <ProFeatureGate locale={isTurkish ? "tr" : "en"} profile={data.profile} />
+      )}
     </div>
   );
 }

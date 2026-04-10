@@ -1,6 +1,6 @@
-# TatBot
+# Tattix
 
-TatBot is a mobile-first link-in-bio lead funnel and tattoo price estimation app for tattoo artists.
+Tattix is a mobile-first link-in-bio lead funnel and tattoo price estimation app for tattoo artists.
 
 ## Stack
 
@@ -50,7 +50,7 @@ npm run dev
 
 ## Demo Behavior
 
-- Without Supabase env vars, TatBot still renders the seeded demo artist and a dashboard preview in demo mode.
+- Without Supabase env vars, Tattix still renders the seeded demo artist and a dashboard preview in demo mode.
 - The public demo artist route is `/ink-atelier-demo`.
 - The customization editor includes a live preview with mobile and desktop toggles.
 - Auth, storage, and persistence become live when Supabase is configured.

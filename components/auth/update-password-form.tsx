@@ -51,7 +51,7 @@ export function UpdatePasswordForm() {
       <CardHeader>
         <CardTitle>Set a new password</CardTitle>
         <CardDescription>
-          Choose a fresh password for your TatBot account.
+          Choose a fresh password for your Tattix account.
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -28,12 +28,14 @@ export const demoArtistProfile: ArtistProfile = {
   instagramHandle: "@inkatelier.demo",
   currency: "TRY",
   active: true,
+  planType: "pro",
+  accessStatus: "active",
 };
 
 export const demoFunnelSettings: ArtistFunnelSettings = {
   artistId: demoArtistId,
   introEyebrow: "Link-in-bio funnel",
-  introTitle: "Tell us the vibe, size, and placement. TatBot will estimate the range.",
+  introTitle: "Tell us the vibe, size, and placement. Tattix will estimate the range.",
   introDescription:
     "Perfect for Instagram bio traffic. Collect warmer leads, surface flash designs, and move straight into WhatsApp with context.",
   showFeaturedDesigns: true,
@@ -41,11 +43,11 @@ export const demoFunnelSettings: ArtistFunnelSettings = {
 };
 
 export const demoStyleOptions: ArtistStyleOption[] = baseStyleOptions.map((style, index) => {
-  const enabledStyles = new Set(["fine-line", "blackwork", "ornamental"]);
+  const enabledStyles = new Set(["fine-line", "blackwork", "micro-realism"]);
   const multipliers: Record<string, number> = {
     "fine-line": 1,
     blackwork: 1.12,
-    ornamental: 1.2,
+    "micro-realism": 1.18,
   };
 
   return {
@@ -191,6 +193,7 @@ export const demoLeads: ClientSubmission[] = [
     referenceImageUrl: null,
     referenceImagePath: null,
     referenceDescription: null,
+    city: "İzmir",
     preferredStartDate: null,
     preferredEndDate: null,
     style: "fine-line",
@@ -198,8 +201,10 @@ export const demoLeads: ClientSubmission[] = [
     estimatedMin: 3000,
     estimatedMax: 4500,
     contactMessage:
-      "Hi! I want to discuss a tattoo.\n\nIntent: Custom tattoo\nPlacement: Forearm outer\nSize: Medium\nApproximate size: 9 cm\nStyle: Fine line\nNotes: Botanical flow with soft leaves and a hidden crescent moon.\nEstimated price shown: 3000 - 4500 TRY",
+      "Hi! I want to discuss a tattoo.\n\nIntent: Custom tattoo\nPlacement: Forearm outer\nSize: Medium\nApproximate size: 9 cm\nCity: İzmir\nStyle: Fine line\nNotes: Botanical flow with soft leaves and a hidden crescent moon.\nEstimated price shown: 3000 - 4500 TRY",
     contacted: false,
+    convertedToSale: true,
+    soldAt: "2026-04-09T11:00:00.000Z",
     createdAt: "2026-04-08T18:30:00.000Z",
   },
   {
@@ -217,6 +222,7 @@ export const demoLeads: ClientSubmission[] = [
     referenceImageUrl: null,
     referenceImagePath: null,
     referenceDescription: null,
+    city: "İstanbul",
     preferredStartDate: null,
     preferredEndDate: null,
     style: "ornamental",
@@ -224,8 +230,10 @@ export const demoLeads: ClientSubmission[] = [
     estimatedMin: 1600,
     estimatedMax: 2450,
     contactMessage:
-      "Hi! I want to discuss a tattoo.\n\nIntent: Discounted designs\nPlacement: Ankle\nSize: Small\nApproximate size: 6 cm\nStyle: Ornamental\nNotes: Looking for a small mirrored ankle motif.\nEstimated price shown: 1600 - 2450 TRY",
+      "Hi! I want to discuss a tattoo.\n\nIntent: Discounted designs\nPlacement: Ankle\nSize: Small\nApproximate size: 6 cm\nCity: İstanbul\nStyle: Ornamental\nNotes: Looking for a small mirrored ankle motif.\nEstimated price shown: 1600 - 2450 TRY",
     contacted: true,
+    convertedToSale: false,
+    soldAt: null,
     createdAt: "2026-04-07T12:10:00.000Z",
   },
 ];

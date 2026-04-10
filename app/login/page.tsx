@@ -19,7 +19,7 @@ export default function LoginPage() {
             <p className="text-xs uppercase tracking-[0.28em] text-[var(--accent-soft)]">Artist dashboard</p>
             <h1 className="font-display text-5xl text-white">Manage your leads, pricing, and public page.</h1>
             <p className="max-w-lg text-base leading-8 text-[var(--foreground-muted)]">
-              Sign in to update your artist profile, feature designs, and review incoming TatBot submissions.
+              Sign in to update your artist profile, feature designs, and review incoming Tattix submissions.
             </p>
           </div>
           <LoginForm />

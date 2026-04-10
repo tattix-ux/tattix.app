@@ -29,13 +29,15 @@ function mapArtistProfile(row: Record<string, unknown>): ArtistProfile {
     instagramHandle: String(row.instagram_handle ?? ""),
     currency: String(row.currency ?? "TRY") as ArtistProfile["currency"],
     active: Boolean(row.active),
+    planType: String(row.plan_type ?? "free") as ArtistProfile["planType"],
+    accessStatus: String(row.access_status ?? "active") as ArtistProfile["accessStatus"],
   };
 }
 
 function mapFunnelSettings(row: Record<string, unknown>, artistId: string): ArtistFunnelSettings {
   return {
     artistId,
-    introEyebrow: String(row.intro_eyebrow ?? "TatBot intake"),
+    introEyebrow: String(row.intro_eyebrow ?? "Tattix intake"),
     introTitle: String(row.intro_title ?? ""),
     introDescription: String(row.intro_description ?? ""),
     showFeaturedDesigns: Boolean(row.show_featured_designs ?? true),

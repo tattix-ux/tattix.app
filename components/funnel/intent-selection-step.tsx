@@ -82,7 +82,7 @@ export function IntentSelectionStep({
   }, [intent]);
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div className="grid gap-3">
         {intentOptions.map((option) => {
           const active = intent === option.value;
@@ -152,7 +152,7 @@ export function IntentSelectionStep({
                     }}
                   >
                     <div
-                      className="h-32 rounded-[20px]"
+                      className="h-32 w-full rounded-[20px]"
                       style={{
                         background: design.imageUrl
                           ? `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.45)), url(${design.imageUrl}) center / cover`
@@ -160,7 +160,7 @@ export function IntentSelectionStep({
                       }}
                     />
                     <div className="mt-4 flex items-start justify-between gap-3">
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
                           {design.title}
                         </p>
@@ -185,7 +185,7 @@ export function IntentSelectionStep({
                         )}
                       </p>
                     ) : null}
-                    <div className="mt-4 flex items-center justify-between gap-3">
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                       <Button
                         type="button"
                         variant="outline"
@@ -300,8 +300,8 @@ export function IntentSelectionStep({
       ) : null}
 
       {previewDesign ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4">
-          <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-clip bg-black/70 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[92vh] w-full max-w-full overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-white">{previewDesign.title}</p>
@@ -343,10 +343,10 @@ export function IntentSelectionStep({
                 </p>
               ) : null}
             </div>
-            <div className="mt-5 flex gap-3">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Button
                 type="button"
-                className="flex-1"
+                className="w-full flex-1"
                 onClick={() => {
                   onDesignSelect(selectedDesignId === previewDesign.id ? "" : previewDesign.id);
                   setPreviewDesign(null);
@@ -354,7 +354,7 @@ export function IntentSelectionStep({
               >
                 {selectedDesignId === previewDesign.id ? copy.unselectDesign : copy.selectThisDesign}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => setPreviewDesign(null)}>
+              <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => setPreviewDesign(null)}>
                 {locale === "tr" ? "Kapat" : "Close"}
               </Button>
             </div>

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
 import { intentOptions, sizeOptions } from "@/lib/constants/options";
 import { pricingSchema } from "@/lib/forms/schemas";
+import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
 
 type PricingFormInput = z.input<typeof pricingSchema>;
@@ -20,10 +21,57 @@ type PricingValues = z.output<typeof pricingSchema>;
 export function PricingForm({
   pricingRules,
   styles,
+  locale = "en",
 }: {
   pricingRules: ArtistPricingRules;
   styles: ArtistStyleOption[];
+  locale?: PublicLocale;
 }) {
+  const copy =
+    locale === "tr"
+      ? {
+          title: "Fiyat motoru",
+          description: "Taban aralıkları ve çarpanları belirleyerek tahminlerin tutarlı kalmasını sağla.",
+          minimumSessionPrice: "Minimum seans ücreti",
+          minimumSessionHelp: "Çarpanlar uygulandıktan sonra alt sınır olarak kullanılır.",
+          baseRanges: "Boyuta göre taban fiyat aralıkları",
+          styleMultipliers: "Stil çarpanları",
+          timeRanges: "Boyuta göre yaklaşık süre aralıkları",
+          timeRangesHelp: "Public boyut rehberinde kullanılır.",
+          intentMultipliers: "Talep türü çarpanları",
+          placementMultipliers: "Yerleşim çarpanları",
+          min: "Min",
+          max: "Maks",
+          minHours: "Min saat",
+          maxHours: "Maks saat",
+          save: "Fiyatlamayı kaydet",
+          saving: "Kaydediliyor",
+          saveFailed: "Fiyatlama kaydedilemedi.",
+          saved: "Fiyatlama kaydedildi.",
+          noActiveStyles: "Aktif stil yok. Önce akış ayarlarından görünür stilleri seç.",
+        }
+      : {
+          title: "Pricing engine",
+          description: "Define your base ranges and multipliers so the public estimate stays consistent.",
+          minimumSessionPrice: "Minimum session price",
+          minimumSessionHelp: "Acts as the floor after multipliers are applied.",
+          baseRanges: "Base price ranges by size",
+          styleMultipliers: "Style multipliers",
+          timeRanges: "Approximate time ranges by size",
+          timeRangesHelp: "Used in the public size guidance panel.",
+          intentMultipliers: "Intent multipliers",
+          placementMultipliers: "Placement multipliers",
+          min: "Min",
+          max: "Max",
+          minHours: "Min hours",
+          maxHours: "Max hours",
+          save: "Save pricing",
+          saving: "Saving",
+          saveFailed: "Unable to save pricing.",
+          saved: "Pricing saved.",
+          noActiveStyles: "No active styles yet. Enable styles from funnel settings first.",
+        };
+  const activeStyles = styles.filter((style) => style.enabled);
   const form = useForm<PricingFormInput, unknown, PricingValues>({
     resolver: zodResolver(pricingSchema),
     defaultValues: {
@@ -43,7 +91,7 @@ export function PricingForm({
       },
       styleMultipliers: {
         ...Object.fromEntries(
-          styles.map((style) => [
+          activeStyles.map((style) => [
             style.styleKey,
             style.multiplier ?? 1,
           ]),
@@ -64,33 +112,31 @@ export function PricingForm({
     const payload = (await response.json()) as { message?: string };
 
     if (!response.ok) {
-      form.setError("root", { message: payload.message ?? "Unable to save pricing." });
+      form.setError("root", { message: payload.message ?? copy.saveFailed });
       return;
     }
 
-    form.setError("root", { message: payload.message ?? "Pricing saved." });
+    form.setError("root", { message: payload.message ?? copy.saved });
   }
 
   return (
     <Card className="surface-border">
       <CardHeader>
-        <CardTitle>Pricing engine</CardTitle>
-        <CardDescription>
-          Define your base ranges and multipliers so the public estimate stays consistent.
-        </CardDescription>
+        <CardTitle>{copy.title}</CardTitle>
+        <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
           <Field
-            label="Minimum session price"
-            description="Acts as the floor after multipliers are applied."
+            label={copy.minimumSessionPrice}
+            description={copy.minimumSessionHelp}
             error={form.formState.errors.minimumSessionPrice?.message}
           >
             <Input type="number" {...form.register("minimumSessionPrice")} />
           </Field>
           <div className="space-y-4">
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              Base price ranges by size
+              {copy.baseRanges}
             </h3>
             <div className="grid gap-4 md:grid-cols-2">
               {sizeOptions.map((size) => (
@@ -98,10 +144,10 @@ export function PricingForm({
                   <p className="font-medium text-white">{size.label}</p>
                   <p className="mt-1 text-sm text-[var(--foreground-muted)]">{size.detail}</p>
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    <Field label="Min">
+                    <Field label={copy.min}>
                       <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.min`)} />
                     </Field>
-                    <Field label="Max">
+                    <Field label={copy.max}>
                       <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.max`)} />
                     </Field>
                   </div>
@@ -111,36 +157,40 @@ export function PricingForm({
           </div>
           <div className="space-y-4">
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              Style multipliers
+              {copy.styleMultipliers}
             </h3>
-            <div className="grid gap-3 md:grid-cols-2">
-              {styles.map((style) => (
-                <Field key={style.styleKey} label={style.label}>
-                  <Input
-                    type="number"
-                    step="0.05"
-                    {...form.register(`styleMultipliers.${style.styleKey}`)}
-                  />
-                </Field>
-              ))}
-            </div>
+            {activeStyles.length === 0 ? (
+              <div className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
+                {copy.noActiveStyles}
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                {activeStyles.map((style) => (
+                  <Field key={style.styleKey} label={style.label}>
+                    <Input
+                      type="number"
+                      step="0.05"
+                      {...form.register(`styleMultipliers.${style.styleKey}`)}
+                    />
+                  </Field>
+                ))}
+              </div>
+            )}
           </div>
           <div className="space-y-4">
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              Approximate time ranges by size
+              {copy.timeRanges}
             </h3>
             <div className="grid gap-4 md:grid-cols-2">
               {sizeOptions.map((size) => (
                 <div key={size.value} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="font-medium text-white">{size.label}</p>
-                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                    Used in the public size guidance panel.
-                  </p>
+                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.timeRangesHelp}</p>
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    <Field label="Min hours">
+                    <Field label={copy.minHours}>
                       <Input type="number" step="0.5" {...form.register(`sizeTimeRanges.${size.value}.minHours`)} />
                     </Field>
-                    <Field label="Max hours">
+                    <Field label={copy.maxHours}>
                       <Input type="number" step="0.5" {...form.register(`sizeTimeRanges.${size.value}.maxHours`)} />
                     </Field>
                   </div>
@@ -150,7 +200,7 @@ export function PricingForm({
           </div>
           <div className="space-y-4">
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              Intent multipliers
+              {copy.intentMultipliers}
             </h3>
             <div className="grid gap-3 md:grid-cols-2">
               {intentOptions.map((intent) => (
@@ -166,7 +216,7 @@ export function PricingForm({
           </div>
           <div className="space-y-4">
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              Placement multipliers
+              {copy.placementMultipliers}
             </h3>
             <div className="grid gap-5 lg:grid-cols-2">
               {bodyPlacementGroups.map((group) => (
@@ -196,12 +246,12 @@ export function PricingForm({
             {form.formState.isSubmitting ? (
               <>
                 <LoaderCircle className="size-4 animate-spin" />
-                Saving
+                {copy.saving}
               </>
             ) : (
               <>
                 <Save className="size-4" />
-                Save pricing
+                {copy.save}
               </>
             )}
           </Button>

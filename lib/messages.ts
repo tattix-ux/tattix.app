@@ -92,6 +92,10 @@ export function buildSubmissionMessage(
     lines.push(`${labels.referenceDescription}: ${submission.referenceDescription.trim()}`);
   }
 
+  if (submission.city?.trim()) {
+    lines.push(`${labels.city}: ${submission.city.trim()}`);
+  }
+
   const preferredTiming = formatPreferredTiming(
     submission.preferredStartDate,
     submission.preferredEndDate,

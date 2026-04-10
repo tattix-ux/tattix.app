@@ -42,6 +42,8 @@ export type ArtistProfile = {
   instagramHandle: string;
   currency: "TRY" | "EUR" | "USD";
   active: boolean;
+  planType: "free" | "pro";
+  accessStatus: "active" | "pending" | "blocked";
 };
 
 export type ArtistFunnelSettings = {
@@ -126,6 +128,7 @@ export type ClientSubmission = {
   referenceImageUrl: string | null;
   referenceImagePath: string | null;
   referenceDescription: string | null;
+  city: string | null;
   preferredStartDate: string | null;
   preferredEndDate: string | null;
   style: string;
@@ -134,6 +137,8 @@ export type ClientSubmission = {
   estimatedMax: number;
   contactMessage: string;
   contacted: boolean;
+  convertedToSale: boolean;
+  soldAt: string | null;
   createdAt: string;
 };
 
@@ -143,6 +148,7 @@ export type SubmissionDraft = {
   referenceImage: string;
   referenceImagePath: string;
   referenceDescription: string;
+  city: string;
   preferredStartDate: string;
   preferredEndDate: string;
   bodyAreaGroup: BodyAreaGroupValue | "";
@@ -187,6 +193,7 @@ export type SubmissionRequest = {
   referenceImage?: string | null;
   referenceImagePath?: string | null;
   referenceDescription?: string | null;
+  city?: string | null;
   preferredStartDate?: string | null;
   preferredEndDate?: string | null;
   bodyAreaGroup: BodyAreaGroupValue;

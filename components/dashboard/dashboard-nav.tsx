@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BookImage,
   CircleDollarSign,
+  Crown,
   MessageSquareText,
   PaintbrushVertical,
   Settings2,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 function getItems(locale: "en" | "tr") {
   return [
@@ -27,11 +29,13 @@ function getItems(locale: "en" | "tr") {
       href: "/dashboard/designs",
       label: locale === "tr" ? "Tasarım Kartları" : "Featured Designs",
       icon: BookImage,
+      pro: true,
     },
     {
       href: "/dashboard/customize",
       label: locale === "tr" ? "Sayfayı Özelleştir" : "Customize Page",
       icon: PaintbrushVertical,
+      pro: true,
     },
     { href: "/dashboard/leads", label: locale === "tr" ? "Talepler" : "Leads", icon: MessageSquareText },
   ];
@@ -66,6 +70,12 @@ export function DashboardNav({ locale = "en" }: { locale?: "en" | "tr" }) {
           >
             <Icon className="size-4" />
             {item.label}
+            {item.pro ? (
+              <Badge variant="muted" className="ml-1 gap-1">
+                <Crown className="size-3" />
+                Pro
+              </Badge>
+            ) : null}
           </Link>
         );
       })}

@@ -73,7 +73,7 @@ export function SignupForm() {
       <CardHeader>
         <CardTitle>Create your artist page</CardTitle>
         <CardDescription>
-          Set up your TatBot profile, pricing engine, and public bio link in one place.
+          Set up your Tattix profile, pricing engine, and public bio link in one place.
         </CardDescription>
       </CardHeader>
       <CardContent>

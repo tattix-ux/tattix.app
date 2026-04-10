@@ -97,7 +97,7 @@ function enforceReadableForeground(
   background: string,
   preferredDark: string,
   preferredLight: string,
-  minimumRatio = 4.5,
+  minimumRatio = 7,
 ) {
   const candidate = readableForeground(background, preferredDark, preferredLight);
 
@@ -187,15 +187,15 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
 export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
   const theme = resolveArtistTheme(themeInput);
   const text = enforceReadableForeground(theme.backgroundColor, "#111111", "#f8f5ef");
-  const muted = enforceReadableForeground(theme.backgroundColor, "#5f5a53", "#b9b0a2", 3.4);
+  const muted = enforceReadableForeground(theme.backgroundColor, "#4f4a44", "#c8c0b5", 4.5);
   const primaryForeground = enforceReadableForeground(theme.primaryColor, "#111111", "#ffffff");
   const secondaryForeground = enforceReadableForeground(
     theme.secondaryColor,
     "#111111",
     "#ffffff",
   );
-  const cardText = enforceReadableForeground(theme.cardColor, "#111111", "#ffffff");
-  const cardMuted = enforceReadableForeground(theme.cardColor, "#5f5a53", "#c9c1b6", 3.4);
+  const cardText = enforceReadableForeground(theme.cardColor, "#111111", "#ffffff", 7);
+  const cardMuted = enforceReadableForeground(theme.cardColor, "#4f4a44", "#d4ccc2", 4.5);
   const borderColor =
     theme.themeMode === "light" ? "rgba(17,17,17,0.12)" : "rgba(255,255,255,0.10)";
 

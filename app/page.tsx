@@ -54,7 +54,7 @@ export default function Home() {
                 Turn your Instagram bio into a premium tattoo inquiry flow.
               </h1>
               <p className="max-w-xl text-base leading-8 text-[var(--foreground-muted)] sm:text-lg">
-                TatBot gives each artist a polished public page, a guided client intake, a rule-based price estimate, and a WhatsApp-ready handoff.
+                Tattix gives each artist a polished public page, a guided client intake, a rule-based price estimate, and a WhatsApp-ready handoff.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -125,7 +125,7 @@ export default function Home() {
 
         <section className="space-y-8 py-12 sm:py-16">
           <SectionHeading
-            eyebrow="Why artists use TatBot"
+            eyebrow="Why artists use Tattix"
             title="A cleaner front door for tattoo bookings."
             description="Built for mobile bio traffic first, with a premium dark studio feel that still stays practical for real lead handling."
           />

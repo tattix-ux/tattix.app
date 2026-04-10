@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Textarea } from "@/components/ui/textarea";
 import {
   bodyFontOptions,
   fontPairingPresetOptions,
@@ -27,6 +26,7 @@ import { pageThemeSchema } from "@/lib/forms/schemas";
 import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import { resolveArtistTheme } from "@/lib/theme";
+import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistPageData, ArtistPageTheme } from "@/lib/types";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
@@ -61,11 +61,95 @@ export function CustomizePageForm({
   artist,
   theme,
   demoMode,
+  locale = "en",
 }: {
   artist: ArtistPageData;
   theme: ArtistPageTheme;
   demoMode: boolean;
+  locale?: PublicLocale;
 }) {
+  const copy =
+    locale === "tr"
+      ? {
+          presets: "Tema hazırları",
+          presetsDescription: "Önce güçlü bir hazır tema seç, sonra sadece ihtiyacın olan ayarları değiştir.",
+          fonts: "Fontlar",
+          fontsDescription: "Sayfanın premium ve okunaklı kalması için font seçimleri sınırlı tutulur.",
+          colors: "Renkler",
+          colorsDescription: "Marka renklerini ayarla; okunabilirlik güvenli tarafta otomatik korunur.",
+          backgrounds: "Arka planlar",
+          backgroundsDescription: "Düz renk, degrade veya arka plan görseli kullanabilirsin.",
+          backgroundColor: "Arka plan rengi",
+          primaryColor: "Ana buton rengi",
+          secondaryColor: "İkincil buton rengi",
+          cardColor: "Kart rengi",
+          fontPairing: "Font eşleşmesi",
+          headingFont: "Başlık fontu",
+          bodyFont: "Metin fontu",
+          backgroundType: "Arka plan türü",
+          themeMode: "Tema modu",
+          gradientStart: "Degrade başlangıcı",
+          gradientEnd: "Degrade bitişi",
+          backgroundImage: "Arka plan görseli",
+          backgroundImageHelp: "Doğrudan yükleyebilir veya bağlantı kullanabilirsin.",
+          noBackground: "Henüz arka plan seçilmedi",
+          uploadImage: "Görsel yükle",
+          removeImage: "Görseli kaldır",
+          cardGlass: "Kart cam efekti",
+          radiusStyle: "Köşe stili",
+          save: "Görünümü kaydet",
+          saving: "Kaydediliyor",
+          demo: "Demo modunda yalnızca önizleme",
+          preview: "Canlı önizleme",
+          previewDescription: "Sanatçı sayfanın anlık bir önizlemesi.",
+          mobile: "Mobil",
+          desktop: "Masaüstü",
+          dark: "Koyu",
+          light: "Açık",
+          solid: "Düz renk",
+          gradient: "Degrade",
+          image: "Görsel",
+        }
+      : {
+          presets: "Theme Presets",
+          presetsDescription: "Start with a polished preset, then fine-tune only what you need.",
+          fonts: "Fonts",
+          fontsDescription: "Keep font choices curated so the page stays readable and premium.",
+          colors: "Colors",
+          colorsDescription: "Set brand accents while contrast is kept on the safe side automatically.",
+          backgrounds: "Backgrounds",
+          backgroundsDescription: "Choose between solid, gradient, or background image styling.",
+          backgroundColor: "Background color",
+          primaryColor: "Primary button color",
+          secondaryColor: "Secondary button color",
+          cardColor: "Card color",
+          fontPairing: "Font pairing",
+          headingFont: "Heading font",
+          bodyFont: "Body font",
+          backgroundType: "Background type",
+          themeMode: "Theme mode",
+          gradientStart: "Gradient start",
+          gradientEnd: "Gradient end",
+          backgroundImage: "Background image",
+          backgroundImageHelp: "Upload directly or keep using a URL.",
+          noBackground: "No background selected",
+          uploadImage: "Upload image",
+          removeImage: "Remove image",
+          cardGlass: "Card glass",
+          radiusStyle: "Radius style",
+          save: "Save customization",
+          saving: "Saving",
+          demo: "Preview-only in demo mode",
+          preview: "Live Preview",
+          previewDescription: "Real-time approximation of the public artist page.",
+          mobile: "Mobile",
+          desktop: "Desktop",
+          dark: "Dark",
+          light: "Light",
+          solid: "Solid",
+          gradient: "Gradient",
+          image: "Background image",
+        };
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
     resolver: zodResolver(pageThemeSchema),
@@ -314,10 +398,8 @@ export function CustomizePageForm({
       <form className="min-w-0 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="surface-border">
           <CardHeader>
-            <CardTitle>Theme Presets</CardTitle>
-            <CardDescription>
-              Start with a polished preset, then fine-tune only what you need.
-            </CardDescription>
+            <CardTitle>{copy.presets}</CardTitle>
+            <CardDescription>{copy.presetsDescription}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
             {themePresetOptions.map((presetKey) => {
@@ -349,7 +431,7 @@ export function CustomizePageForm({
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-                    {preset.themeMode === "dark" ? "Dark" : "Light"} mode, {preset.radiusStyle} radius.
+                    {preset.themeMode === "dark" ? copy.dark : copy.light} mode, {preset.radiusStyle} radius.
                   </p>
                 </button>
               );
@@ -359,11 +441,11 @@ export function CustomizePageForm({
 
         <Card className="surface-border">
           <CardHeader>
-            <CardTitle>Fonts</CardTitle>
-            <CardDescription>Keep font choices curated so the page stays readable and premium.</CardDescription>
+            <CardTitle>{copy.fonts}</CardTitle>
+            <CardDescription>{copy.fontsDescription}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-5 md:grid-cols-3">
-            <Field label="Font pairing">
+            <Field label={copy.fontPairing}>
               <NativeSelect {...form.register("fontPairingPreset")}>
                 {fontPairingPresetOptions.map((preset) => (
                   <option key={preset} value={preset}>
@@ -372,7 +454,7 @@ export function CustomizePageForm({
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="Heading font">
+            <Field label={copy.headingFont}>
               <NativeSelect {...form.register("headingFont")}>
                 {headingFontOptions.map((font) => (
                   <option key={font.value} value={font.value}>
@@ -381,7 +463,7 @@ export function CustomizePageForm({
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="Body font">
+            <Field label={copy.bodyFont}>
               <NativeSelect {...form.register("bodyFont")}>
                 {bodyFontOptions.map((font) => (
                   <option key={font.value} value={font.value}>
@@ -395,29 +477,27 @@ export function CustomizePageForm({
 
         <Card className="surface-border">
           <CardHeader>
-            <CardTitle>Colors</CardTitle>
-            <CardDescription>
-              Set brand accents while contrast is kept on the safe side automatically.
-            </CardDescription>
+            <CardTitle>{copy.colors}</CardTitle>
+            <CardDescription>{copy.colorsDescription}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <ColorField
-              label="Background color"
+              label={copy.backgroundColor}
               value={currentBackgroundColor}
               onChange={(value) => form.setValue("backgroundColor", value)}
             />
             <ColorField
-              label="Primary button color"
+              label={copy.primaryColor}
               value={currentPrimaryColor}
               onChange={(value) => form.setValue("primaryColor", value)}
             />
             <ColorField
-              label="Secondary button color"
+              label={copy.secondaryColor}
               value={currentSecondaryColor}
               onChange={(value) => form.setValue("secondaryColor", value)}
             />
             <ColorField
-              label="Card color"
+              label={copy.cardColor}
               value={currentCardColor}
               onChange={(value) => form.setValue("cardColor", value)}
             />
@@ -426,23 +506,23 @@ export function CustomizePageForm({
 
         <Card className="surface-border">
           <CardHeader>
-            <CardTitle>Backgrounds</CardTitle>
-            <CardDescription>Choose between solid, gradient, or background image styling.</CardDescription>
+            <CardTitle>{copy.backgrounds}</CardTitle>
+            <CardDescription>{copy.backgroundsDescription}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-5 md:grid-cols-2">
-              <Field label="Background type">
+              <Field label={copy.backgroundType}>
                 <NativeSelect {...form.register("backgroundType")}>
-                  <option value="solid">Solid</option>
-                  <option value="gradient">Gradient</option>
-                  <option value="image">Background image</option>
+                  <option value="solid">{copy.solid}</option>
+                  <option value="gradient">{copy.gradient}</option>
+                  <option value="image">{copy.image}</option>
                 </NativeSelect>
               </Field>
-              <Field label="Theme mode">
+              <Field label={copy.themeMode}>
                 <NativeSelect {...form.register("themeMode")}>
                   {themeModeOptions.map((mode) => (
                     <option key={mode} value={mode}>
-                      {mode[0].toUpperCase() + mode.slice(1)}
+                      {mode === "dark" ? copy.dark : copy.light}
                     </option>
                   ))}
                 </NativeSelect>
@@ -450,20 +530,20 @@ export function CustomizePageForm({
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <ColorField
-                label="Gradient start"
+                label={copy.gradientStart}
                 value={currentGradientStart}
                 onChange={(value) => form.setValue("gradientStart", value)}
               />
               <ColorField
-                label="Gradient end"
+                label={copy.gradientEnd}
                 value={currentGradientEnd}
                 onChange={(value) => form.setValue("gradientEnd", value)}
               />
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               <Field
-                label="Background image"
-                description="Upload directly or keep using a URL."
+                label={copy.backgroundImage}
+                description={copy.backgroundImageHelp}
               >
                 <div className="space-y-3">
                   <div
@@ -479,14 +559,14 @@ export function CustomizePageForm({
                     ) : (
                       <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
                         <ImagePlus className="size-5" />
-                        <span>No background selected</span>
+                        <span>{copy.noBackground}</span>
                       </div>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-3">
                     <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
                       <Upload className="size-4" />
-                      Upload image
+                      {copy.uploadImage}
                       <input
                         type="file"
                         accept="image/png,image/jpeg,image/webp,image/gif"
@@ -503,14 +583,14 @@ export function CustomizePageForm({
                     {watchedValues.backgroundImageUrl ? (
                       <Button type="button" variant="ghost" size="sm" onClick={() => void handleBackgroundRemove()}>
                         <X className="size-4" />
-                        Remove image
+                        {copy.removeImage}
                       </Button>
                     ) : null}
                   </div>
                   <Input placeholder="https://..." {...form.register("backgroundImageUrl")} />
                 </div>
               </Field>
-              <Field label="Card glass">
+              <Field label={copy.cardGlass}>
                 <Input
                   type="number"
                   step="0.01"
@@ -519,7 +599,7 @@ export function CustomizePageForm({
                   {...form.register("cardOpacity")}
                 />
               </Field>
-              <Field label="Radius style">
+              <Field label={copy.radiusStyle}>
                 <NativeSelect {...form.register("radiusStyle")}>
                   {radiusStyleOptions.map((radius) => (
                     <option key={radius} value={radius}>
@@ -532,49 +612,21 @@ export function CustomizePageForm({
           </CardContent>
         </Card>
 
-        <Card className="surface-border">
-          <CardHeader>
-            <CardTitle>Content Text</CardTitle>
-            <CardDescription>
-              Override hero copy and featured section labels without touching the funnel logic.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <Field label="Custom welcome headline">
-              <Input {...form.register("customWelcomeTitle")} placeholder="Optional override" />
-            </Field>
-            <Field label="Custom intro text">
-              <Textarea {...form.register("customIntroText")} placeholder="Optional override" />
-            </Field>
-            <div className="grid gap-5 md:grid-cols-3">
-              <Field label="Custom CTA label">
-                <Input {...form.register("customCtaLabel")} placeholder="Start estimate" />
-              </Field>
-              <Field label="Featured label 1">
-                <Input {...form.register("featuredSectionLabel1")} placeholder="Featured collections" />
-              </Field>
-              <Field label="Featured label 2">
-                <Input {...form.register("featuredSectionLabel2")} placeholder="Pre-drawn ideas clients can pick from" />
-              </Field>
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (
               <>
                 <LoaderCircle className="size-4 animate-spin" />
-                Saving
+                {copy.saving}
               </>
             ) : (
               <>
                 <Save className="size-4" />
-                Save customization
+                {copy.save}
               </>
             )}
           </Button>
-          {demoMode ? <Badge variant="accent">Preview-only in demo mode</Badge> : null}
+          {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
         </div>
         {form.formState.errors.root?.message ? (
           <p className="text-sm text-[var(--accent-soft)]">{form.formState.errors.root.message}</p>
@@ -586,9 +638,9 @@ export function CustomizePageForm({
           <CardHeader>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle>Live Preview</CardTitle>
+                <CardTitle>{copy.preview}</CardTitle>
                 <CardDescription>
-                  Real-time approximation of the public artist page.
+                  {copy.previewDescription}
                 </CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -599,7 +651,7 @@ export function CustomizePageForm({
                   onClick={() => setDevice("mobile")}
                 >
                   <Smartphone className="size-4" />
-                  Mobile
+                  {copy.mobile}
                 </Button>
                 <Button
                   type="button"
@@ -608,7 +660,7 @@ export function CustomizePageForm({
                   onClick={() => setDevice("desktop")}
                 >
                   <Monitor className="size-4" />
-                  Desktop
+                  {copy.desktop}
                 </Button>
               </div>
             </div>

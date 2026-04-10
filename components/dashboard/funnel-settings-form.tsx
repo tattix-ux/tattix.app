@@ -13,6 +13,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/shared/field";
 import { funnelSettingsSchema } from "@/lib/forms/schemas";
+import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistFunnelSettings, ArtistStyleOption } from "@/lib/types";
 
 type FunnelValues = z.infer<typeof funnelSettingsSchema>;
@@ -21,10 +22,62 @@ type FunnelFormInput = z.input<typeof funnelSettingsSchema>;
 export function FunnelSettingsForm({
   settings,
   styles,
+  locale = "en",
 }: {
   settings: ArtistFunnelSettings;
   styles: ArtistStyleOption[];
+  locale?: PublicLocale;
 }) {
+  const copy =
+    locale === "tr"
+      ? {
+          title: "Akış ayarları",
+          description: "Müşteri akışının metinlerini, dilini ve görünür stil seçeneklerini buradan yönet.",
+          introEyebrow: "Üst kısa etiket",
+          introTitle: "Giriş başlığı",
+          introDescription: "Giriş açıklaması",
+          showFeatured: "Hazır tasarım kartlarını sanatçı sayfasında göster",
+          defaultLanguage: "Varsayılan public dil",
+          activeStyles: "Görünür stiller",
+          activeCount: "aktif",
+          customStyles: "Özel stiller",
+          addStyle: "Stil ekle",
+          customStylesHelp: "Eklediğin özel stiller burada görünür ve aktifse public akış ile fiyatlama ekranına yansır.",
+          emptyStyles: "Henüz özel stil eklenmedi.",
+          styleLabel: "Stil adı",
+          styleKey: "Stil anahtarı",
+          styleKeyHelp: "Sadece küçük harf ve tire kullan.",
+          enabled: "Aktif",
+          remove: "Kaldır",
+          save: "Ayarları kaydet",
+          saving: "Kaydediliyor",
+          saveFailed: "Akış ayarları kaydedilemedi.",
+          saved: "Akış ayarları kaydedildi.",
+        }
+      : {
+          title: "Funnel settings",
+          description: "Tune the copy, language, and visible styles that shape your intake flow.",
+          introEyebrow: "Intro eyebrow",
+          introTitle: "Intro title",
+          introDescription: "Intro description",
+          showFeatured: "Show featured designs on the public page",
+          defaultLanguage: "Default public language",
+          activeStyles: "Visible styles",
+          activeCount: "active",
+          customStyles: "Custom styles",
+          addStyle: "Add style",
+          customStylesHelp: "New styles appear here automatically and flow into the public step and pricing when enabled.",
+          emptyStyles: "No custom styles yet.",
+          styleLabel: "Style label",
+          styleKey: "Style key",
+          styleKeyHelp: "Lowercase letters and hyphens only.",
+          enabled: "Enabled",
+          remove: "Remove",
+          save: "Save settings",
+          saving: "Saving",
+          saveFailed: "Unable to save funnel settings.",
+          saved: "Funnel settings saved.",
+        };
   const form = useForm<FunnelFormInput, unknown, FunnelValues>({
     resolver: zodResolver(funnelSettingsSchema),
     defaultValues: {
@@ -70,31 +123,43 @@ export function FunnelSettingsForm({
     const payload = (await response.json()) as { message?: string };
 
     if (!response.ok) {
-      form.setError("root", { message: payload.message ?? "Unable to save funnel settings." });
+      form.setError("root", { message: payload.message ?? copy.saveFailed });
       return;
     }
 
-    form.setError("root", { message: payload.message ?? "Funnel settings saved." });
+    form.setError("root", { message: payload.message ?? copy.saved });
   }
+
+  const builtInStyles = styles
+    .filter((style) => !style.isCustom)
+    .sort((left, right) => {
+      const preferredOrder = ["blackwork", "fine-line", "micro-realism"];
+      const leftRank = preferredOrder.indexOf(left.styleKey);
+      const rightRank = preferredOrder.indexOf(right.styleKey);
+
+      if (leftRank !== -1 || rightRank !== -1) {
+        return (leftRank === -1 ? 99 : leftRank) - (rightRank === -1 ? 99 : rightRank);
+      }
+
+      return left.label.localeCompare(right.label);
+    });
 
   return (
     <Card className="surface-border">
       <CardHeader>
-        <CardTitle>Funnel settings</CardTitle>
-        <CardDescription>
-          Tune the copy and enabled styles that shape your mobile intake flow.
-        </CardDescription>
+        <CardTitle>{copy.title}</CardTitle>
+        <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-          <Field label="Intro eyebrow" error={form.formState.errors.introEyebrow?.message}>
+          <Field label={copy.introEyebrow} error={form.formState.errors.introEyebrow?.message}>
             <Input {...form.register("introEyebrow")} />
           </Field>
-          <Field label="Intro title" error={form.formState.errors.introTitle?.message}>
+          <Field label={copy.introTitle} error={form.formState.errors.introTitle?.message}>
             <Input {...form.register("introTitle")} />
           </Field>
           <Field
-            label="Intro description"
+            label={copy.introDescription}
             error={form.formState.errors.introDescription?.message}
           >
             <Textarea {...form.register("introDescription")} />
@@ -105,23 +170,23 @@ export function FunnelSettingsForm({
               className="size-4 accent-[var(--accent)]"
               {...form.register("showFeaturedDesigns")}
             />
-            <span className="text-sm text-white">Show featured designs on the public page</span>
+            <span className="text-sm text-white">{copy.showFeatured}</span>
           </label>
-          <Field label="Default public language" error={form.formState.errors.defaultLanguage?.message}>
+          <Field label={copy.defaultLanguage} error={form.formState.errors.defaultLanguage?.message}>
             <NativeSelect {...form.register("defaultLanguage")}>
               <option value="en">English</option>
-              <option value="tr">Turkce</option>
+              <option value="tr">Türkçe</option>
             </NativeSelect>
           </Field>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Field label="Enabled styles" className="gap-1">
+              <Field label={copy.activeStyles} className="gap-1">
                 <div />
               </Field>
-              <Badge variant="muted">{selectedStyles.length} active</Badge>
+              <Badge variant="muted">{selectedStyles.length} {copy.activeCount}</Badge>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              {styles.filter((style) => !style.isCustom).map((style) => {
+              {builtInStyles.map((style) => {
                 const active = selectedStyles.includes(style.styleKey);
 
                 return (
@@ -141,9 +206,6 @@ export function FunnelSettingsForm({
                     }`}
                   >
                     <p className="font-medium text-white">{style.label}</p>
-                    <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                      Multiplier set in pricing settings.
-                    </p>
                   </button>
                 );
               })}
@@ -154,7 +216,7 @@ export function FunnelSettingsForm({
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Field label="Custom styles" className="gap-1">
+              <Field label={copy.customStyles} className="gap-1">
                 <div />
               </Field>
               <Button
@@ -170,16 +232,16 @@ export function FunnelSettingsForm({
                 }
               >
                 <Plus className="size-4" />
-                Add style
+                {copy.addStyle}
               </Button>
             </div>
             <p className="text-sm text-[var(--foreground-muted)]">
-              Add your own style names and control whether they appear in the public flow.
+              {copy.customStylesHelp}
             </p>
             <div className="space-y-3">
               {customStylesFieldArray.fields.length === 0 ? (
                 <div className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
-                  No custom styles yet.
+                  {copy.emptyStyles}
                 </div>
               ) : null}
               {customStylesFieldArray.fields.map((field, index) => (
@@ -189,14 +251,14 @@ export function FunnelSettingsForm({
                 >
                   <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto]">
                     <Field
-                      label="Style label"
+                      label={copy.styleLabel}
                       error={form.formState.errors.customStyles?.[index]?.label?.message}
                     >
                       <Input {...form.register(`customStyles.${index}.label`)} placeholder="Etching" />
                     </Field>
                     <Field
-                      label="Style key"
-                      description="Lowercase letters and hyphens only."
+                      label={copy.styleKey}
+                      description={copy.styleKeyHelp}
                       error={form.formState.errors.customStyles?.[index]?.styleKey?.message}
                     >
                       <Input {...form.register(`customStyles.${index}.styleKey`)} placeholder="etching" />
@@ -208,7 +270,7 @@ export function FunnelSettingsForm({
                           className="size-4 accent-[var(--accent)]"
                           {...form.register(`customStyles.${index}.enabled`)}
                         />
-                        <span className="text-sm text-white">Enabled</span>
+                        <span className="text-sm text-white">{copy.enabled}</span>
                       </label>
                       <Button
                         type="button"
@@ -217,7 +279,7 @@ export function FunnelSettingsForm({
                         onClick={() => customStylesFieldArray.remove(index)}
                       >
                         <Trash2 className="size-4" />
-                        Remove
+                        {copy.remove}
                       </Button>
                     </div>
                   </div>
@@ -234,12 +296,12 @@ export function FunnelSettingsForm({
             {form.formState.isSubmitting ? (
               <>
                 <LoaderCircle className="size-4 animate-spin" />
-                Saving
+                {copy.saving}
               </>
             ) : (
               <>
                 <Save className="size-4" />
-                Save settings
+                {copy.save}
               </>
             )}
           </Button>

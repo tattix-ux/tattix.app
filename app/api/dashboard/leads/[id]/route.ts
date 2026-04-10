@@ -9,9 +9,15 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const body = (await request.json()) as { contacted?: boolean };
+  const body = (await request.json()) as {
+    contacted?: boolean;
+    convertedToSale?: boolean;
+  };
 
-  if (typeof body.contacted !== "boolean") {
+  if (
+    typeof body.contacted !== "boolean" &&
+    typeof body.convertedToSale !== "boolean"
+  ) {
     return NextResponse.json({ message: "Invalid lead payload." }, { status: 400 });
   }
 
@@ -28,9 +34,20 @@ export async function PATCH(
   }
 
   const supabase = await createSupabaseServerClient();
+  const updatePayload: Record<string, boolean | string | null> = {};
+
+  if (typeof body.contacted === "boolean") {
+    updatePayload.contacted = body.contacted;
+  }
+
+  if (typeof body.convertedToSale === "boolean") {
+    updatePayload.converted_to_sale = body.convertedToSale;
+    updatePayload.sold_at = body.convertedToSale ? new Date().toISOString() : null;
+  }
+
   const { error } = await supabase
     .from("client_submissions")
-    .update({ contacted: body.contacted })
+    .update(updatePayload)
     .eq("id", id)
     .eq("artist_id", artist.id);
 

@@ -14,7 +14,7 @@ export default function NotFound() {
             The link may be inactive, misspelled, or not published yet.
           </p>
           <Button asChild>
-            <Link href="/">Back to TatBot home</Link>
+            <Link href="/">Back to Tattix home</Link>
           </Button>
         </div>
       </Container>

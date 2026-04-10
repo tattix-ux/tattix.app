@@ -24,6 +24,7 @@ const initialDraft: SubmissionDraft = {
   referenceImage: "",
   referenceImagePath: "",
   referenceDescription: "",
+  city: "",
   preferredStartDate: "",
   preferredEndDate: "",
   bodyAreaGroup: "",

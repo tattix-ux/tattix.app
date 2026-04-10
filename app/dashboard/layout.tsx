@@ -4,9 +4,11 @@ import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { PublicRouteCard } from "@/components/dashboard/public-route-card";
+import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Logo } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
+import { hasProAccess } from "@/lib/access";
 import { getDashboardData } from "@/lib/data/dashboard";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getSupabaseSession } from "@/lib/supabase/server";
@@ -63,6 +65,13 @@ export default async function DashboardLayout({
                 <DashboardNav locale={isTurkish ? "tr" : "en"} />
               </div>
             </div>
+            {!hasProAccess(dashboardData.profile) ? (
+              <UpgradeCard
+                locale={isTurkish ? "tr" : "en"}
+                profile={dashboardData.profile}
+                compact
+              />
+            ) : null}
           </aside>
           <main className="min-w-0">{children}</main>
         </div>

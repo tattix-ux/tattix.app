@@ -11,7 +11,9 @@ import { AvatarTile } from "@/components/shared/avatar-tile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { turkeyCities } from "@/lib/constants/cities";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import {
   getPublicCopy,
@@ -165,6 +167,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("referenceImage", "");
     setField("referenceImagePath", "");
     setField("referenceDescription", "");
+    setField("city", "");
     setField("bodyAreaGroup", "");
     setField("bodyAreaDetail", "");
     setField("approximateSizeCm", null);
@@ -211,9 +214,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     step === 5;
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-5 sm:space-y-6">
       <Card
-        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"}`}
+        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} min-w-0`}
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor:
@@ -255,7 +258,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   : { borderColor: "var(--artist-border)" }
               }
             />
-            <CardContent className="-mt-12 space-y-4 p-5 sm:p-6">
+            <CardContent className="-mt-12 min-w-0 space-y-4 p-4 sm:p-6">
               <AvatarTile name={artist.profile.artistName} imageUrl={artist.profile.profileImageUrl} />
               <div className="space-y-3">
                 <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
@@ -281,8 +284,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         )}
       </Card>
 
-      <div ref={flowCardRef}>
+      <div ref={flowCardRef} className="min-w-0">
         <Card
+          className="min-w-0 overflow-hidden"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor:
@@ -479,6 +483,37 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     }}
                   >
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.cityLabel}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.cityHelp}
+                    </p>
+                    <div className="mt-4">
+                      <NativeSelect
+                        value={draft.city}
+                        onChange={(event) => setField("city", event.target.value)}
+                        style={{
+                          borderColor: "var(--artist-border)",
+                          color: "var(--artist-card-text)",
+                        }}
+                      >
+                        <option value="">{copy.cityPlaceholder}</option>
+                        {turkeyCities.map((city) => (
+                          <option key={city} value={city}>
+                            {city}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
                       {copy.preferredTimingLabel}
                     </p>
                     <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
@@ -580,12 +615,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   >
                     <div className="flex items-start gap-3">
                       <Sparkles className="mt-1 size-5" style={{ color: "var(--artist-primary)" }} />
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm uppercase tracking-[0.2em]" style={{ color: "var(--artist-primary)" }}>
                           {copy.estimatedRange}
                         </p>
                         <p
-                          className="mt-2 text-4xl"
+                          className="mt-2 break-words text-3xl sm:text-4xl"
                           style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                         >
                           {formatCompactCurrencyRange(
@@ -651,12 +686,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-6 flex items-center gap-3">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             {step > 1 && step < 6 ? (
               <Button
                 variant="outline"
                 onClick={handleBack}
-                className={secondaryButtonClass}
+                className={`w-full sm:w-auto ${secondaryButtonClass}`}
                 style={{
                   backgroundColor: "var(--artist-secondary)",
                   color: "var(--artist-secondary-foreground)",
@@ -670,7 +705,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
             {step < 5 ? (
               <Button
-                className={`ml-auto ${primaryButtonClass}`}
+                className={`w-full sm:ml-auto sm:w-auto ${primaryButtonClass}`}
                 onClick={handleNext}
                 disabled={!canAdvance}
                 style={{
@@ -685,7 +720,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
             {step === 5 ? (
               <Button
-                className={`ml-auto ${primaryButtonClass}`}
+                className={`w-full sm:ml-auto sm:w-auto ${primaryButtonClass}`}
                 onClick={handleFinalSubmit}
                 disabled={submitting}
                 style={{
@@ -699,7 +734,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
             {step === 6 && result ? (
               <Button
-                className={`ml-auto ${secondaryButtonClass}`}
+                className={`w-full sm:ml-auto sm:w-auto ${secondaryButtonClass}`}
                 variant="outline"
                 onClick={() => {
                   reset();

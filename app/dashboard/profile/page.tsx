@@ -1,3 +1,5 @@
+import { isAdminEmail } from "@/lib/access";
+import { AdminProAccessForm } from "@/components/dashboard/admin-pro-access-form";
 import { ProfileForm } from "@/components/dashboard/profile-form";
 import { SectionHeading } from "@/components/shared/shell";
 import { getDashboardData } from "@/lib/data/dashboard";
@@ -7,6 +9,8 @@ export default async function DashboardProfilePage() {
   const session = await getSupabaseSession();
   const data = await getDashboardData(session?.user.id ?? null);
   const isTurkish = data.funnelSettings.defaultLanguage === "tr";
+  const showAdminControls =
+    isAdminEmail(session?.user.email) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   return (
     <div className="space-y-6">
@@ -28,6 +32,12 @@ export default async function DashboardProfilePage() {
         demoMode={data.demoMode}
         locale={data.funnelSettings.defaultLanguage}
       />
+      {showAdminControls ? (
+        <AdminProAccessForm
+          locale={data.funnelSettings.defaultLanguage}
+          defaultSlug={data.profile.slug}
+        />
+      ) : null}
     </div>
   );
 }

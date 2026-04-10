@@ -74,7 +74,7 @@ export function BodyPlacementSelector({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div
         className="rounded-[24px] border p-4"
         style={{
@@ -88,7 +88,7 @@ export function BodyPlacementSelector({
         <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
           {copy.placementCategoryHelp}
         </p>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {placementCategoryOptions.map((category) => {
             const active = category.value === activeCategory;
 

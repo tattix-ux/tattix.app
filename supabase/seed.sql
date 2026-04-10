@@ -8,7 +8,9 @@ insert into public.artists (
   whatsapp_number,
   instagram_handle,
   currency,
-  active
+  active,
+  plan_type,
+  access_status
 )
 values (
   '7d53df9f-4fd8-41af-ae82-187a0b81b420',
@@ -20,7 +22,9 @@ values (
   '+905550001122',
   '@inkatelier.demo',
   'TRY',
-  true
+  true,
+  'pro',
+  'active'
 )
 on conflict (id) do update
 set
@@ -31,7 +35,9 @@ set
   whatsapp_number = excluded.whatsapp_number,
   instagram_handle = excluded.instagram_handle,
   currency = excluded.currency,
-  active = excluded.active;
+  active = excluded.active,
+  plan_type = excluded.plan_type,
+  access_status = excluded.access_status;
 
 insert into public.artist_funnel_settings (
   artist_id,
@@ -44,7 +50,7 @@ insert into public.artist_funnel_settings (
 values (
   '7d53df9f-4fd8-41af-ae82-187a0b81b420',
   'Link-in-bio funnel',
-  'Tell us the vibe, size, and placement. TatBot will estimate the range.',
+  'Tell us the vibe, size, and placement. Tattix will estimate the range.',
   'Perfect for Instagram bio traffic. Collect warmer leads, surface flash designs, and move straight into WhatsApp with context.',
   true,
   'en'
@@ -206,6 +212,7 @@ insert into public.client_submissions (
   size_category,
   width_cm,
   height_cm,
+  city,
   style,
   notes,
   estimated_min,
@@ -226,6 +233,7 @@ values
     'medium',
     9,
     null,
+    'İzmir',
     'fine-line',
     'Botanical flow with soft leaves and a hidden crescent moon.',
     3000,
@@ -236,6 +244,7 @@ Intent: Custom tattoo
 Placement: Forearm outer
 Size: Medium
 Approximate size: 9 cm
+City: İzmir
 Style: Fine line
 Notes: Botanical flow with soft leaves and a hidden crescent moon.
 Estimated price shown: 3000 - 4500 TRY',
@@ -253,6 +262,7 @@ Estimated price shown: 3000 - 4500 TRY',
     'small',
     6,
     null,
+    'İstanbul',
     'ornamental',
     'Looking for a small mirrored ankle motif.',
     1600,
@@ -263,6 +273,7 @@ Intent: Discounted designs
 Placement: Ankle
 Size: Small
 Approximate size: 6 cm
+City: İstanbul
 Style: Ornamental
 Notes: Looking for a small mirrored ankle motif.
 Estimated price shown: 1600 - 2450 TRY',

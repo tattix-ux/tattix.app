@@ -26,6 +26,7 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     referenceImageUrl: row.reference_image_url ? String(row.reference_image_url) : null,
     referenceImagePath: row.reference_image_path ? String(row.reference_image_path) : null,
     referenceDescription: row.reference_description ? String(row.reference_description) : null,
+    city: row.city ? String(row.city) : null,
     preferredStartDate: row.preferred_start_date ? String(row.preferred_start_date) : null,
     preferredEndDate: row.preferred_end_date ? String(row.preferred_end_date) : null,
     style: String(row.style) as ClientSubmission["style"],
@@ -34,6 +35,8 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     estimatedMax: Number(row.estimated_max),
     contactMessage: String(row.contact_message ?? ""),
     contacted: Boolean(row.contacted),
+    convertedToSale: Boolean(row.converted_to_sale ?? false),
+    soldAt: row.sold_at ? String(row.sold_at) : null,
     createdAt: String(row.created_at),
   };
 }
@@ -139,7 +142,7 @@ export async function ensureArtistForUser(user: User) {
     String(user.user_metadata?.slug ?? user.user_metadata?.artist_name ?? user.email ?? user.id);
   const slug = await reserveUniqueSlug(desiredSlug);
   const artistName =
-    String(user.user_metadata?.artist_name ?? user.email?.split("@")[0] ?? "TatBot Artist");
+    String(user.user_metadata?.artist_name ?? user.email?.split("@")[0] ?? "Tattix Artist");
 
   const { data: artist, error } = await supabase
     .from("artists")
@@ -153,6 +156,8 @@ export async function ensureArtistForUser(user: User) {
       instagram_handle: "@yourstudio",
       currency: "TRY",
       active: true,
+      plan_type: "free",
+      access_status: "active",
     })
     .select("*")
     .single();
@@ -164,7 +169,7 @@ export async function ensureArtistForUser(user: User) {
   await Promise.all([
     supabase.from("artist_funnel_settings").upsert({
       artist_id: artist.id,
-      intro_eyebrow: "TatBot intake",
+      intro_eyebrow: "Tattix intake",
       intro_title: "Tell us the placement, size, and style.",
       intro_description:
         "This quick mobile flow captures the basics before you move into consultation.",
@@ -200,7 +205,7 @@ export async function ensureArtistForUser(user: User) {
         artist_id: artist.id,
         style_key: style.value,
         label: style.label,
-        enabled: ["fine-line", "blackwork", "ornamental"].includes(style.value),
+        enabled: ["fine-line", "blackwork", "micro-realism"].includes(style.value),
         is_custom: false,
         multiplier:
           style.value === "ornamental"

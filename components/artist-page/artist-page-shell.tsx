@@ -16,7 +16,7 @@ export function ArtistPageShell({
   return (
     <div
       className={cn(
-        "relative min-h-screen overflow-hidden bg-[var(--artist-background)] text-[var(--artist-foreground)]",
+        "relative min-h-screen overflow-x-clip bg-[var(--artist-background)] text-[var(--artist-foreground)]",
         className,
       )}
       style={wrapperStyle}

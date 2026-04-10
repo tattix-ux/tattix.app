@@ -6,18 +6,28 @@ import { getSupabaseSession } from "@/lib/supabase/server";
 export default async function DashboardLeadsPage() {
   const session = await getSupabaseSession();
   const data = await getDashboardData(session?.user.id ?? null);
+  const isTurkish = data.funnelSettings.defaultLanguage === "tr";
 
   return (
     <div className="space-y-6">
       <SectionHeading
-        eyebrow="Leads"
-        title="Review completed briefs and follow up with context."
-        description="Each finished submission stores intent, placement, style, notes, and the estimate the client saw."
+        eyebrow={isTurkish ? "Talepler" : "Leads"}
+        title={
+          isTurkish
+            ? "Tamamlanan brief’leri incele ve bağlamla geri dönüş yap."
+            : "Review completed briefs and follow up with context."
+        }
+        description={
+          isTurkish
+            ? "Her tamamlanan talep; intent, yerleşim, stil, notlar ve müşterinin gördüğü tahminle birlikte saklanır."
+            : "Each finished submission stores intent, placement, style, notes, and the estimate the client saw."
+        }
       />
       <LeadsTable
         leads={data.leads}
         currency={data.profile.currency}
         designs={data.featuredDesigns}
+        locale={isTurkish ? "tr" : "en"}
       />
     </div>
   );

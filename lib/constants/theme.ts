@@ -9,6 +9,8 @@ export const themePresetOptions = [
   "high-contrast",
   "copper-glow",
   "studio-paper",
+  "velvet-ember",
+  "ink-bloom",
 ] as const;
 
 export const backgroundTypeOptions = ["solid", "gradient", "image"] as const;
@@ -197,6 +199,38 @@ export const themePresets = {
     bodyFont: "clean-sans",
     fontPairingPreset: "elegant-editorial",
     radiusStyle: "medium",
+  },
+  "velvet-ember": {
+    label: "Velvet Ember",
+    themeMode: "dark",
+    backgroundType: "gradient",
+    backgroundColor: "#140c10",
+    gradientStart: "#341520",
+    gradientEnd: "#12090d",
+    primaryColor: "#f0b06e",
+    secondaryColor: "#43212c",
+    cardColor: "#1d1218",
+    cardOpacity: 0.86,
+    headingFont: "editorial-serif",
+    bodyFont: "neutral-sans",
+    fontPairingPreset: "premium-editorial",
+    radiusStyle: "large",
+  },
+  "ink-bloom": {
+    label: "Ink Bloom",
+    themeMode: "light",
+    backgroundType: "gradient",
+    backgroundColor: "#f8f4ed",
+    gradientStart: "#fff9f1",
+    gradientEnd: "#eadccd",
+    primaryColor: "#1f2b3a",
+    secondaryColor: "#d8ccb9",
+    cardColor: "#fffdf8",
+    cardOpacity: 0.95,
+    headingFont: "display-serif",
+    bodyFont: "editorial-sans",
+    fontPairingPreset: "elegant-editorial",
+    radiusStyle: "large",
   },
 } as const;
 

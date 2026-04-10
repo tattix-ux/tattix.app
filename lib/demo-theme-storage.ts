@@ -2,8 +2,8 @@ import { pageThemeSchema } from "@/lib/forms/schemas";
 import { resolveArtistTheme } from "@/lib/theme";
 import type { ArtistPageTheme } from "@/lib/types";
 
-export const DEMO_THEME_STORAGE_KEY = "tatbot-demo-theme";
-export const DEMO_THEME_EVENT = "tatbot-demo-theme-change";
+export const DEMO_THEME_STORAGE_KEY = "tattix-demo-theme";
+export const DEMO_THEME_EVENT = "tattix-demo-theme-change";
 
 export function saveDemoTheme(theme: ArtistPageTheme) {
   if (typeof window === "undefined") {

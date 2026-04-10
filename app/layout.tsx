@@ -3,11 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "TatBot",
-    template: "%s | TatBot",
+    default: "Tattix",
+    template: "%s | Tattix",
   },
   description:
-    "TatBot is a mobile-first link-in-bio funnel and tattoo pricing estimator for tattoo artists.",
+    "Tattix is a mobile-first link-in-bio funnel and tattoo pricing estimator for tattoo artists.",
 };
 
 export default function RootLayout({
