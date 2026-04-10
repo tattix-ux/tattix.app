@@ -10,13 +10,13 @@ export function AppShell({
   return (
     <div
       className={cn(
-        "relative min-h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]",
+        "relative min-h-screen w-full max-w-full overflow-x-hidden overflow-y-visible bg-[var(--background)] text-[var(--foreground)]",
         className,
       )}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(247,177,93,0.18),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(87,58,36,0.4),_transparent_40%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_25%,transparent_75%,rgba(255,255,255,0.02))]" />
-      <div className="relative">{children}</div>
+      <div className="relative w-full min-w-0 max-w-full overflow-visible">{children}</div>
     </div>
   );
 }
