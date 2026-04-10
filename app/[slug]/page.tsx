@@ -26,7 +26,7 @@ export default async function ArtistPage({
 
   return (
     <ArtistPageShell theme={artist.pageTheme}>
-      <Container className="max-w-full overflow-x-hidden px-3 py-4 sm:px-6 sm:py-6">
+      <Container className="min-w-0 max-w-full overflow-x-clip px-3 py-4 sm:px-6 sm:py-6">
         <div className="mx-auto w-full min-w-0 max-w-3xl">
           <PublicArtistContent artist={artist} />
         </div>

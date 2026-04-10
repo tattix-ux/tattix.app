@@ -28,7 +28,7 @@ export default function RootLayout({
         } as React.CSSProperties
       }
     >
-      <body className="min-h-full overflow-x-hidden flex flex-col">
+      <body className="flex min-h-full w-full max-w-full flex-col overflow-x-clip">
         <AuthStateListener />
         {children}
       </body>

@@ -222,9 +222,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     step === 5;
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-hidden space-y-4 sm:space-y-6">
+    <div className="w-full min-w-0 max-w-full space-y-4 sm:space-y-6">
       <Card
-        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} w-full max-w-full min-w-0`}
+        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full`}
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor:
@@ -302,7 +302,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
       <div ref={flowCardRef} className="w-full min-w-0 max-w-full">
         <Card
-          className="w-full max-w-full min-w-0 overflow-hidden"
+          className="w-full min-w-0 max-w-full"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor:
