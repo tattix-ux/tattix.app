@@ -14,14 +14,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/shared/field";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { AppLocale } from "@/lib/i18n/app-language";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { loginSchema } from "@/lib/forms/schemas";
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+const loginFormCopy = {
+  tr: {
+    title: "Tekrar hoş geldin",
+    description: "Herkese açık sayfanı, fiyat kurallarını ve gelen talepleri yönetmek için giriş yap.",
+    email: "E-posta",
+    password: "Şifre",
+    submit: "Giriş yap",
+    submitting: "Giriş yapılıyor",
+    forgotPassword: "Şifremi unuttum",
+    createAccount: "Hesap oluştur",
+    missingEnv: "Kimlik doğrulamayı açmak için Supabase ortam değişkenlerini ekle.",
+  },
+  en: {
+    title: "Welcome back",
+    description: "Sign in to manage your public page, pricing rules, and incoming leads.",
+    email: "Email",
+    password: "Password",
+    submit: "Log in",
+    submitting: "Signing in",
+    forgotPassword: "Forgot password?",
+    createAccount: "Create account",
+    missingEnv: "Add Supabase env vars to enable authentication.",
+  },
+} as const;
+
+export function LoginForm({ locale = "tr" }: { locale?: AppLocale }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const copy = loginFormCopy[locale];
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -45,7 +72,7 @@ export function LoginForm() {
   async function onSubmit(values: LoginValues) {
     if (!isSupabaseConfigured()) {
       form.setError("root", {
-        message: "Add Supabase env vars to enable authentication.",
+        message: copy.missingEnv,
       });
       return;
     }
@@ -64,21 +91,21 @@ export function LoginForm() {
   return (
     <Card className="surface-border">
       <CardHeader>
-        <CardTitle>Welcome back</CardTitle>
+        <CardTitle>{copy.title}</CardTitle>
         <CardDescription>
-          Sign in to manage your public page, pricing rules, and incoming leads.
+          {copy.description}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-          <Field label="Email" error={form.formState.errors.email?.message}>
+          <Field label={copy.email} error={form.formState.errors.email?.message}>
             <Input
               type="email"
               placeholder="artist@studio.com"
               {...form.register("email")}
             />
           </Field>
-          <Field label="Password" error={form.formState.errors.password?.message}>
+          <Field label={copy.password} error={form.formState.errors.password?.message}>
             <Input
               type="password"
               placeholder="••••••••"
@@ -92,19 +119,19 @@ export function LoginForm() {
             {form.formState.isSubmitting ? (
               <>
                 <LoaderCircle className="size-4 animate-spin" />
-                Signing in
+                {copy.submitting}
               </>
             ) : (
-              "Log in"
+              copy.submit
             )}
           </Button>
         </form>
         <div className="mt-6 flex items-center justify-between text-sm text-[var(--foreground-muted)]">
           <Link href="/reset-password" className="hover:text-white">
-            Forgot password?
+            {copy.forgotPassword}
           </Link>
           <Link href="/signup" className="hover:text-white">
-            Create account
+            {copy.createAccount}
           </Link>
         </div>
       </CardContent>

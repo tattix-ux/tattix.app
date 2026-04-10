@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -16,12 +16,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { siteConfig } from "@/lib/config/site";
+import { persistAppLocale, readStoredAppLocale } from "@/lib/i18n/app-language";
 import { landingCopy, type LandingLocale } from "@/lib/i18n/landing";
 
 const icons = [MessageCircleMore, ChartNoAxesCombined, Sparkles] as const;
 
 export function LandingPageContent() {
   const [locale, setLocale] = useState<LandingLocale>("tr");
+
+  useEffect(() => {
+    const storedLocale = readStoredAppLocale();
+    if (storedLocale) {
+      setLocale(storedLocale);
+    }
+  }, []);
+
   const copy = landingCopy[locale];
 
   return (
@@ -41,7 +50,10 @@ export function LandingPageContent() {
                   <button
                     key={item}
                     type="button"
-                    onClick={() => setLocale(item)}
+                    onClick={() => {
+                      setLocale(item);
+                      persistAppLocale(item);
+                    }}
                     className="rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition"
                     style={{
                       backgroundColor: active ? "var(--accent)" : "transparent",
