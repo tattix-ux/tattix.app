@@ -82,7 +82,7 @@ export function IntentSelectionStep({
   }, [intent]);
 
   return (
-    <div className="min-w-0 space-y-4">
+    <div className="w-full min-w-0 max-w-full space-y-4">
       <div className="grid gap-3">
         {intentOptions.map((option) => {
           const active = intent === option.value;
@@ -92,7 +92,7 @@ export function IntentSelectionStep({
               key={option.value}
               type="button"
               onClick={() => onIntentChange(option.value)}
-              className="rounded-[24px] border px-4 py-4 text-left transition"
+              className="w-full max-w-full rounded-[24px] border px-4 py-4 text-left transition"
               style={{
                 borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                 backgroundColor: active
@@ -101,7 +101,7 @@ export function IntentSelectionStep({
                 color: "var(--artist-card-text)",
               }}
             >
-              <p className="font-medium">{getIntentLabel(option.value, locale)}</p>
+              <p className="break-words font-medium">{getIntentLabel(option.value, locale)}</p>
             </button>
           );
         })}
@@ -143,7 +143,7 @@ export function IntentSelectionStep({
                     }}
                     role="button"
                     tabIndex={0}
-                    className="rounded-[24px] border p-4 text-left transition"
+                    className="w-full max-w-full rounded-[24px] border p-4 text-left transition"
                     style={{
                       borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                       backgroundColor: active
@@ -159,9 +159,9 @@ export function IntentSelectionStep({
                           : "linear-gradient(135deg, color-mix(in srgb, var(--artist-primary) 18%, transparent), rgba(255,255,255,0.03), rgba(0,0,0,0.28))",
                       }}
                     />
-                    <div className="mt-4 flex items-start justify-between gap-3">
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
-                        <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
+                        <p className="break-words font-medium" style={{ color: "var(--artist-card-text)" }}>
                           {design.title}
                         </p>
                         <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
@@ -185,7 +185,7 @@ export function IntentSelectionStep({
                         )}
                       </p>
                     ) : null}
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                       <Button
                         type="button"
                         variant="outline"
@@ -300,8 +300,8 @@ export function IntentSelectionStep({
       ) : null}
 
       {previewDesign ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-clip bg-black/70 p-0 sm:items-center sm:p-4">
-          <div className="max-h-[92vh] w-full max-w-full overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-black/70 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[92vh] w-full max-w-full overflow-x-hidden overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-white">{previewDesign.title}</p>

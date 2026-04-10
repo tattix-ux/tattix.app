@@ -74,7 +74,7 @@ export function BodyPlacementSelector({
   }
 
   return (
-    <div className="min-w-0 space-y-4">
+    <div className="w-full min-w-0 max-w-full space-y-4">
       <div
         className="rounded-[24px] border p-4"
         style={{
@@ -97,7 +97,7 @@ export function BodyPlacementSelector({
                 key={category.value}
                 type="button"
                 onClick={() => handleCategoryToggle(category)}
-                className="rounded-[22px] border px-4 py-4 text-left transition"
+                className="w-full max-w-full rounded-[22px] border px-4 py-4 text-left transition"
                 style={{
                   borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                   backgroundColor: active
@@ -106,7 +106,7 @@ export function BodyPlacementSelector({
                   color: "var(--artist-card-text)",
                 }}
               >
-                <p className="font-medium">{getPlacementCategoryLocaleLabel(category.value, locale)}</p>
+                <p className="break-words font-medium">{getPlacementCategoryLocaleLabel(category.value, locale)}</p>
                 <p className="mt-1 text-xs leading-5" style={{ color: "var(--artist-card-muted)" }}>
                   {getPlacementCategoryDescription(category.value, locale)}
                 </p>
@@ -149,7 +149,7 @@ export function BodyPlacementSelector({
                       active ? "" : detail,
                     )
                   }
-                  className="rounded-[20px] border px-4 py-3 text-left text-sm transition"
+                  className="w-full max-w-full rounded-[20px] border px-4 py-3 text-left text-sm transition"
                   style={{
                     borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                     backgroundColor: active
@@ -158,7 +158,7 @@ export function BodyPlacementSelector({
                     color: "var(--artist-card-text)",
                   }}
                 >
-                  {getPlacementDetailLocaleLabel(detail, locale)}
+                  <span className="break-words">{getPlacementDetailLocaleLabel(detail, locale)}</span>
                 </button>
               );
             })}

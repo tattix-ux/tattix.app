@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     intro_title: parsed.data.introTitle,
     intro_description: parsed.data.introDescription,
     show_featured_designs: parsed.data.showFeaturedDesigns,
-    default_language: parsed.data.defaultLanguage,
+    default_language: "tr",
   });
 
   const builtInRows = baseStyleOptions.map((style) => ({

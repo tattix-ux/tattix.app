@@ -35,8 +35,8 @@ export function DemoArtistPage({ artist }: { artist: ArtistPageData }) {
 
   return (
     <ArtistPageShell theme={themedArtist.pageTheme}>
-      <Container className="overflow-x-clip py-4 sm:py-6">
-        <div className="mx-auto min-w-0 max-w-3xl">
+      <Container className="max-w-full overflow-x-hidden px-3 py-4 sm:px-6 sm:py-6">
+        <div className="mx-auto w-full min-w-0 max-w-3xl">
           <PublicArtistContent artist={themedArtist} />
         </div>
       </Container>

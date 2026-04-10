@@ -39,7 +39,7 @@ export const demoFunnelSettings: ArtistFunnelSettings = {
   introDescription:
     "Perfect for Instagram bio traffic. Collect warmer leads, surface flash designs, and move straight into WhatsApp with context.",
   showFeaturedDesigns: true,
-  defaultLanguage: "en",
+  defaultLanguage: "tr",
 };
 
 export const demoStyleOptions: ArtistStyleOption[] = baseStyleOptions.map((style, index) => {

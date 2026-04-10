@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/shared/field";
 import { funnelSettingsSchema } from "@/lib/forms/schemas";
@@ -32,12 +31,11 @@ export function FunnelSettingsForm({
     locale === "tr"
       ? {
           title: "Akış ayarları",
-          description: "Müşteri akışının metinlerini, dilini ve görünür stil seçeneklerini buradan yönet.",
+          description: "Müşteri akışının metinlerini ve görünür stil seçeneklerini buradan yönet.",
           introEyebrow: "Üst kısa etiket",
           introTitle: "Giriş başlığı",
           introDescription: "Giriş açıklaması",
           showFeatured: "Hazır tasarım kartlarını sanatçı sayfasında göster",
-          defaultLanguage: "Varsayılan public dil",
           activeStyles: "Görünür stiller",
           activeCount: "aktif",
           customStyles: "Özel stiller",
@@ -56,12 +54,11 @@ export function FunnelSettingsForm({
         }
       : {
           title: "Funnel settings",
-          description: "Tune the copy, language, and visible styles that shape your intake flow.",
+          description: "Tune the copy and visible styles that shape your intake flow.",
           introEyebrow: "Intro eyebrow",
           introTitle: "Intro title",
           introDescription: "Intro description",
           showFeatured: "Show featured designs on the public page",
-          defaultLanguage: "Default public language",
           activeStyles: "Visible styles",
           activeCount: "active",
           customStyles: "Custom styles",
@@ -85,7 +82,7 @@ export function FunnelSettingsForm({
       introTitle: settings.introTitle,
       introDescription: settings.introDescription,
       showFeaturedDesigns: settings.showFeaturedDesigns,
-      defaultLanguage: settings.defaultLanguage,
+      defaultLanguage: "tr",
       enabledStyles: styles
         .filter((style) => style.enabled && !style.isCustom)
         .map((style) => style.styleKey),
@@ -172,12 +169,7 @@ export function FunnelSettingsForm({
             />
             <span className="text-sm text-white">{copy.showFeatured}</span>
           </label>
-          <Field label={copy.defaultLanguage} error={form.formState.errors.defaultLanguage?.message}>
-            <NativeSelect {...form.register("defaultLanguage")}>
-              <option value="en">English</option>
-              <option value="tr">Türkçe</option>
-            </NativeSelect>
-          </Field>
+          <input type="hidden" {...form.register("defaultLanguage")} value="tr" />
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Field label={copy.activeStyles} className="gap-1">

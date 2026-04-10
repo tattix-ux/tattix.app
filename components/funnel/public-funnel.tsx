@@ -214,9 +214,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     step === 5;
 
   return (
-    <div className="min-w-0 space-y-5 sm:space-y-6">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden space-y-5 sm:space-y-6">
       <Card
-        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} min-w-0`}
+        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} w-full max-w-full min-w-0`}
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor:
@@ -284,9 +284,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         )}
       </Card>
 
-      <div ref={flowCardRef} className="min-w-0">
+      <div ref={flowCardRef} className="w-full min-w-0 max-w-full">
         <Card
-          className="min-w-0 overflow-hidden"
+          className="w-full max-w-full min-w-0 overflow-hidden"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor:
@@ -294,17 +294,17 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             borderRadius: "var(--artist-radius)",
           }}
         >
-        <CardHeader className="pb-4">
+        <CardHeader className="px-4 pb-4 sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <CardTitle style={{ color: "var(--artist-card-text)" }}>
+              <CardTitle className="break-words" style={{ color: "var(--artist-card-text)" }}>
                 {result ? copy.stepTitles[5] : stepMeta[Math.min(step, 6) - 1]?.title}
               </CardTitle>
-              <CardDescription style={{ color: "var(--artist-card-muted)" }}>
+              <CardDescription className="break-words" style={{ color: "var(--artist-card-muted)" }}>
                 {result ? copy.stepDescriptions[5] : stepMeta[Math.min(step, 6) - 1]?.description}
               </CardDescription>
             </div>
-            <Badge variant="muted" className="w-fit self-start">
+            <Badge variant="muted" className="w-fit self-start text-[10px] tracking-[0.14em] sm:text-[11px] sm:tracking-[0.2em]">
               {copy.stepLabel} {Math.min(step, 6)} / 6
             </Badge>
           </div>
@@ -318,7 +318,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             />
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4 pt-0 sm:px-6 sm:pb-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={`${step}-${result ? "ready" : "idle"}`}

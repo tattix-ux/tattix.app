@@ -7,14 +7,14 @@ import type { ArtistPageData } from "@/lib/types";
 import { getPublicCopy, type PublicLocale } from "@/lib/i18n/public";
 
 export function PublicArtistContent({ artist }: { artist: ArtistPageData }) {
-  const [locale, setLocale] = useState<PublicLocale>(artist.funnelSettings.defaultLanguage ?? "en");
+  const [locale, setLocale] = useState<PublicLocale>("tr");
   const copy = getPublicCopy(locale);
 
   return (
-    <div className="min-w-0 space-y-5 sm:space-y-6">
-      <div className="flex justify-end">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden space-y-5 sm:space-y-6">
+      <div className="flex justify-start sm:justify-end">
         <div
-          className="inline-flex max-w-full flex-wrap items-center justify-end gap-2 rounded-[24px] border px-2 py-2"
+          className="inline-flex w-full max-w-full flex-wrap items-center justify-between gap-2 rounded-[24px] border px-2 py-2 sm:w-auto sm:justify-end"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor:

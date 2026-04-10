@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const submission = parsed.data as SubmissionRequest;
   const artist = await getPublicArtistPageData(submission.artistSlug);
-  const locale = (submission.locale ?? artist.funnelSettings.defaultLanguage ?? "en") as PublicLocale;
+  const locale = (submission.locale ?? artist.funnelSettings.defaultLanguage ?? "tr") as PublicLocale;
   const selectedDesign = submission.selectedDesignId
     ? artist.featuredDesigns.find((design) => design.id === submission.selectedDesignId) ?? null
     : null;

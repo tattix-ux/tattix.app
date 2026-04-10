@@ -174,7 +174,7 @@ export async function ensureArtistForUser(user: User) {
       intro_description:
         "This quick mobile flow captures the basics before you move into consultation.",
       show_featured_designs: true,
-      default_language: "en",
+      default_language: "tr",
     }),
     supabase.from("artist_pricing_rules").upsert({
       artist_id: artist.id,

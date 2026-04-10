@@ -86,7 +86,7 @@ export function SizeEstimationSelector({
         : "var(--artist-primary)";
 
   return (
-    <div className="min-w-0 space-y-4">
+    <div className="w-full min-w-0 max-w-full space-y-4">
       <div
         className="rounded-[24px] border p-4"
         style={{

@@ -41,7 +41,7 @@ function mapFunnelSettings(row: Record<string, unknown>, artistId: string): Arti
     introTitle: String(row.intro_title ?? ""),
     introDescription: String(row.intro_description ?? ""),
     showFeaturedDesigns: Boolean(row.show_featured_designs ?? true),
-    defaultLanguage: String(row.default_language ?? "en") as ArtistFunnelSettings["defaultLanguage"],
+    defaultLanguage: String(row.default_language ?? "tr") as ArtistFunnelSettings["defaultLanguage"],
   };
 }
 

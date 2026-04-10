@@ -53,7 +53,7 @@ values (
   'Tell us the vibe, size, and placement. Tattix will estimate the range.',
   'Perfect for Instagram bio traffic. Collect warmer leads, surface flash designs, and move straight into WhatsApp with context.',
   true,
-  'en'
+  'tr'
 )
 on conflict (artist_id) do update
 set
