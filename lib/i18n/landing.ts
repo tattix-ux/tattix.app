@@ -4,16 +4,16 @@ export const landingCopy = {
   tr: {
     login: "Giriş yap",
     languageLabel: "Dil",
-    badge: "Dövme sanatçıları için mobil öncelikli lead akışı",
-    title: "Instagram biyonu premium bir dövme talep akışına dönüştür.",
+    badge: "Dövme sanatçıları için mobil öncelikli talep akışı",
+    title: "Instagram’dan gelen talepleri düzenli ve yönetilebilir bir akışa dönüştür.",
     description:
-      "Tattix her sanatçıya şık bir herkese açık sayfa, yönlendirmeli müşteri akışı, kural bazlı fiyat tahmini ve WhatsApp'a hazır bir devir teslim sunar.",
+      "Tattix, dövme sanatçıları için tasarlanmış yönlendirmeli talep akışı, kural bazlı fiyat tahmini ve WhatsApp’a hazır müşteri devri sunar.",
     primaryCta: "Sanatçı sayfanı oluştur",
-    secondaryCta: "Demo sanatçı sayfasını gör",
+    secondaryCta: "Canlı demoyu incele",
     outcomes: [
-      "Herkese açık sanatçı sayfası: /artist-slug",
-      "Profil, fiyatlama, tasarımlar ve talepler için panel",
-      "Supabase destekli auth, veritabanı şeması ve demo veri",
+      "Herkese açık sanatçı sayfası",
+      "Talep, tasarım ve fiyatlama için tek panel",
+      "Hazır veri yapısı ve hızlı kurulum",
     ],
     previewBadge: "Canlı akış önizlemesi",
     previewSteps: "6 adım",
@@ -22,25 +22,25 @@ export const landingCopy = {
     previewOptions: ["Flash tasarım", "Özel dövme", "Aklımda bir tasarım var"],
     pillars: [
       {
-        title: "Yönlendirmeli müşteri akışı",
+        title: "Yönlendirilmiş talep akışı",
         description:
-          "Müşterileri dağınık DM trafiği yerine Instagram biyonundan temiz bir mobil akışa al.",
+          "Müşteriyi adım adım yönlendirerek eksiksiz ve net talepler oluştur.",
       },
       {
-        title: "Kural bazlı tahminler",
+        title: "Kural bazlı fiyat tahmini",
         description:
-          "Boyut, stil, yerleşim ve talep türüne göre sanatçıya ait fiyat mantığını kullan.",
+          "Boyut, stil ve yerleşime göre otomatik fiyat aralığı oluştur.",
       },
       {
-        title: "Temiz devir teslim",
+        title: "Hazır müşteri devri",
         description:
-          "WhatsApp'a hazır mesaj üret ya da brief'i Instagram DM için kolayca kopyala.",
+          "Talebi WhatsApp veya Instagram’a tek tıkla ilet.",
       },
     ],
     whyEyebrow: "Sanatçılar neden Tattix kullanıyor?",
-    whyTitle: "Dövme rezervasyonları için daha temiz bir giriş noktası.",
+    whyTitle: "Daha düzenli talepler, daha net müşteriler.",
     whyDescription:
-      "En baştan mobil bio trafiği için tasarlandı; premium stüdyo hissini korurken günlük lead yönetiminde de pratik kalır.",
+      "Dağınık DM trafiğini, yönlendirilmiş ve filtrelenmiş bir talep akışına dönüştür.",
   },
   en: {
     login: "Login",
