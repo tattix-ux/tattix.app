@@ -46,6 +46,22 @@ function applyMultiplier(range: PriceRange, multiplier: number, minimumSessionPr
   return { min, max };
 }
 
+function formatPreferredTiming(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined,
+  locale: PublicLocale,
+) {
+  if (!startDate && !endDate) {
+    return null;
+  }
+
+  if (startDate && endDate) {
+    return locale === "tr" ? `${startDate} - ${endDate}` : `${startDate} to ${endDate}`;
+  }
+
+  return startDate ?? endDate ?? null;
+}
+
 export function estimateTattooPrice(
   submission: SubmissionRequest,
   context: PricingContext,
@@ -79,20 +95,33 @@ export function buildEstimateSummary(
   const styleLabel = styleLabelOverride ?? getStyleLabel(submission.style, locale);
   const placementLabel = getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale);
   const manualSize = formatApproximateSizeLabel(submission);
-  const selectedDesignPrefix = submission.selectedDesignId
-    ? locale === "tr"
-      ? "Hazir tasarim secimi"
-      : "Ready-made design"
-    : null;
-  const referencePrefix = submission.referenceImage
-    ? locale === "tr"
-      ? "referans gorsel yuklendi"
-      : "reference image uploaded"
-    : null;
+  const preferredTiming = formatPreferredTiming(
+    submission.preferredStartDate,
+    submission.preferredEndDate,
+    locale,
+  );
 
   if (locale === "tr") {
-    return `${selectedDesignPrefix ? `${selectedDesignPrefix}, ` : ""}${referencePrefix ? `${referencePrefix}, ` : ""}${placementLabel.toLowerCase()} icin ${submission.selectedDesignId ? "" : `${styleLabel.toLowerCase()} tarzda, `}${sizeLabel.toLowerCase()} olcekli bir ${intentLabel.toLowerCase()}${manualSize ? `, yaklasik ${manualSize}` : ""}.`;
+    const segments = [
+      `${placementLabel} için`,
+      submission.selectedDesignId ? "hazır tasarım seçildi" : `${styleLabel} tarzında`,
+      `${intentLabel.toLocaleLowerCase("tr-TR")} planlandı`,
+      manualSize ? `yaklaşık ${manualSize}` : `${sizeLabel.toLocaleLowerCase("tr-TR")} ölçekte`,
+      submission.referenceImage ? "referans görsel paylaşıldı" : null,
+      preferredTiming ? `tercih edilen zaman: ${preferredTiming}` : null,
+    ].filter(Boolean);
+
+    return `${segments.join(", ")}.`;
   }
 
-  return `${selectedDesignPrefix ? `${selectedDesignPrefix}, ` : ""}${referencePrefix ? `${referencePrefix}, ` : ""}${intentLabel}, ${sizeLabel.toLowerCase()}${submission.selectedDesignId ? "" : ` ${styleLabel.toLowerCase()}`} piece for ${placementLabel.toLowerCase()}${manualSize ? ` around ${manualSize}` : ""}.`;
+  const segments = [
+    `${placementLabel} placement`,
+    submission.selectedDesignId ? "ready-made design selected" : `${styleLabel} style`,
+    intentLabel,
+    manualSize ? `around ${manualSize}` : `${sizeLabel.toLocaleLowerCase("en-US")} size`,
+    submission.referenceImage ? "reference image uploaded" : null,
+    preferredTiming ? `preferred timing: ${preferredTiming}` : null,
+  ].filter(Boolean);
+
+  return `${segments.join(", ")}.`;
 }

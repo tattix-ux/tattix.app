@@ -16,10 +16,34 @@ function formatRawRange(minimum: number, maximum: number, currency: string) {
 
 function getReferenceUploadLine(locale: PublicLocale, uploaded: boolean) {
   if (locale === "tr") {
-    return uploaded ? "Evet" : "Hayır";
+    return uploaded ? "Evet, görsel yüklendi" : "Hayır";
   }
 
-  return uploaded ? "Yes" : "No";
+  return uploaded ? "Yes, an image was uploaded" : "No";
+}
+
+function formatPreferredTiming(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined,
+  locale: PublicLocale,
+) {
+  if (!startDate && !endDate) {
+    return null;
+  }
+
+  if (startDate && endDate) {
+    return locale === "tr" ? `${startDate} - ${endDate}` : `${startDate} to ${endDate}`;
+  }
+
+  return startDate ?? endDate ?? null;
+}
+
+function isSafeHttpUrl(value: string | null | undefined) {
+  if (!value) {
+    return false;
+  }
+
+  return /^https?:\/\//i.test(value);
 }
 
 export function buildSubmissionMessage(
@@ -36,7 +60,9 @@ export function buildSubmissionMessage(
   const sizeLabel = getSizeLabel(submission.sizeCategory, locale);
   const manualSize = formatApproximateSizeLabel(submission) ?? sizeLabel;
   const lines = [
-    locale === "tr" ? "Merhaba! Bir dövme hakkında konuşmak istiyorum." : "Hi! I want to discuss a tattoo.",
+    locale === "tr"
+      ? "Merhaba, dövme talebim için bilgi almak istiyorum."
+      : "Hi! I want to discuss a tattoo.",
     "",
     `${labels.intent}: ${getIntentLabel(submission.intent, locale)}`,
   ];
@@ -57,11 +83,23 @@ export function buildSubmissionMessage(
 
   if (submission.referenceImage) {
     lines.push(`${labels.referenceImage}: ${getReferenceUploadLine(locale, true)}`);
-    lines.push(`${labels.referenceImageUrl}: ${submission.referenceImage}`);
+    if (isSafeHttpUrl(submission.referenceImage)) {
+      lines.push(`${labels.referenceImageUrl}: ${submission.referenceImage}`);
+    }
   }
 
   if (submission.referenceDescription?.trim()) {
     lines.push(`${labels.referenceDescription}: ${submission.referenceDescription.trim()}`);
+  }
+
+  const preferredTiming = formatPreferredTiming(
+    submission.preferredStartDate,
+    submission.preferredEndDate,
+    locale,
+  );
+
+  if (preferredTiming) {
+    lines.push(`${labels.preferredTiming}: ${preferredTiming}`);
   }
 
   lines.push(

@@ -63,6 +63,8 @@ export async function POST(request: Request) {
       reference_image_url: submission.referenceImage ?? null,
       reference_image_path: submission.referenceImagePath ?? null,
       reference_description: submission.referenceDescription?.trim() || null,
+      preferred_start_date: submission.preferredStartDate || null,
+      preferred_end_date: submission.preferredEndDate || null,
       style: submission.style,
       notes: combinedNotes || null,
       estimated_min: estimate.min,

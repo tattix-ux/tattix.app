@@ -77,8 +77,9 @@ export function SizeEstimationSelector({
   const guidance = getPlacementSizingGuidance(selectedPlacement, safeCm, selectedStyle, locale);
   const derivedSizeCategory = deriveSizeCategoryFromCm(safeCm);
   const artistTimeEstimate = formatArtistTimeRange(sizeTimeRanges?.[derivedSizeCategory], locale);
+  const showExceptionalTone = guidance.tone === "caution" && safeCm >= constraint.maxCm;
   const toneAccent =
-    guidance.tone === "caution"
+    showExceptionalTone
       ? "color-mix(in srgb, #f59e0b 70%, var(--artist-primary) 30%)"
       : guidance.tone === "soft"
         ? "color-mix(in srgb, var(--artist-secondary) 65%, white 35%)"

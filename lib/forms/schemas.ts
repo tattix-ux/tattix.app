@@ -140,6 +140,8 @@ export const submissionSchema = z.object({
   referenceImage: z.string().max(255).nullable().optional(),
   referenceImagePath: z.string().max(255).nullable().optional(),
   referenceDescription: z.string().max(280).optional(),
+  preferredStartDate: z.string().max(20).optional(),
+  preferredEndDate: z.string().max(20).optional(),
   bodyAreaGroup: z.enum(groupValues as [string, ...string[]]),
   bodyAreaDetail: z.enum(detailValues as [string, ...string[]]),
   sizeMode: z.enum(["quick", "visual"]),

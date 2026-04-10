@@ -24,6 +24,8 @@ const initialDraft: SubmissionDraft = {
   referenceImage: "",
   referenceImagePath: "",
   referenceDescription: "",
+  preferredStartDate: "",
+  preferredEndDate: "",
   bodyAreaGroup: "",
   bodyAreaDetail: "",
   sizeMode: "quick",

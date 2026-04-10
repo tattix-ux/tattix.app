@@ -194,6 +194,12 @@ export function LeadsTable({
                   <p><span className="text-white">Notes:</span> {selectedLead.notes || "No notes provided."}</p>
                   <p><span className="text-white">Reference description:</span> {selectedLead.referenceDescription || "No reference description."}</p>
                   <p>
+                    <span className="text-white">Preferred timing:</span>{" "}
+                    {selectedLead.preferredStartDate || selectedLead.preferredEndDate
+                      ? `${selectedLead.preferredStartDate ?? "?"} - ${selectedLead.preferredEndDate ?? "?"}`
+                      : "No timing shared."}
+                  </p>
+                  <p>
                     <span className="text-white">Selected design:</span>{" "}
                     {selectedLead.selectedDesignId
                       ? designs.find((design) => design.id === selectedLead.selectedDesignId)?.title ?? "Selected design"

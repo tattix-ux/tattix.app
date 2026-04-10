@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { demoArtistPageData, demoLeads } from "@/lib/demo-data";
@@ -25,6 +26,8 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     referenceImageUrl: row.reference_image_url ? String(row.reference_image_url) : null,
     referenceImagePath: row.reference_image_path ? String(row.reference_image_path) : null,
     referenceDescription: row.reference_description ? String(row.reference_description) : null,
+    preferredStartDate: row.preferred_start_date ? String(row.preferred_start_date) : null,
+    preferredEndDate: row.preferred_end_date ? String(row.preferred_end_date) : null,
     style: String(row.style) as ClientSubmission["style"],
     notes: row.notes ? String(row.notes) : null,
     estimatedMin: Number(row.estimated_min),
@@ -35,7 +38,9 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
   };
 }
 
-export async function getDashboardData(userId: string | null): Promise<DashboardData> {
+export const getDashboardData = cache(async function getDashboardData(
+  userId: string | null,
+): Promise<DashboardData> {
   if (!isSupabaseConfigured() || !userId) {
     return {
       ...demoArtistPageData,
@@ -45,11 +50,27 @@ export async function getDashboardData(userId: string | null): Promise<Dashboard
   }
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: existingArtist } = await supabase
+    .from("artists")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
 
-  if (!user) {
+  const artist = existingArtist?.id
+    ? existingArtist
+    : await (async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          return null;
+        }
+
+        return ensureArtistForUser(user);
+      })();
+
+  if (!artist) {
     return {
       ...demoArtistPageData,
       leads: demoLeads,
@@ -57,7 +78,6 @@ export async function getDashboardData(userId: string | null): Promise<Dashboard
     };
   }
 
-  const artist = await ensureArtistForUser(user);
   const pageData = await getArtistPageDataById(String(artist.id));
 
   if (!pageData) {
@@ -79,7 +99,7 @@ export async function getDashboardData(userId: string | null): Promise<Dashboard
     leads: (leadsRows ?? []).map((row) => mapLead(row as Record<string, unknown>)),
     demoMode: false,
   };
-}
+});
 
 async function reserveUniqueSlug(preferredSlug: string) {
   const supabase = await createSupabaseServerClient();

@@ -27,6 +27,7 @@ export const styleOptions = [
   { value: "micro-realism", label: "Micro realism" },
   { value: "ornamental", label: "Ornamental" },
   { value: "lettering", label: "Lettering" },
+  { value: "not-sure-style", label: "I'm not sure" },
   { value: "custom", label: "Custom" },
 ] as const;
 

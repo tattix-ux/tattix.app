@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 import { z } from "zod";
@@ -27,6 +28,10 @@ export function LoginForm() {
     },
   });
 
+  useEffect(() => {
+    router.prefetch("/dashboard/profile");
+  }, [router]);
+
   async function onSubmit(values: LoginValues) {
     if (!isSupabaseConfigured()) {
       form.setError("root", {
@@ -43,8 +48,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/dashboard/profile");
-    router.refresh();
+    router.replace("/dashboard/profile");
   }
 
   return (

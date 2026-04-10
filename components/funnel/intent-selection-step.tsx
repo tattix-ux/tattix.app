@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Expand, ImagePlus, LoaderCircle, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -58,10 +58,28 @@ export function IntentSelectionStep({
   const copy = getPublicCopy(locale);
   const [previewDesign, setPreviewDesign] = useState<ArtistFeaturedDesign | null>(null);
   const [uploadingReference, setUploadingReference] = useState(false);
+  const designSectionRef = useRef<HTMLDivElement | null>(null);
+  const referenceSectionRef = useRef<HTMLDivElement | null>(null);
   const activeCategory = getIntentCategory(intent);
   const matchingDesigns = activeCategory
     ? designs.filter((design) => design.active && design.category === activeCategory)
     : [];
+
+  useEffect(() => {
+    if (activeCategory && designSectionRef.current) {
+      window.setTimeout(() => {
+        designSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 120);
+    }
+  }, [activeCategory]);
+
+  useEffect(() => {
+    if (intent === "design-in-mind" && referenceSectionRef.current) {
+      window.setTimeout(() => {
+        referenceSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 120);
+    }
+  }, [intent]);
 
   return (
     <div className="space-y-4">
@@ -91,6 +109,7 @@ export function IntentSelectionStep({
 
       {activeCategory ? (
         <div
+          ref={designSectionRef}
           className="rounded-[24px] border p-4"
           style={{
             borderColor: "var(--artist-border)",
@@ -150,7 +169,7 @@ export function IntentSelectionStep({
                         </p>
                       </div>
                       {active ? (
-                        <Badge variant="accent">{locale === "tr" ? "Secildi" : "Selected"}</Badge>
+                        <Badge variant="accent">{locale === "tr" ? "Seçildi" : "Selected"}</Badge>
                       ) : null}
                     </div>
                     {design.priceNote ? (
@@ -198,6 +217,7 @@ export function IntentSelectionStep({
 
       {intent === "design-in-mind" ? (
         <div
+          ref={referenceSectionRef}
           className="rounded-[24px] border p-4"
           style={{
             borderColor: "var(--artist-border)",
@@ -280,8 +300,8 @@ export function IntentSelectionStep({
       ) : null}
 
       {previewDesign ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center">
-          <div className="w-full max-w-xl rounded-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-white">{previewDesign.title}</p>
@@ -293,13 +313,13 @@ export function IntentSelectionStep({
                 <X className="size-4" />
               </Button>
             </div>
-            <div className="overflow-hidden rounded-[22px] border border-white/10 bg-white/5">
+            <div className="overflow-hidden rounded-[22px] border border-white/10 bg-black">
               {previewDesign.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={previewDesign.imageUrl}
                   alt={previewDesign.title}
-                  className="h-[360px] w-full object-cover"
+                  className="max-h-[58vh] w-full object-contain"
                 />
               ) : (
                 <div className="flex h-[260px] items-center justify-center text-sm text-[var(--foreground-muted)]">

@@ -7,6 +7,7 @@ export const bodyPlacementGroups = [
       { value: "forearm-outer", label: "Lower arm" },
       { value: "wrist", label: "Wrist" },
       { value: "hand", label: "Hand" },
+      { value: "arm-other", label: "Others" },
     ],
   },
   {
@@ -17,6 +18,7 @@ export const bodyPlacementGroups = [
       { value: "calf", label: "Lower leg" },
       { value: "ankle", label: "Ankle" },
       { value: "foot", label: "Foot" },
+      { value: "leg-other", label: "Others" },
     ],
   },
   {
@@ -26,6 +28,7 @@ export const bodyPlacementGroups = [
       { value: "chest-center", label: "Chest" },
       { value: "ribs", label: "Ribs" },
       { value: "stomach", label: "Stomach" },
+      { value: "torso-other", label: "Others" },
     ],
   },
   {
@@ -35,6 +38,7 @@ export const bodyPlacementGroups = [
       { value: "upper-back", label: "Upper back" },
       { value: "lower-back", label: "Lower back" },
       { value: "spine-area", label: "Spine" },
+      { value: "back-other", label: "Others" },
     ],
   },
   {
@@ -44,12 +48,16 @@ export const bodyPlacementGroups = [
       { value: "neck-side", label: "Neck side" },
       { value: "neck-front", label: "Neck front" },
       { value: "neck-back", label: "Neck back" },
+      { value: "neck-other", label: "Others" },
     ],
   },
   {
     value: "head",
     label: "Head",
-    details: [{ value: "head", label: "Head" }],
+    details: [
+      { value: "head", label: "Head" },
+      { value: "head-other", label: "Others" },
+    ],
   },
   {
     value: "hand",
@@ -57,6 +65,7 @@ export const bodyPlacementGroups = [
     details: [
       { value: "hand", label: "Hand" },
       { value: "fingers", label: "Fingers" },
+      { value: "hand-other", label: "Others" },
     ],
   },
   {
@@ -65,6 +74,7 @@ export const bodyPlacementGroups = [
     details: [
       { value: "foot", label: "Foot" },
       { value: "toes", label: "Toes" },
+      { value: "foot-other", label: "Others" },
     ],
   },
   {

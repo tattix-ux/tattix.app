@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 
 import { demoArtistPageData } from "@/lib/demo-data";
@@ -133,7 +134,7 @@ function mapPageTheme(row: Record<string, unknown>, artistId: string): ArtistPag
   };
 }
 
-async function fetchArtistBundleById(artistId: string) {
+const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistId: string) {
   const supabase = await createSupabaseServerClient();
   const [artistRow, funnelSettingsRow, styleRows, designRows, pricingRulesRow, pageThemeRow] =
     await Promise.all([
@@ -187,7 +188,7 @@ async function fetchArtistBundleById(artistId: string) {
     ),
     pageTheme: mapPageTheme((pageThemeRow.data ?? {}) as Record<string, unknown>, artistId),
   } satisfies ArtistPageData;
-}
+});
 
 export async function getPublicArtistPageData(slug: string): Promise<ArtistPageData> {
   if (!isSupabaseConfigured()) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Copy, LoaderCircle, MessageCircle, Sparkles } from "lucide-react";
 
@@ -61,10 +61,21 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     reset,
   } = useFunnelStore();
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
+  const flowCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     reset();
   }, [reset, artist.profile.slug]);
+
+  useEffect(() => {
+    if (!flowCardRef.current) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      flowCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+  }, [step]);
 
   const enabledStyles = artist.styleOptions.filter((style) => style.enabled);
   const activeDesigns = artist.featuredDesigns.filter((design) => design.active);
@@ -83,19 +94,20 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     artist.pageTheme.customWelcomeTitle ||
     artist.funnelSettings.introTitle ||
     artist.profile.welcomeHeadline ||
-    (locale === "tr" ? "Dovme fikrini kisaca paylas." : "Share your tattoo idea in a few quick steps.");
+    (locale === "tr" ? "Dövme fikrini kısaca paylaş." : "Share your tattoo idea in a few quick steps.");
   const introText =
     artist.pageTheme.customIntroText ||
     artist.profile.shortBio ||
     artist.funnelSettings.introDescription ||
     (locale === "tr"
-      ? "Yerlesim, boyut ve tarzi sec. Sonunda yaklasik fiyat araligini gorebilirsin."
+      ? "Yerleşim, boyut ve tarzı seç. Mesaja geçmeden önce yaklaşık fiyat aralığını görebilirsin."
       : "Choose the placement, size, and style to see an approximate price range before messaging the artist.");
   const primaryActionLabel = artist.pageTheme.customCtaLabel || copy.defaultPrimaryCta;
   const { tokens } = buildThemeStyles(artist.pageTheme);
   const primaryButtonClass = "border-0 shadow-none hover:opacity-95";
   const secondaryButtonClass = "border-0 shadow-none hover:opacity-95";
   const styleStepActive = requiresStyleSelection(draft.intent);
+  const compactArtistHeader = step > 1 || Boolean(draft.intent);
 
   async function handleFinalSubmit() {
     setSubmitting(true);
@@ -161,6 +173,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("heightCm", null);
     setField("style", isReadyMadeIntent(intent) ? "custom" : "");
     setField("notes", "");
+
+    if (intent === "custom-tattoo" || intent === "not-sure") {
+      window.setTimeout(() => setStep(2), 180);
+    }
   }
 
   function handleNext() {
@@ -197,7 +213,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   return (
     <div className="space-y-6">
       <Card
-        className="overflow-hidden"
+        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"}`}
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor:
@@ -205,54 +221,78 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           borderRadius: "var(--artist-radius)",
         }}
       >
-        <div
-          className="h-40 w-full border-b bg-grid"
-          style={
-            artist.profile.coverImageUrl
-              ? {
-                  backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.88)), url(${artist.profile.coverImageUrl})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  borderColor: "var(--artist-border)",
-                }
-              : { borderColor: "var(--artist-border)" }
-          }
-        />
-        <CardContent className="-mt-12 space-y-4 p-5 sm:p-6">
-          <AvatarTile name={artist.profile.artistName} imageUrl={artist.profile.profileImageUrl} />
-          <div className="space-y-3">
-            <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
-            <h1
-              className="text-3xl leading-tight"
-              style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
-            >
-              {introTitle}
-            </h1>
-            <p className="text-sm leading-7" style={{ color: "var(--artist-muted)" }}>
-              {introText}
-            </p>
-            <div className="flex flex-wrap gap-2 text-xs" style={{ color: "var(--artist-muted)" }}>
-              <span>{artist.profile.instagramHandle}</span>
-              <span>•</span>
-              <span>Mobile-first intake flow</span>
-              <span>•</span>
-              <span>WhatsApp handoff ready</span>
+        {compactArtistHeader ? (
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+                <AvatarTile name={artist.profile.artistName} imageUrl={artist.profile.profileImageUrl} />
+              </div>
+              <div className="min-w-0">
+                <p
+                  className="truncate text-lg"
+                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
+                >
+                  {artist.profile.artistName}
+                </p>
+                <p className="truncate text-sm" style={{ color: "var(--artist-muted)" }}>
+                  {artist.profile.instagramHandle}
+                </p>
+              </div>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        ) : (
+          <>
+            <div
+              className="h-40 w-full border-b bg-grid"
+              style={
+                artist.profile.coverImageUrl
+                  ? {
+                      backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.88)), url(${artist.profile.coverImageUrl})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      borderColor: "var(--artist-border)",
+                    }
+                  : { borderColor: "var(--artist-border)" }
+              }
+            />
+            <CardContent className="-mt-12 space-y-4 p-5 sm:p-6">
+              <AvatarTile name={artist.profile.artistName} imageUrl={artist.profile.profileImageUrl} />
+              <div className="space-y-3">
+                <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
+                <h1
+                  className="text-3xl leading-tight"
+                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
+                >
+                  {introTitle}
+                </h1>
+                <p className="text-sm leading-7" style={{ color: "var(--artist-muted)" }}>
+                  {introText}
+                </p>
+                <div className="flex flex-wrap gap-2 text-xs" style={{ color: "var(--artist-muted)" }}>
+                  <span>{artist.profile.instagramHandle}</span>
+                  <span>•</span>
+                  <span>Mobile-first intake flow</span>
+                  <span>•</span>
+                  <span>WhatsApp handoff ready</span>
+                </div>
+              </div>
+            </CardContent>
+          </>
+        )}
       </Card>
 
-      <Card
-        style={{
-          borderColor: "var(--artist-border)",
-          backgroundColor:
-            "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
-          borderRadius: "var(--artist-radius)",
-        }}
-      >
+      <div ref={flowCardRef}>
+        <Card
+          style={{
+            borderColor: "var(--artist-border)",
+            backgroundColor:
+              "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+            borderRadius: "var(--artist-radius)",
+          }}
+        >
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
               <CardTitle style={{ color: "var(--artist-card-text)" }}>
                 {result ? copy.stepTitles[5] : stepMeta[Math.min(step, 6) - 1]?.title}
               </CardTitle>
@@ -260,7 +300,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 {result ? copy.stepDescriptions[5] : stepMeta[Math.min(step, 6) - 1]?.description}
               </CardDescription>
             </div>
-            <Badge variant="muted">
+            <Badge variant="muted" className="w-fit self-start">
               {copy.stepLabel} {Math.min(step, 6)} / 6
             </Badge>
           </div>
@@ -298,6 +338,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   onDesignSelect={(designId) => {
                     setField("selectedDesignId", designId);
                     setField("style", designId ? "custom" : draft.style);
+                    if (designId) {
+                      window.setTimeout(() => setStep(2), 180);
+                    }
                   }}
                   onReferenceImageSelect={(imageUrl, imagePath) => {
                     setField("referenceImage", imageUrl);
@@ -330,6 +373,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       setField("sizeCategory", deriveSizeCategoryFromCm(defaultSize));
                       setField("widthCm", null);
                       setField("heightCm", null);
+                      window.setTimeout(() => setStep(3), 180);
                     }}
                   />
                 </div>
@@ -360,7 +404,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       <button
                         key={style.id}
                         type="button"
-                        onClick={() => setField("style", style.styleKey)}
+                        onClick={() => {
+                          setField("style", style.styleKey);
+                          window.setTimeout(() => setStep(5), 180);
+                        }}
                         className="rounded-[24px] border px-4 py-4 text-left transition"
                         style={{
                           borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -376,6 +423,23 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       </button>
                     );
                   })}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setField("style", "not-sure-style");
+                      window.setTimeout(() => setStep(5), 180);
+                    }}
+                    className="rounded-[24px] border px-4 py-4 text-left transition"
+                    style={{
+                      borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
+                      backgroundColor: draft.style === "not-sure-style"
+                        ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                        : "rgba(0,0,0,0.12)",
+                      color: tokens.cardText,
+                    }}
+                  >
+                    <p className="font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
+                  </button>
                 </div>
               ) : null}
 
@@ -407,6 +471,59 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     onChange={(event) => setField("notes", event.target.value)}
                     placeholder={copy.notesPlaceholder}
                   />
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.preferredTimingLabel}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.preferredTimingHelp}
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.preferredStartDate}
+                        </span>
+                        <input
+                          type="date"
+                          value={draft.preferredStartDate}
+                          onChange={(event) => {
+                            const nextValue = event.target.value;
+                            setField("preferredStartDate", nextValue);
+                            if (draft.preferredEndDate && nextValue && draft.preferredEndDate < nextValue) {
+                              setField("preferredEndDate", "");
+                            }
+                          }}
+                          className="h-11 w-full rounded-[18px] border bg-transparent px-4 text-sm"
+                          style={{
+                            borderColor: "var(--artist-border)",
+                            color: "var(--artist-card-text)",
+                          }}
+                        />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.preferredEndDate}
+                        </span>
+                        <input
+                          type="date"
+                          min={draft.preferredStartDate || undefined}
+                          value={draft.preferredEndDate}
+                          onChange={(event) => setField("preferredEndDate", event.target.value)}
+                          className="h-11 w-full rounded-[18px] border bg-transparent px-4 text-sm"
+                          style={{
+                            borderColor: "var(--artist-border)",
+                            color: "var(--artist-card-text)",
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
                   <div
                     className="rounded-[24px] border p-4 text-sm"
                     style={{
@@ -599,7 +716,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             ) : null}
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

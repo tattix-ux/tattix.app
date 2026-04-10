@@ -19,7 +19,7 @@ export default async function DashboardProfilePage() {
         }
         description={
           isTurkish
-            ? "Bu alanlar public sayfanı, WhatsApp handoff mesajını ve sanatçı slug yapını besler."
+            ? "Bu alanlar sanatçı sayfanı, WhatsApp ön mesajını ve bağlantı yapını doğrudan etkiler."
             : "These fields power your hero section, WhatsApp handoff, and public artist slug."
         }
       />

@@ -126,6 +126,8 @@ export type ClientSubmission = {
   referenceImageUrl: string | null;
   referenceImagePath: string | null;
   referenceDescription: string | null;
+  preferredStartDate: string | null;
+  preferredEndDate: string | null;
   style: string;
   notes: string | null;
   estimatedMin: number;
@@ -141,6 +143,8 @@ export type SubmissionDraft = {
   referenceImage: string;
   referenceImagePath: string;
   referenceDescription: string;
+  preferredStartDate: string;
+  preferredEndDate: string;
   bodyAreaGroup: BodyAreaGroupValue | "";
   bodyAreaDetail: BodyAreaDetailValue | "";
   sizeMode: SizeMode;
@@ -183,6 +187,8 @@ export type SubmissionRequest = {
   referenceImage?: string | null;
   referenceImagePath?: string | null;
   referenceDescription?: string | null;
+  preferredStartDate?: string | null;
+  preferredEndDate?: string | null;
   bodyAreaGroup: BodyAreaGroupValue;
   bodyAreaDetail: BodyAreaDetailValue;
   sizeMode: SizeMode;

@@ -310,8 +310,8 @@ export function CustomizePageForm({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_560px]">
-      <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+    <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_560px]">
+      <form className="min-w-0 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="surface-border">
           <CardHeader>
             <CardTitle>Theme Presets</CardTitle>
@@ -581,17 +581,17 @@ export function CustomizePageForm({
         ) : null}
       </form>
 
-      <div className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+      <div className="min-w-0 space-y-4 2xl:sticky 2xl:top-6 2xl:self-start">
         <Card className="surface-border">
           <CardHeader>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle>Live Preview</CardTitle>
                 <CardDescription>
                   Real-time approximation of the public artist page.
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
                   size="sm"
