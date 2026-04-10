@@ -11,7 +11,7 @@ export function PublicArtistContent({ artist }: { artist: ArtistPageData }) {
   const copy = getPublicCopy(locale);
 
   return (
-    <div className="w-full min-w-0 max-w-full space-y-5 pb-6 sm:space-y-6 sm:pb-8">
+    <div className="w-full min-w-0 max-w-full overflow-x-clip space-y-5 pb-6 sm:space-y-6 sm:pb-8">
       <div className="flex justify-start sm:justify-end">
         <div
           className="inline-flex w-full max-w-full flex-wrap items-center justify-between gap-2 rounded-[24px] border px-2 py-2 sm:w-auto sm:justify-end"

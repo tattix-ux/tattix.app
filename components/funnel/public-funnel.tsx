@@ -222,9 +222,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     step === 5;
 
   return (
-    <div className="w-full min-w-0 max-w-full space-y-4 sm:space-y-6">
+    <div className="w-full min-w-0 max-w-full overflow-x-clip space-y-4 sm:space-y-6">
       <Card
-        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full`}
+        className={`${compactArtistHeader ? "sticky top-3 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full overflow-x-clip`}
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor:
@@ -302,7 +302,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
       <div ref={flowCardRef} className="w-full min-w-0 max-w-full">
         <Card
-          className="w-full min-w-0 max-w-full"
+          className="w-full min-w-0 max-w-full overflow-x-clip"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor:
@@ -431,7 +431,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                             setField("style", style.styleKey);
                             window.setTimeout(() => setStep(5), 180);
                           }}
-                          className="min-w-0 flex-1 rounded-[24px] border px-4 py-4 text-left transition"
+                          className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
                           style={{
                             borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                             backgroundColor: active
@@ -467,7 +467,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         setField("style", "not-sure-style");
                         window.setTimeout(() => setStep(5), 180);
                       }}
-                      className="min-w-0 flex-1 rounded-[24px] border px-4 py-4 text-left transition"
+                      className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
                       style={{
                         borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
                         backgroundColor: draft.style === "not-sure-style"
@@ -753,7 +753,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
             {step < 5 ? (
               <Button
-                className={`w-full sm:ml-auto sm:w-auto ${primaryButtonClass}`}
+                className={`w-full whitespace-normal sm:ml-auto sm:w-auto ${primaryButtonClass}`}
                 onClick={handleNext}
                 disabled={!canAdvance}
                 style={{
@@ -768,7 +768,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
             {step === 5 ? (
               <Button
-                className={`w-full sm:ml-auto sm:w-auto ${primaryButtonClass}`}
+                className={`w-full whitespace-normal sm:ml-auto sm:w-auto ${primaryButtonClass}`}
                 onClick={handleFinalSubmit}
                 disabled={submitting}
                 style={{
@@ -782,7 +782,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
             {step === 6 && result ? (
               <Button
-                className={`w-full sm:ml-auto sm:w-auto ${secondaryButtonClass}`}
+                className={`w-full whitespace-normal sm:ml-auto sm:w-auto ${secondaryButtonClass}`}
                 variant="outline"
                 onClick={() => {
                   reset();
@@ -803,8 +803,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       </div>
 
       {styleInfoKey ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-black/70 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-full rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-md sm:rounded-[28px]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-clip bg-black/70 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[92dvh] w-full max-w-[calc(100vw-0.75rem)] overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-md sm:rounded-[28px]">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--accent-soft)]">

@@ -38,11 +38,11 @@ export function FeaturedDesignRail({
           </h3>
         </div>
       </div>
-      <div className="flex snap-x gap-4 overflow-x-auto pb-2">
+      <div className="flex w-full max-w-full snap-x gap-4 overflow-x-auto pb-2">
         {designs.map((design) => (
           <Card
             key={design.id}
-            className="min-w-[270px] snap-start p-5"
+            className="w-[85vw] max-w-[270px] flex-none snap-start p-5"
             style={{
               borderColor: "var(--artist-border)",
               backgroundColor:

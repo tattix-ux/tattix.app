@@ -143,7 +143,7 @@ export function IntentSelectionStep({
                     }}
                     role="button"
                     tabIndex={0}
-                    className="w-full max-w-full rounded-[24px] border p-4 text-left transition"
+                    className="w-full max-w-full overflow-hidden rounded-[24px] border p-4 text-left transition"
                     style={{
                       borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                       backgroundColor: active
@@ -190,6 +190,7 @@ export function IntentSelectionStep({
                         type="button"
                         variant="outline"
                         size="sm"
+                        className="max-w-full whitespace-normal"
                         onClick={(event) => {
                           event.stopPropagation();
                           setPreviewDesign(design);
@@ -301,7 +302,7 @@ export function IntentSelectionStep({
 
       {previewDesign ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-clip bg-black/70 p-0 sm:items-center sm:p-4">
-          <div className="max-h-[92vh] w-full max-w-full overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
+          <div className="max-h-[92dvh] w-full max-w-[calc(100vw-0.75rem)] overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-white">{previewDesign.title}</p>
