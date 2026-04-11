@@ -32,7 +32,7 @@ export default async function DashboardLayout({
     <AppShell>
       <Container className="py-4 sm:py-8">
         <div className="overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch]">
-          <div className="min-w-[760px] xl:min-w-0">
+          <div className="min-w-[720px] xl:min-w-0">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <Logo />
@@ -41,7 +41,7 @@ export default async function DashboardLayout({
                   <LogoutButton />
                 </div>
               </div>
-              <div className="w-full max-w-[560px] xl:w-auto xl:min-w-[420px]">
+              <div className="w-full max-w-[460px] xl:w-auto xl:min-w-[360px]">
                 <PublicRouteCard
                   slug={dashboardData.profile.slug}
                   locale={isTurkish ? "tr" : "en"}
@@ -49,8 +49,8 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[344px_minmax(0,1fr)]">
-              <aside className="max-w-[420px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
+            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+              <aside className="max-w-[360px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
@@ -76,7 +76,7 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[620px]">{children}</main>
+              <main className="min-w-0 w-full max-w-[420px]">{children}</main>
             </div>
           </div>
         </div>

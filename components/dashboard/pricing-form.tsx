@@ -1,8 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown, LoaderCircle, Save } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { LoaderCircle, Save } from "lucide-react";
 import { z } from "zod";
 
 import { Field } from "@/components/shared/field";
@@ -33,6 +34,9 @@ export function PricingForm({
   styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    Object.fromEntries(bodyPlacementGroups.map((group) => [group.value, false])),
+  );
   const copy =
     locale === "tr"
       ? {
@@ -44,6 +48,7 @@ export function PricingForm({
           styleMultipliers: "Stil çarpanları",
           intentMultipliers: "Talep türü çarpanları",
           placementMultipliers: "Yerleşim çarpanları",
+          placementHelp: "Ana bölgeye dokunarak alt yerleşimleri aç.",
           min: "Min",
           max: "Maks",
           save: "Fiyatlamayı kaydet",
@@ -61,6 +66,7 @@ export function PricingForm({
           styleMultipliers: "Style multipliers",
           intentMultipliers: "Intent multipliers",
           placementMultipliers: "Placement multipliers",
+          placementHelp: "Tap a main area to reveal its detailed placements.",
           min: "Min",
           max: "Max",
           save: "Save pricing",
@@ -198,21 +204,40 @@ export function PricingForm({
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
               {copy.placementMultipliers}
             </h3>
-            <div className="grid gap-5 lg:grid-cols-2">
+            <p className="text-sm text-[var(--foreground-muted)]">{copy.placementHelp}</p>
+            <div className="grid gap-4">
               {bodyPlacementGroups.map((group) => (
-                <div key={group.value} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="font-medium text-white">{getPlacementCategoryLocaleLabel(group.value, locale)}</p>
-                  <div className="mt-4 grid gap-3">
-                    {group.details.map((detail) => (
-                      <Field key={detail.value} label={getPlacementDetailLocaleLabel(detail.value, locale)}>
-                        <Input
-                          type="number"
-                          step="0.05"
-                          {...form.register(`placementMultipliers.${detail.value}`)}
-                        />
-                      </Field>
-                    ))}
-                  </div>
+                <div key={group.value} className="rounded-[24px] border border-white/8 bg-black/20">
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                    onClick={() =>
+                      setExpandedGroups((current) => ({
+                        ...current,
+                        [group.value]: !current[group.value],
+                      }))
+                    }
+                  >
+                    <p className="font-medium text-white">{getPlacementCategoryLocaleLabel(group.value, locale)}</p>
+                    <ChevronDown
+                      className={`size-4 text-[var(--foreground-muted)] transition ${
+                        expandedGroups[group.value] ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {expandedGroups[group.value] ? (
+                    <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4">
+                      {group.details.map((detail) => (
+                        <Field key={detail.value} label={getPlacementDetailLocaleLabel(detail.value, locale)}>
+                          <Input
+                            type="number"
+                            step="0.05"
+                            {...form.register(`placementMultipliers.${detail.value}`)}
+                          />
+                        </Field>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
