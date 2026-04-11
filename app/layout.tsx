@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { AuthStateListener } from "@/components/auth/auth-state-listener";
 import "./globals.css";
 
@@ -9,6 +9,12 @@ export const metadata: Metadata = {
   },
   description:
     "Tattix is a mobile-first link-in-bio funnel and tattoo pricing estimator for tattoo artists.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

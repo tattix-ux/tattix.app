@@ -13,29 +13,6 @@ import type { StyleValue } from "@/lib/constants/options";
 import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
 import type { ArtistPricingRules } from "@/lib/types";
 
-function formatArtistTimeRange(
-  hours: ArtistPricingRules["sizeTimeRanges"][keyof ArtistPricingRules["sizeTimeRanges"]] | undefined,
-  locale: PublicLocale,
-) {
-  if (!hours) {
-    return null;
-  }
-
-  const formatHours = (value: number) => {
-    if (value < 1) {
-      const minutes = Math.round(value * 60);
-      return locale === "tr" ? `${minutes} dk` : `${minutes} min`;
-    }
-
-    const text = Number.isInteger(value) ? String(value) : value.toFixed(1);
-    return locale === "tr" ? `${text} saat` : `${text} hour${value === 1 ? "" : "s"}`;
-  };
-
-  return locale === "tr"
-    ? `${formatHours(hours.minHours)} - ${formatHours(hours.maxHours)}`
-    : `${formatHours(hours.minHours)} to ${formatHours(hours.maxHours)}`;
-}
-
 export function SizeEstimationSelector({
   selectedPlacement,
   approximateSizeCm,
@@ -75,8 +52,6 @@ export function SizeEstimationSelector({
   const constraint = getPlacementSizeConstraint(selectedPlacement);
   const safeCm = clampCm(approximateSizeCm ?? constraint.defaultCm, constraint);
   const guidance = getPlacementSizingGuidance(selectedPlacement, safeCm, selectedStyle, locale);
-  const derivedSizeCategory = deriveSizeCategoryFromCm(safeCm);
-  const artistTimeEstimate = formatArtistTimeRange(sizeTimeRanges?.[derivedSizeCategory], locale);
   const showExceptionalTone = guidance.tone === "caution" && safeCm >= constraint.maxCm;
   const toneAccent =
     showExceptionalTone
@@ -161,22 +136,6 @@ export function SizeEstimationSelector({
                 </p>
               ) : null}
             </div>
-            {artistTimeEstimate ?? guidance.timeEstimate ? (
-              <div
-                className="rounded-[18px] border px-4 py-3"
-                style={{
-                  borderColor: "var(--artist-border)",
-                  backgroundColor: "color-mix(in srgb, var(--artist-card) 86%, transparent)",
-                }}
-              >
-                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: toneAccent }}>
-                  {copy.approximateTime}
-                </p>
-                <p className="mt-1 text-sm" style={{ color: "var(--artist-card-text)" }}>
-                  {artistTimeEstimate ?? guidance.timeEstimate}
-                </p>
-              </div>
-            ) : null}
           </div>
         </div>
       </div>

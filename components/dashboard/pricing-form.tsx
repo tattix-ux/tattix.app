@@ -15,6 +15,7 @@ import { pricingSchema } from "@/lib/forms/schemas";
 import {
   getPlacementCategoryLocaleLabel,
   getPlacementDetailLocaleLabel,
+  getIntentLabel,
   getStyleLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
@@ -41,14 +42,10 @@ export function PricingForm({
           minimumSessionHelp: "Çarpanlar uygulandıktan sonra alt sınır olarak kullanılır.",
           baseRanges: "Boyuta göre taban fiyat aralıkları",
           styleMultipliers: "Stil çarpanları",
-          timeRanges: "Boyuta göre yaklaşık süre aralıkları",
-          timeRangesHelp: "Public boyut rehberinde kullanılır.",
           intentMultipliers: "Talep türü çarpanları",
           placementMultipliers: "Yerleşim çarpanları",
           min: "Min",
           max: "Maks",
-          minHours: "Min saat",
-          maxHours: "Maks saat",
           save: "Fiyatlamayı kaydet",
           saving: "Kaydediliyor",
           saveFailed: "Fiyatlama kaydedilemedi.",
@@ -62,14 +59,10 @@ export function PricingForm({
           minimumSessionHelp: "Acts as the floor after multipliers are applied.",
           baseRanges: "Base price ranges by size",
           styleMultipliers: "Style multipliers",
-          timeRanges: "Approximate time ranges by size",
-          timeRangesHelp: "Used in the public size guidance panel.",
           intentMultipliers: "Intent multipliers",
           placementMultipliers: "Placement multipliers",
           min: "Min",
           max: "Max",
-          minHours: "Min hours",
-          maxHours: "Max hours",
           save: "Save pricing",
           saving: "Saving",
           saveFailed: "Unable to save pricing.",
@@ -187,32 +180,11 @@ export function PricingForm({
           </div>
           <div className="space-y-4">
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              {copy.timeRanges}
-            </h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              {sizeOptions.map((size) => (
-                <div key={size.value} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="font-medium text-white">{size.label}</p>
-                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.timeRangesHelp}</p>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <Field label={copy.minHours}>
-                      <Input type="number" step="0.5" {...form.register(`sizeTimeRanges.${size.value}.minHours`)} />
-                    </Field>
-                    <Field label={copy.maxHours}>
-                      <Input type="number" step="0.5" {...form.register(`sizeTimeRanges.${size.value}.maxHours`)} />
-                    </Field>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
               {copy.intentMultipliers}
             </h3>
             <div className="grid gap-3 md:grid-cols-2">
               {intentOptions.map((intent) => (
-                <Field key={intent.value} label={intent.label}>
+                <Field key={intent.value} label={getIntentLabel(intent.value, locale)}>
                   <Input
                     type="number"
                     step="0.05"

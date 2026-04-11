@@ -406,7 +406,7 @@ export function CustomizePageForm({
   }
 
   return (
-    <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_560px]">
+    <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_480px]">
       <form className="min-w-0 space-y-6 2xl:order-1" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="surface-border">
           <CardContent className="flex flex-wrap gap-2 p-4">
@@ -702,7 +702,7 @@ export function CustomizePageForm({
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-5">
             <ArtistPagePreview
               artist={{ ...artist, pageTheme: previewTheme }}
               theme={previewTheme}

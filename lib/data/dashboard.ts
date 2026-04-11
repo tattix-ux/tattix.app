@@ -3,7 +3,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { demoArtistPageData, demoLeads } from "@/lib/demo-data";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
-import type { ClientSubmission, DashboardData } from "@/lib/types";
+import type { ArtistProfile, ClientSubmission, DashboardData } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getArtistPageDataById } from "@/lib/data/artist";
@@ -38,6 +38,25 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     convertedToSale: Boolean(row.converted_to_sale ?? false),
     soldAt: row.sold_at ? String(row.sold_at) : null,
     createdAt: String(row.created_at),
+  };
+}
+
+function normalizeAuthenticatedArtist(row: Record<string, unknown>): ArtistProfile {
+  return {
+    id: String(row.id),
+    userId: row.user_id ? String(row.user_id) : null,
+    artistName: String(row.artist_name),
+    slug: String(row.slug),
+    profileImageUrl: row.profile_image_url ? String(row.profile_image_url) : null,
+    coverImageUrl: row.cover_image_url ? String(row.cover_image_url) : null,
+    shortBio: String(row.short_bio ?? ""),
+    welcomeHeadline: String(row.welcome_headline ?? ""),
+    whatsappNumber: String(row.whatsapp_number ?? ""),
+    instagramHandle: String(row.instagram_handle ?? ""),
+    currency: String(row.currency ?? "TRY") as ArtistProfile["currency"],
+    active: Boolean(row.active),
+    planType: String(row.plan_type ?? "free") as ArtistProfile["planType"],
+    accessStatus: String(row.access_status ?? "active") as ArtistProfile["accessStatus"],
   };
 }
 
@@ -262,5 +281,6 @@ export async function getAuthenticatedArtist() {
     return null;
   }
 
-  return ensureArtistForUser(user);
+  const artist = await ensureArtistForUser(user);
+  return normalizeAuthenticatedArtist(artist as Record<string, unknown>);
 }
