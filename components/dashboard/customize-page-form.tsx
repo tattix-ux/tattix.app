@@ -581,9 +581,7 @@ export function CustomizePageForm({
                     description={copy.backgroundImageHelp}
                   >
                     <div className="space-y-3">
-                      <div
-                        className="relative flex h-28 items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5"
-                      >
+                      <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-28 sm:rounded-[22px]">
                         {watchedValues.backgroundImageUrl ? (
                           <div
                             className="absolute inset-0 bg-cover bg-center"
@@ -702,13 +700,15 @@ export function CustomizePageForm({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-3 sm:p-4">
-            <div className="mx-auto max-w-[270px] sm:max-w-[320px]">
-              <ArtistPagePreview
-                artist={{ ...artist, pageTheme: previewTheme }}
-                theme={previewTheme}
-                device={device}
-              />
+          <CardContent className="overflow-hidden p-2.5 sm:p-4">
+            <div className="mx-auto h-[260px] max-w-[210px] overflow-hidden sm:h-[360px] sm:max-w-[280px]">
+              <div className="origin-top scale-[0.72] sm:scale-[0.86]">
+                <ArtistPagePreview
+                  artist={{ ...artist, pageTheme: previewTheme }}
+                  theme={previewTheme}
+                  device={device}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

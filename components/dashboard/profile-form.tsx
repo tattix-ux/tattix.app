@@ -117,7 +117,7 @@ function MediaUploadField({
   return (
     <Field label={label} description={description}>
       <div className="space-y-3">
-        <div className="relative flex aspect-[6/5] min-h-[132px] items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:aspect-[5/4] sm:min-h-[180px] sm:rounded-[20px]">
+        <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt={label} className="h-full w-full object-cover" />

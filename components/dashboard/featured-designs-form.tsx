@@ -254,7 +254,7 @@ export function FeaturedDesignsForm({
                   <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_1fr]">
                     <Field label={labels.image} description={labels.imageDescription}>
                       <div className="space-y-3">
-                        <div className="relative flex aspect-[6/5] min-h-[132px] items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:aspect-[5/4] sm:min-h-[180px] sm:rounded-[20px]">
+                        <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
                           {currentDesign?.imageUrl ? (
                             <div
                               className="absolute inset-0 bg-cover bg-center"
