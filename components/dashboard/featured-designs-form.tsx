@@ -225,7 +225,7 @@ export function FeaturedDesignsForm({
                     </Button>
                   </div>
 
-                  <div className="grid gap-5 md:grid-cols-2">
+                  <div className="grid gap-5 lg:grid-cols-2">
                     <Field label={labels.category}>
                       <NativeSelect {...form.register(`designs.${index}.category`)}>
                         {featuredDesignCategories.map((category) => (
@@ -248,7 +248,7 @@ export function FeaturedDesignsForm({
                     <Textarea {...form.register(`designs.${index}.shortDescription`)} />
                   </Field>
 
-                  <div className="mt-5 grid gap-4 md:grid-cols-[1.1fr_1fr]">
+                  <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_1fr]">
                     <Field label={labels.image} description={labels.imageDescription}>
                       <div className="space-y-3">
                         <div className="relative flex aspect-[5/4] min-h-[180px] items-center justify-center overflow-hidden rounded-[20px] border border-white/10 bg-white/5 sm:aspect-[4/3] sm:min-h-[220px]">
@@ -315,7 +315,7 @@ export function FeaturedDesignsForm({
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-5 md:grid-cols-3">
+                  <div className="mt-5 grid gap-5 lg:grid-cols-3">
                     <Field label={labels.priceNote}>
                       <Input
                         placeholder={labels.pricePlaceholder}

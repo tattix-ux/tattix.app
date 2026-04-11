@@ -435,7 +435,7 @@ export function CustomizePageForm({
               <CardTitle>{copy.presets}</CardTitle>
               <CardDescription>{copy.presetsDescription}</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-2">
+            <CardContent className="grid gap-3 lg:grid-cols-2">
               {themePresetOptions.map((presetKey) => {
                 const preset = themePresets[presetKey];
                 const active = currentPreset === presetKey;
@@ -479,7 +479,7 @@ export function CustomizePageForm({
                 <CardTitle>{copy.fonts}</CardTitle>
                 <CardDescription>{copy.fontsDescription}</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-5 md:grid-cols-3">
+              <CardContent className="grid gap-5 xl:grid-cols-3">
                 <Field label={copy.fontPairing}>
                   <NativeSelect {...form.register("fontPairingPreset")}>
                     {fontPairingPresetOptions.map((preset) => (
@@ -515,7 +515,7 @@ export function CustomizePageForm({
                 <CardTitle>{copy.colors}</CardTitle>
                 <CardDescription>{copy.colorsDescription}</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-4 md:grid-cols-2">
+              <CardContent className="grid gap-4 lg:grid-cols-2">
                 <ColorField
                   label={copy.backgroundColor}
                   value={currentBackgroundColor}
@@ -545,7 +545,7 @@ export function CustomizePageForm({
                 <CardDescription>{copy.backgroundsDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-5 lg:grid-cols-2">
                   <Field label={copy.backgroundType}>
                     <NativeSelect {...form.register("backgroundType")}>
                       <option value="solid">{copy.solid}</option>
@@ -563,7 +563,7 @@ export function CustomizePageForm({
                     </NativeSelect>
                   </Field>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                   <ColorField
                     label={copy.gradientStart}
                     value={currentGradientStart}
@@ -575,7 +575,7 @@ export function CustomizePageForm({
                     onChange={(value) => form.setValue("gradientEnd", value)}
                   />
                 </div>
-                <div className="grid gap-5 md:grid-cols-3">
+                <div className="grid gap-5 xl:grid-cols-3">
                   <Field
                     label={copy.backgroundImage}
                     description={copy.backgroundImageHelp}

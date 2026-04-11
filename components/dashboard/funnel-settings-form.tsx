@@ -203,7 +203,7 @@ export function FunnelSettingsForm({
               </Field>
               <Badge variant="muted">{selectedStyles.length} {copy.activeCount}</Badge>
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 lg:grid-cols-2">
               {builtInStyles.map((style) => {
                 const active = selectedStyles.includes(style.styleKey);
 

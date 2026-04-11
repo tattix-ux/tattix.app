@@ -264,7 +264,7 @@ export function ProfileForm({
       </CardHeader>
       <CardContent>
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-2">
             <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
               <Input {...form.register("artistName")} />
             </Field>
@@ -276,7 +276,7 @@ export function ProfileForm({
               <Input {...form.register("slug")} />
             </Field>
           </div>
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-2">
             <MediaUploadField
               label={copy.profileImage}
               description={copy.profileImageHelp}
@@ -324,7 +324,7 @@ export function ProfileForm({
           >
             <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
           </Field>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-3">
             <Field
               label={copy.whatsapp}
               error={form.formState.errors.whatsappNumber?.message}

@@ -7,7 +7,7 @@ export default function DashboardLoading() {
         <div className="h-5 w-full max-w-3xl rounded-full bg-white/6" />
       </div>
       <div className="rounded-[28px] border border-white/8 bg-black/20 p-6">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div className="h-14 rounded-[20px] bg-white/6" />
           <div className="h-14 rounded-[20px] bg-white/6" />
           <div className="h-48 rounded-[24px] bg-white/6" />

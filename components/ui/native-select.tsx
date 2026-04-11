@@ -12,7 +12,7 @@ export function NativeSelect({
     <div className="relative">
       <select
         className={cn(
-          "h-11 w-full appearance-none rounded-2xl border border-white/10 bg-black/30 px-4 pr-10 text-sm text-white outline-none transition focus:border-[var(--ring)] focus:ring-2 focus:ring-[var(--ring)]/50",
+          "h-11 w-full appearance-none rounded-2xl border border-white/10 bg-black/30 px-4 pr-10 text-base text-white outline-none transition focus:border-[var(--ring)] focus:ring-2 focus:ring-[var(--ring)]/50 sm:text-sm",
           className,
         )}
         {...props}

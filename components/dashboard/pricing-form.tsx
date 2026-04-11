@@ -136,7 +136,7 @@ export function PricingForm({
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
               {copy.baseRanges}
             </h3>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               {sizeOptions.map((size) => (
                 <div key={size.value} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="font-medium text-white">{size.label}</p>
@@ -162,7 +162,7 @@ export function PricingForm({
                 {copy.noActiveStyles}
               </div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3 lg:grid-cols-2">
                 {activeStyles.map((style) => (
                   <Field
                     key={style.styleKey}
@@ -182,7 +182,7 @@ export function PricingForm({
             <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
               {copy.intentMultipliers}
             </h3>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 lg:grid-cols-2">
               {intentOptions.map((intent) => (
                 <Field key={intent.value} label={getIntentLabel(intent.value, locale)}>
                   <Input
