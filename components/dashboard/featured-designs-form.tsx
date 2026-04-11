@@ -209,8 +209,8 @@ export function FeaturedDesignsForm({
               const currentDesign = watchedDesigns?.[index];
 
               return (
-                <div key={field.id} className="rounded-[28px] border border-white/8 bg-black/20 p-5">
-                  <div className="mb-4 flex items-center justify-between">
+                <div key={field.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:rounded-[28px] sm:p-5">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                       {labels.item} {index + 1}
                     </p>
@@ -248,10 +248,10 @@ export function FeaturedDesignsForm({
                     <Textarea {...form.register(`designs.${index}.shortDescription`)} />
                   </Field>
 
-                  <div className="mt-5 grid gap-5 md:grid-cols-[1.2fr_1fr]">
+                  <div className="mt-5 grid gap-4 md:grid-cols-[1.1fr_1fr]">
                     <Field label={labels.image} description={labels.imageDescription}>
                       <div className="space-y-3">
-                        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5">
+                        <div className="relative flex aspect-[5/4] min-h-[180px] items-center justify-center overflow-hidden rounded-[20px] border border-white/10 bg-white/5 sm:aspect-[4/3] sm:min-h-[220px]">
                           {currentDesign?.imageUrl ? (
                             <div
                               className="absolute inset-0 bg-cover bg-center"
@@ -266,9 +266,9 @@ export function FeaturedDesignsForm({
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2">
                           <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
-                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
                             <Upload className="size-4" />
                             {labels.uploadImage}
                             <input
@@ -285,7 +285,13 @@ export function FeaturedDesignsForm({
                             />
                           </label>
                           {currentDesign?.imageUrl ? (
-                            <Button type="button" variant="ghost" size="sm" onClick={() => void handleImageRemove(index)}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs sm:text-sm"
+                              onClick={() => void handleImageRemove(index)}
+                            >
                               <X className="size-4" />
                               {labels.removeImage}
                             </Button>

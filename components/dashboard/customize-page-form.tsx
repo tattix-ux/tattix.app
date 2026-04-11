@@ -406,10 +406,10 @@ export function CustomizePageForm({
   }
 
   return (
-    <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_480px]">
+    <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
       <form className="min-w-0 space-y-6 2xl:order-1" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="surface-border">
-          <CardContent className="flex flex-wrap gap-2 p-4">
+          <CardContent className="flex flex-wrap gap-2 p-3 sm:p-4">
             <Button
               type="button"
               size="sm"

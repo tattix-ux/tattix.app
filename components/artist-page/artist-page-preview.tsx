@@ -16,7 +16,7 @@ export function ArtistPagePreview({
   theme: ArtistPageTheme;
   device?: "mobile" | "desktop";
 }) {
-  const previewWidth = device === "mobile" ? "max-w-[390px]" : "max-w-[920px]";
+  const previewWidth = device === "mobile" ? "max-w-[312px] sm:max-w-[340px]" : "max-w-[920px]";
   const introTitle =
     theme.customWelcomeTitle ||
     artist.funnelSettings.introTitle ||
@@ -33,7 +33,7 @@ export function ArtistPagePreview({
     <ArtistPageShell theme={theme} className="rounded-[32px]">
       <div className={`mx-auto w-full ${previewWidth}`}>
         <div
-          className="rounded-[36px] border p-3 shadow-2xl"
+          className="rounded-[30px] border p-2.5 shadow-2xl sm:rounded-[36px] sm:p-3"
           style={{
             borderColor: "var(--artist-border)",
             backgroundColor: "color-mix(in srgb, var(--artist-card) 35%, transparent)",
@@ -47,7 +47,7 @@ export function ArtistPagePreview({
             }}
           >
             <div
-              className="h-40 border-b bg-grid"
+              className="h-28 border-b bg-grid sm:h-36"
               style={{
                 borderColor: "var(--artist-border)",
                 backgroundImage: artist.profile.coverImageUrl
@@ -57,7 +57,7 @@ export function ArtistPagePreview({
                 backgroundPosition: "center",
               }}
             />
-            <div className="-mt-12 space-y-5 px-5 pb-5">
+            <div className="-mt-10 space-y-4 px-4 pb-4 sm:-mt-12 sm:space-y-5 sm:px-5 sm:pb-5">
               <AvatarTile
                 name={artist.profile.artistName}
                 imageUrl={artist.profile.profileImageUrl}
@@ -66,7 +66,7 @@ export function ArtistPagePreview({
               <div className="space-y-3">
                 <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
                 <h3
-                  className="text-3xl leading-tight"
+                  className="text-[1.55rem] leading-tight sm:text-3xl"
                   style={{
                     fontFamily: "var(--artist-heading-font)",
                     color: "var(--artist-foreground)",
@@ -74,12 +74,12 @@ export function ArtistPagePreview({
                 >
                   {introTitle}
                 </h3>
-                <p className="text-sm leading-7" style={{ color: "var(--artist-muted)" }}>
+                <p className="text-xs leading-6 sm:text-sm sm:leading-7" style={{ color: "var(--artist-muted)" }}>
                   {introText}
                 </p>
                 <button
                   type="button"
-                  className="inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-medium"
+                  className="inline-flex h-10 items-center justify-center rounded-full px-4 text-xs font-medium sm:h-11 sm:px-5 sm:text-sm"
                   style={{
                     backgroundColor: "var(--artist-primary)",
                     color: "var(--artist-primary-foreground)",
@@ -89,7 +89,7 @@ export function ArtistPagePreview({
                 </button>
               </div>
               <Card
-                className="p-5"
+                className="p-4 sm:p-5"
                 style={{
                   borderColor: "var(--artist-border)",
                   backgroundColor:
@@ -99,21 +99,21 @@ export function ArtistPagePreview({
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
+                    <p className="text-sm font-medium sm:text-base" style={{ color: "var(--artist-card-text)" }}>
                       What are you looking for?
                     </p>
-                    <p className="mt-1 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                    <p className="mt-1 text-xs sm:text-sm" style={{ color: "var(--artist-card-muted)" }}>
                       Start with the tattoo intent.
                     </p>
                   </div>
                   <Badge variant="muted">Step 1 / 6</Badge>
                 </div>
-                <div className="mt-4 grid gap-3">
+                <div className="mt-4 grid gap-2.5 sm:gap-3">
                   {intentOptions.slice(0, 3).map((intent, index) => (
                     <button
                       key={intent.value}
                       type="button"
-                      className="rounded-[24px] border px-4 py-4 text-left transition"
+                      className="rounded-[22px] border px-3 py-3 text-left text-sm transition sm:px-4 sm:py-4"
                       style={{
                         borderColor: index === 1 ? "var(--artist-primary)" : "var(--artist-border)",
                         backgroundColor:

@@ -117,7 +117,7 @@ function MediaUploadField({
   return (
     <Field label={label} description={description}>
       <div className="space-y-3">
-        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5">
+        <div className="relative flex aspect-[5/4] min-h-[180px] items-center justify-center overflow-hidden rounded-[20px] border border-white/10 bg-white/5 sm:aspect-[4/3] sm:min-h-[220px]">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt={label} className="h-full w-full object-cover" />
@@ -128,8 +128,8 @@ function MediaUploadField({
             </div>
           )}
         </div>
-        <div className="flex flex-wrap gap-3">
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
+        <div className="flex flex-wrap gap-2">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
             <Upload className="size-4" />
             {uploadLabel}
             <input
@@ -146,7 +146,7 @@ function MediaUploadField({
             />
           </label>
           {imageUrl ? (
-            <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+            <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="text-xs sm:text-sm">
               <X className="size-4" />
               {removeLabel}
             </Button>
