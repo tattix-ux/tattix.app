@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 
 import { NextResponse } from "next/server";
@@ -80,6 +81,9 @@ export async function POST(request: Request) {
   if (insertError) {
     return NextResponse.json({ message: insertError.message }, { status: 400 });
   }
+
+  revalidatePath("/dashboard/designs");
+  revalidatePath(`/${artist.slug}`);
 
   return NextResponse.json({ message: "Featured designs saved." });
 }

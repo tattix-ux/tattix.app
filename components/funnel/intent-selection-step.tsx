@@ -164,12 +164,15 @@ export function IntentSelectionStep({
                         </>
                       ) : (
                         <div
-                          className="h-full w-full"
+                          className="flex h-full w-full items-center justify-center px-4 text-center text-xs"
                           style={{
                             background:
                               "linear-gradient(135deg, color-mix(in srgb, var(--artist-primary) 18%, transparent), rgba(255,255,255,0.03), rgba(0,0,0,0.28))",
+                            color: "var(--artist-card-muted)",
                           }}
-                        />
+                        >
+                          {locale === "tr" ? "Görsel bulunamadı" : "Image unavailable"}
+                        </div>
                       )}
                     </div>
                     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -196,6 +199,11 @@ export function IntentSelectionStep({
                           design.referencePriceMax,
                           currency,
                         )}
+                      </p>
+                    ) : null}
+                    {process.env.NODE_ENV !== "production" && design.imageUrl ? (
+                      <p className="mt-2 break-all text-[11px]" style={{ color: "var(--artist-card-muted)" }}>
+                        {design.imageUrl}
                       </p>
                     ) : null}
                     <div className="mt-3 flex flex-col gap-2.5 sm:mt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">

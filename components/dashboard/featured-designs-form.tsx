@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { ImagePlus, LoaderCircle, Plus, Save, Trash2, Upload, X } from "lucide-react";
 import { z } from "zod";
@@ -98,6 +99,7 @@ export function FeaturedDesignsForm({
   demoMode: boolean;
   locale?: PublicLocale;
 }) {
+  const router = useRouter();
   const labels = copy[locale];
   const form = useForm<FeaturedDesignFormInput, unknown, FeaturedDesignValues>({
     resolver: zodResolver(featuredDesignsSchema),
@@ -194,6 +196,7 @@ export function FeaturedDesignsForm({
     }
 
     form.setError("root", { message: labels.saved });
+    router.refresh();
   }
 
   return (
