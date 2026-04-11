@@ -41,7 +41,7 @@ export default async function DashboardLayout({
                   <LogoutButton />
                 </div>
               </div>
-              <div className="w-full max-w-[460px] xl:w-auto xl:min-w-[360px]">
+              <div className="w-full max-w-[420px] xl:w-auto xl:min-w-[360px]">
                 <PublicRouteCard
                   slug={dashboardData.profile.slug}
                   locale={isTurkish ? "tr" : "en"}
@@ -76,7 +76,7 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[420px]">{children}</main>
+              <main className="min-w-0 w-full max-w-[360px]">{children}</main>
             </div>
           </div>
         </div>
