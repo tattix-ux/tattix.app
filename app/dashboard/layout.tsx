@@ -30,50 +30,54 @@ export default async function DashboardLayout({
   return (
     <AppShell>
       <Container className="py-6 sm:py-8">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <Logo />
-            <div className="flex items-center gap-2">
-              {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
-              <LogoutButton />
-            </div>
-          </div>
-          <div className="w-full xl:w-auto xl:min-w-[360px]">
-            <PublicRouteCard
-              slug={dashboardData.profile.slug}
-              locale={isTurkish ? "tr" : "en"}
-            />
-          </div>
-        </div>
-
-        <div className="mt-8 grid items-start gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="space-y-4 xl:sticky xl:top-6">
-            {dashboardData.demoMode ? <DemoModeBanner /> : null}
-            <div className="rounded-[28px] border border-white/8 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                {isTurkish ? "Panel" : "Dashboard"}
-              </p>
-              <h2 className="mt-2 font-display text-3xl text-white">
-                {dashboardData.profile.artistName}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
-                {isTurkish
-                  ? "Instagram biyondan açılan müşteri akışını ve sanatçı sayfanı buradan yönet."
-                  : "Configure the public funnel clients open from your Instagram bio."}
-              </p>
-              <div className="mt-5">
-                <DashboardNav locale={isTurkish ? "tr" : "en"} />
+        <div className="overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch]">
+          <div className="min-w-[720px] xl:min-w-0">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <Logo />
+                <div className="flex items-center gap-2">
+                  {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
+                  <LogoutButton />
+                </div>
+              </div>
+              <div className="w-full xl:w-auto xl:min-w-[360px]">
+                <PublicRouteCard
+                  slug={dashboardData.profile.slug}
+                  locale={isTurkish ? "tr" : "en"}
+                />
               </div>
             </div>
-            {!hasProAccess(dashboardData.profile) ? (
-              <UpgradeCard
-                locale={isTurkish ? "tr" : "en"}
-                profile={dashboardData.profile}
-                compact
-              />
-            ) : null}
-          </aside>
-          <main className="min-w-0">{children}</main>
+
+            <div className="mt-8 grid items-start gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+              <aside className="space-y-4 xl:sticky xl:top-6">
+                {dashboardData.demoMode ? <DemoModeBanner /> : null}
+                <div className="rounded-[28px] border border-white/8 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
+                    {isTurkish ? "Panel" : "Dashboard"}
+                  </p>
+                  <h2 className="mt-2 font-display text-3xl text-white">
+                    {dashboardData.profile.artistName}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
+                    {isTurkish
+                      ? "Instagram biyondan açılan müşteri akışını ve sanatçı sayfanı buradan yönet."
+                      : "Configure the public funnel clients open from your Instagram bio."}
+                  </p>
+                  <div className="mt-5">
+                    <DashboardNav locale={isTurkish ? "tr" : "en"} />
+                  </div>
+                </div>
+                {!hasProAccess(dashboardData.profile) ? (
+                  <UpgradeCard
+                    locale={isTurkish ? "tr" : "en"}
+                    profile={dashboardData.profile}
+                    compact
+                  />
+                ) : null}
+              </aside>
+              <main className="min-w-0">{children}</main>
+            </div>
+          </div>
         </div>
       </Container>
     </AppShell>
