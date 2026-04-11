@@ -62,7 +62,7 @@ export function DashboardNav({ locale = "en" }: { locale?: "en" | "tr" }) {
             href={item.href}
             prefetch
             className={cn(
-              "inline-flex min-w-fit items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition whitespace-nowrap",
+              "inline-flex min-w-fit items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-xs transition whitespace-nowrap sm:px-4 sm:py-3 sm:text-sm",
               active
                 ? "border-[var(--accent)]/30 bg-[var(--accent)]/14 text-white"
                 : "border-white/8 bg-white/3 text-[var(--foreground-muted)] hover:border-white/12 hover:bg-white/6 hover:text-white",
