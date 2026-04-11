@@ -34,6 +34,13 @@ export function PricingForm({
   styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    minimum: true,
+    baseRanges: false,
+    styleMultipliers: false,
+    intentMultipliers: false,
+    placementMultipliers: false,
+  });
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     Object.fromEntries(bodyPlacementGroups.map((group) => [group.value, false])),
   );
@@ -49,6 +56,7 @@ export function PricingForm({
           intentMultipliers: "Talep türü çarpanları",
           placementMultipliers: "Yerleşim çarpanları",
           placementHelp: "Ana bölgeye dokunarak alt yerleşimleri aç.",
+          sectionHelp: "İlgili fiyatlama alanını açmak için başlığa dokun.",
           min: "Min",
           max: "Maks",
           save: "Fiyatlamayı kaydet",
@@ -67,6 +75,7 @@ export function PricingForm({
           intentMultipliers: "Intent multipliers",
           placementMultipliers: "Placement multipliers",
           placementHelp: "Tap a main area to reveal its detailed placements.",
+          sectionHelp: "Tap a pricing section title to expand it.",
           min: "Min",
           max: "Max",
           save: "Save pricing",
@@ -123,6 +132,13 @@ export function PricingForm({
     form.setError("root", { message: copy.saved });
   }
 
+  function toggleSection(section: keyof typeof expandedSections) {
+    setExpandedSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }));
+  }
+
   return (
     <Card className="surface-border">
       <CardHeader>
@@ -131,117 +147,194 @@ export function PricingForm({
       </CardHeader>
       <CardContent>
         <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
-          <Field
-            label={copy.minimumSessionPrice}
-            description={copy.minimumSessionHelp}
-            error={form.formState.errors.minimumSessionPrice?.message}
-          >
-            <Input type="number" {...form.register("minimumSessionPrice")} />
-          </Field>
+          <p className="text-sm text-[var(--foreground-muted)]">{copy.sectionHelp}</p>
+
           <div className="space-y-4">
-            <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              {copy.baseRanges}
-            </h3>
-            <div className="grid gap-4 lg:grid-cols-2">
-              {sizeOptions.map((size) => (
-                <div key={size.value} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="font-medium text-white">{size.label}</p>
-                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{size.detail}</p>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <Field label={copy.min}>
-                      <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.min`)} />
-                    </Field>
-                    <Field label={copy.max}>
-                      <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.max`)} />
-                    </Field>
-                  </div>
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("minimum")}
+              >
+                <div>
+                  <p className="font-medium text-white">{copy.minimumSessionPrice}</p>
+                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.minimumSessionHelp}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              {copy.styleMultipliers}
-            </h3>
-            {activeStyles.length === 0 ? (
-              <div className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
-                {copy.noActiveStyles}
-              </div>
-            ) : (
-              <div className="grid gap-3 lg:grid-cols-2">
-                {activeStyles.map((style) => (
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.minimum ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.minimum ? (
+                <div className="border-t border-white/8 px-4 pb-4 pt-4">
                   <Field
-                    key={style.styleKey}
-                    label={style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                    label={copy.minimumSessionPrice}
+                    error={form.formState.errors.minimumSessionPrice?.message}
                   >
-                      <Input
-                        type="number"
-                        step="0.05"
-                        {...form.register(`styleMultipliers.${style.styleKey}`)}
-                      />
+                    <Input type="number" {...form.register("minimumSessionPrice")} />
                   </Field>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              {copy.intentMultipliers}
-            </h3>
-            <div className="grid gap-3 lg:grid-cols-2">
-              {intentOptions.map((intent) => (
-                <Field key={intent.value} label={getIntentLabel(intent.value, locale)}>
-                  <Input
-                    type="number"
-                    step="0.05"
-                    {...form.register(`intentMultipliers.${intent.value}`)}
-                  />
-                </Field>
-              ))}
+                </div>
+              ) : null}
             </div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              {copy.placementMultipliers}
-            </h3>
-            <p className="text-sm text-[var(--foreground-muted)]">{copy.placementHelp}</p>
-            <div className="grid gap-4">
-              {bodyPlacementGroups.map((group) => (
-                <div key={group.value} className="rounded-[24px] border border-white/8 bg-black/20">
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                    onClick={() =>
-                      setExpandedGroups((current) => ({
-                        ...current,
-                        [group.value]: !current[group.value],
-                      }))
-                    }
-                  >
-                    <p className="font-medium text-white">{getPlacementCategoryLocaleLabel(group.value, locale)}</p>
-                    <ChevronDown
-                      className={`size-4 text-[var(--foreground-muted)] transition ${
-                        expandedGroups[group.value] ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {expandedGroups[group.value] ? (
-                    <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4">
-                      {group.details.map((detail) => (
-                        <Field key={detail.value} label={getPlacementDetailLocaleLabel(detail.value, locale)}>
+
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("baseRanges")}
+              >
+                <p className="font-medium text-white">{copy.baseRanges}</p>
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.baseRanges ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.baseRanges ? (
+                <div className="grid gap-4 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
+                  {sizeOptions.map((size) => (
+                    <div key={size.value} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <p className="font-medium text-white">{size.label}</p>
+                      <p className="mt-1 text-sm text-[var(--foreground-muted)]">{size.detail}</p>
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <Field label={copy.min}>
+                          <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.min`)} />
+                        </Field>
+                        <Field label={copy.max}>
+                          <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.max`)} />
+                        </Field>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("styleMultipliers")}
+              >
+                <p className="font-medium text-white">{copy.styleMultipliers}</p>
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.styleMultipliers ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.styleMultipliers ? (
+                <div className="border-t border-white/8 px-4 pb-4 pt-4">
+                  {activeStyles.length === 0 ? (
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
+                      {copy.noActiveStyles}
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {activeStyles.map((style) => (
+                        <Field
+                          key={style.styleKey}
+                          label={style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                        >
                           <Input
                             type="number"
                             step="0.05"
-                            {...form.register(`placementMultipliers.${detail.value}`)}
+                            {...form.register(`styleMultipliers.${style.styleKey}`)}
                           />
                         </Field>
                       ))}
                     </div>
-                  ) : null}
+                  )}
                 </div>
-              ))}
+              ) : null}
+            </div>
+
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("intentMultipliers")}
+              >
+                <p className="font-medium text-white">{copy.intentMultipliers}</p>
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.intentMultipliers ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.intentMultipliers ? (
+                <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
+                  {intentOptions.map((intent) => (
+                    <Field key={intent.value} label={getIntentLabel(intent.value, locale)}>
+                      <Input
+                        type="number"
+                        step="0.05"
+                        {...form.register(`intentMultipliers.${intent.value}`)}
+                      />
+                    </Field>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("placementMultipliers")}
+              >
+                <div>
+                  <p className="font-medium text-white">{copy.placementMultipliers}</p>
+                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.placementHelp}</p>
+                </div>
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.placementMultipliers ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.placementMultipliers ? (
+                <div className="grid gap-4 border-t border-white/8 px-4 pb-4 pt-4">
+                  {bodyPlacementGroups.map((group) => (
+                    <div key={group.value} className="rounded-[20px] border border-white/8 bg-black/20">
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                        onClick={() =>
+                          setExpandedGroups((current) => ({
+                            ...current,
+                            [group.value]: !current[group.value],
+                          }))
+                        }
+                      >
+                        <p className="font-medium text-white">{getPlacementCategoryLocaleLabel(group.value, locale)}</p>
+                        <ChevronDown
+                          className={`size-4 text-[var(--foreground-muted)] transition ${
+                            expandedGroups[group.value] ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {expandedGroups[group.value] ? (
+                        <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4">
+                          {group.details.map((detail) => (
+                            <Field key={detail.value} label={getPlacementDetailLocaleLabel(detail.value, locale)}>
+                              <Input
+                                type="number"
+                                step="0.05"
+                                {...form.register(`placementMultipliers.${detail.value}`)}
+                              />
+                            </Field>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
+
           {form.formState.errors.root?.message ? (
             <p className="text-sm text-[var(--accent-soft)]">
               {form.formState.errors.root.message}
