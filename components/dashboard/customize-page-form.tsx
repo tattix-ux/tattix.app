@@ -572,29 +572,7 @@ export function CustomizePageForm({
               <CardTitle>{copy.presets}</CardTitle>
               <CardDescription>{copy.presetsDescription}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div className="min-w-0 flex-1">
-                  <Field label={copy.presetName}>
-                    <Input
-                      value={presetName}
-                      onChange={(event) => setPresetName(event.target.value)}
-                      placeholder={copy.presetNamePlaceholder}
-                    />
-                  </Field>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={form.formState.isSubmitting}
-                  onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
-                >
-                  <Save className="size-4" />
-                  {copy.savePreset}
-                </Button>
-              </div>
-
-              <div className="grid gap-3 lg:grid-cols-2">
+            <CardContent className="grid gap-3 lg:grid-cols-2">
               {themePresetOptions.map((presetKey) => {
                 const preset = themePresets[presetKey];
                 const active = currentPreset === presetKey;
@@ -682,11 +660,37 @@ export function CustomizePageForm({
                   ))}
                 </>
               ) : null}
-              </div>
             </CardContent>
           </Card>
         ) : (
           <>
+            <Card className="surface-border">
+              <CardHeader>
+                <CardTitle>{copy.savePreset}</CardTitle>
+                <CardDescription>{copy.savedThemesDescription}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="min-w-0 flex-1">
+                  <Field label={copy.presetName}>
+                    <Input
+                      value={presetName}
+                      onChange={(event) => setPresetName(event.target.value)}
+                      placeholder={copy.presetNamePlaceholder}
+                    />
+                  </Field>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={form.formState.isSubmitting}
+                  onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
+                >
+                  <Save className="size-4" />
+                  {copy.savePreset}
+                </Button>
+              </CardContent>
+            </Card>
+
             <Card className="surface-border">
               <CardHeader>
                 <CardTitle>{copy.fonts}</CardTitle>
