@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Mail, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
+import { ProRequestActions } from "@/components/dashboard/pro-request-actions";
 import { SectionHeading } from "@/components/shared/shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +27,10 @@ function buildMailto({
     `Request date: ${requestedAt}`,
   ].join("\n");
 
-  return `mailto:gizemoderr@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return {
+    href: `mailto:gizemoderr@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+    body,
+  };
 }
 
 export default async function DashboardUpgradePage() {
@@ -38,7 +42,7 @@ export default async function DashboardUpgradePage() {
     timeStyle: "short",
     timeZone: "Europe/Istanbul",
   }).format(new Date());
-  const mailtoHref = buildMailto({
+  const mailto = buildMailto({
     accountEmail: session?.user.email ?? "unknown",
     artistName: data.profile.artistName,
     planType: data.profile.planType,
@@ -92,13 +96,19 @@ export default async function DashboardUpgradePage() {
             <p className="mt-2">{isTurkish ? "Talep zamanı" : "Request time"}: <span className="text-white">{requestedAt}</span></p>
           </div>
 
+          <div className="space-y-3">
+            <ProRequestActions
+              locale={isTurkish ? "tr" : "en"}
+              mailtoHref={mailto.href}
+              requestBody={mailto.body}
+            />
+            <p className="text-xs text-[var(--foreground-muted)]">
+              {isTurkish
+                ? "Mail uygulaması açılmazsa talep metnini kopyalayıp gizemoderr@gmail.com adresine gönderebilirsin."
+                : "If your mail app does not open, copy the request text and send it to gizemoderr@gmail.com."}
+            </p>
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="w-full sm:w-auto">
-              <a href={mailtoHref}>
-                <Mail className="size-4" />
-                {isTurkish ? "Pro erişim talebi gönder" : "Send Pro access request"}
-              </a>
-            </Button>
             <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/dashboard/profile">
                 {isTurkish ? "Panele geri dön" : "Back to dashboard"}
