@@ -40,7 +40,7 @@ export default async function DashboardLayout({
                   <LogoutButton />
                 </div>
               </div>
-              <div className="w-full max-w-[620px] xl:w-auto xl:min-w-[380px]">
+              <div className="w-full max-w-[640px] xl:w-auto xl:min-w-[400px]">
                 <PublicRouteCard
                   slug={dashboardData.profile.slug}
                   locale={isTurkish ? "tr" : "en"}
@@ -48,8 +48,8 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
-              <aside className="max-w-[360px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
+            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+              <aside className="max-w-[400px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
@@ -75,7 +75,7 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[840px]">{children}</main>
+              <main className="min-w-0 w-full max-w-[760px]">{children}</main>
             </div>
           </div>
         </div>

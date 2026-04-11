@@ -51,7 +51,7 @@ export function DashboardNav({ locale = "en" }: { locale?: "en" | "tr" }) {
   }, [items, router]);
 
   return (
-    <nav className="flex gap-2 overflow-x-auto pb-2 xl:flex-col xl:overflow-visible">
+    <nav className="grid grid-cols-3 gap-2 pb-2 xl:flex xl:flex-col xl:overflow-visible">
       {items.map((item) => {
         const active = pathname === item.href;
         const Icon = item.icon;
@@ -62,16 +62,16 @@ export function DashboardNav({ locale = "en" }: { locale?: "en" | "tr" }) {
             href={item.href}
             prefetch
             className={cn(
-              "inline-flex min-w-fit items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-xs transition whitespace-nowrap sm:px-4 sm:py-3 sm:text-sm",
+              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-2.5 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs xl:min-w-fit xl:flex-row xl:justify-start xl:gap-2.5 xl:px-4 xl:py-3 xl:text-sm xl:text-left",
               active
                 ? "border-[var(--accent)]/30 bg-[var(--accent)]/14 text-white"
                 : "border-white/8 bg-white/3 text-[var(--foreground-muted)] hover:border-white/12 hover:bg-white/6 hover:text-white",
             )}
           >
             <Icon className="size-4" />
-            {item.label}
+            <span className="break-words">{item.label}</span>
             {item.pro ? (
-              <Badge variant="muted" className="ml-1 gap-1">
+              <Badge variant="muted" className="gap-1 xl:ml-1">
                 <Crown className="size-3" />
                 Pro
               </Badge>
