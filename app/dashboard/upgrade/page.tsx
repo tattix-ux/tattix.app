@@ -18,7 +18,7 @@ function buildMailto({
   planType: "free" | "pro";
   requestedAt: string;
 }) {
-  const subject = "Pro Access Request - Tattix";
+  const subject = "Pro Access Request - TatBot";
   const body = [
     `Artist email: ${accountEmail}`,
     `Artist name: ${artistName}`,
@@ -94,10 +94,10 @@ export default async function DashboardUpgradePage() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild className="w-full sm:w-auto">
-              <Link href={mailtoHref}>
+              <a href={mailtoHref}>
                 <Mail className="size-4" />
                 {isTurkish ? "Pro erişim talebi gönder" : "Send Pro access request"}
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/dashboard/profile">

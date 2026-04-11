@@ -5,6 +5,7 @@ import { Monitor, Smartphone, ImagePlus, LoaderCircle, Save, Upload, X } from "l
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 import { ArtistPagePreview } from "@/components/artist-page/artist-page-preview";
 import { Field } from "@/components/shared/field";
@@ -68,6 +69,7 @@ export function CustomizePageForm({
   demoMode: boolean;
   locale?: PublicLocale;
 }) {
+  const router = useRouter();
   const copy =
     locale === "tr"
       ? {
@@ -382,6 +384,7 @@ export function CustomizePageForm({
         payload.message ??
         "Page customization saved.",
     });
+    router.refresh();
   }
 
   function applyPreset(presetKey: ThemeFormInput["presetTheme"]) {

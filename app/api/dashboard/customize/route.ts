@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { hasProAccess } from "@/lib/access";
@@ -59,6 +60,9 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
+
+  revalidatePath("/dashboard/customize");
+  revalidatePath(`/${artist.slug}`);
 
   return NextResponse.json({ message: "Page customization saved." });
 }
