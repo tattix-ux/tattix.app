@@ -41,7 +41,13 @@ function getItems(locale: "en" | "tr") {
   ];
 }
 
-export function DashboardNav({ locale = "en" }: { locale?: "en" | "tr" }) {
+export function DashboardNav({
+  locale = "en",
+  hideProBadges = false,
+}: {
+  locale?: "en" | "tr";
+  hideProBadges?: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const items = useMemo(() => getItems(locale), [locale]);
@@ -70,7 +76,7 @@ export function DashboardNav({ locale = "en" }: { locale?: "en" | "tr" }) {
           >
             <Icon className="size-4" />
             <span className="break-words">{item.label}</span>
-            {item.pro ? (
+            {item.pro && !hideProBadges ? (
               <Badge variant="muted" className="gap-1 xl:ml-1">
                 <Crown className="size-3" />
                 Pro
