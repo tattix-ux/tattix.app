@@ -184,10 +184,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("heightCm", null);
     setField("style", isReadyMadeIntent(intent) ? "custom" : "");
     setField("notes", "");
-
-    if (intent === "custom-tattoo" || intent === "not-sure") {
-      window.setTimeout(() => setStep(2), 180);
-    }
   }
 
   function handleNext() {
@@ -358,9 +354,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   onDesignSelect={(designId) => {
                     setField("selectedDesignId", designId);
                     setField("style", designId ? "custom" : draft.style);
-                    if (designId) {
-                      window.setTimeout(() => setStep(2), 180);
-                    }
                   }}
                   onReferenceImageSelect={(imageUrl, imagePath) => {
                     setField("referenceImage", imageUrl);
@@ -393,7 +386,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       setField("sizeCategory", deriveSizeCategoryFromCm(defaultSize));
                       setField("widthCm", null);
                       setField("heightCm", null);
-                      window.setTimeout(() => setStep(3), 180);
                     }}
                   />
                 </div>
@@ -439,11 +431,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]"
                       >
                         <button
-                          type="button"
-                          onClick={() => {
-                            setField("style", style.styleKey);
-                            window.setTimeout(() => setStep(5), 180);
-                          }}
+                        type="button"
+                        onClick={() => {
+                          setField("style", style.styleKey);
+                        }}
                           className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
                           style={{
                             borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -478,7 +469,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       type="button"
                       onClick={() => {
                         setField("style", "not-sure-style");
-                        window.setTimeout(() => setStep(5), 180);
                       }}
                       className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
                       style={{

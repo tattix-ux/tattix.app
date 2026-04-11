@@ -301,8 +301,14 @@ export function IntentSelectionStep({
       ) : null}
 
       {previewDesign ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-clip bg-black/70 p-0 sm:items-center sm:p-4">
-          <div className="max-h-[92dvh] w-full max-w-[calc(100vw-0.75rem)] overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-xl sm:rounded-[28px]">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-black/70 p-0 sm:items-center sm:p-4"
+          onClick={() => setPreviewDesign(null)}
+        >
+          <div
+            className="max-h-[92dvh] w-full max-w-full overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-2xl sm:rounded-[28px] sm:p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-white">{previewDesign.title}</p>
@@ -314,16 +320,17 @@ export function IntentSelectionStep({
                 <X className="size-4" />
               </Button>
             </div>
-            <div className="overflow-hidden rounded-[22px] border border-white/10 bg-black">
+            <div className="overflow-hidden rounded-[22px] border border-white/10 bg-black/80">
               {previewDesign.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={previewDesign.imageUrl}
                   alt={previewDesign.title}
-                  className="max-h-[58vh] w-full object-contain"
+                  className="block max-h-[70dvh] w-full object-contain"
+                  sizes="(max-width: 640px) 100vw, 42rem"
                 />
               ) : (
-                <div className="flex h-[260px] items-center justify-center text-sm text-[var(--foreground-muted)]">
+                <div className="flex min-h-[260px] items-center justify-center p-6 text-center text-sm text-[var(--foreground-muted)]">
                   {locale === "tr" ? "Bu tasarım için görsel yok." : "No image available for this design."}
                 </div>
               )}
