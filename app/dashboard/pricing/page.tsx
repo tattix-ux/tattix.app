@@ -14,7 +14,7 @@ export default async function DashboardPricingPage() {
         eyebrow={isTurkish ? "Fiyatlama" : "Pricing"}
         title={
           isTurkish
-            ? "Görüşmeyi zorlamadan tutarlı fiyat aralıkları oluştur."
+            ? "Sana özel fiyat aralıklarını belirle."
             : "Set predictable ranges without killing the consultation."
         }
         description={
