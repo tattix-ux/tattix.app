@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -56,6 +57,12 @@ export async function POST(request: Request) {
     if (!data) {
       return NextResponse.json({ message: "Artist not found." }, { status: 404 });
     }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/profile");
+    revalidatePath("/dashboard/customize");
+    revalidatePath("/dashboard/designs");
+    revalidatePath("/dashboard/leads");
 
     return NextResponse.json({ message: "Access updated." });
   } catch (error) {

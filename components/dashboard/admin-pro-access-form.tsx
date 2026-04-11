@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { LoaderCircle, Save } from "lucide-react";
 
 import { Field } from "@/components/shared/field";
@@ -45,6 +46,7 @@ export function AdminProAccessForm({
   defaultSlug?: string;
 }) {
   const labels = copy[locale];
+  const router = useRouter();
   const [slug, setSlug] = useState(defaultSlug);
   const [planType, setPlanType] = useState<"free" | "pro">("free");
   const [accessStatus, setAccessStatus] = useState<"active" | "pending" | "blocked">("active");
@@ -71,6 +73,9 @@ export function AdminProAccessForm({
 
       const payload = (await response.json()) as { message?: string };
       setMessage(payload.message ?? (response.ok ? labels.success : labels.error));
+      if (response.ok) {
+        router.refresh();
+      }
     } catch {
       setMessage(labels.error);
     } finally {
