@@ -115,6 +115,14 @@ export type ArtistPageTheme = {
   featuredSectionLabel2: string | null;
 };
 
+export type ArtistSavedTheme = {
+  id: string;
+  artistId: string;
+  name: string;
+  theme: ArtistPageTheme;
+  createdAt: string;
+};
+
 export type ClientSubmission = {
   id: string;
   artistId: string;
@@ -180,6 +188,7 @@ export type ArtistPageData = {
   featuredDesigns: ArtistFeaturedDesign[];
   pricingRules: ArtistPricingRules;
   pageTheme: ArtistPageTheme;
+  savedThemes: ArtistSavedTheme[];
 };
 
 export type DashboardData = ArtistPageData & {

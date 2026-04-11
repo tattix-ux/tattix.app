@@ -249,6 +249,7 @@ export const demoArtistPageData: ArtistPageData = {
   featuredDesigns: demoFeaturedDesigns,
   pricingRules: demoPricingRules,
   pageTheme: demoArtistTheme,
+  savedThemes: [],
 };
 
 export const defaultPlacement = {

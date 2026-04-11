@@ -35,15 +35,15 @@ export default async function DashboardLayout({
           <div className="min-w-[720px] xl:min-w-0">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
                   <Logo className="min-w-0" />
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center">
                     <LogoutButton />
                   </div>
                 </div>
                 {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
               </div>
-              <div className="w-full max-w-[390px] xl:w-auto xl:min-w-[420px] xl:max-w-[420px]">
+              <div className="w-full max-w-[372px] xl:w-auto xl:min-w-[420px] xl:max-w-[420px]">
                 <PublicRouteCard
                   slug={dashboardData.profile.slug}
                   locale={isTurkish ? "tr" : "en"}
@@ -52,7 +52,7 @@ export default async function DashboardLayout({
             </div>
 
             <div className="mt-6 grid items-start gap-4 xl:grid-cols-[400px_minmax(0,1fr)] xl:gap-6">
-              <aside className="max-w-[390px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
+              <aside className="max-w-[372px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
@@ -78,7 +78,7 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[390px] xl:max-w-[960px] 2xl:max-w-[1120px]">
+              <main className="min-w-0 w-full max-w-[372px] xl:max-w-[960px] 2xl:max-w-[1120px]">
                 {children}
               </main>
             </div>

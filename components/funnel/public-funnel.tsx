@@ -245,11 +245,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               <div className="min-w-0">
                 <p
                   className="truncate text-base sm:text-lg"
-                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
+                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                 >
                   {artist.profile.artistName}
                 </p>
-                <p className="truncate text-xs sm:text-sm" style={{ color: "var(--artist-muted)" }}>
+                <p className="truncate text-xs sm:text-sm" style={{ color: "var(--artist-card-muted)" }}>
                   {artist.profile.instagramHandle}
                 </p>
               </div>
@@ -280,14 +280,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
                 <h1
                   className="text-[1.55rem] leading-tight sm:text-3xl"
-                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-foreground)" }}
+                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                 >
                   {introTitle}
                 </h1>
-                <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-muted)" }}>
+                <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-card-muted)" }}>
                   {introText}
                 </p>
-                <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] leading-4 sm:text-xs sm:leading-5" style={{ color: "var(--artist-muted)" }}>
+                <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] leading-4 sm:text-xs sm:leading-5" style={{ color: "var(--artist-card-muted)" }}>
                   <span>{artist.profile.instagramHandle}</span>
                   <span>•</span>
                   <span>Mobile-first intake flow</span>
@@ -320,7 +320,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 {result ? copy.stepDescriptions[5] : stepMeta[Math.min(step, 6) - 1]?.description}
               </CardDescription>
             </div>
-            <Badge variant="muted" className="w-fit self-start text-[10px] tracking-[0.14em] sm:text-[11px] sm:tracking-[0.2em]">
+            <Badge
+              variant="muted"
+              className="w-fit self-start text-[10px] tracking-[0.14em] sm:text-[11px] sm:tracking-[0.2em]"
+              style={{
+                color: "var(--artist-card-text)",
+                backgroundColor:
+                  "color-mix(in srgb, var(--artist-card) 88%, white 12%)",
+                borderColor: "var(--artist-border)",
+              }}
+            >
               {copy.stepLabel} {Math.min(step, 6)} / 6
             </Badge>
           </div>

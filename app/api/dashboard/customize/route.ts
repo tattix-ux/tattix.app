@@ -10,6 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function POST(request: Request) {
   const body = await request.json();
   const parsed = pageThemeSchema.safeParse(body);
+  const savePreset = body?.savePreset === true;
 
   if (!parsed.success) {
     return NextResponse.json({ message: "Invalid page customization payload." }, { status: 400 });
@@ -61,8 +62,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 
+  if (savePreset) {
+    const { count } = await supabase
+      .from("artist_saved_themes")
+      .select("*", { count: "exact", head: true })
+      .eq("artist_id", artist.id);
+
+    const { error: presetError } = await supabase.from("artist_saved_themes").insert({
+      artist_id: artist.id,
+      name: `Tema ${(count ?? 0) + 1}`,
+      theme_snapshot: values,
+    });
+
+    if (presetError) {
+      return NextResponse.json({ message: presetError.message }, { status: 400 });
+    }
+  }
+
   revalidatePath("/dashboard/customize");
   revalidatePath(`/${artist.slug}`);
 
-  return NextResponse.json({ message: "Page customization saved." });
+  return NextResponse.json({
+    message: savePreset ? "Page customization saved and preset added." : "Page customization saved.",
+  });
 }

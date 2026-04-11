@@ -10,6 +10,7 @@ import type {
   ArtistPageTheme,
   ArtistPricingRules,
   ArtistProfile,
+  ArtistSavedTheme,
   ArtistStyleOption,
 } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -138,9 +139,19 @@ function mapPageTheme(row: Record<string, unknown>, artistId: string): ArtistPag
   };
 }
 
+function mapSavedTheme(row: Record<string, unknown>, artistId: string): ArtistSavedTheme {
+  return {
+    id: String(row.id),
+    artistId,
+    name: String(row.name ?? "Tema"),
+    theme: mapPageTheme((row.theme_snapshot ?? {}) as Record<string, unknown>, artistId),
+    createdAt: String(row.created_at ?? new Date().toISOString()),
+  };
+}
+
 const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistId: string) {
   const supabase = await createSupabaseServerClient();
-  const [artistRow, funnelSettingsRow, styleRows, designRows, pricingRulesRow, pageThemeRow] =
+  const [artistRow, funnelSettingsRow, styleRows, designRows, pricingRulesRow, pageThemeRow, savedThemesRows] =
     await Promise.all([
       supabase.from("artists").select("*").eq("id", artistId).maybeSingle(),
       supabase
@@ -168,6 +179,11 @@ const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistI
         .select("*")
         .eq("artist_id", artistId)
         .maybeSingle(),
+      supabase
+        .from("artist_saved_themes")
+        .select("*")
+        .eq("artist_id", artistId)
+        .order("created_at", { ascending: true }),
     ]);
 
   if (!artistRow.data) {
@@ -191,6 +207,9 @@ const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistI
       artistId,
     ),
     pageTheme: mapPageTheme((pageThemeRow.data ?? {}) as Record<string, unknown>, artistId),
+    savedThemes: (savedThemesRows.data ?? []).map((row) =>
+      mapSavedTheme(row as Record<string, unknown>, artistId),
+    ),
   } satisfies ArtistPageData;
 });
 

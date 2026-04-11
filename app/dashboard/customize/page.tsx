@@ -29,6 +29,7 @@ export default async function DashboardCustomizePage() {
         <CustomizePageForm
           artist={data}
           theme={data.pageTheme}
+          savedThemes={data.savedThemes}
           demoMode={data.demoMode}
           locale={isTurkish ? "tr" : "en"}
         />

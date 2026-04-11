@@ -28,7 +28,7 @@ import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import { resolveArtistTheme } from "@/lib/theme";
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { ArtistPageData, ArtistPageTheme } from "@/lib/types";
+import type { ArtistPageData, ArtistPageTheme, ArtistSavedTheme } from "@/lib/types";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
@@ -61,11 +61,13 @@ function ColorField({
 export function CustomizePageForm({
   artist,
   theme,
+  savedThemes,
   demoMode,
   locale = "en",
 }: {
   artist: ArtistPageData;
   theme: ArtistPageTheme;
+  savedThemes: ArtistSavedTheme[];
   demoMode: boolean;
   locale?: PublicLocale;
 }) {
@@ -104,7 +106,10 @@ export function CustomizePageForm({
           cardGlass: "Kart cam efekti",
           radiusStyle: "Köşe stili",
           save: "Görünümü kaydet",
+          savePreset: "Temayı kaydet",
           saving: "Kaydediliyor",
+          savedThemes: "Kaydedilen temalar",
+          savedThemesDescription: "Kendi oluşturduğun temaları buradan tekrar uygulayabilirsin.",
           demo: "Demo modunda yalnızca önizleme",
           preview: "Canlı önizleme",
           previewDescription: "Sanatçı sayfanın anlık bir önizlemesi.",
@@ -148,7 +153,10 @@ export function CustomizePageForm({
           cardGlass: "Card glass",
           radiusStyle: "Radius style",
           save: "Save customization",
+          savePreset: "Save theme",
           saving: "Saving",
+          savedThemes: "Saved themes",
+          savedThemesDescription: "Reapply the themes you created from this area.",
           demo: "Preview-only in demo mode",
           preview: "Live Preview",
           previewDescription: "Real-time approximation of the public artist page.",
@@ -350,6 +358,10 @@ export function CustomizePageForm({
   }
 
   async function onSubmit(values: ThemeValues) {
+    await saveTheme(values, false);
+  }
+
+  async function saveTheme(values: ThemeValues, savePreset: boolean) {
     if (demoMode) {
       saveDemoTheme({
         ...previewTheme,
@@ -367,7 +379,7 @@ export function CustomizePageForm({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(values),
+      body: JSON.stringify({ ...values, savePreset }),
     });
 
     const payload = (await response.json()) as { message?: string };
@@ -403,6 +415,30 @@ export function CustomizePageForm({
     form.setValue("fontPairingPreset", preset.fontPairingPreset);
     form.setValue("radiusStyle", preset.radiusStyle);
     form.setValue("themeMode", preset.themeMode);
+  }
+
+  function applySavedTheme(savedTheme: ArtistSavedTheme) {
+    const values = savedTheme.theme;
+    form.setValue("presetTheme", values.presetTheme);
+    form.setValue("backgroundType", values.backgroundType);
+    form.setValue("backgroundColor", values.backgroundColor);
+    form.setValue("gradientStart", values.gradientStart);
+    form.setValue("gradientEnd", values.gradientEnd);
+    form.setValue("backgroundImageUrl", values.backgroundImageUrl ?? "");
+    form.setValue("primaryColor", values.primaryColor);
+    form.setValue("secondaryColor", values.secondaryColor);
+    form.setValue("cardColor", values.cardColor);
+    form.setValue("cardOpacity", values.cardOpacity);
+    form.setValue("headingFont", values.headingFont);
+    form.setValue("bodyFont", values.bodyFont);
+    form.setValue("fontPairingPreset", values.fontPairingPreset);
+    form.setValue("radiusStyle", values.radiusStyle);
+    form.setValue("themeMode", values.themeMode);
+    form.setValue("customWelcomeTitle", values.customWelcomeTitle ?? "");
+    form.setValue("customIntroText", values.customIntroText ?? "");
+    form.setValue("customCtaLabel", values.customCtaLabel ?? "");
+    form.setValue("featuredSectionLabel1", values.featuredSectionLabel1 ?? "");
+    form.setValue("featuredSectionLabel2", values.featuredSectionLabel2 ?? "");
   }
 
   return (
@@ -470,6 +506,38 @@ export function CustomizePageForm({
                   </button>
                 );
               })}
+              {savedThemes.length ? (
+                <>
+                  <div className="lg:col-span-2 pt-2">
+                    <p className="text-sm font-medium text-white">{copy.savedThemes}</p>
+                    <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                      {copy.savedThemesDescription}
+                    </p>
+                  </div>
+                  {savedThemes.map((savedTheme) => (
+                    <button
+                      key={savedTheme.id}
+                      type="button"
+                      onClick={() => applySavedTheme(savedTheme)}
+                      className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-left transition hover:border-white/14 hover:bg-white/5"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-medium text-white">{savedTheme.name}</p>
+                        <div className="flex gap-2">
+                          <span
+                            className="size-4 rounded-full border border-white/10"
+                            style={{ backgroundColor: savedTheme.theme.primaryColor }}
+                          />
+                          <span
+                            className="size-4 rounded-full border border-white/10"
+                            style={{ backgroundColor: savedTheme.theme.cardColor }}
+                          />
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              ) : null}
             </CardContent>
           </Card>
         ) : (
@@ -660,6 +728,15 @@ export function CustomizePageForm({
                 {copy.save}
               </>
             )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={form.formState.isSubmitting}
+            onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
+          >
+            <Save className="size-4" />
+            {copy.savePreset}
           </Button>
           {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
         </div>
