@@ -11,6 +11,10 @@ export async function POST(request: Request) {
   const body = await request.json();
   const parsed = pageThemeSchema.safeParse(body);
   const savePreset = body?.savePreset === true;
+  const presetName =
+    typeof body?.presetName === "string" && body.presetName.trim().length
+      ? body.presetName.trim().slice(0, 60)
+      : null;
 
   if (!parsed.success) {
     return NextResponse.json({ message: "Invalid page customization payload." }, { status: 400 });
@@ -70,7 +74,7 @@ export async function POST(request: Request) {
 
     const { error: presetError } = await supabase.from("artist_saved_themes").insert({
       artist_id: artist.id,
-      name: `Tema ${(count ?? 0) + 1}`,
+      name: presetName ?? `Tema ${(count ?? 0) + 1}`,
       theme_snapshot: values,
     });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Monitor, Smartphone, ImagePlus, LoaderCircle, Save, Upload, X } from "lucide-react";
+import { Monitor, Smartphone, ImagePlus, LoaderCircle, Pencil, Save, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -107,9 +107,15 @@ export function CustomizePageForm({
           radiusStyle: "Köşe stili",
           save: "Görünümü kaydet",
           savePreset: "Temayı kaydet",
+          presetName: "Tema adı",
+          presetNamePlaceholder: "Örn. Tema 1",
           saving: "Kaydediliyor",
           savedThemes: "Kaydedilen temalar",
           savedThemesDescription: "Kendi oluşturduğun temaları buradan tekrar uygulayabilirsin.",
+          applyTheme: "Uygula",
+          renameTheme: "Yeniden adlandır",
+          deleteTheme: "Sil",
+          renamePrompt: "Tema için yeni adı gir",
           demo: "Demo modunda yalnızca önizleme",
           preview: "Canlı önizleme",
           previewDescription: "Sanatçı sayfanın anlık bir önizlemesi.",
@@ -154,9 +160,15 @@ export function CustomizePageForm({
           radiusStyle: "Radius style",
           save: "Save customization",
           savePreset: "Save theme",
+          presetName: "Theme name",
+          presetNamePlaceholder: "e.g. Theme 1",
           saving: "Saving",
           savedThemes: "Saved themes",
           savedThemesDescription: "Reapply the themes you created from this area.",
+          applyTheme: "Apply",
+          renameTheme: "Rename",
+          deleteTheme: "Delete",
+          renamePrompt: "Enter a new name for this theme",
           demo: "Preview-only in demo mode",
           preview: "Live Preview",
           previewDescription: "Real-time approximation of the public artist page.",
@@ -170,6 +182,7 @@ export function CustomizePageForm({
         };
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [editorTab, setEditorTab] = useState<"presets" | "custom">("presets");
+  const [presetName, setPresetName] = useState("");
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
     resolver: zodResolver(pageThemeSchema),
     defaultValues: {
@@ -361,10 +374,51 @@ export function CustomizePageForm({
     await saveTheme(values, false);
   }
 
+  function normalizeThemeValues(values: ThemeValues): ThemeValues {
+    const resolved = resolveArtistTheme({
+      artistId: artist.profile.id,
+      ...values,
+      backgroundImageUrl: values.backgroundImageUrl || null,
+      customWelcomeTitle: values.customWelcomeTitle || null,
+      customIntroText: values.customIntroText || null,
+      customCtaLabel: values.customCtaLabel || null,
+      featuredSectionLabel1: values.featuredSectionLabel1 || null,
+      featuredSectionLabel2: values.featuredSectionLabel2 || null,
+    });
+
+    return {
+      presetTheme: resolved.presetTheme,
+      backgroundType: resolved.backgroundType,
+      backgroundColor: resolved.backgroundColor,
+      gradientStart: resolved.gradientStart,
+      gradientEnd: resolved.gradientEnd,
+      backgroundImageUrl: resolved.backgroundImageUrl,
+      primaryColor: resolved.primaryColor,
+      secondaryColor: resolved.secondaryColor,
+      cardColor: resolved.cardColor,
+      cardOpacity: resolved.cardOpacity,
+      headingFont: resolved.headingFont,
+      bodyFont: resolved.bodyFont,
+      fontPairingPreset: resolved.fontPairingPreset,
+      radiusStyle: resolved.radiusStyle,
+      themeMode: resolved.themeMode,
+      customWelcomeTitle: resolved.customWelcomeTitle,
+      customIntroText: resolved.customIntroText,
+      customCtaLabel: resolved.customCtaLabel,
+      featuredSectionLabel1: resolved.featuredSectionLabel1,
+      featuredSectionLabel2: resolved.featuredSectionLabel2,
+    };
+  }
+
   async function saveTheme(values: ThemeValues, savePreset: boolean) {
+    const normalizedValues = normalizeThemeValues(values);
+
     if (demoMode) {
       saveDemoTheme({
-        ...previewTheme,
+        ...resolveArtistTheme({
+          artistId: artist.profile.id,
+          ...normalizedValues,
+        }),
         artistId: artist.profile.id,
       });
       form.setError("root", {
@@ -379,7 +433,11 @@ export function CustomizePageForm({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ...values, savePreset }),
+      body: JSON.stringify({
+        ...normalizedValues,
+        savePreset,
+        presetName: presetName.trim() || undefined,
+      }),
     });
 
     const payload = (await response.json()) as { message?: string };
@@ -396,6 +454,9 @@ export function CustomizePageForm({
         payload.message ??
         "Page customization saved.",
     });
+    if (savePreset) {
+      setPresetName("");
+    }
     router.refresh();
   }
 
@@ -441,6 +502,46 @@ export function CustomizePageForm({
     form.setValue("featuredSectionLabel2", values.featuredSectionLabel2 ?? "");
   }
 
+  async function renameSavedTheme(themeId: string, currentName: string) {
+    const nextName = window.prompt(copy.renamePrompt, currentName)?.trim();
+
+    if (!nextName || nextName === currentName) {
+      return;
+    }
+
+    const response = await fetch(`/api/dashboard/customize/saved-themes/${themeId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: nextName }),
+    });
+
+    const payload = (await response.json()) as { message?: string };
+    form.setError("root", {
+      message: payload.message ?? (response.ok ? "Theme renamed." : "Unable to rename theme."),
+    });
+
+    if (response.ok) {
+      router.refresh();
+    }
+  }
+
+  async function deleteSavedTheme(themeId: string) {
+    const response = await fetch(`/api/dashboard/customize/saved-themes/${themeId}`, {
+      method: "DELETE",
+    });
+
+    const payload = (await response.json()) as { message?: string };
+    form.setError("root", {
+      message: payload.message ?? (response.ok ? "Theme deleted." : "Unable to delete theme."),
+    });
+
+    if (response.ok) {
+      router.refresh();
+    }
+  }
+
   return (
     <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_400px]">
       <form className="min-w-0 space-y-6 2xl:order-1" onSubmit={form.handleSubmit(onSubmit)}>
@@ -471,7 +572,29 @@ export function CustomizePageForm({
               <CardTitle>{copy.presets}</CardTitle>
               <CardDescription>{copy.presetsDescription}</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-3 lg:grid-cols-2">
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="min-w-0 flex-1">
+                  <Field label={copy.presetName}>
+                    <Input
+                      value={presetName}
+                      onChange={(event) => setPresetName(event.target.value)}
+                      placeholder={copy.presetNamePlaceholder}
+                    />
+                  </Field>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={form.formState.isSubmitting}
+                  onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
+                >
+                  <Save className="size-4" />
+                  {copy.savePreset}
+                </Button>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-2">
               {themePresetOptions.map((presetKey) => {
                 const preset = themePresets[presetKey];
                 const active = currentPreset === presetKey;
@@ -515,10 +638,8 @@ export function CustomizePageForm({
                     </p>
                   </div>
                   {savedThemes.map((savedTheme) => (
-                    <button
+                    <div
                       key={savedTheme.id}
-                      type="button"
-                      onClick={() => applySavedTheme(savedTheme)}
                       className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-left transition hover:border-white/14 hover:bg-white/5"
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -534,10 +655,34 @@ export function CustomizePageForm({
                           />
                         </div>
                       </div>
-                    </button>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button type="button" size="sm" variant="secondary" onClick={() => applySavedTheme(savedTheme)}>
+                          {copy.applyTheme}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void renameSavedTheme(savedTheme.id, savedTheme.name)}
+                        >
+                          <Pencil className="size-4" />
+                          {copy.renameTheme}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => void deleteSavedTheme(savedTheme.id)}
+                        >
+                          <Trash2 className="size-4" />
+                          {copy.deleteTheme}
+                        </Button>
+                      </div>
+                    </div>
                   ))}
                 </>
               ) : null}
+              </div>
             </CardContent>
           </Card>
         ) : (
@@ -728,15 +873,6 @@ export function CustomizePageForm({
                 {copy.save}
               </>
             )}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={form.formState.isSubmitting}
-            onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
-          >
-            <Save className="size-4" />
-            {copy.savePreset}
           </Button>
           {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
         </div>
