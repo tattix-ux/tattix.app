@@ -151,14 +151,27 @@ export function IntentSelectionStep({
                         : "rgba(0,0,0,0.12)",
                     }}
                   >
-                    <div
-                      className="h-32 w-full rounded-[20px]"
-                      style={{
-                        background: design.imageUrl
-                          ? `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.45)), url(${design.imageUrl}) center / cover`
-                          : "linear-gradient(135deg, color-mix(in srgb, var(--artist-primary) 18%, transparent), rgba(255,255,255,0.03), rgba(0,0,0,0.28))",
-                      }}
-                    />
+                    <div className="relative h-32 w-full overflow-hidden rounded-[20px] border border-white/10 bg-black/20">
+                      {design.imageUrl ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={design.imageUrl}
+                            alt={design.title}
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/45" />
+                        </>
+                      ) : (
+                        <div
+                          className="h-full w-full"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, color-mix(in srgb, var(--artist-primary) 18%, transparent), rgba(255,255,255,0.03), rgba(0,0,0,0.28))",
+                          }}
+                        />
+                      )}
+                    </div>
                     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <p className="break-words font-medium" style={{ color: "var(--artist-card-text)" }}>

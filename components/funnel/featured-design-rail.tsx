@@ -51,16 +51,27 @@ export function FeaturedDesignRail({
             }}
           >
             <div
-              className="flex h-36 items-end overflow-hidden p-4"
+              className="relative flex h-36 items-end overflow-hidden p-4"
               style={{
                 borderRadius: "calc(var(--artist-radius) - 8px)",
                 border: "1px solid var(--artist-border)",
                 background: design.imageUrl
-                  ? `linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.55)), url(${design.imageUrl}) center / cover`
+                  ? "rgba(0,0,0,0.18)"
                   : "linear-gradient(135deg, color-mix(in srgb, var(--artist-primary) 24%, transparent), rgba(255,255,255,0.04), rgba(0,0,0,0.4))",
               }}
             >
-              <Badge variant="accent">
+              {design.imageUrl ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={design.imageUrl}
+                    alt={design.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/55" />
+                </>
+              ) : null}
+              <Badge variant="accent" className="relative z-10">
                 {getFeaturedCategoryLabel(design.category, locale)}
               </Badge>
             </div>
