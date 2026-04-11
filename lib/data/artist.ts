@@ -51,9 +51,11 @@ function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption {
     artistId: String(row.artist_id),
     styleKey: String(row.style_key) as ArtistStyleOption["styleKey"],
     label: String(row.label),
+    description: row.style_description ? String(row.style_description) : null,
     enabled: Boolean(row.enabled),
     multiplier: Number(row.multiplier ?? 1),
     isCustom: Boolean(row.is_custom ?? false),
+    deleted: Boolean(row.deleted ?? false),
   };
 }
 
@@ -178,9 +180,9 @@ const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistI
       (funnelSettingsRow.data ?? {}) as Record<string, unknown>,
       artistId,
     ),
-    styleOptions: (styleRows.data ?? []).map((row) =>
-      mapStyleOption(row as Record<string, unknown>),
-    ),
+    styleOptions: (styleRows.data ?? [])
+      .map((row) => mapStyleOption(row as Record<string, unknown>))
+      .filter((style) => !style.deleted),
     featuredDesigns: (designRows.data ?? []).map((row) =>
       mapFeaturedDesign(row as Record<string, unknown>),
     ),

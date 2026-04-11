@@ -60,9 +60,11 @@ export type ArtistStyleOption = {
   artistId: string;
   styleKey: string;
   label: string;
+  description?: string | null;
   enabled: boolean;
   multiplier: number;
   isCustom?: boolean;
+  deleted?: boolean;
 };
 
 export type ArtistFeaturedDesign = {

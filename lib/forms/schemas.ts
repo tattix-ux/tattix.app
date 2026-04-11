@@ -82,6 +82,7 @@ const customStyleSchema = z.object({
     .min(2)
     .regex(/^[a-z0-9-]+$/),
   label: z.string().min(2).max(40),
+  description: z.string().max(140).optional().default(""),
   enabled: z.boolean().default(true),
 });
 
@@ -92,6 +93,7 @@ export const funnelSettingsSchema = z.object({
   showFeaturedDesigns: z.boolean(),
   defaultLanguage: z.enum(["en", "tr"]),
   enabledStyles: z.array(z.string().min(1)).default([]),
+  removedBuiltInStyles: z.array(z.string().min(1)).default([]),
   customStyles: z.array(customStyleSchema).default([]),
 });
 

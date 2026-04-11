@@ -12,7 +12,12 @@ import { Input } from "@/components/ui/input";
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
 import { intentOptions, sizeOptions } from "@/lib/constants/options";
 import { pricingSchema } from "@/lib/forms/schemas";
-import type { PublicLocale } from "@/lib/i18n/public";
+import {
+  getPlacementCategoryLocaleLabel,
+  getPlacementDetailLocaleLabel,
+  getStyleLabel,
+  type PublicLocale,
+} from "@/lib/i18n/public";
 import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
 
 type PricingFormInput = z.input<typeof pricingSchema>;
@@ -166,12 +171,15 @@ export function PricingForm({
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
                 {activeStyles.map((style) => (
-                  <Field key={style.styleKey} label={style.label}>
-                    <Input
-                      type="number"
-                      step="0.05"
-                      {...form.register(`styleMultipliers.${style.styleKey}`)}
-                    />
+                  <Field
+                    key={style.styleKey}
+                    label={style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                  >
+                      <Input
+                        type="number"
+                        step="0.05"
+                        {...form.register(`styleMultipliers.${style.styleKey}`)}
+                      />
                   </Field>
                 ))}
               </div>
@@ -221,10 +229,10 @@ export function PricingForm({
             <div className="grid gap-5 lg:grid-cols-2">
               {bodyPlacementGroups.map((group) => (
                 <div key={group.value} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="font-medium text-white">{group.label}</p>
+                  <p className="font-medium text-white">{getPlacementCategoryLocaleLabel(group.value, locale)}</p>
                   <div className="mt-4 grid gap-3">
                     {group.details.map((detail) => (
-                      <Field key={detail.value} label={detail.label}>
+                      <Field key={detail.value} label={getPlacementDetailLocaleLabel(detail.value, locale)}>
                         <Input
                           type="number"
                           step="0.05"

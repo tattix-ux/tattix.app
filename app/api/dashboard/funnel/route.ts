@@ -28,6 +28,7 @@ export async function POST(request: Request) {
 
   const builtInKeys = new Set<string>(baseStyleOptions.map((style) => style.value));
   const customKeys = parsed.data.customStyles.map((style) => style.styleKey);
+  const removedBuiltInKeys = new Set(parsed.data.removedBuiltInStyles);
   const hasDuplicateCustomKeys = new Set(customKeys).size !== customKeys.length;
   const conflictsWithBuiltIns = customKeys.some((key) => builtInKeys.has(key));
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
   const enabledSet = new Set(parsed.data.enabledStyles);
   const existingStyles = await supabase
     .from("artist_style_options")
-    .select("style_key,multiplier,label,is_custom")
+    .select("style_key,multiplier,label,is_custom,style_description,deleted")
     .eq("artist_id", artist.id);
 
   const { error: settingsError } = await supabase.from("artist_funnel_settings").upsert({
@@ -59,20 +60,25 @@ export async function POST(request: Request) {
     style_key: style.value,
     label:
       existingStyles.data?.find((item) => item.style_key === style.value)?.label ?? style.label,
+    style_description:
+      existingStyles.data?.find((item) => item.style_key === style.value)?.style_description ?? null,
     multiplier:
       existingStyles.data?.find((item) => item.style_key === style.value)?.multiplier ?? 1,
-    enabled: enabledSet.has(style.value),
+    enabled: !removedBuiltInKeys.has(style.value) && enabledSet.has(style.value),
     is_custom: false,
+    deleted: removedBuiltInKeys.has(style.value),
   }));
 
   const customRows = parsed.data.customStyles.map((style) => ({
     artist_id: artist.id,
     style_key: style.styleKey,
     label: style.label,
+    style_description: style.description || null,
     multiplier:
       existingStyles.data?.find((item) => item.style_key === style.styleKey)?.multiplier ?? 1,
     enabled: style.enabled,
     is_custom: true,
+    deleted: false,
   }));
 
   const { error: deleteCustomError } = await supabase

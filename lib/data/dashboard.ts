@@ -205,8 +205,10 @@ export async function ensureArtistForUser(user: User) {
         artist_id: artist.id,
         style_key: style.value,
         label: style.label,
+        style_description: null,
         enabled: ["fine-line", "blackwork", "micro-realism"].includes(style.value),
         is_custom: false,
+        deleted: false,
         multiplier:
           style.value === "ornamental"
             ? 1.2

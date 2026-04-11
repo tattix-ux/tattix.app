@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const existingStyles = await supabase
     .from("artist_style_options")
-    .select("style_key,enabled,label,is_custom")
+    .select("style_key,enabled,label,is_custom,style_description,deleted")
     .eq("artist_id", artist.id);
 
   const { error: pricingError } = await supabase.from("artist_pricing_rules").upsert({
@@ -48,9 +48,11 @@ export async function POST(request: Request) {
         artist_id: artist.id,
         style_key: style.style_key,
         label: existing?.label ?? style.label,
+        style_description: existing?.style_description ?? null,
         enabled: existing?.enabled ?? true,
         multiplier: parsed.data.styleMultipliers[style.style_key] ?? 1,
         is_custom: existing?.is_custom ?? false,
+        deleted: existing?.deleted ?? false,
       };
     }),
     {

@@ -83,13 +83,17 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
   const enabledStyles = artist.styleOptions.filter((style) => style.enabled);
   const activeDesigns = artist.featuredDesigns.filter((design) => design.active);
+  const activeStyleOption = styleInfoKey
+    ? artist.styleOptions.find((style) => style.styleKey === styleInfoKey)
+    : null;
   const selectedDesign = useMemo(
     () => findSelectedDesign(activeDesigns, draft.selectedDesignId),
     [activeDesigns, draft.selectedDesignId],
   );
   const copy = getPublicCopy(locale);
   const activeStyleInfoDescription = styleInfoKey
-    ? getStyleDescription(styleInfoKey, locale) ??
+    ? activeStyleOption?.description ??
+      getStyleDescription(styleInfoKey, locale) ??
       (locale === "tr"
         ? "Bu stilin son yorumu sanatçıyla görüşme sırasında netleştirilebilir."
         : "The artist can refine the final interpretation of this style during consultation.")
@@ -815,7 +819,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   {copy.styleInfoTitle}
                 </p>
                 <h3 className="mt-2 break-words text-lg font-semibold text-white">
-                  {getStyleLabel(styleInfoKey, locale)}
+                  {activeStyleOption?.isCustom ? activeStyleOption.label : getStyleLabel(styleInfoKey, locale)}
                 </h3>
               </div>
               <Button type="button" variant="ghost" size="icon" onClick={() => setStyleInfoKey(null)}>

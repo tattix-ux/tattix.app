@@ -55,8 +55,10 @@ export const demoStyleOptions: ArtistStyleOption[] = baseStyleOptions.map((style
     artistId: demoArtistId,
     styleKey: style.value,
     label: style.label,
+    description: null,
     enabled: enabledStyles.has(style.value),
     isCustom: false,
+    deleted: false,
     multiplier: multipliers[style.value] ?? 1.1,
   };
 });
@@ -66,8 +68,10 @@ demoStyleOptions.push({
   artistId: demoArtistId,
   styleKey: "etching",
   label: "Etching",
+  description: "Fine textures and engraved-looking line detail.",
   enabled: true,
   isCustom: true,
+  deleted: false,
   multiplier: 1.08,
 });
 

@@ -41,6 +41,8 @@ export function FunnelSettingsForm({
           customStyles: "Özel stiller",
           addStyle: "Stil ekle",
           customStylesHelp: "Eklediğin özel stiller burada görünür ve aktifse public akış ile fiyatlama ekranına yansır.",
+          customStyleDescription: "Stil açıklaması",
+          customStyleDescriptionHelp: "Public bilgi butonunda kısa açıklama olarak görünür.",
           emptyStyles: "Henüz özel stil eklenmedi.",
           styleLabel: "Stil adı",
           styleKey: "Stil anahtarı",
@@ -64,6 +66,8 @@ export function FunnelSettingsForm({
           customStyles: "Custom styles",
           addStyle: "Add style",
           customStylesHelp: "New styles appear here automatically and flow into the public step and pricing when enabled.",
+          customStyleDescription: "Style description",
+          customStyleDescriptionHelp: "Shown inside the public style info modal.",
           emptyStyles: "No custom styles yet.",
           styleLabel: "Style label",
           styleKey: "Style key",
@@ -84,7 +88,10 @@ export function FunnelSettingsForm({
       showFeaturedDesigns: settings.showFeaturedDesigns,
       defaultLanguage: "tr",
       enabledStyles: styles
-        .filter((style) => style.enabled && !style.isCustom)
+        .filter((style) => style.enabled && !style.isCustom && !style.deleted)
+        .map((style) => style.styleKey),
+      removedBuiltInStyles: styles
+        .filter((style) => !style.isCustom && style.deleted)
         .map((style) => style.styleKey),
       customStyles: styles
         .filter((style) => style.isCustom)
@@ -92,6 +99,7 @@ export function FunnelSettingsForm({
           id: style.id,
           styleKey: style.styleKey,
           label: style.label,
+          description: style.description ?? "",
           enabled: style.enabled,
         })),
     },
@@ -107,6 +115,11 @@ export function FunnelSettingsForm({
     defaultValue: styles
       .filter((style) => style.enabled && !style.isCustom)
       .map((style) => style.styleKey),
+  }) ?? [];
+  const removedBuiltInStyles = useWatch({
+    control: form.control,
+    name: "removedBuiltInStyles",
+    defaultValue: styles.filter((style) => !style.isCustom && style.deleted).map((style) => style.styleKey),
   }) ?? [];
 
   async function onSubmit(values: FunnelValues) {
@@ -128,7 +141,7 @@ export function FunnelSettingsForm({
   }
 
   const builtInStyles = styles
-    .filter((style) => !style.isCustom)
+    .filter((style) => !style.isCustom && !style.deleted && !removedBuiltInStyles.includes(style.styleKey))
     .sort((left, right) => {
       const preferredOrder = ["blackwork", "fine-line", "micro-realism"];
       const leftRank = preferredOrder.indexOf(left.styleKey);
@@ -140,6 +153,19 @@ export function FunnelSettingsForm({
 
       return left.label.localeCompare(right.label);
     });
+  const customStyleCards = useWatch({
+    control: form.control,
+    name: "customStyles",
+    defaultValue: styles
+      .filter((style) => style.isCustom)
+      .map((style) => ({
+        id: style.id,
+        styleKey: style.styleKey,
+        label: style.label,
+        description: style.description ?? "",
+        enabled: style.enabled,
+      })),
+  }) ?? [];
 
   return (
     <Card className="surface-border">
@@ -182,25 +208,68 @@ export function FunnelSettingsForm({
                 const active = selectedStyles.includes(style.styleKey);
 
                 return (
-                  <button
+                  <div
                     key={style.id}
-                    type="button"
-                    onClick={() => {
-                      const nextStyles = active
-                        ? selectedStyles.filter((item) => item !== style.styleKey)
-                        : [...selectedStyles, style.styleKey];
-                      form.setValue("enabledStyles", nextStyles, { shouldValidate: true });
-                    }}
                     className={`rounded-[24px] border px-4 py-4 text-left transition ${
                       active
                         ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
-                        : "border-white/8 bg-black/20 hover:border-white/14 hover:bg-white/5"
+                        : "border-white/8 bg-black/20"
                     }`}
                   >
-                    <p className="font-medium text-white">{style.label}</p>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextStyles = active
+                          ? selectedStyles.filter((item) => item !== style.styleKey)
+                          : [...selectedStyles, style.styleKey];
+                        form.setValue("enabledStyles", nextStyles, { shouldValidate: true });
+                      }}
+                      className="w-full text-left"
+                    >
+                      <p className="font-medium text-white">{style.label}</p>
+                    </button>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue(
+                            "enabledStyles",
+                            selectedStyles.filter((item) => item !== style.styleKey),
+                            { shouldValidate: true },
+                          );
+                          form.setValue(
+                            "removedBuiltInStyles",
+                            Array.from(new Set([...removedBuiltInStyles, style.styleKey])),
+                            { shouldValidate: true, shouldDirty: true },
+                          );
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                        {copy.remove}
+                      </Button>
+                    </div>
+                  </div>
                 );
               })}
+              {customStyleCards.map((style) => (
+                <div
+                  key={style.id ?? style.styleKey}
+                  className={`rounded-[24px] border px-4 py-4 text-left transition ${
+                    style.enabled
+                      ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
+                      : "border-white/8 bg-black/20"
+                  }`}
+                >
+                  <p className="font-medium text-white">{style.label || copy.styleLabel}</p>
+                  {style.description ? (
+                    <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
+                      {style.description}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
             </div>
             {form.formState.errors.enabledStyles?.message ? (
               <p className="text-xs text-red-300">{form.formState.errors.enabledStyles.message}</p>
@@ -275,6 +344,17 @@ export function FunnelSettingsForm({
                       </Button>
                     </div>
                   </div>
+                  <Field
+                    className="mt-4"
+                    label={copy.customStyleDescription}
+                    description={copy.customStyleDescriptionHelp}
+                    error={form.formState.errors.customStyles?.[index]?.description?.message}
+                  >
+                    <Textarea
+                      {...form.register(`customStyles.${index}.description`)}
+                      placeholder={locale === "tr" ? "İnce dokular ve oyma hissi veren çizgiler." : "Fine textures with an engraved feel."}
+                    />
+                  </Field>
                 </div>
               ))}
             </div>

@@ -63,25 +63,27 @@ set
   show_featured_designs = excluded.show_featured_designs,
   default_language = excluded.default_language;
 
-insert into public.artist_style_options (artist_id, style_key, label, enabled, multiplier, is_custom)
+insert into public.artist_style_options (artist_id, style_key, label, style_description, enabled, multiplier, is_custom, deleted)
 values
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'fine-line', 'Fine line', true, 1.00, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'minimal', 'Minimal', false, 1.00, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'traditional', 'Traditional', false, 1.00, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'neo-traditional', 'Neo traditional', false, 1.00, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'blackwork', 'Blackwork', true, 1.12, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'realism', 'Realism', false, 1.35, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'micro-realism', 'Micro realism', false, 1.20, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'ornamental', 'Ornamental', true, 1.20, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'lettering', 'Lettering', false, 1.00, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'custom', 'Custom', false, 1.10, false),
-  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'etching', 'Etching', true, 1.08, true)
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'fine-line', 'Fine line', null, true, 1.00, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'minimal', 'Minimal', null, false, 1.00, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'traditional', 'Traditional', null, false, 1.00, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'neo-traditional', 'Neo traditional', null, false, 1.00, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'blackwork', 'Blackwork', null, true, 1.12, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'realism', 'Realism', null, false, 1.35, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'micro-realism', 'Micro realism', null, false, 1.20, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'ornamental', 'Ornamental', null, true, 1.20, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'lettering', 'Lettering', null, false, 1.00, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'custom', 'Custom', null, false, 1.10, false, false),
+  ('7d53df9f-4fd8-41af-ae82-187a0b81b420', 'etching', 'Etching', 'Fine textures and engraved-looking line detail.', true, 1.08, true, false)
 on conflict (artist_id, style_key) do update
 set
   label = excluded.label,
+  style_description = excluded.style_description,
   enabled = excluded.enabled,
   multiplier = excluded.multiplier,
-  is_custom = excluded.is_custom;
+  is_custom = excluded.is_custom,
+  deleted = excluded.deleted;
 
 insert into public.artist_pricing_rules (
   artist_id,
