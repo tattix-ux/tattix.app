@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, TrendingUp, X } from "lucide-react";
 
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
@@ -78,6 +78,10 @@ const leadCopy = {
     markSold: "Mark sold",
     markUnsold: "Mark unsold",
     soldAt: "Sold at",
+    page: "Page",
+    previous: "Previous",
+    next: "Next",
+    pageSummary: (current: number, total: number) => `Page ${current} of ${total}`,
   },
   tr: {
     title: "Talepler",
@@ -131,6 +135,10 @@ const leadCopy = {
     markSold: "Satış olarak işaretle",
     markUnsold: "Satış değil",
     soldAt: "Satış tarihi",
+    page: "Sayfa",
+    previous: "Önceki",
+    next: "Sonraki",
+    pageSummary: (current: number, total: number) => `${current} / ${total}. sayfa`,
   },
 } as const;
 
@@ -258,6 +266,8 @@ export function LeadsTable({
   const [selectedLead, setSelectedLead] = useState<ClientSubmission | null>(null);
   const [range, setRange] = useState<FilterRange>("30d");
   const [granularity, setGranularity] = useState<ChartGranularity>("daily");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   async function updateLead(
     id: string,
@@ -286,11 +296,26 @@ export function LeadsTable({
 
   const filteredLeads = useMemo(() => filterLeads(localLeads, range), [localLeads, range]);
   const soldCount = filteredLeads.filter((lead) => lead.convertedToSale).length;
+  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
+  const paginatedLeads = useMemo(
+    () => filteredLeads.slice((page - 1) * pageSize, page * pageSize),
+    [filteredLeads, page],
+  );
   const chartData = useMemo(
     () => buildChartData(filteredLeads, granularity, locale),
     [filteredLeads, granularity, locale],
   );
   const chartMax = Math.max(...chartData.map((item) => item.total), 1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [range]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   if (localLeads.length === 0) {
     return (
@@ -428,7 +453,7 @@ export function LeadsTable({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3 lg:hidden">
-            {filteredLeads.map((lead) => (
+            {paginatedLeads.map((lead) => (
               <div key={lead.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -498,8 +523,8 @@ export function LeadsTable({
                   <TableHead>{copy.status}</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {filteredLeads.map((lead) => (
+                <TableBody>
+                {paginatedLeads.map((lead) => (
                   <TableRow key={lead.id}>
                     <TableCell>{formatDateLabel(lead.createdAt)}</TableCell>
                     <TableCell>{formatIntent(lead.intent)}</TableCell>
@@ -550,6 +575,32 @@ export function LeadsTable({
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-[24px] border border-white/8 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {copy.pageSummary(page, totalPages)}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={page === 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+              >
+                {copy.previous}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={page === totalPages}
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              >
+                {copy.next}
+              </Button>
+            </div>
           </div>
 
           {selectedLead ? (
