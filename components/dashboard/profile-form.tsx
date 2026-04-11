@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Textarea } from "@/components/ui/textarea";
 import { currencyOptions } from "@/lib/constants/options";
 import { profileSchema } from "@/lib/forms/schemas";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
@@ -310,20 +309,6 @@ export function ProfileForm({
               }
             />
           </div>
-          <Field
-            label={copy.shortBio}
-            description={copy.shortBioHelp}
-            error={form.formState.errors.shortBio?.message}
-          >
-            <Textarea {...form.register("shortBio")} placeholder={copy.shortBioPlaceholder} />
-          </Field>
-          <Field
-            label={copy.welcomeHeadline}
-            description={copy.welcomeHeadlineHelp}
-            error={form.formState.errors.welcomeHeadline?.message}
-          >
-            <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
-          </Field>
           <div className="grid gap-5 lg:grid-cols-3">
             <Field
               label={copy.whatsapp}
