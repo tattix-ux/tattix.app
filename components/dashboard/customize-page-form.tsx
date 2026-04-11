@@ -701,8 +701,14 @@ export function CustomizePageForm({
             </div>
           </CardHeader>
           <CardContent className="overflow-hidden p-2.5 sm:p-4">
-            <div className="mx-auto h-[260px] max-w-[210px] overflow-hidden sm:h-[360px] sm:max-w-[280px]">
-              <div className="origin-top scale-[0.72] sm:scale-[0.86]">
+            <div
+              className={
+                device === "mobile"
+                  ? "mx-auto h-[260px] max-w-[210px] overflow-hidden sm:h-[360px] sm:max-w-[280px]"
+                  : "mx-auto w-full max-w-[760px] overflow-x-auto"
+              }
+            >
+              <div className={device === "mobile" ? "origin-top scale-[0.72] sm:scale-[0.86]" : "origin-top"}>
                 <ArtistPagePreview
                   artist={{ ...artist, pageTheme: previewTheme }}
                   theme={previewTheme}

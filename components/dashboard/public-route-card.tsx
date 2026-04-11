@@ -26,7 +26,7 @@ export function PublicRouteCard({
   }
 
   return (
-    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+    <div className="rounded-[22px] border border-white/8 bg-black/20 p-3 sm:rounded-[24px] sm:p-4">
       <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
         {locale === "tr" ? "Yayın linki" : "Public link"}
       </p>
