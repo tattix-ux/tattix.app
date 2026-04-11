@@ -406,7 +406,7 @@ export function CustomizePageForm({
   }
 
   return (
-    <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
+    <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_400px]">
       <form className="min-w-0 space-y-6 2xl:order-1" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="surface-border">
           <CardContent className="flex flex-wrap gap-2 p-3 sm:p-4">
@@ -670,7 +670,7 @@ export function CustomizePageForm({
         ) : null}
       </form>
 
-      <div className="order-first min-w-0 space-y-4 2xl:order-2 2xl:sticky 2xl:top-6 2xl:self-start">
+      <div className="order-first min-w-0 space-y-3 2xl:order-2 2xl:sticky 2xl:top-6 2xl:self-start">
         <Card className="surface-border">
           <CardHeader>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -702,12 +702,14 @@ export function CustomizePageForm({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-4 sm:p-5">
-            <ArtistPagePreview
-              artist={{ ...artist, pageTheme: previewTheme }}
-              theme={previewTheme}
-              device={device}
-            />
+          <CardContent className="p-3 sm:p-4">
+            <div className="mx-auto max-w-[270px] sm:max-w-[320px]">
+              <ArtistPagePreview
+                artist={{ ...artist, pageTheme: previewTheme }}
+                theme={previewTheme}
+                device={device}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>

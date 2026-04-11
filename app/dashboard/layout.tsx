@@ -29,10 +29,10 @@ export default async function DashboardLayout({
 
   return (
     <AppShell>
-      <Container className="py-6 sm:py-8">
+      <Container className="py-4 sm:py-8">
         <div className="overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch]">
-          <div className="min-w-[720px] xl:min-w-0">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="min-w-[680px] xl:min-w-0">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <Logo />
                 <div className="flex items-center gap-2">
@@ -48,10 +48,10 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-8 grid items-start gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[248px_minmax(0,1fr)]">
               <aside className="space-y-4 xl:sticky xl:top-6">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="rounded-[28px] border border-white/8 bg-black/20 p-4">
+                <div className="rounded-[24px] border border-white/8 bg-black/20 p-3.5">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                     {isTurkish ? "Panel" : "Dashboard"}
                   </p>

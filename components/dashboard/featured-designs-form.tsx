@@ -212,7 +212,7 @@ export function FeaturedDesignsForm({
               const currentDesign = watchedDesigns?.[index];
 
               return (
-                <div key={field.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:rounded-[28px] sm:p-5">
+                <div key={field.id} className="rounded-[22px] border border-white/8 bg-black/20 p-3.5 sm:rounded-[24px] sm:p-4">
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                       {labels.item} {index + 1}
@@ -254,7 +254,7 @@ export function FeaturedDesignsForm({
                   <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_1fr]">
                     <Field label={labels.image} description={labels.imageDescription}>
                       <div className="space-y-3">
-                        <div className="relative flex aspect-[5/4] min-h-[180px] items-center justify-center overflow-hidden rounded-[20px] border border-white/10 bg-white/5 sm:aspect-[4/3] sm:min-h-[220px]">
+                        <div className="relative flex aspect-[6/5] min-h-[132px] items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:aspect-[5/4] sm:min-h-[180px] sm:rounded-[20px]">
                           {currentDesign?.imageUrl ? (
                             <div
                               className="absolute inset-0 bg-cover bg-center"
