@@ -13,7 +13,7 @@ const copy = {
   tr: {
     title: "Pro özellik",
     description:
-      "Bu alan manuel Pro onayından sonra açılır. Profil, fiyatlama ve taleplerin kullanılmaya devam eder.",
+      "Bu alan manuel Pro onayından sonra açılır. Mevcut profilin ve temel ayarların kullanılmaya devam eder.",
   },
 } as const;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { Crown, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -16,15 +16,15 @@ const copy = {
     blocked: "Blocked",
     title: "Unlock Pro tools",
     description:
-      "Unlock analytics, advanced page styling, design management, and the premium tools reserved for Pro artists.",
-    cta: "Upgrade",
-    contact: "Contact for Pro access",
+      "Unlock requests, analytics, advanced page styling, design management, and the premium tools reserved for Pro artists.",
+    cta: "Upgrade to Pro",
     activeMessage: "Pro access is active for this account.",
     featuresTitle: "Pro includes",
     features: [
+      "Request inbox access",
       "Analytics and conversion tracking",
       "Advanced page customization",
-      "Featured design management",
+      "Design management",
       "Premium creative tools as they ship",
     ],
   },
@@ -36,15 +36,15 @@ const copy = {
     blocked: "Engellendi",
     title: "Pro araçlarını aç",
     description:
-      "Analitikler, gelişmiş sayfa özelleştirme, tasarım yönetimi ve Pro’ya özel araçların kilidini aç.",
-    cta: "Yükselt",
-    contact: "Pro erişimi için iletişime geç",
+      "Talepler, gelişmiş analizler, tasarım yönetimi ve Pro’ya özel araçların kilidini aç.",
+    cta: "Pro'ya yükselt",
     activeMessage: "Bu hesap için Pro erişim aktif.",
     featuresTitle: "Pro neleri açar?",
     features: [
+      "Talep kutusunu görüntüleme",
       "Analitik ve dönüşüm takibi",
       "Gelişmiş sayfa özelleştirme",
-      "Öne çıkan tasarım yönetimi",
+      "Tasarım yönetimi",
       "Yayına alınan premium araçlar",
     ],
   },
@@ -59,7 +59,6 @@ export function UpgradeCard({
   profile: Pick<ArtistProfile, "planType" | "accessStatus">;
   compact?: boolean;
 }) {
-  const [showContact, setShowContact] = useState(profile.planType !== "pro");
   const labels = copy[locale];
   const hasActivePro = profile.planType === "pro" && profile.accessStatus === "active";
 
@@ -104,12 +103,9 @@ export function UpgradeCard({
               ))}
             </div>
           </div>
-          <Button type="button" className="w-full sm:w-auto" onClick={() => setShowContact(true)}>
-            {labels.cta}
+          <Button asChild type="button" className="w-full sm:w-auto">
+            <Link href="/dashboard/upgrade">{labels.cta}</Link>
           </Button>
-          {showContact ? (
-            <p className="text-sm text-[var(--accent-soft)]">{labels.contact}</p>
-          ) : null}
         </div>
       ) : null}
     </div>

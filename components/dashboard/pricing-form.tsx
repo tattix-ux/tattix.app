@@ -109,14 +109,14 @@ export function PricingForm({
       },
       body: JSON.stringify(values),
     });
-    const payload = (await response.json()) as { message?: string };
+    await response.json().catch(() => null);
 
     if (!response.ok) {
-      form.setError("root", { message: payload.message ?? copy.saveFailed });
+      form.setError("root", { message: copy.saveFailed });
       return;
     }
 
-    form.setError("root", { message: payload.message ?? copy.saved });
+    form.setError("root", { message: copy.saved });
   }
 
   return (

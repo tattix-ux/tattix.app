@@ -13,7 +13,7 @@ export default async function DashboardDesignsPage() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        eyebrow={isTurkish ? "Tasarımlar" : "Featured designs"}
+        eyebrow={isTurkish ? "Tasarımlar" : "Designs"}
         title={
           isTurkish
             ? "Flash ve indirimli tasarımlarını yönet."
@@ -30,6 +30,7 @@ export default async function DashboardDesignsPage() {
           designs={data.featuredDesigns}
           artistId={data.profile.id}
           demoMode={data.demoMode}
+          locale={isTurkish ? "tr" : "en"}
         />
       ) : (
         <ProFeatureGate locale={isTurkish ? "tr" : "en"} profile={data.profile} />

@@ -27,7 +27,7 @@ function getItems(locale: "en" | "tr") {
     { href: "/dashboard/pricing", label: locale === "tr" ? "Fiyatlama" : "Pricing", icon: CircleDollarSign },
     {
       href: "/dashboard/designs",
-      label: locale === "tr" ? "Tasarım Kartları" : "Featured Designs",
+      label: locale === "tr" ? "Tasarımlar" : "Designs",
       icon: BookImage,
       pro: true,
     },
@@ -37,7 +37,7 @@ function getItems(locale: "en" | "tr") {
       icon: PaintbrushVertical,
       pro: true,
     },
-    { href: "/dashboard/leads", label: locale === "tr" ? "Talepler" : "Leads", icon: MessageSquareText },
+    { href: "/dashboard/leads", label: locale === "tr" ? "Talepler" : "Requests", icon: MessageSquareText, pro: true },
   ];
 }
 
