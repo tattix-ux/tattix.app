@@ -85,6 +85,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
   const enabledStyles = artist.styleOptions.filter((style) => style.enabled);
   const activeDesigns = artist.featuredDesigns.filter((design) => design.active);
+  const hasFlashDesigns = activeDesigns.some((design) => design.category === "flash-designs");
+  const hasDiscountedDesigns = activeDesigns.some(
+    (design) => design.category === "discounted-designs",
+  );
   const activeStyleOption = styleInfoKey
     ? artist.styleOptions.find((style) => style.styleKey === styleInfoKey)
     : null;
@@ -94,11 +98,22 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   );
   const isProArtist = hasProAccess(artist.profile);
   const availableIntents = useMemo<readonly IntentValue[]>(
-    () =>
-      isProArtist
-        ? ["custom-tattoo", "design-in-mind", "flash-design", "discounted-design", "not-sure"]
-        : ["custom-tattoo", "design-in-mind", "not-sure"],
-    [isProArtist],
+    () => {
+      const intents: IntentValue[] = ["custom-tattoo", "design-in-mind"];
+
+      if (isProArtist && hasFlashDesigns) {
+        intents.push("flash-design");
+      }
+
+      if (isProArtist && hasDiscountedDesigns) {
+        intents.push("discounted-design");
+      }
+
+      intents.push("not-sure");
+
+      return intents;
+    },
+    [hasDiscountedDesigns, hasFlashDesigns, isProArtist],
   );
   const copy = getPublicCopy(locale);
   const activeStyleInfoDescription = styleInfoKey
