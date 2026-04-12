@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { ImagePlus, LoaderCircle, Save, Upload, X } from "lucide-react";
 import { z } from "zod";
@@ -166,6 +167,7 @@ export function ProfileForm({
   demoMode: boolean;
   locale: PublicLocale;
 }) {
+  const router = useRouter();
   const copy = profileCopy[locale];
   const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
@@ -204,6 +206,7 @@ export function ProfileForm({
     form.setError("root", {
       message: payload.message ?? (demoMode ? copy.demoSaved : copy.saved),
     });
+    router.refresh();
   }
 
   async function handleMediaUpload(field: "profileImageUrl" | "coverImageUrl", file: File) {

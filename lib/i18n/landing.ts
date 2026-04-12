@@ -44,7 +44,7 @@ export const landingCopy = {
       },
     ],
     positioningTitle: "Önemli olan daha çok mesaj değil, daha doğru talepler.",
-    positioningSubtitle: "Sana gelen talepleri daha düzenli ve yönetilebilir hale getirir.",
+    positioningSubtitle: "Sana gelen talepleri daha düzenli ve yönetilebilir hale getir.",
     positioningBullets: [
       "DM’lerde daha az zaman kaybı",
       "Daha hazırlıklı müşteriler",

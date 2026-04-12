@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { LoaderCircle, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { z } from "zod";
@@ -27,6 +28,7 @@ export function FunnelSettingsForm({
   styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
+  const router = useRouter();
   const copy =
     locale === "tr"
       ? {
@@ -140,6 +142,7 @@ export function FunnelSettingsForm({
     }
 
     form.setError("root", { message: payload.message ?? copy.saved });
+    router.refresh();
   }
 
   function resetStylesToDefault() {

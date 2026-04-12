@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, LoaderCircle, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,6 +35,7 @@ export function PricingForm({
   styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
+  const router = useRouter();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     minimum: true,
     baseRanges: false,
@@ -130,6 +132,7 @@ export function PricingForm({
     }
 
     form.setError("root", { message: copy.saved });
+    router.refresh();
   }
 
   function toggleSection(section: keyof typeof expandedSections) {
