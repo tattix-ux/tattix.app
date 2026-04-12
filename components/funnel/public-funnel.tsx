@@ -289,10 +289,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 </p>
                 <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] leading-4 sm:text-xs sm:leading-5" style={{ color: "var(--artist-card-muted)" }}>
                   <span>{artist.profile.instagramHandle}</span>
-                  <span>•</span>
-                  <span>Mobile-first intake flow</span>
-                  <span>•</span>
-                  <span>WhatsApp handoff ready</span>
                 </div>
               </div>
             </CardContent>

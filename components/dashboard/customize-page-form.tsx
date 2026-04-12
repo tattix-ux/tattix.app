@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Monitor, Smartphone, ImagePlus, LoaderCircle, Pencil, Save, Trash2, Upload, X } from "lucide-react";
+import { Monitor, Smartphone, ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -116,6 +116,7 @@ export function CustomizePageForm({
           renameTheme: "Yeniden adlandır",
           deleteTheme: "Sil",
           renamePrompt: "Tema için yeni adı gir",
+          resetDefaults: "Varsayılana dön",
           demo: "Demo modunda yalnızca önizleme",
           preview: "Canlı önizleme",
           previewDescription: "Sanatçı sayfanın anlık bir önizlemesi.",
@@ -169,6 +170,7 @@ export function CustomizePageForm({
           renameTheme: "Rename",
           deleteTheme: "Delete",
           renamePrompt: "Enter a new name for this theme",
+          resetDefaults: "Reset to default",
           demo: "Preview-only in demo mode",
           preview: "Live Preview",
           previewDescription: "Real-time approximation of the public artist page.",
@@ -478,6 +480,16 @@ export function CustomizePageForm({
     form.setValue("themeMode", preset.themeMode);
   }
 
+  function resetThemeToDefault() {
+    applyPreset("dark-minimal");
+    form.setValue("backgroundImageUrl", "");
+    form.setValue("customWelcomeTitle", "");
+    form.setValue("customIntroText", "");
+    form.setValue("customCtaLabel", "");
+    form.setValue("featuredSectionLabel1", "");
+    form.setValue("featuredSectionLabel2", "");
+  }
+
   function applySavedTheme(savedTheme: ArtistSavedTheme) {
     const values = savedTheme.theme;
     form.setValue("presetTheme", values.presetTheme);
@@ -687,6 +699,10 @@ export function CustomizePageForm({
                 >
                   <Save className="size-4" />
                   {copy.savePreset}
+                </Button>
+                <Button type="button" variant="ghost" onClick={resetThemeToDefault}>
+                  <RotateCcw className="size-4" />
+                  {copy.resetDefaults}
                 </Button>
               </CardContent>
             </Card>

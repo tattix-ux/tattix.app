@@ -19,15 +19,16 @@ export async function GET(request: Request) {
   const type = url.searchParams.get("type");
   const errorDescription = url.searchParams.get("error_description");
   const next = getSafeNext(url.searchParams.get("next"));
+  const statusUrl = new URL("/auth/status", url.origin);
 
   if (!isSupabaseConfigured()) {
     return NextResponse.redirect(new URL(next, url.origin));
   }
 
   if (errorDescription) {
-    const loginUrl = new URL("/login", url.origin);
-    loginUrl.searchParams.set("message", errorDescription);
-    return NextResponse.redirect(loginUrl);
+    statusUrl.searchParams.set("state", "error");
+    statusUrl.searchParams.set("message", errorDescription);
+    return NextResponse.redirect(statusUrl);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -35,6 +36,12 @@ export async function GET(request: Request) {
   try {
     if (code) {
       await supabase.auth.exchangeCodeForSession(code);
+      if (next === "/dashboard/profile") {
+        statusUrl.searchParams.set("state", "verified");
+        statusUrl.searchParams.set("next", next);
+        return NextResponse.redirect(statusUrl);
+      }
+
       return NextResponse.redirect(new URL(next, url.origin));
     }
 
@@ -44,16 +51,21 @@ export async function GET(request: Request) {
         token_hash: tokenHash,
       });
 
-      const destination = type === "recovery" ? "/update-password" : next;
-      return NextResponse.redirect(new URL(destination, url.origin));
+      if (type === "recovery") {
+        return NextResponse.redirect(new URL("/update-password", url.origin));
+      }
+
+      statusUrl.searchParams.set("state", "verified");
+      statusUrl.searchParams.set("next", next);
+      return NextResponse.redirect(statusUrl);
     }
   } catch (error) {
-    const loginUrl = new URL("/login", url.origin);
-    loginUrl.searchParams.set(
+    statusUrl.searchParams.set("state", "error");
+    statusUrl.searchParams.set(
       "message",
       error instanceof Error ? error.message : "Authentication link is invalid or expired.",
     );
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(statusUrl);
   }
 
   return NextResponse.redirect(new URL(next, url.origin));

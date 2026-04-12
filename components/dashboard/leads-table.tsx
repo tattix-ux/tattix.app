@@ -604,8 +604,8 @@ export function LeadsTable({
           </div>
 
           {selectedLead ? (
-            <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center">
-              <div className="w-full max-w-2xl rounded-[28px] border border-white/10 bg-[#0f0f11] p-5 shadow-2xl">
+            <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4">
+              <div className="my-auto w-full max-w-2xl rounded-[28px] border border-white/10 bg-[#0f0f11] p-5 shadow-2xl">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm text-[var(--foreground-muted)]">

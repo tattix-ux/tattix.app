@@ -35,7 +35,7 @@ export function PublicRouteCard({
           <p className="truncate text-sm text-white">{fallbackHref}</p>
           <p className="mt-1 text-xs text-[var(--foreground-muted)]">
             {locale === "tr"
-              ? "Instagram biyondan açılan sanatçı sayfası."
+              ? "Instagram profilindeki linkten açılan sanatçı sayfası."
               : "This is the artist page clients open from your bio."}
           </p>
         </div>

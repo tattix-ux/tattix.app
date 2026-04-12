@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { LoaderCircle, Plus, Save, Trash2 } from "lucide-react";
+import { LoaderCircle, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +49,7 @@ export function FunnelSettingsForm({
           styleKeyHelp: "Sadece küçük harf ve tire kullan.",
           enabled: "Aktif",
           remove: "Kaldır",
+          resetDefaults: "Varsayılan stillere dön",
           save: "Ayarları kaydet",
           saving: "Kaydediliyor",
           saveFailed: "Akış ayarları kaydedilemedi.",
@@ -74,6 +75,7 @@ export function FunnelSettingsForm({
           styleKeyHelp: "Lowercase letters and hyphens only.",
           enabled: "Enabled",
           remove: "Remove",
+          resetDefaults: "Reset styles",
           save: "Save settings",
           saving: "Saving",
           saveFailed: "Unable to save funnel settings.",
@@ -140,6 +142,17 @@ export function FunnelSettingsForm({
     form.setError("root", { message: payload.message ?? copy.saved });
   }
 
+  function resetStylesToDefault() {
+    form.setValue("enabledStyles", ["blackwork", "fine-line", "micro-realism"], {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    form.setValue("removedBuiltInStyles", [], {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }
+
   const builtInStyles = styles
     .filter((style) => !style.isCustom && !style.deleted && !removedBuiltInStyles.includes(style.styleKey))
     .sort((left, right) => {
@@ -201,7 +214,13 @@ export function FunnelSettingsForm({
               <Field label={copy.activeStyles} className="gap-1">
                 <div />
               </Field>
-              <Badge variant="muted">{selectedStyles.length} {copy.activeCount}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="muted">{selectedStyles.length} {copy.activeCount}</Badge>
+                <Button type="button" size="sm" variant="outline" onClick={resetStylesToDefault}>
+                  <RotateCcw className="size-4" />
+                  {copy.resetDefaults}
+                </Button>
+              </div>
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
               {builtInStyles.map((style) => {

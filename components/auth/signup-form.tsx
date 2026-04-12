@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/shared/field";
+import { getAppOrigin } from "@/lib/config/site";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { signUpSchema } from "@/lib/forms/schemas";
@@ -36,7 +37,7 @@ export function SignupForm() {
     }
 
     const supabase = createSupabaseBrowserClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/dashboard/profile`;
+    const redirectTo = `${getAppOrigin()}/auth/callback?next=/dashboard/profile`;
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
