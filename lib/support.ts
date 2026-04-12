@@ -27,6 +27,20 @@ export async function getAdminSupportMessages() {
   return (data ?? []).map((row) => mapSupportMessage(row as Record<string, unknown>));
 }
 
+export async function getUnreadSupportMessageCount() {
+  const admin = createSupabaseAdminClient();
+  const { count, error } = await admin
+    .from("artist_support_messages")
+    .select("*", { count: "exact", head: true })
+    .is("replied_at", null);
+
+  if (error) {
+    throw error;
+  }
+
+  return count ?? 0;
+}
+
 export async function sendAdminSupportNotification(message: SupportMessage) {
   const apiKey = process.env.RESEND_API_KEY;
 

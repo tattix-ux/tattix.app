@@ -14,6 +14,7 @@ import { hasProAccess } from "@/lib/access";
 import { getDashboardData } from "@/lib/data/dashboard";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getSupabaseSession } from "@/lib/supabase/server";
+import { getUnreadSupportMessageCount } from "@/lib/support";
 
 export default async function DashboardLayout({
   children,
@@ -30,6 +31,7 @@ export default async function DashboardLayout({
   const isTurkish = dashboardData.funnelSettings.defaultLanguage === "tr";
   const isProActive = hasProAccess(dashboardData.profile);
   const showAdminMessages = isAdminEmail(session?.user.email);
+  const adminUnreadCount = showAdminMessages ? await getUnreadSupportMessageCount() : 0;
 
   return (
     <AppShell>
@@ -74,6 +76,7 @@ export default async function DashboardLayout({
                       locale={isTurkish ? "tr" : "en"}
                       hideProBadges={isProActive}
                       showAdminMessages={showAdminMessages}
+                      adminUnreadCount={adminUnreadCount}
                     />
                   </div>
                 </div>

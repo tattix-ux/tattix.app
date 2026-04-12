@@ -16,7 +16,15 @@ import {
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
-function getItems(locale: "en" | "tr") {
+type DashboardNavItem = {
+  href: string;
+  label: string;
+  icon: typeof UserRound;
+  pro?: boolean;
+  unreadCount?: number;
+};
+
+function getItems(locale: "en" | "tr"): DashboardNavItem[] {
   return [
     { href: "/dashboard/profile", label: locale === "tr" ? "Profil" : "Profile", icon: UserRound },
     {
@@ -45,10 +53,12 @@ export function DashboardNav({
   locale = "en",
   hideProBadges = false,
   showAdminMessages = false,
+  adminUnreadCount = 0,
 }: {
   locale?: "en" | "tr";
   hideProBadges?: boolean;
   showAdminMessages?: boolean;
+  adminUnreadCount?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -60,11 +70,12 @@ export function DashboardNav({
         href: "/dashboard/messages",
         label: locale === "tr" ? "Mesajlar" : "Messages",
         icon: MessageSquareText,
+        unreadCount: adminUnreadCount,
       });
     }
 
     return base;
-  }, [locale, showAdminMessages]);
+  }, [adminUnreadCount, locale, showAdminMessages]);
 
   useEffect(() => {
     items.forEach((item) => router.prefetch(item.href));
@@ -94,6 +105,11 @@ export function DashboardNav({
               <Badge variant="muted" className="gap-1 xl:ml-1">
                 <Crown className="size-3" />
                 Pro
+              </Badge>
+            ) : null}
+            {item.unreadCount ? (
+              <Badge variant="accent" className="xl:ml-1">
+                {item.unreadCount}
               </Badge>
             ) : null}
           </Link>
