@@ -202,7 +202,18 @@ export type SupportMessage = {
   artistName: string;
   accountEmail: string;
   message: string;
+  adminReply: string | null;
   repliedAt: string | null;
+  createdAt: string;
+};
+
+export type ArtistNotification = {
+  id: string;
+  artistId: string;
+  title: string;
+  body: string;
+  senderLabel: string;
+  readAt: string | null;
   createdAt: string;
 };
 
