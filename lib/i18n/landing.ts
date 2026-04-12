@@ -7,43 +7,44 @@ export const landingCopy = {
     badge: "Dövme sanatçıları için yapılandırılmış talep akışı",
     heroTitle: "Instagram DM’lerinden sadece ciddi dövme müşterilerini filtrele.",
     heroDescription:
-      "Instagram biyonu, müşteriler sana ulaşmadan önce onları filtreleyen bir başvuru sistemine dönüştür.",
+      "Müşteri sana yazmadan önce bölge, fiyat ve tasarım detayı netleşsin.",
     primaryCta: "Sanatçı sayfanı oluştur",
     secondaryCta: "Demoyu gör",
-    ctaNote: "Ücretsiz başla — kredi kartı gerekmez",
-    previewBadge: "Müşteriler sana ulaşmadan önce her şeyi doldurur",
-    previewNameLabel: "İsim",
-    previewRequestLabel: "Dövme talebi",
+    ctaNote: "Ücretsiz başla",
+    previewBadge: "Sana ulaşmadan önce gerekli bilgileri girerler",
+    previewRequestLabel: "Talep türü",
     previewBudgetLabel: "Bütçe",
     previewPlacementLabel: "Bölge",
+    previewReferenceLabel: "Tasarım detayı",
     previewValues: {
-      name: "Ece K.",
-      request: "Fine line kol dövmesi",
+      request: "Özel dövme",
       budget: "₺4.000 - ₺6.000",
       placement: "İç kol",
+      reference: "İnce çizgili çiçek kompozisyonu",
     },
-    problemTitle: "Instagram DM’leri dağınık. Dövme işi öyle olmamalı.",
+    problemTitle: "Dövme talepleri çoğu zaman eksik ve dağınık geliyor.",
     problemDescription:
-      "Çoğu mesaj eksik, belirsiz veya ciddi değil. Aynı soruları tekrar tekrar sormak zorunda kalıyorsun.",
+      "Kimisi fiyat yazmıyor, kimisi bölgeyi belirtmiyor, kimisi ne istediğini düzgün anlatmıyor. Aynı şeyleri tekrar tekrar sormak zorunda kalıyorsun.",
     featuresTitle: "TatBot neyi düzeltir?",
     features: [
       {
         title: "Eksiksiz başvurular al",
         description:
-          "Müşteriler ölçü, bölge, referans ve detayları baştan girer. Bilgi peşinde koşmazsın.",
+          "Müşteriler ölçü, bölge, referans ve detayları baştan girsin. Bilgi peşinde koşma!",
       },
       {
-        title: "Fiyat ve niyete göre filtrele",
+        title: "Bütçesi uymayanları baştan ele",
         description:
-          "Minimum bütçe belirle ve düşük kaliteli talepleri otomatik ele.",
+          "Sanatının fiyatını belirle, sana uymayan talepler ile vakit kaybetme!",
       },
       {
-        title: "Sadece uygun müşterilerle konuş",
-        description: "Sadece süreci tamamlayan kişiler sana ulaşır.",
+        title: "Daha net müşterilere odaklan",
+        description:
+          "Süreci tamamlayan, gerçekten satışa dönme potansiyeli olan kişiler sana ulaşsın.",
       },
     ],
-    positioningTitle: "Bu sistem müşteri bulmak için değil.",
-    positioningSubtitle: "Zaten gelen müşterileri filtrelemek için.",
+    positioningTitle: "Önemli olan daha çok mesaj değil, daha doğru talepler.",
+    positioningSubtitle: "Sana gelen talepleri daha düzenli ve yönetilebilir hale getirir.",
     positioningBullets: [
       "DM’lerde daha az zaman kaybı",
       "Daha hazırlıklı müşteriler",
@@ -51,9 +52,9 @@ export const landingCopy = {
     ],
     stepsTitle: "Nasıl çalışır",
     steps: [
-      "TatBot linkini Instagram biyona ekle",
-      "Müşteriler yapılandırılmış formu doldurur",
-      "Sadece uygun müşteriler sana ulaşır",
+      "Linkini Instagram bio’na ekle",
+      "Müşteri talebini birkaç adımda doldursun",
+      "Sana daha net ve uygun talepler gelsin",
     ],
     finalTitle: "Bugün müşterilerini filtrelemeye başla",
     finalSubtitle: "Dakikalar içinde kurulum yap",
@@ -74,34 +75,36 @@ export const landingCopy = {
     previewRequestLabel: "Tattoo request",
     previewBudgetLabel: "Budget",
     previewPlacementLabel: "Placement",
+    previewReferenceLabel: "Design detail",
     previewValues: {
-      name: "Ece K.",
-      request: "Fine line arm piece",
+      request: "Custom tattoo",
       budget: "$120 - $180",
       placement: "Inner arm",
+      reference: "Fine line floral composition",
     },
-    problemTitle: "Instagram DMs are messy. Tattoo work shouldn’t be.",
+    problemTitle: "Tattoo inquiries usually arrive incomplete and messy.",
     problemDescription:
-      "Most messages are incomplete, unclear, or not serious. You waste time asking the same questions again and again.",
+      "Some do not mention budget, some skip placement, and some cannot explain what they want clearly. You end up asking the same things again and again.",
     featuresTitle: "What TatBot fixes",
     features: [
       {
         title: "Get complete requests",
         description:
-          "Clients provide size, placement, references, and details upfront. No more chasing information.",
+          "Let clients submit size, placement, references, and details upfront. Stop chasing basic information.",
       },
       {
-        title: "Filter by price and intent",
+        title: "Filter out mismatched budgets early",
         description:
-          "Set minimum budgets and avoid low-quality inquiries automatically.",
+          "Set your pricing and stop wasting time on requests that do not fit your work.",
       },
       {
-        title: "Talk only to qualified clients",
-        description: "Only users who complete the flow reach your WhatsApp or DM.",
+        title: "Focus on clearer clients",
+        description:
+          "Let people who complete the flow and have real sales potential be the ones who reach you.",
       },
     ],
-    positioningTitle: "This is not for getting more clients.",
-    positioningSubtitle: "This is for filtering the ones you already get.",
+    positioningTitle: "More messages are not the goal. Better inquiries are.",
+    positioningSubtitle: "TatBot makes incoming requests more structured and easier to manage.",
     positioningBullets: [
       "Less time wasted on DMs",
       "Better prepared clients",
@@ -109,9 +112,9 @@ export const landingCopy = {
     ],
     stepsTitle: "How it works",
     steps: [
-      "Add your TatBot link to your Instagram bio",
-      "Clients fill a structured tattoo request form",
-      "Only qualified clients reach you",
+      "Add your link to your Instagram bio",
+      "Let clients complete the request in a few quick steps",
+      "Receive clearer and better matched inquiries",
     ],
     finalTitle: "Start filtering your clients today",
     finalSubtitle: "Set up your page in minutes",

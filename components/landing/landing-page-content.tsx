@@ -101,10 +101,6 @@ export function LandingPageContent() {
               <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-4 sm:p-5">
                 <div className="space-y-3">
                   <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">{copy.previewNameLabel}</p>
-                    <p className="mt-2 text-sm text-white">{copy.previewValues.name}</p>
-                  </div>
-                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">{copy.previewRequestLabel}</p>
                     <p className="mt-2 text-sm text-white">{copy.previewValues.request}</p>
                   </div>
@@ -118,6 +114,10 @@ export function LandingPageContent() {
                       <p className="mt-2 text-sm text-white">{copy.previewValues.placement}</p>
                     </div>
                   </div>
+                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">{copy.previewReferenceLabel}</p>
+                    <p className="mt-2 text-sm text-white">{copy.previewValues.reference}</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -126,10 +126,7 @@ export function LandingPageContent() {
 
         <section className="py-10 sm:py-14">
           <div className="rounded-[28px] border border-white/8 bg-white/[0.03] p-6 sm:p-8">
-            <p className="text-xs uppercase tracking-[0.3em] text-[var(--accent-soft)]">
-              {locale === "tr" ? "Problem" : "Problem"}
-            </p>
-            <h2 className="mt-4 max-w-3xl font-display text-3xl leading-tight text-white sm:text-5xl">
+            <h2 className="max-w-3xl font-display text-3xl leading-tight text-white sm:text-5xl">
               {copy.problemTitle}
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--foreground-muted)] sm:text-base">
@@ -166,9 +163,6 @@ export function LandingPageContent() {
         <section className="py-10 sm:py-14">
           <div className="grid gap-6 rounded-[30px] border border-[var(--accent)]/14 bg-[linear-gradient(180deg,rgba(247,177,93,0.08),rgba(255,255,255,0.02))] p-6 sm:p-8 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="space-y-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-[var(--accent-soft)]">
-                {locale === "tr" ? "Konumlandırma" : "Positioning"}
-              </p>
               <h2 className="font-display text-3xl leading-tight text-white sm:text-5xl">
                 {copy.positioningTitle}
               </h2>
