@@ -35,3 +35,34 @@ export async function PATCH(
   revalidatePath("/dashboard/notifications");
   return NextResponse.json({ message: "Notification marked as read." });
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<unknown> },
+) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ message: "Demo mode active." }, { status: 400 });
+  }
+
+  const artist = await getAuthenticatedArtist();
+
+  if (!artist) {
+    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  }
+
+  const { id } = (await params) as { id: string };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("artist_notifications")
+    .delete()
+    .eq("id", id)
+    .eq("artist_id", artist.id);
+
+  if (error) {
+    return NextResponse.json({ message: error.message }, { status: 400 });
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/notifications");
+  return NextResponse.json({ message: "Notification deleted." });
+}

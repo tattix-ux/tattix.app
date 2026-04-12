@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LoaderCircle, MessageSquareText, Send } from "lucide-react";
+import { LoaderCircle, MessageSquareText, Send, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,18 @@ export function SupportMessagesTable({ messages }: { messages: SupportMessage[] 
       ),
     );
     setReplyDrafts((current) => ({ ...current, [id]: "" }));
+  }
+
+  async function removeMessage(id: string) {
+    const response = await fetch(`/api/admin/support-messages/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    setLocalMessages((current) => current.filter((message) => message.id !== id));
   }
 
   if (!localMessages.length) {
@@ -126,6 +138,10 @@ export function SupportMessagesTable({ messages }: { messages: SupportMessage[] 
                     </Button>
                   </>
                 ) : null}
+                <Button type="button" variant="outline" onClick={() => void removeMessage(message.id)}>
+                  <Trash2 className="size-4" />
+                  Sil
+                </Button>
               </div>
             </CardContent>
           </Card>

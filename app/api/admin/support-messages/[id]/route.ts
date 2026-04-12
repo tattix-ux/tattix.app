@@ -87,3 +87,40 @@ export async function PATCH(
   revalidatePath("/dashboard/notifications");
   return NextResponse.json({ message: "Message marked as replied." });
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<unknown> },
+) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ message: "Demo mode active." }, { status: 400 });
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  }
+
+  if (!isAdminEmail(user.email)) {
+    return NextResponse.json({ message: "Forbidden." }, { status: 403 });
+  }
+
+  const { id } = (await params) as { id: string };
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("artist_support_messages")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ message: error.message }, { status: 400 });
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/messages");
+  return NextResponse.json({ message: "Message deleted." });
+}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { isAdminEmail } from "@/lib/access";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
+import { DashboardNotificationBell } from "@/components/dashboard/dashboard-notification-bell";
 import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-card";
 import { LogoutButton } from "@/components/dashboard/logout-button";
@@ -46,6 +47,10 @@ export default async function DashboardLayout({
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <Logo className="min-w-0" />
+                  <DashboardNotificationBell
+                    locale={isTurkish ? "tr" : "en"}
+                    unreadCount={notificationUnreadCount}
+                  />
                   <div className="flex shrink-0 items-center">
                     <LogoutButton />
                   </div>
@@ -81,7 +86,6 @@ export default async function DashboardLayout({
                       hideProBadges={isProActive}
                       showAdminMessages={showAdminMessages}
                       adminUnreadCount={adminUnreadCount}
-                      notificationUnreadCount={notificationUnreadCount}
                     />
                   </div>
                 </div>

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BookImage,
-  Bell,
   CircleDollarSign,
   Crown,
   MessageSquareText,
@@ -46,7 +45,6 @@ function getItems(locale: "en" | "tr"): DashboardNavItem[] {
       icon: PaintbrushVertical,
       pro: true,
     },
-    { href: "/dashboard/notifications", label: locale === "tr" ? "Bildirimler" : "Notifications", icon: Bell },
     { href: "/dashboard/leads", label: locale === "tr" ? "Talepler" : "Requests", icon: MessageSquareText, pro: true },
   ];
 }
@@ -56,22 +54,16 @@ export function DashboardNav({
   hideProBadges = false,
   showAdminMessages = false,
   adminUnreadCount = 0,
-  notificationUnreadCount = 0,
 }: {
   locale?: "en" | "tr";
   hideProBadges?: boolean;
   showAdminMessages?: boolean;
   adminUnreadCount?: number;
-  notificationUnreadCount?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const items = useMemo(() => {
-    const base = getItems(locale).map((item) =>
-      item.href === "/dashboard/notifications"
-        ? { ...item, unreadCount: notificationUnreadCount }
-        : item,
-    );
+    const base = getItems(locale);
 
     if (showAdminMessages) {
       base.push({
@@ -83,7 +75,7 @@ export function DashboardNav({
     }
 
     return base;
-  }, [adminUnreadCount, locale, notificationUnreadCount, showAdminMessages]);
+  }, [adminUnreadCount, locale, showAdminMessages]);
 
   useEffect(() => {
     items.forEach((item) => router.prefetch(item.href));

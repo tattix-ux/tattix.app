@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
 
 import type { ArtistNotification } from "@/lib/types";
 import { formatDateLabel } from "@/lib/utils";
@@ -33,6 +33,20 @@ export function NotificationsTable({
           ? { ...notification, readAt: new Date().toISOString() }
           : notification,
       ),
+    );
+  }
+
+  async function removeNotification(id: string) {
+    const response = await fetch(`/api/dashboard/notifications/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    setLocalNotifications((current) =>
+      current.filter((notification) => notification.id !== id),
     );
   }
 
@@ -77,12 +91,18 @@ export function NotificationsTable({
               </div>
               <p className="whitespace-pre-wrap">{notification.body}</p>
             </div>
-            {!notification.readAt ? (
-              <Button type="button" variant="outline" onClick={() => void markAsRead(notification.id)}>
-                <CheckCheck className="size-4" />
-                {locale === "tr" ? "Okundu olarak işaretle" : "Mark as read"}
+            <div className="flex flex-wrap gap-3">
+              {!notification.readAt ? (
+                <Button type="button" variant="outline" onClick={() => void markAsRead(notification.id)}>
+                  <CheckCheck className="size-4" />
+                  {locale === "tr" ? "Okundu olarak işaretle" : "Mark as read"}
+                </Button>
+              ) : null}
+              <Button type="button" variant="outline" onClick={() => void removeNotification(notification.id)}>
+                <Trash2 className="size-4" />
+                {locale === "tr" ? "Sil" : "Delete"}
               </Button>
-            ) : null}
+            </div>
           </CardContent>
         </Card>
       ))}
