@@ -1,9 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { SignupForm } from "@/components/auth/signup-form";
-import { Logo } from "@/components/shared/logo";
-import { AppShell, Container } from "@/components/shared/shell";
+import { SignupPageContent } from "@/components/auth/signup-page-content";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function SignupPage() {
@@ -13,26 +10,5 @@ export default async function SignupPage() {
     redirect("/dashboard/profile");
   }
 
-  return (
-    <AppShell>
-      <Container className="py-6 sm:py-8">
-        <div className="flex items-center justify-between">
-          <Logo />
-          <Link href="/" className="text-sm text-[var(--foreground-muted)] hover:text-white">
-            Back home
-          </Link>
-        </div>
-        <div className="mx-auto grid min-h-[80vh] max-w-5xl gap-10 py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="space-y-5">
-            <p className="text-xs uppercase tracking-[0.28em] text-[var(--accent-soft)]">Launch your page</p>
-            <h1 className="font-display text-5xl text-white">Create a premium tattoo inquiry funnel in minutes.</h1>
-            <p className="max-w-lg text-base leading-8 text-[var(--foreground-muted)]">
-              Each account gets a public bio page, pricing rules, featured design sections, and a submissions dashboard.
-            </p>
-          </div>
-          <SignupForm />
-        </div>
-      </Container>
-    </AppShell>
-  );
+  return <SignupPageContent />;
 }
