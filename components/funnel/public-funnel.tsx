@@ -25,6 +25,8 @@ import type { ArtistFeaturedDesign, ArtistPageData } from "@/lib/types";
 import { buildThemeStyles } from "@/lib/theme";
 import { useFunnelStore } from "@/store/funnel-store";
 import { formatCompactCurrencyRange } from "@/lib/utils";
+import { hasProAccess } from "@/lib/access";
+import type { IntentValue } from "@/lib/constants/options";
 
 type SubmissionResponse = {
   estimatedMin: number;
@@ -89,6 +91,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const selectedDesign = useMemo(
     () => findSelectedDesign(activeDesigns, draft.selectedDesignId),
     [activeDesigns, draft.selectedDesignId],
+  );
+  const isProArtist = hasProAccess(artist.profile);
+  const availableIntents = useMemo<readonly IntentValue[]>(
+    () =>
+      isProArtist
+        ? ["custom-tattoo", "design-in-mind", "flash-design", "discounted-design", "not-sure"]
+        : ["custom-tattoo", "design-in-mind", "not-sure"],
+    [isProArtist],
   );
   const copy = getPublicCopy(locale);
   const activeStyleInfoDescription = styleInfoKey
@@ -359,6 +369,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   selectedDesignId={draft.selectedDesignId}
                   referenceImage={draft.referenceImage}
                   referenceDescription={draft.referenceDescription}
+                  availableIntents={availableIntents}
                   onIntentChange={handleIntentChange}
                   onDesignSelect={(designId) => {
                     setField("selectedDesignId", designId);

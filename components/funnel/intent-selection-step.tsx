@@ -37,6 +37,7 @@ export function IntentSelectionStep({
   selectedDesignId,
   referenceImage,
   referenceDescription,
+  availableIntents,
   onIntentChange,
   onDesignSelect,
   onReferenceImageSelect,
@@ -50,6 +51,7 @@ export function IntentSelectionStep({
   selectedDesignId: string;
   referenceImage: string;
   referenceDescription: string;
+  availableIntents: readonly IntentValue[];
   onIntentChange: (intent: IntentValue) => void;
   onDesignSelect: (designId: string | "") => void;
   onReferenceImageSelect: (imageUrl: string, imagePath: string) => void;
@@ -84,7 +86,9 @@ export function IntentSelectionStep({
   return (
     <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
       <div className="grid gap-2.5 sm:gap-3">
-        {intentOptions.map((option) => {
+        {intentOptions
+          .filter((option) => availableIntents.includes(option.value))
+          .map((option) => {
           const active = intent === option.value;
 
           return (
