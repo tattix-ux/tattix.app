@@ -13,16 +13,19 @@ function buildMailto({
   artistName,
   planType,
   requestedAt,
+  slug,
 }: {
   accountEmail: string;
   artistName: string;
   planType: "free" | "pro";
   requestedAt: string;
+  slug: string;
 }) {
   const subject = "Pro Access Request - TatBot";
   const body = [
     `Artist email: ${accountEmail}`,
     `Artist name: ${artistName}`,
+    `Artist slug: ${slug}`,
     `Current plan: ${planType}`,
     `Request date: ${requestedAt}`,
   ].join("\n");
@@ -45,6 +48,7 @@ export default async function DashboardUpgradePage() {
   const mailto = buildMailto({
     accountEmail: session?.user.email ?? "unknown",
     artistName: data.profile.artistName,
+    slug: data.profile.slug,
     planType: data.profile.planType,
     requestedAt,
   });
@@ -92,6 +96,7 @@ export default async function DashboardUpgradePage() {
           <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
             <p>{isTurkish ? "Hesap emaili" : "Account email"}: <span className="text-white">{session?.user.email ?? "-"}</span></p>
             <p className="mt-2">{isTurkish ? "Sanatçı adı" : "Artist name"}: <span className="text-white">{data.profile.artistName}</span></p>
+            <p className="mt-2">{isTurkish ? "Sanatçı slug'ı" : "Artist slug"}: <span className="text-white">{data.profile.slug}</span></p>
             <p className="mt-2">{isTurkish ? "Mevcut plan" : "Current plan"}: <span className="text-white">{data.profile.planType}</span></p>
             <p className="mt-2">{isTurkish ? "Talep zamanı" : "Request time"}: <span className="text-white">{requestedAt}</span></p>
           </div>

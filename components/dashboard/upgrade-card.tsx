@@ -45,7 +45,6 @@ const copy = {
       "Analitik ve dönüşüm takibi",
       "Gelişmiş sayfa özelleştirme",
       "Tasarım yönetimi",
-      "Yayına alınan premium araçlar",
     ],
   },
 } as const;

@@ -38,7 +38,7 @@ export function SectionHeading({
   align = "left",
 }: {
   eyebrow?: string;
-  title: string;
+  title: React.ReactNode;
   description?: string;
   align?: "left" | "center";
 }) {
