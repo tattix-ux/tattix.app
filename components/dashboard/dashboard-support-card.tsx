@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Send } from "lucide-react";
+import { useState } from "react";
+import { LoaderCircle, Send } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -17,50 +16,83 @@ export function DashboardSupportCard({
   accountEmail: string;
 }) {
   const [message, setMessage] = useState("");
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState("");
   const copy =
     locale === "tr"
       ? {
-          title: "İletişim",
-          description: "Bir sorunu veya isteğini buradan kısa bir mail olarak hazırlayabilirsin.",
+          title: "Sorun mu var? İletişime geç.",
+          description: "Kısa bir mesaj bırak, admin paneline düşsün.",
           placeholder: "Neye ihtiyacın olduğunu kısaca yaz…",
-          action: "Mail hazırla",
+          action: "Gönder",
+          close: "Kapat",
+          sent: "Mesajın gönderildi.",
         }
       : {
-          title: "Contact",
-          description: "Prepare a short support email from here whenever you need help.",
+          title: "Need help? Get in touch.",
+          description: "Leave a short message and it will appear in the admin inbox.",
           placeholder: "Write a short message…",
-          action: "Prepare email",
+          action: "Send",
+          close: "Close",
+          sent: "Your message has been sent.",
         };
 
-  const mailto = useMemo(() => {
-    const subject = encodeURIComponent("Tattix Support Request");
-    const body = encodeURIComponent(
-      [
-        `Artist name: ${artistName}`,
-        `Account email: ${accountEmail || "-"}`,
-        "",
-        message || (locale === "tr" ? "Merhaba, desteğe ihtiyacım var." : "Hello, I need support."),
-      ].join("\n"),
-    );
+  async function submitMessage() {
+    setSubmitting(true);
+    const response = await fetch("/api/dashboard/support", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    });
+    setSubmitting(false);
 
-    return `mailto:gizemoderr@gmail.com?subject=${subject}&body=${body}`;
-  }, [accountEmail, artistName, locale, message]);
+    const payload = (await response.json()) as { message?: string };
+
+    if (!response.ok) {
+      setFeedback(payload.message ?? "Unable to send support message.");
+      return;
+    }
+
+    setFeedback(copy.sent);
+    setMessage("");
+    setOpen(false);
+  }
 
   return (
-    <Card className="surface-border">
-      <CardHeader>
-        <CardTitle>{copy.title}</CardTitle>
-        <CardDescription>{copy.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <Textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder={copy.placeholder} />
-        <Button asChild>
-          <a href={mailto}>
-            <Send className="size-4" />
-            {copy.action}
-          </a>
-        </Button>
-      </CardContent>
-    </Card>
+    <div className="space-y-3">
+      <Button type="button" variant="outline" onClick={() => setOpen(true)}>
+        <Send className="size-4" />
+        {copy.title}
+      </Button>
+      {feedback ? <p className="text-sm text-[var(--foreground-muted)]">{feedback}</p> : null}
+      {open ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-lg rounded-[28px] border border-white/10 bg-[#0f0f11] p-5 shadow-2xl">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-white">{copy.title}</h3>
+              <p className="text-sm text-[var(--foreground-muted)]">{copy.description}</p>
+              <p className="text-xs text-[var(--foreground-muted)]">
+                {artistName} · {accountEmail || "-"}
+              </p>
+            </div>
+            <div className="mt-4 space-y-3">
+              <Textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder={copy.placeholder} />
+              <div className="flex flex-wrap gap-3">
+                <Button type="button" onClick={() => void submitMessage()} disabled={submitting || message.trim().length < 4}>
+                  {submitting ? <LoaderCircle className="size-4 animate-spin" /> : <Send className="size-4" />}
+                  {copy.action}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  {copy.close}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

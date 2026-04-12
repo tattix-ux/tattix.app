@@ -44,13 +44,27 @@ function getItems(locale: "en" | "tr") {
 export function DashboardNav({
   locale = "en",
   hideProBadges = false,
+  showAdminMessages = false,
 }: {
   locale?: "en" | "tr";
   hideProBadges?: boolean;
+  showAdminMessages?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const items = useMemo(() => getItems(locale), [locale]);
+  const items = useMemo(() => {
+    const base = getItems(locale);
+
+    if (showAdminMessages) {
+      base.push({
+        href: "/dashboard/messages",
+        label: locale === "tr" ? "Mesajlar" : "Messages",
+        icon: MessageSquareText,
+      });
+    }
+
+    return base;
+  }, [locale, showAdminMessages]);
 
   useEffect(() => {
     items.forEach((item) => router.prefetch(item.href));

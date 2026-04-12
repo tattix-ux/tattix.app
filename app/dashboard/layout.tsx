@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { isAdminEmail } from "@/lib/access";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-card";
@@ -28,6 +29,7 @@ export default async function DashboardLayout({
   const dashboardData = await getDashboardData(session?.user.id ?? null);
   const isTurkish = dashboardData.funnelSettings.defaultLanguage === "tr";
   const isProActive = hasProAccess(dashboardData.profile);
+  const showAdminMessages = isAdminEmail(session?.user.email);
 
   return (
     <AppShell>
@@ -68,7 +70,11 @@ export default async function DashboardLayout({
                       : "Configure the public funnel clients open from your Instagram bio."}
                   </p>
                   <div className="mt-5">
-                    <DashboardNav locale={isTurkish ? "tr" : "en"} hideProBadges={isProActive} />
+                    <DashboardNav
+                      locale={isTurkish ? "tr" : "en"}
+                      hideProBadges={isProActive}
+                      showAdminMessages={showAdminMessages}
+                    />
                   </div>
                 </div>
                 {!isProActive ? (

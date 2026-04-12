@@ -196,6 +196,16 @@ export type DashboardData = ArtistPageData & {
   demoMode: boolean;
 };
 
+export type SupportMessage = {
+  id: string;
+  artistId: string;
+  artistName: string;
+  accountEmail: string;
+  message: string;
+  repliedAt: string | null;
+  createdAt: string;
+};
+
 export type SubmissionRequest = {
   artistSlug: string;
   locale?: PublicLocale;
