@@ -20,13 +20,13 @@ export default async function DashboardPricingPage() {
         description={
           isTurkish
             ? "Tattix sadece ön tahmin yapar, son kararı her zaman sen verirsin."
-            : "TatBot gives an initial estimate, but the final decision is always yours."
+            : "Tattix gives an initial estimate, but the final decision is always yours."
         }
       />
       <p className="-mt-2 max-w-2xl text-sm leading-6 text-[var(--foreground-muted)]">
         {isTurkish
-          ? "Örneğin, 1,5 çarpanı seçersen o özellik seçildiğinde min-max fiyat 1,5 kat artar."
-          : "For example, if you choose a 1.5 multiplier, the min-max price increases by 1.5x when that option is selected."}
+          ? "Temel fiyatı, boyut etkisini, yerleşimi ve ek ücretleri birlikte belirleyebilirsin."
+          : "You can set the base price, size effect, placement effect, and addon fees together."}
       </p>
       <PricingForm
         pricingRules={data.pricingRules}

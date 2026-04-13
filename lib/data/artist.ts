@@ -12,6 +12,9 @@ import type {
   ArtistProfile,
   ArtistSavedTheme,
   ArtistStyleOption,
+  ColorModeValue,
+  DetailLevelValue,
+  PriceRange,
 } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -81,11 +84,142 @@ function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedDesign {
   };
 }
 
+function midpoint(range: PriceRange | undefined) {
+  if (!range) {
+    return null;
+  }
+
+  return (Number(range.min ?? 0) + Number(range.max ?? 0)) / 2;
+}
+
+function normalizeRange(
+  value: unknown,
+  fallback: PriceRange,
+): PriceRange {
+  if (!value || typeof value !== "object") {
+    return fallback;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  const min = Number(candidate.min ?? fallback.min);
+  const max = Number(candidate.max ?? fallback.max);
+
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return fallback;
+  }
+
+  return {
+    min: Math.max(0, min),
+    max: Math.max(Math.max(0, min), max),
+  };
+}
+
 function mapPricingRules(row: Record<string, unknown>, artistId: string): ArtistPricingRules {
+  const minimumSessionPrice = Number(row.minimum_session_price ?? 0);
+  const sizeBaseRanges = row.size_base_ranges as ArtistPricingRules["sizeBaseRanges"];
+  const basePrice =
+    Number(row.base_price) ||
+    midpoint(sizeBaseRanges?.medium) ||
+    midpoint(sizeBaseRanges?.small) ||
+    minimumSessionPrice ||
+    3000;
+  const minimumCharge = Number(row.minimum_charge ?? minimumSessionPrice ?? 0);
+  const defaultSizeModifiers = {
+    tiny: normalizeRange(
+      sizeBaseRanges?.tiny
+        ? {
+            min: sizeBaseRanges.tiny.min / basePrice,
+            max: sizeBaseRanges.tiny.max / basePrice,
+          }
+        : null,
+      { min: 0.35, max: 0.6 },
+    ),
+    small: normalizeRange(
+      sizeBaseRanges?.small
+        ? {
+            min: sizeBaseRanges.small.min / basePrice,
+            max: sizeBaseRanges.small.max / basePrice,
+          }
+        : null,
+      { min: 0.55, max: 0.85 },
+    ),
+    medium: normalizeRange(
+      sizeBaseRanges?.medium
+        ? {
+            min: sizeBaseRanges.medium.min / basePrice,
+            max: sizeBaseRanges.medium.max / basePrice,
+          }
+        : null,
+      { min: 0.95, max: 1.2 },
+    ),
+    large: normalizeRange(
+      sizeBaseRanges?.large
+        ? {
+            min: sizeBaseRanges.large.min / basePrice,
+            max: sizeBaseRanges.large.max / basePrice,
+          }
+        : null,
+      { min: 1.8, max: 2.4 },
+    ),
+  } satisfies ArtistPricingRules["sizeModifiers"];
+  const legacyPlacementMultipliers =
+    (row.placement_multipliers as ArtistPricingRules["placementMultipliers"]) ?? {};
+  const placementModifiers = Object.fromEntries(
+    Object.entries(
+      (row.placement_modifiers as ArtistPricingRules["placementModifiers"]) ?? {},
+    ).map(([key, value]) => [key, normalizeRange(value, { min: 1, max: 1 })]),
+  ) as ArtistPricingRules["placementModifiers"];
+  const derivedPlacementModifiers = Object.fromEntries(
+    Object.entries(legacyPlacementMultipliers).map(([key, value]) => [
+      key,
+      normalizeRange({ min: value, max: value }, { min: 1, max: 1 }),
+    ]),
+  ) as ArtistPricingRules["placementModifiers"];
+  const detailDefaults: Record<DetailLevelValue, PriceRange> = {
+    simple: { min: 0.9, max: 1 },
+    standard: { min: 1, max: 1.15 },
+    detailed: { min: 1.15, max: 1.35 },
+  };
+  const colorDefaults: Record<ColorModeValue, PriceRange> = {
+    "black-only": { min: 0.95, max: 1 },
+    "black-grey": { min: 1, max: 1.1 },
+    "full-color": { min: 1.18, max: 1.35 },
+  };
+
   return {
     artistId,
-    minimumSessionPrice: Number(row.minimum_session_price ?? 0),
-    sizeBaseRanges: row.size_base_ranges as ArtistPricingRules["sizeBaseRanges"],
+    basePrice,
+    minimumCharge,
+    sizeModifiers: {
+      tiny: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.tiny, defaultSizeModifiers.tiny),
+      small: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.small, defaultSizeModifiers.small),
+      medium: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.medium, defaultSizeModifiers.medium),
+      large: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.large, defaultSizeModifiers.large),
+    },
+    placementModifiers:
+      Object.keys(placementModifiers).length > 0 ? placementModifiers : derivedPlacementModifiers,
+    detailLevelModifiers: {
+      simple: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.simple, detailDefaults.simple),
+      standard: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.standard, detailDefaults.standard),
+      detailed: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.detailed, detailDefaults.detailed),
+    },
+    colorModeModifiers: {
+      "black-only": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["black-only"], colorDefaults["black-only"]),
+      "black-grey": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["black-grey"], colorDefaults["black-grey"]),
+      "full-color": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["full-color"], colorDefaults["full-color"]),
+    },
+    addonFees: {
+      coverUp: normalizeRange((row.addon_fees as Record<string, unknown> | undefined)?.coverUp, {
+        min: 500,
+        max: 1500,
+      }),
+      customDesign: normalizeRange((row.addon_fees as Record<string, unknown> | undefined)?.customDesign, {
+        min: 250,
+        max: 1000,
+      }),
+    },
+    minimumSessionPrice,
+    sizeBaseRanges,
     sizeTimeRanges:
       (row.size_time_ranges as ArtistPricingRules["sizeTimeRanges"]) ?? {
         tiny: { minHours: 0.5, maxHours: 1 },
@@ -93,8 +227,7 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
         medium: { minHours: 2, maxHours: 4 },
         large: { minHours: 4, maxHours: 6 },
       },
-    placementMultipliers:
-      (row.placement_multipliers as ArtistPricingRules["placementMultipliers"]) ?? {},
+    placementMultipliers: legacyPlacementMultipliers,
     intentMultipliers:
       (row.intent_multipliers as ArtistPricingRules["intentMultipliers"]) ?? {},
   };

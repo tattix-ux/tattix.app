@@ -12,13 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
-import { intentOptions, sizeOptions } from "@/lib/constants/options";
+import { sizeOptions } from "@/lib/constants/options";
 import { pricingSchema } from "@/lib/forms/schemas";
 import {
   getPlacementCategoryLocaleLabel,
   getPlacementDetailLocaleLabel,
-  getIntentLabel,
-  getStyleLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
 import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
@@ -26,9 +24,81 @@ import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
 type PricingFormInput = z.input<typeof pricingSchema>;
 type PricingValues = z.output<typeof pricingSchema>;
 
+const detailLevelLabels = {
+  simple: { en: "Low detail", tr: "Az detay" },
+  standard: { en: "Medium detail", tr: "Orta detay" },
+  detailed: { en: "High detail", tr: "Çok detay" },
+} as const;
+
+const colorModeLabels = {
+  "black-only": { en: "Black only", tr: "Sadece siyah" },
+  "black-grey": { en: "Black and grey", tr: "Siyah-gri" },
+  "full-color": { en: "Color", tr: "Renkli" },
+} as const;
+
+function getText(locale: PublicLocale) {
+  if (locale === "tr") {
+    return {
+      title: "Fiyat ayarları",
+      description:
+        "Temel fiyatı ve fiyatı etkileyen ana başlıkları belirle. Tattix buna göre tahmini aralık üretir.",
+      sectionHelp: "Bir alanı açmak için başlığa dokun.",
+      basePrice: "Temel fiyat",
+      basePriceHelp: "Orta ölçekte, standart zorluktaki temiz bir dövme için başlangıç seviyesi.",
+      minimumCharge: "Minimum ücret",
+      minimumChargeHelp: "Tahmin bu tutarın altına düşmez.",
+      sizeModifiers: "Boyuta göre fiyat etkisi",
+      sizeModifiersHelp: "Her boyut için tahmin aralığının ne kadar genişleyeceğini belirle.",
+      placementModifiers: "Yerleşime göre fiyat etkisi",
+      placementHelp: "Ana bölgeye dokunarak alt yerleşimleri aç.",
+      detailLevelModifiers: "Detay seviyesine göre fiyat etkisi",
+      colorModeModifiers: "Renk yönüne göre fiyat etkisi",
+      addonFees: "Ek ücretler",
+      addonHelp: "Bunlar çarpan değil, tahmine eklenen sabit aralıklardır.",
+      coverUp: "Kapatma işi",
+      customDesign: "Özel tasarım hazırlığı",
+      styleContext: "Stil ve talep türü artık sadece sınıflandırma amaçlıdır; fiyatın ana belirleyicisi değildir.",
+      min: "Alt değer",
+      max: "Üst değer",
+      save: "Fiyatlamayı kaydet",
+      saving: "Kaydediliyor",
+      saveFailed: "Fiyatlama kaydedilemedi.",
+      saved: "Fiyatlama kaydedildi.",
+    };
+  }
+
+  return {
+    title: "Pricing settings",
+    description:
+      "Set your base price and the main factors that shape the quote range.",
+    sectionHelp: "Tap a section title to expand it.",
+    basePrice: "Base price",
+    basePriceHelp: "Starting point for a medium-size, standard-difficulty tattoo on clean skin.",
+    minimumCharge: "Minimum charge",
+    minimumChargeHelp: "The estimate will never drop below this amount.",
+    sizeModifiers: "Price effect by size",
+    sizeModifiersHelp: "Define how much each size expands the estimate range.",
+    placementModifiers: "Price effect by placement",
+    placementHelp: "Tap a main area to reveal detailed placements.",
+    detailLevelModifiers: "Price effect by detail level",
+    colorModeModifiers: "Price effect by color mode",
+    addonFees: "Addon fees",
+    addonHelp: "These are fixed ranges added on top of the quote, not style multipliers.",
+    coverUp: "Cover-up work",
+    customDesign: "Custom design prep",
+    styleContext: "Style and design type now stay as classification only, not as the main quote driver.",
+    min: "Min",
+    max: "Max",
+    save: "Save pricing",
+    saving: "Saving",
+    saveFailed: "Unable to save pricing.",
+    saved: "Pricing saved.",
+  };
+}
+
 export function PricingForm({
   pricingRules,
-  styles,
+  styles: _styles,
   locale = "en",
 }: {
   pricingRules: ArtistPricingRules;
@@ -37,82 +107,37 @@ export function PricingForm({
 }) {
   const router = useRouter();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    minimum: true,
-    baseRanges: false,
-    styleMultipliers: false,
-    intentMultipliers: false,
-    placementMultipliers: false,
+    core: true,
+    sizeModifiers: false,
+    placementModifiers: false,
+    detailLevelModifiers: false,
+    colorModeModifiers: false,
+    addonFees: false,
   });
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     Object.fromEntries(bodyPlacementGroups.map((group) => [group.value, false])),
   );
-  const copy =
-    locale === "tr"
-      ? {
-          title: "Fiyat motoru",
-          description: "Taban aralıkları ve çarpanları belirleyerek tahminlerin tutarlı kalmasını sağla.",
-          minimumSessionPrice: "Minimum seans ücreti",
-          minimumSessionHelp: "Çarpanlar uygulandıktan sonra alt sınır olarak kullanılır.",
-          baseRanges: "Boyuta göre taban fiyat aralıkları",
-          styleMultipliers: "Stil çarpanları",
-          intentMultipliers: "Talep türü çarpanları",
-          placementMultipliers: "Yerleşim çarpanları",
-          placementHelp: "Ana bölgeye dokunarak alt yerleşimleri aç.",
-          sectionHelp: "İlgili fiyatlama alanını açmak için başlığa dokun.",
-          min: "Min",
-          max: "Maks",
-          save: "Fiyatlamayı kaydet",
-          saving: "Kaydediliyor",
-          saveFailed: "Fiyatlama kaydedilemedi.",
-          saved: "Fiyatlama kaydedildi.",
-          noActiveStyles: "Aktif stil yok. Önce akış ayarlarından görünür stilleri seç.",
-        }
-      : {
-          title: "Pricing engine",
-          description: "Define your base ranges and multipliers so the public estimate stays consistent.",
-          minimumSessionPrice: "Minimum session price",
-          minimumSessionHelp: "Acts as the floor after multipliers are applied.",
-          baseRanges: "Base price ranges by size",
-          styleMultipliers: "Style multipliers",
-          intentMultipliers: "Intent multipliers",
-          placementMultipliers: "Placement multipliers",
-          placementHelp: "Tap a main area to reveal its detailed placements.",
-          sectionHelp: "Tap a pricing section title to expand it.",
-          min: "Min",
-          max: "Max",
-          save: "Save pricing",
-          saving: "Saving",
-          saveFailed: "Unable to save pricing.",
-          saved: "Pricing saved.",
-          noActiveStyles: "No active styles yet. Enable styles from funnel settings first.",
-        };
-  const activeStyles = styles.filter((style) => style.enabled);
+  const copy = getText(locale);
+
   const form = useForm<PricingFormInput, unknown, PricingValues>({
     resolver: zodResolver(pricingSchema),
     defaultValues: {
-      minimumSessionPrice: pricingRules.minimumSessionPrice,
-      sizeBaseRanges: pricingRules.sizeBaseRanges,
-      placementMultipliers: {
+      basePrice: pricingRules.basePrice,
+      minimumCharge: pricingRules.minimumCharge,
+      sizeModifiers: pricingRules.sizeModifiers,
+      placementModifiers: {
         ...Object.fromEntries(
           bodyPlacementGroups.flatMap((group) =>
-            group.details.map((detail) => [detail.value, pricingRules.placementMultipliers[detail.value] ?? 1]),
+            group.details.map((detail) => [
+              detail.value,
+              pricingRules.placementModifiers[detail.value] ?? { min: 1, max: 1 },
+            ]),
           ),
         ),
       },
-      intentMultipliers: {
-        ...Object.fromEntries(
-          intentOptions.map((intent) => [intent.value, pricingRules.intentMultipliers[intent.value] ?? 1]),
-        ),
-      },
-      styleMultipliers: {
-        ...Object.fromEntries(
-          activeStyles.map((style) => [
-            style.styleKey,
-            style.multiplier ?? 1,
-          ]),
-        ),
-      },
-      sizeTimeRanges: pricingRules.sizeTimeRanges,
+      detailLevelModifiers: pricingRules.detailLevelModifiers,
+      colorModeModifiers: pricingRules.colorModeModifiers,
+      addonFees: pricingRules.addonFees,
     } satisfies PricingFormInput,
   });
 
@@ -152,30 +177,34 @@ export function PricingForm({
         <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
           <p className="text-sm text-[var(--foreground-muted)]">{copy.sectionHelp}</p>
 
+          <div className="rounded-[20px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
+            {copy.styleContext}
+          </div>
+
           <div className="space-y-4">
             <div className="rounded-[24px] border border-white/8 bg-black/20">
               <button
                 type="button"
                 className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                onClick={() => toggleSection("minimum")}
+                onClick={() => toggleSection("core")}
               >
                 <div>
-                  <p className="font-medium text-white">{copy.minimumSessionPrice}</p>
-                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.minimumSessionHelp}</p>
+                  <p className="font-medium text-white">{copy.basePrice}</p>
+                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.basePriceHelp}</p>
                 </div>
                 <ChevronDown
                   className={`size-4 text-[var(--foreground-muted)] transition ${
-                    expandedSections.minimum ? "rotate-180" : ""
+                    expandedSections.core ? "rotate-180" : ""
                   }`}
                 />
               </button>
-              {expandedSections.minimum ? (
-                <div className="border-t border-white/8 px-4 pb-4 pt-4">
-                  <Field
-                    label={copy.minimumSessionPrice}
-                    error={form.formState.errors.minimumSessionPrice?.message}
-                  >
-                    <Input type="number" {...form.register("minimumSessionPrice")} />
+              {expandedSections.core ? (
+                <div className="grid gap-4 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
+                  <Field label={copy.basePrice} error={form.formState.errors.basePrice?.message}>
+                    <Input type="number" {...form.register("basePrice")} />
+                  </Field>
+                  <Field label={copy.minimumCharge} error={form.formState.errors.minimumCharge?.message}>
+                    <Input type="number" {...form.register("minimumCharge")} />
                   </Field>
                 </div>
               ) : null}
@@ -185,16 +214,19 @@ export function PricingForm({
               <button
                 type="button"
                 className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                onClick={() => toggleSection("baseRanges")}
+                onClick={() => toggleSection("sizeModifiers")}
               >
-                <p className="font-medium text-white">{copy.baseRanges}</p>
+                <div>
+                  <p className="font-medium text-white">{copy.sizeModifiers}</p>
+                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.sizeModifiersHelp}</p>
+                </div>
                 <ChevronDown
                   className={`size-4 text-[var(--foreground-muted)] transition ${
-                    expandedSections.baseRanges ? "rotate-180" : ""
+                    expandedSections.sizeModifiers ? "rotate-180" : ""
                   }`}
                 />
               </button>
-              {expandedSections.baseRanges ? (
+              {expandedSections.sizeModifiers ? (
                 <div className="grid gap-4 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
                   {sizeOptions.map((size) => (
                     <div key={size.value} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
@@ -202,10 +234,10 @@ export function PricingForm({
                       <p className="mt-1 text-sm text-[var(--foreground-muted)]">{size.detail}</p>
                       <div className="mt-4 grid grid-cols-2 gap-3">
                         <Field label={copy.min}>
-                          <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.min`)} />
+                          <Input type="number" step="0.05" {...form.register(`sizeModifiers.${size.value}.min`)} />
                         </Field>
                         <Field label={copy.max}>
-                          <Input type="number" {...form.register(`sizeBaseRanges.${size.value}.max`)} />
+                          <Input type="number" step="0.05" {...form.register(`sizeModifiers.${size.value}.max`)} />
                         </Field>
                       </div>
                     </div>
@@ -218,86 +250,19 @@ export function PricingForm({
               <button
                 type="button"
                 className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                onClick={() => toggleSection("styleMultipliers")}
-              >
-                <p className="font-medium text-white">{copy.styleMultipliers}</p>
-                <ChevronDown
-                  className={`size-4 text-[var(--foreground-muted)] transition ${
-                    expandedSections.styleMultipliers ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {expandedSections.styleMultipliers ? (
-                <div className="border-t border-white/8 px-4 pb-4 pt-4">
-                  {activeStyles.length === 0 ? (
-                    <div className="rounded-[20px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
-                      {copy.noActiveStyles}
-                    </div>
-                  ) : (
-                    <div className="grid gap-3 lg:grid-cols-2">
-                      {activeStyles.map((style) => (
-                        <Field
-                          key={style.styleKey}
-                          label={style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
-                        >
-                          <Input
-                            type="number"
-                            step="0.05"
-                            {...form.register(`styleMultipliers.${style.styleKey}`)}
-                          />
-                        </Field>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="rounded-[24px] border border-white/8 bg-black/20">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                onClick={() => toggleSection("intentMultipliers")}
-              >
-                <p className="font-medium text-white">{copy.intentMultipliers}</p>
-                <ChevronDown
-                  className={`size-4 text-[var(--foreground-muted)] transition ${
-                    expandedSections.intentMultipliers ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {expandedSections.intentMultipliers ? (
-                <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
-                  {intentOptions.map((intent) => (
-                    <Field key={intent.value} label={getIntentLabel(intent.value, locale)}>
-                      <Input
-                        type="number"
-                        step="0.05"
-                        {...form.register(`intentMultipliers.${intent.value}`)}
-                      />
-                    </Field>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="rounded-[24px] border border-white/8 bg-black/20">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
-                onClick={() => toggleSection("placementMultipliers")}
+                onClick={() => toggleSection("placementModifiers")}
               >
                 <div>
-                  <p className="font-medium text-white">{copy.placementMultipliers}</p>
+                  <p className="font-medium text-white">{copy.placementModifiers}</p>
                   <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.placementHelp}</p>
                 </div>
                 <ChevronDown
                   className={`size-4 text-[var(--foreground-muted)] transition ${
-                    expandedSections.placementMultipliers ? "rotate-180" : ""
+                    expandedSections.placementModifiers ? "rotate-180" : ""
                   }`}
                 />
               </button>
-              {expandedSections.placementMultipliers ? (
+              {expandedSections.placementModifiers ? (
                 <div className="grid gap-4 border-t border-white/8 px-4 pb-4 pt-4">
                   {bodyPlacementGroups.map((group) => (
                     <div key={group.value} className="rounded-[20px] border border-white/8 bg-black/20">
@@ -321,13 +286,14 @@ export function PricingForm({
                       {expandedGroups[group.value] ? (
                         <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4">
                           {group.details.map((detail) => (
-                            <Field key={detail.value} label={getPlacementDetailLocaleLabel(detail.value, locale)}>
-                              <Input
-                                type="number"
-                                step="0.05"
-                                {...form.register(`placementMultipliers.${detail.value}`)}
-                              />
-                            </Field>
+                            <div key={detail.value} className="grid gap-3 lg:grid-cols-2">
+                              <Field label={`${getPlacementDetailLocaleLabel(detail.value, locale)} · ${copy.min}`}>
+                                <Input type="number" step="0.05" {...form.register(`placementModifiers.${detail.value}.min`)} />
+                              </Field>
+                              <Field label={`${getPlacementDetailLocaleLabel(detail.value, locale)} · ${copy.max}`}>
+                                <Input type="number" step="0.05" {...form.register(`placementModifiers.${detail.value}.max`)} />
+                              </Field>
+                            </div>
                           ))}
                         </div>
                       ) : null}
@@ -336,12 +302,112 @@ export function PricingForm({
                 </div>
               ) : null}
             </div>
+
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("detailLevelModifiers")}
+              >
+                <p className="font-medium text-white">{copy.detailLevelModifiers}</p>
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.detailLevelModifiers ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.detailLevelModifiers ? (
+                <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
+                  {Object.entries(detailLevelLabels).map(([key, label]) => (
+                    <div key={key} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <p className="font-medium text-white">{label[locale]}</p>
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <Field label={copy.min}>
+                          <Input type="number" step="0.05" {...form.register(`detailLevelModifiers.${key as keyof PricingValues["detailLevelModifiers"]}.min`)} />
+                        </Field>
+                        <Field label={copy.max}>
+                          <Input type="number" step="0.05" {...form.register(`detailLevelModifiers.${key as keyof PricingValues["detailLevelModifiers"]}.max`)} />
+                        </Field>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("colorModeModifiers")}
+              >
+                <p className="font-medium text-white">{copy.colorModeModifiers}</p>
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.colorModeModifiers ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.colorModeModifiers ? (
+                <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
+                  {Object.entries(colorModeLabels).map(([key, label]) => (
+                    <div key={key} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <p className="font-medium text-white">{label[locale]}</p>
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <Field label={copy.min}>
+                          <Input type="number" step="0.05" {...form.register(`colorModeModifiers.${key as keyof PricingValues["colorModeModifiers"]}.min`)} />
+                        </Field>
+                        <Field label={copy.max}>
+                          <Input type="number" step="0.05" {...form.register(`colorModeModifiers.${key as keyof PricingValues["colorModeModifiers"]}.max`)} />
+                        </Field>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-[24px] border border-white/8 bg-black/20">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+                onClick={() => toggleSection("addonFees")}
+              >
+                <div>
+                  <p className="font-medium text-white">{copy.addonFees}</p>
+                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.addonHelp}</p>
+                </div>
+                <ChevronDown
+                  className={`size-4 text-[var(--foreground-muted)] transition ${
+                    expandedSections.addonFees ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.addonFees ? (
+                <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
+                  {([
+                    ["coverUp", copy.coverUp],
+                    ["customDesign", copy.customDesign],
+                  ] as const).map(([key, label]) => (
+                    <div key={key} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <p className="font-medium text-white">{label}</p>
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <Field label={copy.min}>
+                          <Input type="number" {...form.register(`addonFees.${key}.min`)} />
+                        </Field>
+                        <Field label={copy.max}>
+                          <Input type="number" {...form.register(`addonFees.${key}.max`)} />
+                        </Field>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
 
           {form.formState.errors.root?.message ? (
-            <p className="text-sm text-[var(--accent-soft)]">
-              {form.formState.errors.root.message}
-            </p>
+            <p className="text-sm text-[var(--accent-soft)]">{form.formState.errors.root.message}</p>
           ) : null}
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (

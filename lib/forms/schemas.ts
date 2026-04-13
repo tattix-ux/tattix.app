@@ -98,22 +98,50 @@ export const funnelSettingsSchema = z.object({
 });
 
 export const pricingSchema = z.object({
-  minimumSessionPrice: z.coerce.number().min(0),
-  sizeBaseRanges: z.object({
+  basePrice: z.coerce.number().gt(0),
+  minimumCharge: z.coerce.number().min(0),
+  sizeModifiers: z.object({
     tiny: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
     small: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
     medium: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
     large: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
   }),
-  sizeTimeRanges: z.object({
-    tiny: z.object({ minHours: z.coerce.number().min(0), maxHours: z.coerce.number().min(0) }),
-    small: z.object({ minHours: z.coerce.number().min(0), maxHours: z.coerce.number().min(0) }),
-    medium: z.object({ minHours: z.coerce.number().min(0), maxHours: z.coerce.number().min(0) }),
-    large: z.object({ minHours: z.coerce.number().min(0), maxHours: z.coerce.number().min(0) }),
+  placementModifiers: z.record(
+    z.string(),
+    z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+  ),
+  detailLevelModifiers: z.object({
+    simple: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+    standard: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+    detailed: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
   }),
-  placementMultipliers: z.record(z.string(), z.coerce.number().min(0.5).max(3)),
-  intentMultipliers: z.record(z.enum(intentValues as [string, ...string[]]), z.coerce.number()),
-  styleMultipliers: z.record(z.string(), z.coerce.number()),
+  colorModeModifiers: z.object({
+    "black-only": z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+    "black-grey": z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+    "full-color": z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+  }),
+  addonFees: z.object({
+    coverUp: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+    customDesign: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+  }),
+}).superRefine((values, ctx) => {
+  const rangeEntries = [
+    ...Object.entries(values.sizeModifiers).map(([key, range]) => [`sizeModifiers.${key}`, range] as const),
+    ...Object.entries(values.placementModifiers).map(([key, range]) => [`placementModifiers.${key}`, range] as const),
+    ...Object.entries(values.detailLevelModifiers).map(([key, range]) => [`detailLevelModifiers.${key}`, range] as const),
+    ...Object.entries(values.colorModeModifiers).map(([key, range]) => [`colorModeModifiers.${key}`, range] as const),
+    ...Object.entries(values.addonFees).map(([key, range]) => [`addonFees.${key}`, range] as const),
+  ];
+
+  for (const [path, range] of rangeEntries) {
+    if (range.min > range.max) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: path.split("."),
+        message: "Min value cannot be greater than max.",
+      });
+    }
+  }
 });
 
 export const featuredDesignSchema = z.object({

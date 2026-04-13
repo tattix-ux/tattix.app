@@ -86,6 +86,7 @@ function midpoint(range: PriceRange | undefined) {
 
 function deriveBasePrice(rules: ArtistPricingRules) {
   return (
+    rules.basePrice ??
     midpoint(rules.sizeBaseRanges.medium) ??
     midpoint(rules.sizeBaseRanges.small) ??
     rules.minimumSessionPrice ??
@@ -143,7 +144,7 @@ export function buildNormalizedQuoteConfig(
   rules: ArtistPricingRules,
 ): NormalizedQuoteConfig {
   const basePrice = Math.max(deriveBasePrice(rules), 100);
-  const placementFactors = Object.fromEntries(
+  const fallbackPlacementFactors = Object.fromEntries(
     Object.entries(rules.placementMultipliers ?? {}).map(([key, value]) => [
       key,
       clampFactorRange(
@@ -152,25 +153,38 @@ export function buildNormalizedQuoteConfig(
       ),
     ]),
   ) as Partial<Record<BodyAreaDetailValue, FactorRange>>;
+  const placementFactors = Object.fromEntries(
+    Object.entries(rules.placementModifiers ?? {}).map(([key, value]) => [
+      key,
+      clampFactorRange(value, { min: 1, max: 1 }),
+    ]),
+  ) as Partial<Record<BodyAreaDetailValue, FactorRange>>;
 
   return {
     basePrice,
-    minimumCharge: Math.max(0, rules.minimumSessionPrice ?? 0),
-    sizeFactors: deriveSizeFactors(rules, basePrice),
-    placementFactors,
+    minimumCharge: Math.max(0, rules.minimumCharge ?? rules.minimumSessionPrice ?? 0),
+    sizeFactors: rules.sizeModifiers
+      ? {
+          tiny: clampFactorRange(rules.sizeModifiers.tiny, { min: 0.35, max: 0.6 }),
+          small: clampFactorRange(rules.sizeModifiers.small, { min: 0.55, max: 0.85 }),
+          medium: clampFactorRange(rules.sizeModifiers.medium, { min: 0.95, max: 1.2 }),
+          large: clampFactorRange(rules.sizeModifiers.large, { min: 1.8, max: 2.4 }),
+        }
+      : deriveSizeFactors(rules, basePrice),
+    placementFactors: Object.keys(placementFactors).length > 0 ? placementFactors : fallbackPlacementFactors,
     detailLevelFactors: {
-      simple: { min: 0.92, max: 1 },
-      standard: { min: 1, max: 1.12 },
-      detailed: { min: 1.12, max: 1.28 },
+      simple: clampFactorRange(rules.detailLevelModifiers?.simple, { min: 0.92, max: 1 }),
+      standard: clampFactorRange(rules.detailLevelModifiers?.standard, { min: 1, max: 1.12 }),
+      detailed: clampFactorRange(rules.detailLevelModifiers?.detailed, { min: 1.12, max: 1.28 }),
     },
     colorModeFactors: {
-      "black-only": { min: 0.94, max: 1 },
-      "black-grey": { min: 1, max: 1.08 },
-      "full-color": { min: 1.18, max: 1.35 },
+      "black-only": clampFactorRange(rules.colorModeModifiers?.["black-only"], { min: 0.94, max: 1 }),
+      "black-grey": clampFactorRange(rules.colorModeModifiers?.["black-grey"], { min: 1, max: 1.08 }),
+      "full-color": clampFactorRange(rules.colorModeModifiers?.["full-color"], { min: 1.18, max: 1.35 }),
     },
     addons: {
-      coverUp: { min: 500, max: 1500 },
-      customDesign: { min: 250, max: 1000 },
+      coverUp: clampAddonRange(rules.addonFees?.coverUp ?? { min: 500, max: 1500 }),
+      customDesign: clampAddonRange(rules.addonFees?.customDesign ?? { min: 250, max: 1000 }),
     },
   };
 }

@@ -87,6 +87,16 @@ export type ColorModeValue = "black-only" | "black-grey" | "full-color";
 
 export type ArtistPricingRules = {
   artistId: string;
+  basePrice: number;
+  minimumCharge: number;
+  sizeModifiers: Record<SizeValue, PriceRange>;
+  placementModifiers: Record<string, PriceRange>;
+  detailLevelModifiers: Record<DetailLevelValue, PriceRange>;
+  colorModeModifiers: Record<ColorModeValue, PriceRange>;
+  addonFees: {
+    coverUp: PriceRange;
+    customDesign: PriceRange;
+  };
   minimumSessionPrice: number;
   sizeBaseRanges: Record<SizeValue, PriceRange>;
   sizeTimeRanges: Record<SizeValue, TimeRange>;

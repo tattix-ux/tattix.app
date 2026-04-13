@@ -77,6 +77,40 @@ demoStyleOptions.push({
 
 export const demoPricingRules: ArtistPricingRules = {
   artistId: demoArtistId,
+  basePrice: 3200,
+  minimumCharge: 1500,
+  sizeModifiers: {
+    tiny: { min: 0.35, max: 0.6 },
+    small: { min: 0.55, max: 0.85 },
+    medium: { min: 0.95, max: 1.2 },
+    large: { min: 1.8, max: 2.4 },
+  },
+  placementModifiers: {
+    "neck-front": { min: 1.3, max: 1.3 },
+    "neck-side": { min: 1.3, max: 1.3 },
+    "neck-back": { min: 1.25, max: 1.25 },
+    ribs: { min: 1.25, max: 1.25 },
+    fingers: { min: 1.15, max: 1.15 },
+    "forearm-outer": { min: 1, max: 1 },
+    "forearm-inner": { min: 1.05, max: 1.05 },
+    wrist: { min: 1.05, max: 1.05 },
+    sternum: { min: 1.2, max: 1.2 },
+    ankle: { min: 1.1, max: 1.1 },
+  },
+  detailLevelModifiers: {
+    simple: { min: 0.9, max: 1 },
+    standard: { min: 1, max: 1.15 },
+    detailed: { min: 1.15, max: 1.35 },
+  },
+  colorModeModifiers: {
+    "black-only": { min: 0.95, max: 1 },
+    "black-grey": { min: 1, max: 1.1 },
+    "full-color": { min: 1.18, max: 1.35 },
+  },
+  addonFees: {
+    coverUp: { min: 500, max: 1500 },
+    customDesign: { min: 250, max: 1000 },
+  },
   minimumSessionPrice: 1500,
   sizeBaseRanges: {
     tiny: { min: 1000, max: 1800 },

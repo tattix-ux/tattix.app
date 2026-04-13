@@ -87,24 +87,45 @@ set
 
 insert into public.artist_pricing_rules (
   artist_id,
+  base_price,
+  minimum_charge,
   minimum_session_price,
+  size_modifiers,
   size_base_ranges,
+  placement_modifiers,
+  detail_level_modifiers,
+  color_mode_modifiers,
+  addon_fees,
   size_time_ranges,
   placement_multipliers,
   intent_multipliers
 )
 values (
   '7d53df9f-4fd8-41af-ae82-187a0b81b420',
+  3200,
   1500,
+  1500,
+  '{"tiny":{"min":0.35,"max":0.6},"small":{"min":0.55,"max":0.85},"medium":{"min":0.95,"max":1.2},"large":{"min":1.8,"max":2.4}}'::jsonb,
   '{"tiny":{"min":1000,"max":1800},"small":{"min":1500,"max":2500},"medium":{"min":3000,"max":5000},"large":{"min":6000,"max":9000}}'::jsonb,
+  '{"neck-front":{"min":1.3,"max":1.3},"neck-side":{"min":1.3,"max":1.3},"neck-back":{"min":1.25,"max":1.25},"ribs":{"min":1.25,"max":1.25},"fingers":{"min":1.15,"max":1.15},"forearm-outer":{"min":1.0,"max":1.0},"forearm-inner":{"min":1.05,"max":1.05},"wrist":{"min":1.05,"max":1.05},"sternum":{"min":1.2,"max":1.2},"ankle":{"min":1.1,"max":1.1}}'::jsonb,
+  '{"simple":{"min":0.9,"max":1.0},"standard":{"min":1.0,"max":1.15},"detailed":{"min":1.15,"max":1.35}}'::jsonb,
+  '{"black-only":{"min":0.95,"max":1.0},"black-grey":{"min":1.0,"max":1.1},"full-color":{"min":1.18,"max":1.35}}'::jsonb,
+  '{"coverUp":{"min":500,"max":1500},"customDesign":{"min":250,"max":1000}}'::jsonb,
   '{"tiny":{"minHours":0.5,"maxHours":1},"small":{"minHours":1,"maxHours":2},"medium":{"minHours":2,"maxHours":4},"large":{"minHours":4,"maxHours":6}}'::jsonb,
   '{"neck-front":1.3,"neck-side":1.3,"neck-back":1.25,"ribs":1.25,"fingers":1.15,"forearm-outer":1.0,"forearm-inner":1.05,"wrist":1.05,"sternum":1.2,"ankle":1.1}'::jsonb,
   '{"custom-tattoo":1.0,"design-in-mind":1.0,"flash-design":0.95,"discounted-design":0.85,"not-sure":1.0}'::jsonb
 )
 on conflict (artist_id) do update
 set
+  base_price = excluded.base_price,
+  minimum_charge = excluded.minimum_charge,
   minimum_session_price = excluded.minimum_session_price,
+  size_modifiers = excluded.size_modifiers,
   size_base_ranges = excluded.size_base_ranges,
+  placement_modifiers = excluded.placement_modifiers,
+  detail_level_modifiers = excluded.detail_level_modifiers,
+  color_mode_modifiers = excluded.color_mode_modifiers,
+  addon_fees = excluded.addon_fees,
   size_time_ranges = excluded.size_time_ranges,
   placement_multipliers = excluded.placement_multipliers,
   intent_multipliers = excluded.intent_multipliers;
