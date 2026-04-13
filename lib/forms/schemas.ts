@@ -152,6 +152,11 @@ export const submissionSchema = z.object({
   sizeCategory: z.enum(sizeValues as [string, ...string[]]),
   widthCm: nullableNumberSchema.optional(),
   heightCm: nullableNumberSchema.optional(),
+  detailLevel: z.enum(["simple", "standard", "detailed"]).optional(),
+  colorMode: z.enum(["black-only", "black-grey", "full-color"]).optional(),
+  coverUp: z.boolean().optional(),
+  customDesign: z.boolean().optional(),
+  designType: z.string().max(80).nullable().optional(),
   style: z.string().min(1),
   notes: z.string().max(500).optional(),
 });

@@ -82,6 +82,9 @@ export type ArtistFeaturedDesign = {
   sortOrder: number;
 };
 
+export type DetailLevelValue = "simple" | "standard" | "detailed";
+export type ColorModeValue = "black-only" | "black-grey" | "full-color";
+
 export type ArtistPricingRules = {
   artistId: string;
   minimumSessionPrice: number;
@@ -168,6 +171,9 @@ export type SubmissionDraft = {
   sizeCategory: SizeValue | "";
   widthCm: number | null;
   heightCm: number | null;
+  detailLevel: DetailLevelValue | "";
+  colorMode: ColorModeValue | "";
+  coverUp: boolean | null;
   style: string;
   notes: string;
 };
@@ -235,6 +241,11 @@ export type SubmissionRequest = {
   sizeCategory: SizeValue;
   widthCm?: number | null;
   heightCm?: number | null;
+  detailLevel?: DetailLevelValue | null;
+  colorMode?: ColorModeValue | null;
+  coverUp?: boolean | null;
+  customDesign?: boolean | null;
+  designType?: string | null;
   style: string;
   notes?: string;
 };

@@ -21,7 +21,12 @@ import {
   getStyleLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
-import type { ArtistFeaturedDesign, ArtistPageData } from "@/lib/types";
+import type {
+  ArtistFeaturedDesign,
+  ArtistPageData,
+  ColorModeValue,
+  DetailLevelValue,
+} from "@/lib/types";
 import { buildThemeStyles } from "@/lib/theme";
 import { useFunnelStore } from "@/store/funnel-store";
 import { formatCompactCurrencyRange } from "@/lib/utils";
@@ -52,6 +57,9 @@ function findSelectedDesign(designs: ArtistFeaturedDesign[], selectedDesignId: s
 function getDelayMs() {
   return 2200 + Math.round(Math.random() * 1200);
 }
+
+const detailLevelOptions: DetailLevelValue[] = ["simple", "standard", "detailed"];
+const colorModeOptions: ColorModeValue[] = ["black-only", "black-grey", "full-color"];
 
 export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; locale: PublicLocale }) {
   const {
@@ -162,6 +170,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         artistSlug: artist.profile.slug,
         locale,
         ...draft,
+        customDesign:
+          !draft.selectedDesignId &&
+          draft.intent !== "flash-design" &&
+          draft.intent !== "discounted-design",
+        designType: draft.intent || null,
       }),
     });
 
@@ -211,27 +224,20 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("sizeCategory", "");
     setField("widthCm", null);
     setField("heightCm", null);
-    setField("style", isReadyMadeIntent(intent) ? "custom" : "");
+    setField("detailLevel", "");
+    setField("colorMode", "");
+    setField("coverUp", null);
+    setField("style", isReadyMadeIntent(intent) ? "custom" : "not-sure-style");
     setField("notes", "");
   }
 
   function handleNext() {
-    if (step === 3 && !styleStepActive) {
-      setStep(5);
-      return;
-    }
-
     if (step < 5) {
       setStep(step + 1);
     }
   }
 
   function handleBack() {
-    if (step === 5 && !styleStepActive) {
-      setStep(3);
-      return;
-    }
-
     setStep(Math.max(step - 1, 1));
   }
 
@@ -243,7 +249,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       )) ||
     (step === 2 && Boolean(draft.bodyAreaGroup && draft.bodyAreaDetail)) ||
     (step === 3 && Boolean(draft.approximateSizeCm && draft.sizeCategory)) ||
-    (step === 4 && (!styleStepActive || Boolean(draft.style))) ||
+    (step === 4 &&
+      Boolean(draft.detailLevel) &&
+      Boolean(draft.colorMode) &&
+      draft.coverUp !== null) ||
     step === 5;
 
   return (
@@ -443,7 +452,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 />
               ) : null}
 
-              {step === 4 && styleStepActive ? (
+              {step === 4 ? (
                 <div className="space-y-3">
                   <div
                     className="rounded-[20px] border px-4 py-3 text-sm"
@@ -454,83 +463,225 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     }}
                   >
                     {locale === "tr"
-                      ? "Stile en yakın seçeneği işaretle. Emin değilsen bilgi ikonuna dokunabilir veya kararı sanatçıyla birlikte netleştirebilirsin."
-                      : "Choose the style that feels closest. If you're unsure, tap the info icon or leave the final direction to the artist."}
+                      ? "Fiyatı en çok etkileyen seçimleri burada netleştir. Stil ise sanatçı için ek bağlam olarak kalır."
+                      : "Set the choices that affect the quote most here. Style stays as extra context for the artist."}
                   </div>
-                  <div className="grid gap-2.5 sm:gap-3">
-                  {enabledStyles.map((style) => {
-                    const active = draft.style === style.styleKey;
-                    return (
-                      <div
-                        key={style.id}
-                        className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]"
-                      >
-                        <button
+
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.detailLevelTitle}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.detailLevelHelp}
+                    </p>
+                    <div className="mt-4 grid gap-2.5 sm:gap-3">
+                      {detailLevelOptions.map((level) => {
+                        const active = draft.detailLevel === level;
+                        return (
+                          <button
+                            key={level}
+                            type="button"
+                            onClick={() => setField("detailLevel", level)}
+                            className="rounded-[24px] border px-4 py-4 text-left transition"
+                            style={{
+                              borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                              backgroundColor: active
+                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                : "rgba(0,0,0,0.12)",
+                              color: tokens.cardText,
+                            }}
+                          >
+                            <p className="break-words font-medium">{copy.detailLevels[level]}</p>
+                            <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                              {copy.detailLevelDescriptions[level]}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.colorModeTitle}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.colorModeHelp}
+                    </p>
+                    <div className="mt-4 grid gap-2.5 sm:gap-3">
+                      {colorModeOptions.map((mode) => {
+                        const active = draft.colorMode === mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setField("colorMode", mode)}
+                            className="rounded-[24px] border px-4 py-4 text-left transition"
+                            style={{
+                              borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                              backgroundColor: active
+                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                : "rgba(0,0,0,0.12)",
+                              color: tokens.cardText,
+                            }}
+                          >
+                            <p className="break-words font-medium">{copy.colorModes[mode]}</p>
+                            <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                              {copy.colorModeDescriptions[mode]}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.coverUpTitle}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.coverUpHelp}
+                    </p>
+                    <div className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+                      <button
                         type="button"
-                        onClick={() => {
-                          setField("style", style.styleKey);
+                        onClick={() => setField("coverUp", false)}
+                        className="rounded-[24px] border px-4 py-4 text-left transition"
+                        style={{
+                          borderColor: draft.coverUp === false ? "var(--artist-primary)" : "var(--artist-border)",
+                          backgroundColor: draft.coverUp === false
+                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                            : "rgba(0,0,0,0.12)",
+                          color: tokens.cardText,
                         }}
-                          className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
-                          style={{
-                            borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                            backgroundColor: active
-                              ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                              : "rgba(0,0,0,0.12)",
-                            color: tokens.cardText,
-                          }}
-                        >
-                          <p className="break-words font-medium">
-                            {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
-                          </p>
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={copy.styleInfoButton}
-                          onClick={() => setStyleInfoKey(style.styleKey)}
-                          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
-                          style={{
-                            borderColor: "var(--artist-border)",
-                            backgroundColor: "rgba(0,0,0,0.12)",
-                            color: "var(--artist-card-text)",
-                          }}
-                        >
-                          <Info className="size-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                  <div className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setField("style", "not-sure-style");
-                      }}
-                      className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
-                      style={{
-                        borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
-                        backgroundColor: draft.style === "not-sure-style"
-                          ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                          : "rgba(0,0,0,0.12)",
-                        color: tokens.cardText,
-                      }}
-                    >
-                      <p className="break-words font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={copy.styleInfoButton}
-                      onClick={() => setStyleInfoKey("not-sure-style")}
-                      className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
+                      >
+                        <p className="break-words font-medium">{copy.coverUpNo}</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setField("coverUp", true)}
+                        className="rounded-[24px] border px-4 py-4 text-left transition"
+                        style={{
+                          borderColor: draft.coverUp === true ? "var(--artist-primary)" : "var(--artist-border)",
+                          backgroundColor: draft.coverUp === true
+                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                            : "rgba(0,0,0,0.12)",
+                          color: tokens.cardText,
+                        }}
+                      >
+                        <p className="break-words font-medium">{copy.coverUpYes}</p>
+                      </button>
+                    </div>
+                  </div>
+
+                  {styleStepActive ? (
+                    <div
+                      className="rounded-[24px] border p-4"
                       style={{
                         borderColor: "var(--artist-border)",
                         backgroundColor: "rgba(0,0,0,0.12)",
-                        color: "var(--artist-card-text)",
                       }}
                     >
-                      <Info className="size-4" />
-                    </button>
-                  </div>
-                  </div>
+                      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                        {copy.optionalStyleTitle}
+                      </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.optionalStyleHelp}
+                      </p>
+                      <div className="mt-4 grid gap-2.5 sm:gap-3">
+                        {enabledStyles.map((style) => {
+                          const active = draft.style === style.styleKey;
+                          return (
+                            <div
+                              key={style.id}
+                              className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setField("style", style.styleKey);
+                                }}
+                                className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                                style={{
+                                  borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                                  backgroundColor: active
+                                    ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                    : "rgba(0,0,0,0.12)",
+                                  color: tokens.cardText,
+                                }}
+                              >
+                                <p className="break-words font-medium">
+                                  {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                                </p>
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={copy.styleInfoButton}
+                                onClick={() => setStyleInfoKey(style.styleKey)}
+                                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
+                                style={{
+                                  borderColor: "var(--artist-border)",
+                                  backgroundColor: "rgba(0,0,0,0.12)",
+                                  color: "var(--artist-card-text)",
+                                }}
+                              >
+                                <Info className="size-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                        <div className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setField("style", "not-sure-style");
+                            }}
+                            className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                            style={{
+                              borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
+                              backgroundColor: draft.style === "not-sure-style"
+                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                : "rgba(0,0,0,0.12)",
+                              color: tokens.cardText,
+                            }}
+                          >
+                            <p className="break-words font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={copy.styleInfoButton}
+                            onClick={() => setStyleInfoKey("not-sure-style")}
+                            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
+                            style={{
+                              borderColor: "var(--artist-border)",
+                              backgroundColor: "rgba(0,0,0,0.12)",
+                              color: "var(--artist-card-text)",
+                            }}
+                          >
+                            <Info className="size-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 

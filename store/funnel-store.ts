@@ -34,7 +34,10 @@ const initialDraft: SubmissionDraft = {
   sizeCategory: "",
   widthCm: null,
   heightCm: null,
-  style: "",
+  detailLevel: "",
+  colorMode: "",
+  coverUp: null,
+  style: "not-sure-style",
   notes: "",
 };
 
