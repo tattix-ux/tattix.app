@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, LoaderCircle, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -36,6 +36,116 @@ const colorModeLabels = {
   "full-color": { en: "Color", tr: "Renkli" },
 } as const;
 
+const levelRangePresets = {
+  low: { min: 0.95, max: 1.05 },
+  medium: { min: 1.05, max: 1.2 },
+  high: { min: 1.15, max: 1.35 },
+} as const;
+
+const detailPresetMap = {
+  simple: "low",
+  standard: "medium",
+  detailed: "high",
+} as const;
+
+const colorPresetMap = {
+  "black-only": "low",
+  "black-grey": "medium",
+  "full-color": "high",
+} as const;
+
+const placementDifficultyPresets = {
+  standard: { min: 1, max: 1.08 },
+  hard: { min: 1.1, max: 1.22 },
+  veryHard: { min: 1.24, max: 1.4 },
+} as const;
+
+const sizePresetRanges = {
+  tiny: {
+    low: { min: 0.3, max: 0.5 },
+    medium: { min: 0.4, max: 0.65 },
+    high: { min: 0.5, max: 0.8 },
+  },
+  small: {
+    low: { min: 0.5, max: 0.75 },
+    medium: { min: 0.65, max: 0.95 },
+    high: { min: 0.8, max: 1.1 },
+  },
+  medium: {
+    low: { min: 0.9, max: 1.1 },
+    medium: { min: 1, max: 1.2 },
+    high: { min: 1.1, max: 1.35 },
+  },
+  large: {
+    low: { min: 1.5, max: 1.95 },
+    medium: { min: 1.8, max: 2.4 },
+    high: { min: 2.2, max: 3 },
+  },
+} as const;
+
+type StepKey = "low" | "medium" | "high";
+type PlacementDifficultyKey = "standard" | "hard" | "veryHard";
+
+function approxEqual(left: number, right: number) {
+  return Math.abs(left - right) <= 0.08;
+}
+
+function detectStepKey(
+  range: { min: number; max: number },
+  presets: Record<StepKey, { min: number; max: number }>,
+): StepKey {
+  const found = (Object.entries(presets) as [StepKey, { min: number; max: number }][]).find(
+    ([, preset]) => approxEqual(range.min, preset.min) && approxEqual(range.max, preset.max),
+  );
+
+  return found?.[0] ?? "medium";
+}
+
+function detectPlacementDifficultyKey(
+  range: { min: number; max: number },
+): PlacementDifficultyKey {
+  const found = (
+    Object.entries(placementDifficultyPresets) as [PlacementDifficultyKey, { min: number; max: number }][]
+  ).find(([, preset]) => approxEqual(range.min, preset.min) && approxEqual(range.max, preset.max));
+
+  return found?.[0] ?? "standard";
+}
+
+function coerceRange(value: unknown, fallback: { min: number; max: number }) {
+  if (!value || typeof value !== "object") {
+    return fallback;
+  }
+
+  const candidate = value as { min?: unknown; max?: unknown };
+
+  return {
+    min: typeof candidate.min === "number" ? candidate.min : fallback.min,
+    max: typeof candidate.max === "number" ? candidate.max : fallback.max,
+  };
+}
+
+function uniquePricingPlacementGroups() {
+  const seen = new Set<string>();
+
+  return bodyPlacementGroups
+    .map((group) => ({
+      ...group,
+      details: group.details.filter((detail) => {
+        if (detail.value === "placement-not-sure") {
+          return false;
+        }
+
+        if (seen.has(detail.value)) {
+          return false;
+        }
+
+        seen.add(detail.value);
+        return true;
+      }),
+    }))
+    .filter((group) => group.details.length > 0);
+}
+
 function getText(locale: PublicLocale) {
   if (locale === "tr") {
     return {
@@ -44,20 +154,37 @@ function getText(locale: PublicLocale) {
         "Temel fiyatı ve fiyatı etkileyen ana başlıkları belirle. Tattix buna göre tahmini aralık üretir.",
       sectionHelp: "Bir alanı açmak için başlığa dokun.",
       basePrice: "Temel fiyat",
-      basePriceHelp: "Orta ölçekte, standart zorluktaki temiz bir dövme için başlangıç seviyesi.",
+      basePriceHelp: "Küçük ve standart bir dövmeyi genelde kaçtan başlatıyorsun?",
       minimumCharge: "Minimum ücret",
-      minimumChargeHelp: "Tahmin bu tutarın altına düşmez.",
+      minimumChargeHelp: "En küçük işte bile alacağın minimum ücret",
+      minimumChargeNote: "Sistem daha düşük hesaplasa bile bu değerin altına düşmez.",
       sizeModifiers: "Boyuta göre fiyat etkisi",
-      sizeModifiersHelp: "Her boyut için tahmin aralığının ne kadar genişleyeceğini belirle.",
-      placementModifiers: "Yerleşime göre fiyat etkisi",
-      placementHelp: "Ana bölgeye dokunarak alt yerleşimleri aç.",
-      detailLevelModifiers: "Detay seviyesine göre fiyat etkisi",
-      colorModeModifiers: "Renk yönüne göre fiyat etkisi",
+      sizeModifiersHelp: "Her boyut için fiyat etkisini kademeli olarak seç.",
+      placementModifiers: "Yerleşim zorluğu",
+      placementHelp: "Aynı bölge bir kez görünür. Ana bölgeye dokunarak alt yerleşimleri aç.",
+      detailLevelModifiers: "Detay seviyesi",
+      colorModeModifiers: "Renk etkisi",
       addonFees: "Ek ücretler",
-      addonHelp: "Bunlar çarpan değil, tahmine eklenen sabit aralıklardır.",
+      addonHelp: "Bunlar tahmine sonradan eklenen sabit ücret aralıklarıdır.",
       coverUp: "Kapatma işi",
       customDesign: "Özel tasarım hazırlığı",
-      styleContext: "Stil ve talep türü artık sadece sınıflandırma amaçlıdır; fiyatın ana belirleyicisi değildir.",
+      coverUpHelp: "Varsa mevcut dövme kapatma için ek ücret uygular.",
+      customDesignHelp: "Hazır tasarım yoksa özel çizim hazırlığı için ek ücret uygular.",
+      styleContext: "Fiyat tahmini esas olarak boyut, bölge, detay ve renge göre hesaplanır.",
+      low: "Az",
+      medium: "Orta",
+      high: "Yüksek",
+      standard: "Standart",
+      hard: "Zor",
+      veryHard: "Çok zor",
+      tinyLabel: "Çok küçük",
+      tinyHelp: "Parmak, minik sembol veya kısa vurgu dövmeleri.",
+      smallLabel: "Küçük",
+      smallHelp: "Avuç içi boyutuna yakın sade işler.",
+      mediumLabel: "Orta",
+      mediumHelp: "Ön kol, baldır veya göğüs ölçüsünde dengeli işler.",
+      largeLabel: "Büyük",
+      largeHelp: "Daha geniş alana yayılan iddialı çalışmalar.",
       min: "Alt değer",
       max: "Üst değer",
       save: "Fiyatlamayı kaydet",
@@ -73,20 +200,37 @@ function getText(locale: PublicLocale) {
       "Set your base price and the main factors that shape the quote range.",
     sectionHelp: "Tap a section title to expand it.",
     basePrice: "Base price",
-    basePriceHelp: "Starting point for a medium-size, standard-difficulty tattoo on clean skin.",
+    basePriceHelp: "What do you usually start a small, standard tattoo at?",
     minimumCharge: "Minimum charge",
-    minimumChargeHelp: "The estimate will never drop below this amount.",
+    minimumChargeHelp: "The minimum you would charge even for the smallest job.",
+    minimumChargeNote: "Even if the system calculates lower, it will not go below this amount.",
     sizeModifiers: "Price effect by size",
-    sizeModifiersHelp: "Define how much each size expands the estimate range.",
-    placementModifiers: "Price effect by placement",
-    placementHelp: "Tap a main area to reveal detailed placements.",
-    detailLevelModifiers: "Price effect by detail level",
-    colorModeModifiers: "Price effect by color mode",
+    sizeModifiersHelp: "Choose a simple pricing level for each size.",
+    placementModifiers: "Placement difficulty",
+    placementHelp: "Each area appears once. Tap a main area to reveal detailed placements.",
+    detailLevelModifiers: "Detail level",
+    colorModeModifiers: "Color effect",
     addonFees: "Addon fees",
-    addonHelp: "These are fixed ranges added on top of the quote, not style multipliers.",
+    addonHelp: "These are fixed fees added on top of the quote.",
     coverUp: "Cover-up work",
     customDesign: "Custom design prep",
-    styleContext: "Style and design type now stay as classification only, not as the main quote driver.",
+    coverUpHelp: "Adds an extra fee when the tattoo covers an older one.",
+    customDesignHelp: "Adds an extra fee when the artist needs to prepare a custom design.",
+    styleContext: "The quote is mainly calculated from size, placement, detail, and color.",
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    standard: "Standard",
+    hard: "Hard",
+    veryHard: "Very hard",
+    tinyLabel: "Very small",
+    tinyHelp: "Finger-scale symbols and tiny accents.",
+    smallLabel: "Small",
+    smallHelp: "Palm-size and simple small tattoos.",
+    mediumLabel: "Medium",
+    mediumHelp: "Balanced work around forearm, calf, or chest size.",
+    largeLabel: "Large",
+    largeHelp: "Statement pieces across a wider area.",
     min: "Min",
     max: "Max",
     save: "Save pricing",
@@ -94,6 +238,42 @@ function getText(locale: PublicLocale) {
     saveFailed: "Unable to save pricing.",
     saved: "Pricing saved.",
   };
+}
+
+function SegmentedRangeButtons({
+  options,
+  active,
+  onSelect,
+}: {
+  options: { key: string; label: string }[];
+  active: string;
+  onSelect: (key: string) => void;
+}) {
+  return (
+    <div className="mt-4 grid grid-cols-3 gap-2">
+      {options.map((option) => {
+        const selected = option.key === active;
+
+        return (
+          <button
+            key={option.key}
+            type="button"
+            onClick={() => onSelect(option.key)}
+            className="rounded-[16px] border px-3 py-2 text-sm transition"
+            style={{
+              borderColor: selected ? "var(--primary)" : "rgba(255,255,255,0.08)",
+              backgroundColor: selected
+                ? "color-mix(in srgb, var(--primary) 18%, transparent)"
+                : "rgba(255,255,255,0.02)",
+              color: "white",
+            }}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 export function PricingForm({
@@ -118,6 +298,7 @@ export function PricingForm({
     Object.fromEntries(bodyPlacementGroups.map((group) => [group.value, false])),
   );
   const copy = getText(locale);
+  const pricingPlacementGroups = useMemo(() => uniquePricingPlacementGroups(), []);
 
   const form = useForm<PricingFormInput, unknown, PricingValues>({
     resolver: zodResolver(pricingSchema),
@@ -127,7 +308,7 @@ export function PricingForm({
       sizeModifiers: pricingRules.sizeModifiers,
       placementModifiers: {
         ...Object.fromEntries(
-          bodyPlacementGroups.flatMap((group) =>
+          pricingPlacementGroups.flatMap((group) =>
             group.details.map((detail) => [
               detail.value,
               pricingRules.placementModifiers[detail.value] ?? { min: 1, max: 1 },
@@ -140,6 +321,24 @@ export function PricingForm({
       addonFees: pricingRules.addonFees,
     } satisfies PricingFormInput,
   });
+
+  function setSizePreset(size: keyof typeof sizePresetRanges, preset: StepKey) {
+    form.setValue(`sizeModifiers.${size}`, sizePresetRanges[size][preset], { shouldDirty: true });
+  }
+
+  function setDetailPreset(level: keyof typeof detailPresetMap, preset: StepKey) {
+    form.setValue(`detailLevelModifiers.${level}`, levelRangePresets[preset], { shouldDirty: true });
+  }
+
+  function setColorPreset(mode: keyof typeof colorPresetMap, preset: StepKey) {
+    form.setValue(`colorModeModifiers.${mode}`, levelRangePresets[preset], { shouldDirty: true });
+  }
+
+  function setPlacementPreset(detailValue: string, preset: PlacementDifficultyKey) {
+    form.setValue(`placementModifiers.${detailValue}`, placementDifficultyPresets[preset], {
+      shouldDirty: true,
+    });
+  }
 
   async function onSubmit(values: PricingValues) {
     const response = await fetch("/api/dashboard/pricing", {
@@ -206,6 +405,7 @@ export function PricingForm({
                   <Field label={copy.minimumCharge} error={form.formState.errors.minimumCharge?.message}>
                     <Input type="number" {...form.register("minimumCharge")} />
                   </Field>
+                  <p className="lg:col-span-2 text-sm text-[var(--foreground-muted)]">{copy.minimumChargeNote}</p>
                 </div>
               ) : null}
             </div>
@@ -230,16 +430,24 @@ export function PricingForm({
                 <div className="grid gap-4 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
                   {sizeOptions.map((size) => (
                     <div key={size.value} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
-                      <p className="font-medium text-white">{size.label}</p>
-                      <p className="mt-1 text-sm text-[var(--foreground-muted)]">{size.detail}</p>
-                      <div className="mt-4 grid grid-cols-2 gap-3">
-                        <Field label={copy.min}>
-                          <Input type="number" step="0.05" {...form.register(`sizeModifiers.${size.value}.min`)} />
-                        </Field>
-                        <Field label={copy.max}>
-                          <Input type="number" step="0.05" {...form.register(`sizeModifiers.${size.value}.max`)} />
-                        </Field>
-                      </div>
+                      <p className="font-medium text-white">
+                        {copy[`${size.value}Label` as const]}
+                      </p>
+                      <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                        {copy[`${size.value}Help` as const]}
+                      </p>
+                      <SegmentedRangeButtons
+                        active={detectStepKey(
+                          coerceRange(form.watch(`sizeModifiers.${size.value}`), sizePresetRanges[size.value].medium),
+                          sizePresetRanges[size.value],
+                        )}
+                        onSelect={(preset) => setSizePreset(size.value, preset as StepKey)}
+                        options={[
+                          { key: "low", label: copy.low },
+                          { key: "medium", label: copy.medium },
+                          { key: "high", label: copy.high },
+                        ]}
+                      />
                     </div>
                   ))}
                 </div>
@@ -264,7 +472,7 @@ export function PricingForm({
               </button>
               {expandedSections.placementModifiers ? (
                 <div className="grid gap-4 border-t border-white/8 px-4 pb-4 pt-4">
-                  {bodyPlacementGroups.map((group) => (
+                  {pricingPlacementGroups.map((group) => (
                     <div key={group.value} className="rounded-[20px] border border-white/8 bg-black/20">
                       <button
                         type="button"
@@ -286,13 +494,26 @@ export function PricingForm({
                       {expandedGroups[group.value] ? (
                         <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4">
                           {group.details.map((detail) => (
-                            <div key={detail.value} className="grid gap-3 lg:grid-cols-2">
-                              <Field label={`${getPlacementDetailLocaleLabel(detail.value, locale)} · ${copy.min}`}>
-                                <Input type="number" step="0.05" {...form.register(`placementModifiers.${detail.value}.min`)} />
-                              </Field>
-                              <Field label={`${getPlacementDetailLocaleLabel(detail.value, locale)} · ${copy.max}`}>
-                                <Input type="number" step="0.05" {...form.register(`placementModifiers.${detail.value}.max`)} />
-                              </Field>
+                            <div key={detail.value} className="rounded-[16px] border border-white/8 bg-black/20 p-4">
+                              <p className="font-medium text-white">
+                                {getPlacementDetailLocaleLabel(detail.value, locale)}
+                              </p>
+                              <SegmentedRangeButtons
+                                active={detectPlacementDifficultyKey(
+                                  coerceRange(
+                                    form.watch(`placementModifiers.${detail.value}`),
+                                    placementDifficultyPresets.standard,
+                                  ),
+                                )}
+                                onSelect={(preset) =>
+                                  setPlacementPreset(detail.value, preset as PlacementDifficultyKey)
+                                }
+                                options={[
+                                  { key: "standard", label: copy.standard },
+                                  { key: "hard", label: copy.hard },
+                                  { key: "veryHard", label: copy.veryHard },
+                                ]}
+                              />
                             </div>
                           ))}
                         </div>
@@ -321,14 +542,21 @@ export function PricingForm({
                   {Object.entries(detailLevelLabels).map(([key, label]) => (
                     <div key={key} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
                       <p className="font-medium text-white">{label[locale]}</p>
-                      <div className="mt-4 grid grid-cols-2 gap-3">
-                        <Field label={copy.min}>
-                          <Input type="number" step="0.05" {...form.register(`detailLevelModifiers.${key as keyof PricingValues["detailLevelModifiers"]}.min`)} />
-                        </Field>
-                        <Field label={copy.max}>
-                          <Input type="number" step="0.05" {...form.register(`detailLevelModifiers.${key as keyof PricingValues["detailLevelModifiers"]}.max`)} />
-                        </Field>
-                      </div>
+                      <SegmentedRangeButtons
+                        active={detectStepKey(
+                          coerceRange(
+                            form.watch(`detailLevelModifiers.${key as keyof PricingValues["detailLevelModifiers"]}`),
+                            levelRangePresets.medium,
+                          ),
+                          levelRangePresets,
+                        )}
+                        onSelect={(preset) => setDetailPreset(key as keyof typeof detailPresetMap, preset as StepKey)}
+                        options={[
+                          { key: "low", label: copy.low },
+                          { key: "medium", label: copy.medium },
+                          { key: "high", label: copy.high },
+                        ]}
+                      />
                     </div>
                   ))}
                 </div>
@@ -353,14 +581,21 @@ export function PricingForm({
                   {Object.entries(colorModeLabels).map(([key, label]) => (
                     <div key={key} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
                       <p className="font-medium text-white">{label[locale]}</p>
-                      <div className="mt-4 grid grid-cols-2 gap-3">
-                        <Field label={copy.min}>
-                          <Input type="number" step="0.05" {...form.register(`colorModeModifiers.${key as keyof PricingValues["colorModeModifiers"]}.min`)} />
-                        </Field>
-                        <Field label={copy.max}>
-                          <Input type="number" step="0.05" {...form.register(`colorModeModifiers.${key as keyof PricingValues["colorModeModifiers"]}.max`)} />
-                        </Field>
-                      </div>
+                      <SegmentedRangeButtons
+                        active={detectStepKey(
+                          coerceRange(
+                            form.watch(`colorModeModifiers.${key as keyof PricingValues["colorModeModifiers"]}`),
+                            levelRangePresets.medium,
+                          ),
+                          levelRangePresets,
+                        )}
+                        onSelect={(preset) => setColorPreset(key as keyof typeof colorPresetMap, preset as StepKey)}
+                        options={[
+                          { key: "low", label: copy.low },
+                          { key: "medium", label: copy.medium },
+                          { key: "high", label: copy.high },
+                        ]}
+                      />
                     </div>
                   ))}
                 </div>
@@ -386,11 +621,12 @@ export function PricingForm({
               {expandedSections.addonFees ? (
                 <div className="grid gap-3 border-t border-white/8 px-4 pb-4 pt-4 lg:grid-cols-2">
                   {([
-                    ["coverUp", copy.coverUp],
-                    ["customDesign", copy.customDesign],
-                  ] as const).map(([key, label]) => (
+                    ["coverUp", copy.coverUp, copy.coverUpHelp],
+                    ["customDesign", copy.customDesign, copy.customDesignHelp],
+                  ] as const).map(([key, label, help]) => (
                     <div key={key} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
                       <p className="font-medium text-white">{label}</p>
+                      <p className="mt-1 text-sm text-[var(--foreground-muted)]">{help}</p>
                       <div className="mt-4 grid grid-cols-2 gap-3">
                         <Field label={copy.min}>
                           <Input type="number" {...form.register(`addonFees.${key}.min`)} />
