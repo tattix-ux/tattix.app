@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, Monitor, Pencil, RotateCcw, Save, Smartphone, Trash2 } from "lucide-react";
+import { LoaderCircle, Pencil, RotateCcw, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -129,10 +129,6 @@ export function CustomizePageForm({
             presets: "Hazır tema kullan",
             custom: "Kendi stilini oluştur",
           },
-          preview: "Canlı önizleme",
-          previewDescription: "Yaptığın seçimler anında müşteri ekranına yansır.",
-          mobile: "Mobil",
-          desktop: "Masaüstü",
           presetTitle: "Hazır temalar",
           presetDescription: "Hızlı ve güvenli bir görünüm için sadece tema seç.",
           presetHint: "Tema seçildiğinde renk ve font ayarları otomatik uygulanır.",
@@ -176,10 +172,6 @@ export function CustomizePageForm({
             presets: "Use a preset theme",
             custom: "Build your own style",
           },
-          preview: "Live Preview",
-          previewDescription: "Changes appear on the client page instantly.",
-          mobile: "Mobile",
-          desktop: "Desktop",
           presetTitle: "Preset themes",
           presetDescription: "Pick a safe starting point and you are done.",
           presetHint: "The selected theme applies its own colors and type choices automatically.",
@@ -250,7 +242,6 @@ export function CustomizePageForm({
     return "modern";
   };
 
-  const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [mode, setMode] = useState<Mode>("presets");
   const [presetName, setPresetName] = useState("");
 
@@ -604,44 +595,6 @@ export function CustomizePageForm({
 
   return (
     <div className="space-y-6">
-      <Card className="surface-border overflow-hidden">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <CardTitle>{copy.preview}</CardTitle>
-              <CardDescription>{copy.previewDescription}</CardDescription>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={device === "mobile" ? "secondary" : "outline"}
-                onClick={() => setDevice("mobile")}
-              >
-                <Smartphone className="size-4" />
-                {copy.mobile}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={device === "desktop" ? "secondary" : "outline"}
-                onClick={() => setDevice("desktop")}
-              >
-                <Monitor className="size-4" />
-                {copy.desktop}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="px-4 pb-6 pt-0 sm:px-6">
-          <div className="mx-auto flex justify-center">
-            <div className={cn(device === "mobile" ? "w-full max-w-[320px]" : "w-full max-w-[980px] overflow-x-auto")}>
-              <ArtistPagePreview artist={previewArtist} theme={previewTheme} device={device} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="surface-border">
           <CardContent className="flex flex-wrap gap-2 p-3 sm:p-4">
