@@ -97,11 +97,9 @@ function ThemeCardPreview({
 }) {
   return (
     <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/20">
-      <div className="pointer-events-none h-[280px] overflow-hidden">
-        <div className="origin-top scale-[0.64]">
-          <div className="-mb-[150px] -ml-[58px] w-[390px]">
-            <ArtistPagePreview artist={artist} theme={theme} device="mobile" />
-          </div>
+      <div className="relative h-[280px] overflow-hidden">
+        <div className="pointer-events-none absolute left-1/2 top-4 w-[390px] -translate-x-1/2 origin-top scale-[0.64]">
+          <ArtistPagePreview artist={artist} theme={theme} device="mobile" />
         </div>
       </div>
     </div>
@@ -813,20 +811,6 @@ export function CustomizePageForm({
               </CardHeader>
               <CardContent className="space-y-4">
                 <ThemeCardPreview artist={previewArtist} theme={previewTheme} />
-                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="text-sm font-medium text-white">
-                    {previewTheme.customWelcomeTitle || artist.funnelSettings.introTitle || artist.profile.welcomeHeadline}
-                  </p>
-                  <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-                    {previewTheme.customIntroText || artist.funnelSettings.introDescription || artist.profile.shortBio}
-                  </p>
-                  <div
-                    className="mt-4 inline-flex rounded-full px-4 py-2 text-sm font-medium text-black"
-                    style={{ backgroundColor: currentPrimaryColor }}
-                  >
-                    {previewTheme.customCtaLabel || (locale === "tr" ? "Fiyat tahmini al" : "Start estimate")}
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
