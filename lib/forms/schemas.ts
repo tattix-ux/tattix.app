@@ -250,7 +250,7 @@ export const featuredDesignSchema = z.object({
   id: z.string().optional(),
   category: z.string().min(2).max(80),
   title: z.string().min(2),
-  shortDescription: z.string().min(12).max(180),
+  shortDescription: z.string().max(180).optional().default(""),
   imageUrl: z.string().url().nullable().or(z.literal("")),
   imagePath: z.string().nullable().or(z.literal("")).optional(),
   priceNote: z.string().max(48).nullable().or(z.literal("")).optional(),

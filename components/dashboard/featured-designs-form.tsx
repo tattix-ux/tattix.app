@@ -3,8 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { GripVertical, ImagePlus, LoaderCircle, Plus, Save, Trash2, Upload, X } from "lucide-react";
-import { useState } from "react";
+import {
+  GripVertical,
+  ImagePlus,
+  LoaderCircle,
+  Plus,
+  Save,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { Field } from "@/components/shared/field";
@@ -31,33 +40,48 @@ const copy = {
     uploadFailed: "Unable to upload image.",
     saveFailed: "Unable to save designs.",
     saved: "Designs saved.",
-    title: "Designs",
-    description: "Manage your designs.",
+    title: "Manage the designs clients will see.",
+    description: "Designs added here appear in the client selection flow.",
     item: "Design",
+    newItem: "New design",
     remove: "Remove",
+    removeConfirm: "Remove this design?",
     category: "Category",
     customCategory: "Custom category",
     customCategoryPlaceholder: "e.g. Floral",
     titleLabel: "Title",
+    titlePlaceholder: "e.g. Koi fish",
     shortDescription: "Short description",
+    shortDescriptionPlaceholder: "e.g. Fine line piece that works well in a smaller size.",
+    shortDescriptionHelp: "Optional",
     image: "Design image",
-    imageDescription: "Upload an image for this design.",
+    imageDescription: "Clients see this image in the selection screen.",
     noImage: "No image selected yet",
     uploadImage: "Upload image",
     removeImage: "Remove image",
-    showPublicly: "Show this design publicly",
-    priceNote: "Reference size",
-    detailLevel: "How would you describe the detail level of this tattoo?",
-    priceMin: "Min price for this size",
-    priceMax: "Max price for this size",
-    addDesign: "Add design",
+    liveLabel: "Live",
+    liveHelp: "If off, clients do not see this design.",
+    liveOn: "Live",
+    liveOff: "Hidden",
+    priceNote: "Example size (cm)",
+    priceNoteHelp: "How large is this design usually tattooed?",
+    detailLevel: "Detail level",
+    detailLevelHelp: "Detail level affects price.",
+    priceRange: "Price range for this design",
+    priceRangeHelp: "Clients see this range for this size.",
+    priceMin: "Min price",
+    priceMax: "Max price",
+    addDesign: "Add new design",
     saving: "Saving",
-    save: "Save designs",
-    pricePlaceholder: "From 2800 TRY",
+    save: "Save changes",
     flash: "Flash designs",
     discounted: "Discounted designs",
     customOption: "Custom category",
     dragHint: "Drag to reorder",
+    preview: "Client preview",
+    previewEmptyTitle: "Title will appear here",
+    previewEmptyPrice: "Price range appears here",
+    currencyPrefix: "TRY",
   },
   tr: {
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
@@ -67,35 +91,70 @@ const copy = {
     uploadFailed: "Görsel yüklenemedi.",
     saveFailed: "Tasarımlar kaydedilemedi.",
     saved: "Tasarımlar kaydedildi.",
-    title: "Tasarımlar",
-    description: "Tasarımlarını yönet.",
+    title: "Müşteriye göstereceğin tasarımları yönet.",
+    description: "Buraya eklediğin tasarımlar, müşteri seçim ekranında gösterilir ve doğrudan talep oluşturmaya yardımcı olur.",
     item: "Tasarım",
+    newItem: "Yeni tasarım",
     remove: "Kaldır",
+    removeConfirm: "Bu tasarımı kaldırmak istiyor musun?",
     category: "Kategori",
     customCategory: "Özel kategori",
     customCategoryPlaceholder: "Örn. Floral",
     titleLabel: "Başlık",
+    titlePlaceholder: "Örn. Koi balığı",
     shortDescription: "Kısa açıklama",
+    shortDescriptionPlaceholder: "Örn. İnce çizgi, küçük boyutta iyi görünür.",
+    shortDescriptionHelp: "İsteğe bağlı",
     image: "Tasarım görseli",
-    imageDescription: "Bu tasarım için görsel yükle.",
+    imageDescription: "Müşteri bu görseli seçim ekranında görür.",
     noImage: "Henüz görsel seçilmedi",
     uploadImage: "Görsel yükle",
     removeImage: "Görseli kaldır",
-    showPublicly: "Bu tasarımı herkese açık sayfada göster",
-    priceNote: "Örnek boyut",
-    detailLevel: "Bu dövmenin detay seviyesini nasıl tanımlarsın?",
-    priceMin: "Bu boyut için min fiyat",
-    priceMax: "Bu boyut için maks fiyat",
-    addDesign: "Tasarım ekle",
+    liveLabel: "Yayında",
+    liveHelp: "Kapalıysa müşteri bu tasarımı görmez.",
+    liveOn: "Yayında",
+    liveOff: "Yayında değil",
+    priceNote: "Örnek boyut (cm)",
+    priceNoteHelp: "Bu tasarım genelde kaç cm yapılır?",
+    detailLevel: "Detay seviyesi",
+    detailLevelHelp: "Detay seviyesi fiyatı etkiler.",
+    priceRange: "Bu tasarım için fiyat aralığı",
+    priceRangeHelp: "Müşteriye bu boyut için bu aralık gösterilir.",
+    priceMin: "Min fiyat",
+    priceMax: "Maks fiyat",
+    addDesign: "Yeni tasarım ekle",
     saving: "Kaydediliyor",
-    save: "Tasarımları kaydet",
-    pricePlaceholder: "2800 TRY'den başlayan fiyatlarla",
+    save: "Değişiklikleri kaydet",
     flash: "Flash tasarımlar",
     discounted: "İndirimli tasarımlar",
     customOption: "Özel kategori",
     dragHint: "Sıralamak için sürükle",
+    preview: "Müşteri önizlemesi",
+    previewEmptyTitle: "Başlık burada görünür",
+    previewEmptyPrice: "Fiyat aralığı burada görünür",
+    currencyPrefix: "₺",
   },
 } as const;
+
+function formatFeaturedPrice(min: number | null | undefined, max: number | null | undefined, currencyPrefix: string) {
+  if (typeof min === "number" && typeof max === "number") {
+    return `${currencyPrefix}${min.toLocaleString("tr-TR")} - ${currencyPrefix}${max.toLocaleString("tr-TR")}`;
+  }
+
+  if (typeof min === "number") {
+    return `${currencyPrefix}${min.toLocaleString("tr-TR")}`;
+  }
+
+  if (typeof max === "number") {
+    return `${currencyPrefix}${max.toLocaleString("tr-TR")}`;
+  }
+
+  return null;
+}
+
+function normalizePriceValue(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
 
 export function FeaturedDesignsForm({
   designs,
@@ -112,6 +171,7 @@ export function FeaturedDesignsForm({
   const labels = copy[locale];
   const [expandedId, setExpandedId] = useState<string | null>(designs[0]?.id ?? null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [expandLatestCard, setExpandLatestCard] = useState(false);
   const form = useForm<FeaturedDesignFormInput, unknown, FeaturedDesignValues>({
     resolver: zodResolver(featuredDesignsSchema),
     defaultValues: {
@@ -142,6 +202,18 @@ export function FeaturedDesignsForm({
     defaultValue: form.getValues("designs"),
   });
 
+  useEffect(() => {
+    if (!expandLatestCard) {
+      return;
+    }
+
+    const latestField = designsFieldArray.fields.at(-1);
+    if (latestField) {
+      setExpandedId(latestField.id);
+      setExpandLatestCard(false);
+    }
+  }, [designsFieldArray.fields, expandLatestCard]);
+
   function getCategorySelectValue(category: string) {
     return featuredDesignCategories.some((item) => item.value === category) ? category : "__custom__";
   }
@@ -156,6 +228,14 @@ export function FeaturedDesignsForm({
     }
 
     return category;
+  }
+
+  function handleRemove(index: number) {
+    if (typeof window !== "undefined" && !window.confirm(labels.removeConfirm)) {
+      return;
+    }
+
+    designsFieldArray.remove(index);
   }
 
   async function handleImageUpload(index: number, file: File) {
@@ -238,6 +318,14 @@ export function FeaturedDesignsForm({
           <div className="space-y-4">
             {designsFieldArray.fields.map((field, index) => {
               const currentDesign = watchedDesigns?.[index];
+              const isExpanded = expandedId === field.id;
+              const pricePreview = formatFeaturedPrice(
+                normalizePriceValue(currentDesign?.referencePriceMin),
+                normalizePriceValue(currentDesign?.referencePriceMax),
+                labels.currencyPrefix,
+              );
+              const cardTitle = currentDesign?.title?.trim() || `${labels.newItem} ${index + 1}`;
+              const isCustomCategory = getCategorySelectValue(currentDesign?.category || "") === "__custom__";
 
               return (
                 <div
@@ -257,12 +345,10 @@ export function FeaturedDesignsForm({
                   className="rounded-[22px] border border-white/8 bg-black/20 p-3.5 sm:rounded-[24px] sm:p-4"
                 >
                   <div
-                    className="flex cursor-pointer flex-wrap items-center justify-between gap-3"
-                    onClick={() =>
-                      setExpandedId((current) => (current === field.id ? null : field.id))
-                    }
+                    className="flex cursor-pointer flex-wrap items-start justify-between gap-3"
+                    onClick={() => setExpandedId((current) => (current === field.id ? null : field.id))}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-start gap-3">
                       <button
                         type="button"
                         className="inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white/70"
@@ -271,27 +357,37 @@ export function FeaturedDesignsForm({
                       >
                         <GripVertical className="size-4" />
                       </button>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                           {labels.item} {index + 1}
                         </p>
-                        <p className="mt-1 text-base font-medium text-white">
-                          {currentDesign?.title || labels.titleLabel}
+                        <p className="mt-1 truncate text-base font-medium text-white">
+                          {cardTitle}
                         </p>
                         <p className="mt-1 text-sm text-[var(--foreground-muted)]">
                           {getCategoryLabel(currentDesign?.category || "flash-designs")}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-2">
-                        <input
-                          type="checkbox"
-                          className="size-4 accent-[var(--accent)]"
-                          {...form.register(`designs.${index}.active`)}
-                          onClick={(event) => event.stopPropagation()}
-                        />
-                        <span className="text-sm text-white">{labels.showPublicly}</span>
+                    <div className="flex flex-wrap items-start justify-end gap-2">
+                      <label
+                        className="flex items-center gap-3 rounded-[18px] border border-white/8 bg-black/25 px-3 py-2.5"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white">{labels.liveLabel}</p>
+                          <p className="text-xs text-[var(--foreground-muted)]">{labels.liveHelp}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[var(--foreground-muted)]">
+                            {currentDesign?.active ? labels.liveOn : labels.liveOff}
+                          </span>
+                          <input
+                            type="checkbox"
+                            className="size-4 accent-[var(--accent)]"
+                            {...form.register(`designs.${index}.active`)}
+                          />
+                        </div>
                       </label>
                       <Button
                         type="button"
@@ -299,132 +395,214 @@ export function FeaturedDesignsForm({
                         size="sm"
                         onClick={(event) => {
                           event.stopPropagation();
-                          designsFieldArray.remove(index);
+                          handleRemove(index);
                         }}
                       >
                         <Trash2 className="size-4" />
-                        {labels.remove}
                       </Button>
                     </div>
                   </div>
 
-                  {expandedId === field.id ? (
+                  {isExpanded ? (
                     <>
-                      <div className="mt-5 grid gap-5 lg:grid-cols-2">
-                        <Field label={labels.category}>
-                          <NativeSelect
-                            value={getCategorySelectValue(currentDesign?.category || "")}
-                            onChange={(event) =>
-                              form.setValue(
-                                `designs.${index}.category`,
-                                event.target.value === "__custom__" ? "" : event.target.value,
-                                { shouldDirty: true, shouldValidate: true },
-                              )
-                            }
-                          >
-                            <option value="flash-designs">{labels.flash}</option>
-                            <option value="discounted-designs">{labels.discounted}</option>
-                            <option value="__custom__">{labels.customOption}</option>
-                          </NativeSelect>
-                        </Field>
-                        <Field label={labels.titleLabel}>
-                          <Input {...form.register(`designs.${index}.title`)} />
-                        </Field>
-                      </div>
-
-                      {getCategorySelectValue(currentDesign?.category || "") === "__custom__" ? (
-                        <Field className="mt-5" label={labels.customCategory}>
-                          <Input
-                            placeholder={labels.customCategoryPlaceholder}
-                            value={currentDesign?.category || ""}
-                            onChange={(event) =>
-                              form.setValue(`designs.${index}.category`, event.target.value, {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              })
-                            }
-                          />
-                        </Field>
-                      ) : null}
-
-                      <Field className="mt-5" label={labels.shortDescription}>
-                        <Textarea {...form.register(`designs.${index}.shortDescription`)} />
-                      </Field>
-
-                      <div className="mt-5 space-y-5">
-                        <Field label={labels.image} description={labels.imageDescription}>
-                          <div className="space-y-3">
-                            <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
-                              {currentDesign?.imageUrl ? (
-                                <div
-                                  className="absolute inset-0 bg-cover bg-center"
-                                  style={{ backgroundImage: `url(${currentDesign.imageUrl})` }}
-                                  aria-label={currentDesign.title || `${labels.item} ${index + 1}`}
-                                  role="img"
-                                />
-                              ) : (
-                                <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
-                                  <ImagePlus className="size-5" />
-                                  <span>{labels.noImage}</span>
-                                </div>
-                              )}
+                      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
+                        <div className="space-y-5">
+                          <Field label={labels.image} description={labels.imageDescription}>
+                            <div className="space-y-3">
+                              <div className="relative flex min-h-[240px] items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5 sm:min-h-[280px]">
+                                {currentDesign?.imageUrl ? (
+                                  <div
+                                    className="absolute inset-0 bg-cover bg-center"
+                                    style={{ backgroundImage: `url(${currentDesign.imageUrl})` }}
+                                    aria-label={currentDesign.title || `${labels.item} ${index + 1}`}
+                                    role="img"
+                                  />
+                                ) : (
+                                  <div className="flex flex-col items-center gap-2 px-6 text-center text-sm text-[var(--foreground-muted)]">
+                                    <ImagePlus className="size-6" />
+                                    <span>{labels.noImage}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
+                                <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
+                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
+                                  <Upload className="size-4" />
+                                  {labels.uploadImage}
+                                  <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
+                                    className="hidden"
+                                    onChange={(event) => {
+                                      const file = event.target.files?.[0];
+                                      if (file) {
+                                        void handleImageUpload(index, file);
+                                      }
+                                      event.currentTarget.value = "";
+                                    }}
+                                  />
+                                </label>
+                                {currentDesign?.imageUrl ? (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-sm"
+                                    onClick={() => void handleImageRemove(index)}
+                                  >
+                                    <X className="size-4" />
+                                    {labels.removeImage}
+                                  </Button>
+                                ) : null}
+                              </div>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                              <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
-                              <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
-                              <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
-                                <Upload className="size-4" />
-                                {labels.uploadImage}
-                                <input
-                                  type="file"
-                                  accept="image/png,image/jpeg,image/webp,image/gif"
-                                  className="hidden"
-                                  onChange={(event) => {
-                                    const file = event.target.files?.[0];
-                                    if (file) {
-                                      void handleImageUpload(index, file);
-                                    }
-                                    event.currentTarget.value = "";
-                                  }}
+                          </Field>
+
+                          <div className="grid gap-5 md:grid-cols-2">
+                            <Field label={labels.priceNote} description={labels.priceNoteHelp}>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  placeholder="12"
+                                  className="pr-12"
+                                  {...form.register(`designs.${index}.priceNote`)}
                                 />
-                              </label>
-                              {currentDesign?.imageUrl ? (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-xs sm:text-sm"
-                                  onClick={() => void handleImageRemove(index)}
-                                >
-                                  <X className="size-4" />
-                                  {labels.removeImage}
-                                </Button>
-                              ) : null}
+                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
+                                  cm
+                                </span>
+                              </div>
+                            </Field>
+
+                            <Field label={labels.detailLevel} description={labels.detailLevelHelp}>
+                              <NativeSelect {...form.register(`designs.${index}.referenceDetailLevel`)}>
+                                <option value="simple">{locale === "tr" ? "Az detay" : "Low detail"}</option>
+                                <option value="standard">{locale === "tr" ? "Orta detay" : "Medium detail"}</option>
+                                <option value="detailed">{locale === "tr" ? "Çok detay" : "High detail"}</option>
+                              </NativeSelect>
+                            </Field>
+                          </div>
+
+                          <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
+                            <Field label={labels.priceRange} description={labels.priceRangeHelp}>
+                              <div className="grid gap-4 md:grid-cols-2">
+                                <Field label={labels.priceMin} className="gap-2">
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      placeholder="2500"
+                                      className="pl-10"
+                                      {...form.register(`designs.${index}.referencePriceMin`)}
+                                    />
+                                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
+                                      {labels.currencyPrefix}
+                                    </span>
+                                  </div>
+                                </Field>
+                                <Field label={labels.priceMax} className="gap-2">
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      placeholder="3800"
+                                      className="pl-10"
+                                      {...form.register(`designs.${index}.referencePriceMax`)}
+                                    />
+                                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
+                                      {labels.currencyPrefix}
+                                    </span>
+                                  </div>
+                                </Field>
+                              </div>
+                            </Field>
+                          </div>
+
+                          <div className="grid gap-5">
+                            <Field label={labels.titleLabel}>
+                              <Input
+                                placeholder={labels.titlePlaceholder}
+                                {...form.register(`designs.${index}.title`)}
+                              />
+                            </Field>
+
+                            <Field label={labels.shortDescription} description={labels.shortDescriptionHelp}>
+                              <Textarea
+                                placeholder={labels.shortDescriptionPlaceholder}
+                                {...form.register(`designs.${index}.shortDescription`)}
+                              />
+                            </Field>
+
+                            <Field label={labels.category}>
+                              <NativeSelect
+                                value={getCategorySelectValue(currentDesign?.category || "")}
+                                onChange={(event) =>
+                                  form.setValue(
+                                    `designs.${index}.category`,
+                                    event.target.value === "__custom__" ? "" : event.target.value,
+                                    { shouldDirty: true, shouldValidate: true },
+                                  )
+                                }
+                              >
+                                <option value="flash-designs">{labels.flash}</option>
+                                <option value="discounted-designs">{labels.discounted}</option>
+                                <option value="__custom__">{labels.customOption}</option>
+                              </NativeSelect>
+                            </Field>
+
+                            {isCustomCategory ? (
+                              <Field label={labels.customCategory}>
+                                <Input
+                                  placeholder={labels.customCategoryPlaceholder}
+                                  value={currentDesign?.category || ""}
+                                  onChange={(event) =>
+                                    form.setValue(`designs.${index}.category`, event.target.value, {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    })
+                                  }
+                                />
+                              </Field>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="rounded-[22px] border border-white/8 bg-black/20 p-4 xl:sticky xl:top-24">
+                            <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
+                              {labels.preview}
+                            </p>
+                            <div className="mt-4 overflow-hidden rounded-[20px] border border-white/10 bg-white/5">
+                              <div className="relative flex aspect-[4/5] items-center justify-center bg-black/10">
+                                {currentDesign?.imageUrl ? (
+                                  <div
+                                    className="absolute inset-0 bg-cover bg-center"
+                                    style={{ backgroundImage: `url(${currentDesign.imageUrl})` }}
+                                  />
+                                ) : (
+                                  <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
+                                    <ImagePlus className="size-5" />
+                                    <span>{labels.noImage}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="space-y-2 p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="min-w-0 truncate text-base font-medium text-white">
+                                    {currentDesign?.title?.trim() || labels.previewEmptyTitle}
+                                  </p>
+                                  <span className="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-[var(--foreground-muted)]">
+                                    {currentDesign?.active ? labels.liveOn : labels.liveOff}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-[var(--foreground-muted)]">
+                                  {currentDesign?.shortDescription?.trim() || " "}
+                                </p>
+                                <p className="text-lg font-semibold text-white">
+                                  {pricePreview || labels.previewEmptyPrice}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </Field>
-                      </div>
-
-                      <div className="mt-5 grid gap-5 lg:grid-cols-4">
-                        <Field label={labels.priceNote}>
-                          <Input
-                            placeholder="12 cm"
-                            {...form.register(`designs.${index}.priceNote`)}
-                          />
-                        </Field>
-                        <Field label={labels.detailLevel}>
-                          <NativeSelect {...form.register(`designs.${index}.referenceDetailLevel`)}>
-                            <option value="simple">{locale === "tr" ? "Az detay" : "Low detail"}</option>
-                            <option value="standard">{locale === "tr" ? "Orta detay" : "Medium detail"}</option>
-                            <option value="detailed">{locale === "tr" ? "Çok detay" : "High detail"}</option>
-                          </NativeSelect>
-                        </Field>
-                        <Field label={labels.priceMin}>
-                          <Input type="number" {...form.register(`designs.${index}.referencePriceMin`)} />
-                        </Field>
-                        <Field label={labels.priceMax}>
-                          <Input type="number" {...form.register(`designs.${index}.referencePriceMax`)} />
-                        </Field>
+                        </div>
                       </div>
                     </>
                   ) : null}
@@ -438,7 +616,8 @@ export function FeaturedDesignsForm({
               type="button"
               variant="secondary"
               onClick={() =>
-                designsFieldArray.append({
+                {
+                  designsFieldArray.append({
                   category: "flash-designs",
                   title: "",
                   shortDescription: "",
@@ -450,7 +629,9 @@ export function FeaturedDesignsForm({
                   referencePriceMax: null,
                   active: true,
                   sortOrder: designsFieldArray.fields.length,
-                })
+                  });
+                  setExpandLatestCard(true);
+                }
               }
             >
               <Plus className="size-4" />

@@ -16,13 +16,13 @@ export default async function DashboardDesignsPage() {
         eyebrow={isTurkish ? "Tasarımlar" : "Designs"}
         title={
           isTurkish
-            ? "Flash ve indirimli tasarımlarını yönet."
-            : "Manage flash and discounted concepts."
+            ? "Müşteriye göstereceğin tasarımları yönet."
+            : "Manage the designs clients can see."
         }
         description={
           isTurkish
-            ? "Yüklediğin tasarımlar, müşteri ilgili tasarım kategorisini seçtiğinde sanatçı sayfanda gösterilir."
-            : "Uploaded designs appear on the artist page when the client chooses the matching design category."
+            ? "Buraya eklediğin tasarımlar, müşteri seçim ekranında gösterilir ve doğrudan talep oluşturmaya yardımcı olur."
+            : "Designs added here appear in the client selection flow and support direct requests."
         }
       />
       {hasProAccess(data.profile) ? (
