@@ -208,11 +208,8 @@ function getQuestionMeta(questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"
     size18: { title: copy.sizeStep, prompt: copy.sizeQuestion18 },
     size25: { title: copy.sizeStep, prompt: copy.sizeQuestion25 },
     detailLow: { title: copy.detailStep, prompt: copy.detailQuestionLow },
-    detailMedium: { title: copy.detailStep, prompt: copy.detailQuestionMedium },
     detailHigh: { title: copy.detailStep, prompt: copy.detailQuestionHigh },
-    placementEasy: { title: copy.placementStep, prompt: copy.placementQuestionEasy },
     placementHard: { title: copy.placementStep, prompt: copy.placementQuestionHard },
-    colorBlack: { title: copy.colorStep, prompt: copy.colorQuestionBlack },
     colorColor: { title: copy.colorStep, prompt: copy.colorQuestionColor },
   } as const;
 
@@ -231,16 +228,10 @@ function getQuestionRange(draft: CalibrationDraft, questionId: (typeof CALIBRATI
       return draft.size.size25;
     case "detailLow":
       return draft.detail.low;
-    case "detailMedium":
-      return draft.detail.medium;
     case "detailHigh":
       return draft.detail.high;
-    case "placementEasy":
-      return draft.placement.easy;
     case "placementHard":
       return draft.placement.hard;
-    case "colorBlack":
-      return draft.color.black;
     case "colorColor":
       return draft.color.color;
   }
@@ -263,16 +254,10 @@ function setQuestionRange(
       return updateCalibrationDraftRange(draft, "size", "size25", edge, value);
     case "detailLow":
       return updateCalibrationDraftRange(draft, "detail", "low", edge, value);
-    case "detailMedium":
-      return updateCalibrationDraftRange(draft, "detail", "medium", edge, value);
     case "detailHigh":
       return updateCalibrationDraftRange(draft, "detail", "high", edge, value);
-    case "placementEasy":
-      return updateCalibrationDraftRange(draft, "placement", "easy", edge, value);
     case "placementHard":
       return updateCalibrationDraftRange(draft, "placement", "hard", edge, value);
-    case "colorBlack":
-      return updateCalibrationDraftRange(draft, "color", "black", edge, value);
     case "colorColor":
       return updateCalibrationDraftRange(draft, "color", "color", edge, value);
   }
@@ -344,13 +329,10 @@ function getQuestionContextLabel(
   if (locale === "tr") {
     switch (questionId) {
       case "detailLow":
-      case "detailMedium":
       case "detailHigh":
         return "12 cm · ön kol · siyah";
-      case "placementEasy":
       case "placementHard":
         return "12 cm · orta detay · siyah";
-      case "colorBlack":
       case "colorColor":
         return "12 cm · ön kol · orta detay";
       default:
@@ -360,13 +342,10 @@ function getQuestionContextLabel(
 
   switch (questionId) {
     case "detailLow":
-    case "detailMedium":
     case "detailHigh":
       return "12 cm · forearm · black";
-    case "placementEasy":
     case "placementHard":
       return "12 cm · medium detail · black";
-    case "colorBlack":
     case "colorColor":
       return "12 cm · forearm · medium detail";
     default:

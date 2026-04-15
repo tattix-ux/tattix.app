@@ -65,8 +65,8 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-4 lg:grid-cols-[420px_minmax(0,1fr)] lg:gap-8">
-              <aside className="max-w-[356px] space-y-4 lg:sticky lg:top-6 lg:max-w-none">
+            <div className="mt-6 grid items-start gap-4 lg:grid-cols-[360px_minmax(0,1fr)] lg:gap-8">
+              <aside className="max-w-[340px] space-y-4 lg:sticky lg:top-6 lg:max-w-none">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">

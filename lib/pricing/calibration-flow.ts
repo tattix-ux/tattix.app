@@ -72,9 +72,9 @@ export type ValidationScenario = {
 
 export type CalibrationQuestion =
   | { id: "size8" | "size12" | "size18" | "size25"; step: 1; stepIndex: number; image: "medium" }
-  | { id: "detailLow" | "detailMedium" | "detailHigh"; step: 2; stepIndex: number; image: "low" | "medium" | "high" }
-  | { id: "placementEasy" | "placementHard"; step: 3; stepIndex: number; image: "medium" }
-  | { id: "colorBlack" | "colorColor"; step: 4; stepIndex: number; image: "medium" | "color" };
+  | { id: "detailLow" | "detailHigh"; step: 2; stepIndex: number; image: "low" | "high" }
+  | { id: "placementHard"; step: 3; stepIndex: number; image: "medium" }
+  | { id: "colorColor"; step: 4; stepIndex: number; image: "color" };
 
 export const CALIBRATION_QUESTIONS: CalibrationQuestion[] = [
   { id: "size8", step: 1, stepIndex: 1, image: "medium" },
@@ -82,12 +82,9 @@ export const CALIBRATION_QUESTIONS: CalibrationQuestion[] = [
   { id: "size18", step: 1, stepIndex: 3, image: "medium" },
   { id: "size25", step: 1, stepIndex: 4, image: "medium" },
   { id: "detailLow", step: 2, stepIndex: 1, image: "low" },
-  { id: "detailMedium", step: 2, stepIndex: 2, image: "medium" },
-  { id: "detailHigh", step: 2, stepIndex: 3, image: "high" },
-  { id: "placementEasy", step: 3, stepIndex: 1, image: "medium" },
-  { id: "placementHard", step: 3, stepIndex: 2, image: "medium" },
-  { id: "colorBlack", step: 4, stepIndex: 1, image: "medium" },
-  { id: "colorColor", step: 4, stepIndex: 2, image: "color" },
+  { id: "detailHigh", step: 2, stepIndex: 2, image: "high" },
+  { id: "placementHard", step: 3, stepIndex: 1, image: "medium" },
+  { id: "colorColor", step: 4, stepIndex: 1, image: "color" },
 ];
 
 export const CALIBRATION_SLOT_LABELS = [
@@ -353,17 +350,21 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
     detail: {
       low: stringRange(priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.simple, { min: 0.92, max: 1 })),
       medium: stringRange(
-        pricingRules.calibrationExamples.detailLevel.standard
-          ? { min: pricingRules.calibrationExamples.detailLevel.standard, max: pricingRules.calibrationExamples.detailLevel.standard }
-          : priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.standard, { min: 1, max: 1.12 }),
+        pricingRules.calibrationExamples.sizeCurve?.["12"]
+          ? { min: pricingRules.calibrationExamples.sizeCurve["12"], max: pricingRules.calibrationExamples.sizeCurve["12"] }
+          : pricingRules.calibrationExamples.detailLevel.standard
+            ? { min: pricingRules.calibrationExamples.detailLevel.standard, max: pricingRules.calibrationExamples.detailLevel.standard }
+            : priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.standard, { min: 1, max: 1.12 }),
       ),
       high: stringRange(priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.detailed, { min: 1.12, max: 1.28 })),
     },
     placement: {
       easy: stringRange(
-        pricingRules.calibrationExamples.placementDifficulty?.easy
-          ? { min: pricingRules.calibrationExamples.placementDifficulty.easy, max: pricingRules.calibrationExamples.placementDifficulty.easy }
-          : placementDefaults.easy,
+        pricingRules.calibrationExamples.sizeCurve?.["12"]
+          ? { min: pricingRules.calibrationExamples.sizeCurve["12"], max: pricingRules.calibrationExamples.sizeCurve["12"] }
+          : pricingRules.calibrationExamples.placementDifficulty?.easy
+            ? { min: pricingRules.calibrationExamples.placementDifficulty.easy, max: pricingRules.calibrationExamples.placementDifficulty.easy }
+            : placementDefaults.easy,
       ),
       hard: stringRange(
         pricingRules.calibrationExamples.placementDifficulty?.hard
@@ -373,9 +374,11 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
     },
     color: {
       black: stringRange(
-        pricingRules.calibrationExamples.colorMode["black-only"]
-          ? { min: pricingRules.calibrationExamples.colorMode["black-only"], max: pricingRules.calibrationExamples.colorMode["black-only"] }
-          : priceRangeFromFactors(anchorPrice, pricingRules.colorModeModifiers["black-only"], DEFAULT_BLACK_RANGE),
+        pricingRules.calibrationExamples.sizeCurve?.["12"]
+          ? { min: pricingRules.calibrationExamples.sizeCurve["12"], max: pricingRules.calibrationExamples.sizeCurve["12"] }
+          : pricingRules.calibrationExamples.colorMode["black-only"]
+            ? { min: pricingRules.calibrationExamples.colorMode["black-only"], max: pricingRules.calibrationExamples.colorMode["black-only"] }
+            : priceRangeFromFactors(anchorPrice, pricingRules.colorModeModifiers["black-only"], DEFAULT_BLACK_RANGE),
       ),
       color: stringRange(
         pricingRules.calibrationExamples.colorMode["full-color"]
@@ -478,11 +481,11 @@ export function buildPricingPayloadFromCalibrationDraft(
     placementModifiers,
     detailLevelModifiers: {
       simple: factorRangeFromPriceRange(draft.detail.low, anchorPrice, { min: 0.92, max: 1 }),
-      standard: factorRangeFromPriceRange(draft.detail.medium, anchorPrice, { min: 1, max: 1 }),
+      standard: factorRangeFromPriceRange(draft.size.size12, anchorPrice, { min: 1, max: 1 }),
       detailed: factorRangeFromPriceRange(draft.detail.high, anchorPrice, { min: 1.12, max: 1.28 }),
     },
     colorModeModifiers: {
-      "black-only": blackOnly,
+      "black-only": factorRangeFromPriceRange(draft.size.size12, anchorPrice, DEFAULT_BLACK_RANGE),
       "black-grey": blackGrey,
       "full-color": fullColor,
     },
@@ -496,15 +499,15 @@ export function buildPricingPayloadFromCalibrationDraft(
       },
       detailLevel: {
         low: normalizeDraftRange(draft.detail.low) ?? { min: 0, max: 0 },
-        medium: normalizeDraftRange(draft.detail.medium) ?? { min: 0, max: 0 },
+        medium: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
         high: normalizeDraftRange(draft.detail.high) ?? { min: 0, max: 0 },
       },
       placementDifficulty: {
-        easy: normalizeDraftRange(draft.placement.easy) ?? { min: 0, max: 0 },
+        easy: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
         hard: normalizeDraftRange(draft.placement.hard) ?? { min: 0, max: 0 },
       },
       colorMode: {
-        black: normalizeDraftRange(draft.color.black) ?? { min: 0, max: 0 },
+        black: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
         color: normalizeDraftRange(draft.color.color) ?? { min: 0, max: 0 },
       },
       validation: {
