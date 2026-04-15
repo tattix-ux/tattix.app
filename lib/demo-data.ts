@@ -1,5 +1,6 @@
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
+import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
 import { buildDefaultArtistTheme } from "@/lib/theme";
 import type {
   ArtistFeaturedDesign,
@@ -115,19 +116,7 @@ export const demoPricingRules: ArtistPricingRules = {
     },
     globalScale: 1,
   },
-  calibrationReferenceSlots: [
-    { slotId: "size-8cm", axis: "size", key: "8cm", label: "8 cm referans slotu", assetRef: null },
-    { slotId: "size-12cm", axis: "size", key: "12cm", label: "12 cm referans slotu", assetRef: null },
-    { slotId: "size-18cm", axis: "size", key: "18cm", label: "18 cm referans slotu", assetRef: null },
-    { slotId: "size-25cm", axis: "size", key: "25cm", label: "25 cm referans slotu", assetRef: null },
-    { slotId: "detail-low", axis: "detailLevel", key: "low", label: "Az detay referans slotu", assetRef: null },
-    { slotId: "detail-medium", axis: "detailLevel", key: "medium", label: "Orta detay referans slotu", assetRef: null },
-    { slotId: "detail-high", axis: "detailLevel", key: "high", label: "Çok detay referans slotu", assetRef: null },
-    { slotId: "placement-easy", axis: "placement", key: "easy", label: "Kolay bölge referans slotu", assetRef: null },
-    { slotId: "placement-hard", axis: "placement", key: "hard", label: "Zor bölge referans slotu", assetRef: null },
-    { slotId: "color-black", axis: "colorMode", key: "black", label: "Siyah referans slotu", assetRef: null },
-    { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu", assetRef: null },
-  ],
+  calibrationReferenceSlots: CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot })),
   sizeModifiers: {
     tiny: { min: 0.35, max: 0.6 },
     small: { min: 0.55, max: 0.85 },

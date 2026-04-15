@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { pricingSchema } from "@/lib/forms/schemas";
+import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { PriceRange } from "@/lib/types";
@@ -131,19 +132,7 @@ export async function POST(request: Request) {
     (existingPricing.data?.calibration_reference_slots as
       | { slotId: string; assetRef: string | null }[]
       | undefined) ?? [];
-  const calibrationReferenceSlots = [
-    { slotId: "size-8cm", axis: "size", key: "8cm", label: "8 cm referans slotu" },
-    { slotId: "size-12cm", axis: "size", key: "12cm", label: "12 cm referans slotu" },
-    { slotId: "size-18cm", axis: "size", key: "18cm", label: "18 cm referans slotu" },
-    { slotId: "size-25cm", axis: "size", key: "25cm", label: "25 cm referans slotu" },
-    { slotId: "detail-low", axis: "detailLevel", key: "low", label: "Az detay referans slotu" },
-    { slotId: "detail-medium", axis: "detailLevel", key: "medium", label: "Orta detay referans slotu" },
-    { slotId: "detail-high", axis: "detailLevel", key: "high", label: "Çok detay referans slotu" },
-    { slotId: "placement-easy", axis: "placement", key: "easy", label: "Kolay bölge referans slotu" },
-    { slotId: "placement-hard", axis: "placement", key: "hard", label: "Zor bölge referans slotu" },
-    { slotId: "color-black", axis: "colorMode", key: "black", label: "Siyah referans slotu" },
-    { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu" },
-  ].map((slot) => ({
+  const calibrationReferenceSlots = CALIBRATION_SLOT_LABELS.map((slot) => ({
     ...slot,
     assetRef: existingReferenceSlots.find((item) => item.slotId === slot.slotId)?.assetRef ?? null,
   }));

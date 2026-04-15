@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { demoArtistPageData, demoLeads } from "@/lib/demo-data";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
 import type { ArtistProfile, ClientSubmission, DashboardData } from "@/lib/types";
+import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getArtistPageDataById } from "@/lib/data/artist";
@@ -231,19 +232,7 @@ export async function ensureArtistForUser(user: User) {
         },
         globalScale: 1,
       },
-      calibration_reference_slots: [
-        { slotId: "size-8cm", axis: "size", key: "8cm", label: "8 cm referans slotu", assetRef: null },
-        { slotId: "size-12cm", axis: "size", key: "12cm", label: "12 cm referans slotu", assetRef: null },
-        { slotId: "size-18cm", axis: "size", key: "18cm", label: "18 cm referans slotu", assetRef: null },
-        { slotId: "size-25cm", axis: "size", key: "25cm", label: "25 cm referans slotu", assetRef: null },
-        { slotId: "detail-low", axis: "detailLevel", key: "low", label: "Az detay referans slotu", assetRef: null },
-        { slotId: "detail-medium", axis: "detailLevel", key: "medium", label: "Orta detay referans slotu", assetRef: null },
-        { slotId: "detail-high", axis: "detailLevel", key: "high", label: "Çok detay referans slotu", assetRef: null },
-        { slotId: "placement-easy", axis: "placement", key: "easy", label: "Kolay bölge referans slotu", assetRef: null },
-        { slotId: "placement-hard", axis: "placement", key: "hard", label: "Zor bölge referans slotu", assetRef: null },
-        { slotId: "color-black", axis: "colorMode", key: "black", label: "Siyah referans slotu", assetRef: null },
-        { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu", assetRef: null },
-      ],
+      calibration_reference_slots: CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot })),
       size_modifiers: {
         tiny: { min: 0.35, max: 0.6 },
         small: { min: 0.55, max: 0.85 },
