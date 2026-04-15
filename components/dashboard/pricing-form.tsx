@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { ArrowLeft, ArrowRight, LoaderCircle, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -21,7 +21,6 @@ import { pricingSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import {
   buildValidationPreviewExamples,
-  buildCalibrationSlots,
   buildInitialCalibrationDraft,
   buildPricingPayloadFromCalibrationDraft,
   CALIBRATION_QUESTIONS,
@@ -66,12 +65,11 @@ function getText(locale: PublicLocale) {
       openingPrice: "Başlangıç fiyatın",
       openingPriceHelp: "Küçük ve standart bir dövmeyi genelde kaçtan başlatıyorsun?",
       openingPriceNote: "Bu değer modelin taban fiyatı olur.",
-      summaryTitle: "Kalibrasyon özeti",
-      summaryBody: "Fiyat modeli, açılış fiyatı ve kalibrasyon cevaplarından oluşur.",
       ready: "Kalibrasyon hazır.",
       notReady: "Kalibrasyon henüz tamamlanmadı.",
-      start: "Kalibrasyonu başlat",
+      start: "Fiyatlandırma analizimi başlat",
       edit: "Kalibrasyonu düzenle",
+      reset: "Sıfırla",
       close: "Daha sonra devam et",
       priceLabel: "Fiyat",
       maxLabel: "Üst sınır",
@@ -89,10 +87,10 @@ function getText(locale: PublicLocale) {
       detailStep: "Detay kalibrasyonu",
       placementStep: "Bölge kalibrasyonu",
       colorStep: "Renk kalibrasyonu",
-      sizeQuestion8: "Bu dövme yaklaşık 8 cm olsaydı kaç ₺ fiyatlarsın?",
-      sizeQuestion12: "12 cm olsaydı kaç ₺ fiyatlarsın?",
-      sizeQuestion18: "18 cm olsaydı kaç ₺ fiyatlarsın?",
-      sizeQuestion25: "25 cm olsaydı kaç ₺ fiyatlarsın?",
+      sizeQuestion8: "Bu dövme 8 cm ön kolda olsa kaç ₺ fiyatlarsın?",
+      sizeQuestion12: "Bu dövme 12 cm ön kolda olsa kaç ₺ fiyatlarsın?",
+      sizeQuestion18: "Bu dövme 18 cm ön kolda olsa kaç ₺ fiyatlarsın?",
+      sizeQuestion25: "Bu dövme 25 cm ön kolda olsa kaç ₺ fiyatlarsın?",
       detailQuestionLow: "Bu dövmeyi bu detay seviyesinde yaklaşık kaç ₺ fiyatlarsın?",
       detailQuestionMedium: "Bu seviyede kaç ₺ olur?",
       detailQuestionHigh: "Bu kadar detaylı olursa kaç ₺ olur?",
@@ -100,12 +98,6 @@ function getText(locale: PublicLocale) {
       placementQuestionHard: "Zor bir bölgede (örneğin kaburga, boyun, el) olsa kaç ₺ olur?",
       colorQuestionBlack: "Siyah hali kaç ₺ olur?",
       colorQuestionColor: "Renkli hali kaç ₺ olur?",
-      sizeAssumption: "Varsayım: siyah, orta detay, standart bölge, özel tasarım yok, kapatma yok.",
-      detailAssumption: "Boyut sabit kabul edilir. Sadece detay seviyesi değişir.",
-      placementAssumption: "Boyut ve dövme benzer kalır. Sadece bölge zorluğu değişir.",
-      colorAssumption: "Boyut ve detay aynı kalır. Sadece renk farkı ölçülür.",
-      referenceTitle: "Kullanılan referans",
-      referenceHelp: "Bu görsel yer tutucu değil; senin verdiğin örnek görseller kullanılıyor. İleride kolayca değiştirilebilir.",
       finalCheckTitle: "Son kontrol",
       finalCheckIntro:
         "Son bir kontrol yapalım. Aşağıdaki örnek dövmeler için oluşturduğum tahmini fiyat aralıklarının sana ne kadar uygun göründüğünü seç.",
@@ -133,10 +125,7 @@ function getText(locale: PublicLocale) {
       looksRight: "Uygun",
       slightlyLow: "Biraz düşük",
       slightlyHigh: "Biraz yüksek",
-      scaleLabel: "Genel ince ayar",
-      scaleHelp: "Gerekirse tüm modeli az miktarda yukarı ya da aşağı taşı.",
-      slotsTitle: "Hazır referans seti",
-      slotsHelp: "Bu slotlar daha sonra senin seçeceğin son görsellerle değiştirilebilir.",
+      completeQuestionsFirst: "Önce kalibrasyon sorularını tamamla.",
     };
   }
 
@@ -146,12 +135,11 @@ function getText(locale: PublicLocale) {
     openingPrice: "Opening price",
     openingPriceHelp: "What do you usually start a small, standard tattoo at?",
     openingPriceNote: "This becomes the anchor of the pricing model.",
-    summaryTitle: "Calibration summary",
-    summaryBody: "The model uses the opening price plus your calibration answers.",
     ready: "Calibration is ready.",
     notReady: "Calibration is not complete yet.",
-    start: "Start calibration",
+    start: "Start pricing analysis",
     edit: "Edit calibration",
+    reset: "Reset",
     close: "Continue later",
     priceLabel: "Price",
     maxLabel: "Upper range",
@@ -169,10 +157,10 @@ function getText(locale: PublicLocale) {
     detailStep: "Detail calibration",
     placementStep: "Placement calibration",
     colorStep: "Color calibration",
-    sizeQuestion8: "If this tattoo were around 8 cm, what would you charge?",
-    sizeQuestion12: "What would it be at 12 cm?",
-    sizeQuestion18: "What would it be at 18 cm?",
-    sizeQuestion25: "What would it be at 25 cm?",
+    sizeQuestion8: "What would you charge if this tattoo were 8 cm on the forearm?",
+    sizeQuestion12: "What would you charge if it were 12 cm on the forearm?",
+    sizeQuestion18: "What would you charge if it were 18 cm on the forearm?",
+    sizeQuestion25: "What would you charge if it were 25 cm on the forearm?",
     detailQuestionLow: "At this level of detail, what would you charge?",
     detailQuestionMedium: "What would it be at this level?",
     detailQuestionHigh: "What would it be if it were this detailed?",
@@ -180,12 +168,6 @@ function getText(locale: PublicLocale) {
     placementQuestionHard: "What would it be in a harder placement (like ribs, neck, hand)?",
     colorQuestionBlack: "What would the black version cost?",
     colorQuestionColor: "What would the colored version cost?",
-    sizeAssumption: "Assume black ink, medium detail, standard placement, no custom design, no cover-up.",
-    detailAssumption: "Size stays fixed. Only detail level changes.",
-    placementAssumption: "Size and tattoo stay similar. Only placement difficulty changes.",
-    colorAssumption: "Size and detail stay the same. Only color changes.",
-    referenceTitle: "Reference used",
-    referenceHelp: "These images are replaceable and can be swapped with your final calibration images later.",
     finalCheckTitle: "Final check",
     finalCheckIntro:
       "One final check. Review how believable these estimated quote ranges look for the example tattoos below.",
@@ -213,10 +195,7 @@ function getText(locale: PublicLocale) {
     looksRight: "Looks right",
     slightlyLow: "Slightly low",
     slightlyHigh: "Slightly high",
-    scaleLabel: "Global fine-tune",
-    scaleHelp: "Move the whole model slightly up or down if needed.",
-    slotsTitle: "Prepared reference set",
-    slotsHelp: "These slots can be replaced later with the final images you choose.",
+    completeQuestionsFirst: "Finish the calibration questions first.",
   };
 }
 
@@ -224,17 +203,17 @@ function getQuestionMeta(questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"
   const copy = getText(locale);
 
   const map = {
-    size8: { title: copy.sizeStep, prompt: copy.sizeQuestion8, assumption: copy.sizeAssumption },
-    size12: { title: copy.sizeStep, prompt: copy.sizeQuestion12, assumption: copy.sizeAssumption },
-    size18: { title: copy.sizeStep, prompt: copy.sizeQuestion18, assumption: copy.sizeAssumption },
-    size25: { title: copy.sizeStep, prompt: copy.sizeQuestion25, assumption: copy.sizeAssumption },
-    detailLow: { title: copy.detailStep, prompt: copy.detailQuestionLow, assumption: copy.detailAssumption },
-    detailMedium: { title: copy.detailStep, prompt: copy.detailQuestionMedium, assumption: copy.detailAssumption },
-    detailHigh: { title: copy.detailStep, prompt: copy.detailQuestionHigh, assumption: copy.detailAssumption },
-    placementEasy: { title: copy.placementStep, prompt: copy.placementQuestionEasy, assumption: copy.placementAssumption },
-    placementHard: { title: copy.placementStep, prompt: copy.placementQuestionHard, assumption: copy.placementAssumption },
-    colorBlack: { title: copy.colorStep, prompt: copy.colorQuestionBlack, assumption: copy.colorAssumption },
-    colorColor: { title: copy.colorStep, prompt: copy.colorQuestionColor, assumption: copy.colorAssumption },
+    size8: { title: copy.sizeStep, prompt: copy.sizeQuestion8 },
+    size12: { title: copy.sizeStep, prompt: copy.sizeQuestion12 },
+    size18: { title: copy.sizeStep, prompt: copy.sizeQuestion18 },
+    size25: { title: copy.sizeStep, prompt: copy.sizeQuestion25 },
+    detailLow: { title: copy.detailStep, prompt: copy.detailQuestionLow },
+    detailMedium: { title: copy.detailStep, prompt: copy.detailQuestionMedium },
+    detailHigh: { title: copy.detailStep, prompt: copy.detailQuestionHigh },
+    placementEasy: { title: copy.placementStep, prompt: copy.placementQuestionEasy },
+    placementHard: { title: copy.placementStep, prompt: copy.placementQuestionHard },
+    colorBlack: { title: copy.colorStep, prompt: copy.colorQuestionBlack },
+    colorColor: { title: copy.colorStep, prompt: copy.colorQuestionColor },
   } as const;
 
   return map[questionId];
@@ -303,6 +282,12 @@ function isQuestionAnswered(range: { min: string; max: string }) {
   return Boolean(range.min.trim());
 }
 
+function areSizeQuestionsAnswered(draft: CalibrationDraft) {
+  return [draft.size.size8, draft.size.size12, draft.size.size18, draft.size.size25].every(
+    isQuestionAnswered,
+  );
+}
+
 function getValidationStatusLabel(
   status: PricingValidationStatus | "pending",
   locale: PublicLocale,
@@ -346,10 +331,47 @@ function getPlacementSummaryLabel(
   locale: PublicLocale,
 ) {
   if (locale === "tr") {
-    return placement === "ribs" ? "Zor bölge" : "Kolay bölge";
+    return placement === "ribs" ? "Kaburga" : "Ön kol";
   }
 
-  return placement === "ribs" ? "Hard placement" : "Easy placement";
+  return placement === "ribs" ? "Ribs" : "Forearm";
+}
+
+function getQuestionContextLabel(
+  questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"],
+  locale: PublicLocale,
+) {
+  if (locale === "tr") {
+    switch (questionId) {
+      case "detailLow":
+      case "detailMedium":
+      case "detailHigh":
+        return "12 cm · ön kol · siyah";
+      case "placementEasy":
+      case "placementHard":
+        return "12 cm · orta detay · siyah";
+      case "colorBlack":
+      case "colorColor":
+        return "12 cm · ön kol · orta detay";
+      default:
+        return null;
+    }
+  }
+
+  switch (questionId) {
+    case "detailLow":
+    case "detailMedium":
+    case "detailHigh":
+      return "12 cm · forearm · black";
+    case "placementEasy":
+    case "placementHard":
+      return "12 cm · medium detail · black";
+    case "colorBlack":
+    case "colorColor":
+      return "12 cm · forearm · medium detail";
+    default:
+      return null;
+  }
 }
 
 export function PricingForm({
@@ -375,12 +397,11 @@ export function PricingForm({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const slots = buildCalibrationSlots(pricingRules.calibrationReferenceSlots);
   const ready = isCalibrationReady(pricingRules);
-  const validationReady = draft.validation.finalValidation.calibratedAndValidated;
   const currentQuestion = CALIBRATION_QUESTIONS[screenIndex];
   const currentMeta = getQuestionMeta(currentQuestion.id, locale);
   const currentRange = getQuestionRange(draft, currentQuestion.id);
+  const sizeQuestions = CALIBRATION_QUESTIONS.filter((item) => item.step === 1);
   const validationExamples = useMemo(
     () => buildValidationPreviewExamples(draft, pricingRules),
     [draft, pricingRules],
@@ -389,6 +410,29 @@ export function PricingForm({
   const currentValidationRange = validationExamples[validationIndex] ?? validationExamples[0];
   const currentValidationImage = validationImages[currentValidationScenario.image];
   const currentImage = calibrationImages[currentQuestion.image];
+
+  function resetDraft() {
+    const nextDraft = buildInitialCalibrationDraft({
+      ...pricingRules,
+      calibrationExamples: {
+        ...pricingRules.calibrationExamples,
+        finalValidation: {
+          validationRound: 1,
+          perExampleFeedback: {},
+          appliedGlobalValidationAdjustment: 1,
+          validationStatus: "pending",
+          calibratedAndValidated: false,
+        },
+      },
+    });
+
+    setDraft(nextDraft);
+    setScreenIndex(0);
+    setShowCalibration(false);
+    setShowFinalValidation(false);
+    resetValidationFlow();
+    setStatusMessage(null);
+  }
 
   async function persistDraft(nextDraft: CalibrationDraft, successMessage: string) {
     setStatusMessage(null);
@@ -431,12 +475,30 @@ export function PricingForm({
   }
 
   function handleNext() {
+    if (currentQuestion.step === 1) {
+      if (!areSizeQuestionsAnswered(draft)) {
+        setStatusMessage(copy.invalid);
+        return;
+      }
+
+      setStatusMessage(null);
+      setScreenIndex(4);
+      return;
+    }
+
     if (!isQuestionAnswered(currentRange)) {
       setStatusMessage(copy.invalid);
       return;
     }
 
     setStatusMessage(null);
+    if (screenIndex === CALIBRATION_QUESTIONS.length - 1) {
+      setShowCalibration(false);
+      setShowFinalValidation(true);
+      resetValidationFlow();
+      return;
+    }
+
     setScreenIndex((current) => current + 1);
   }
 
@@ -522,23 +584,7 @@ export function PricingForm({
           </div>
 
           <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-            <p className="text-sm font-medium text-white">{copy.summaryTitle}</p>
-            <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.summaryBody}</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[18px] border border-white/8 bg-black/20 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">{copy.openingPrice}</p>
-                <p className="mt-2 text-lg font-semibold text-white">{draft.openingPrice || "-"}</p>
-              </div>
-              <div className="rounded-[18px] border border-white/8 bg-black/20 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">{copy.slotsTitle}</p>
-                <p className="mt-2 text-lg font-semibold text-white">{slots.length}</p>
-              </div>
-              <div className="rounded-[18px] border border-white/8 bg-black/20 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">{copy.scaleLabel}</p>
-                <p className="mt-2 text-lg font-semibold text-white">{draft.validation.globalScale}x</p>
-              </div>
-            </div>
-            <p className="mt-4 text-sm text-[var(--foreground-muted)]">{ready ? copy.ready : copy.notReady}</p>
+            <p className="text-sm text-[var(--foreground-muted)]">{ready ? copy.ready : copy.notReady}</p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Button
                 type="button"
@@ -551,6 +597,9 @@ export function PricingForm({
               >
                 {ready ? copy.edit : copy.start}
               </Button>
+              <Button type="button" variant="ghost" onClick={resetDraft}>
+                {copy.reset}
+              </Button>
               {showCalibration ? (
                 <Button type="button" variant="ghost" onClick={() => setShowCalibration(false)}>
                   {copy.close}
@@ -558,51 +607,6 @@ export function PricingForm({
               ) : null}
             </div>
           </div>
-
-          {ready ? (
-            <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-medium text-white">{copy.finalCheckTitle}</p>
-                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                    {validationReady ? copy.finalCheckReady : copy.finalCheckPending}
-                  </p>
-                </div>
-                <div className="rounded-full border border-white/8 bg-black/20 px-3 py-1 text-sm text-white">
-                  {getValidationStatusLabel(
-                    draft.validation.finalValidation.validationStatus ?? "pending",
-                    locale,
-                  )}
-                </div>
-              </div>
-              <p className="mt-4 text-sm text-[var(--foreground-muted)]">{copy.finalCheckIntro}</p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setShowFinalValidation((current) => !current);
-                    setShowCalibration(false);
-                    resetValidationFlow();
-                    setStatusMessage(null);
-                  }}
-                >
-                  {validationReady ? copy.finalCheckRestart : copy.finalCheckStart}
-                </Button>
-                {showFinalValidation ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      setShowFinalValidation(false);
-                      resetValidationFlow();
-                    }}
-                  >
-                    {copy.finalCheckClose}
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
 
           {showCalibration ? (
             <>
@@ -615,13 +619,12 @@ export function PricingForm({
                     <h3 className="mt-2 text-lg font-semibold text-white">{currentMeta.title}</h3>
                   </div>
                   <p className="text-sm text-[var(--foreground-muted)]">
-                    {copy.questionLabel} {currentQuestion.stepIndex} / {CALIBRATION_QUESTIONS.filter((item) => item.step === currentQuestion.step).length}
+                    {copy.questionLabel}{" "}
+                    {currentQuestion.step === 1 ? 1 : currentQuestion.stepIndex} /{" "}
+                    {currentQuestion.step === 1
+                      ? 1
+                      : CALIBRATION_QUESTIONS.filter((item) => item.step === currentQuestion.step).length}
                   </p>
-                </div>
-
-                <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
-                  <p className="text-sm font-medium text-white">{currentMeta.prompt}</p>
-                  <p className="mt-2 text-sm text-[var(--foreground-muted)]">{currentMeta.assumption}</p>
                 </div>
 
                 <div className="mt-4 overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
@@ -634,37 +637,80 @@ export function PricingForm({
                       sizes="(max-width: 768px) 100vw, 560px"
                     />
                   </div>
-                  <div className="border-t border-white/8 p-4">
-                    <p className="text-sm font-medium text-white">{copy.referenceTitle}</p>
-                    <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.referenceHelp}</p>
-                  </div>
                 </div>
 
                 <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Field label={copy.priceLabel}>
-                      <Input
-                        type="number"
-                        value={currentRange.min}
-                        onChange={(event) =>
-                          setDraft((current) =>
-                            setQuestionRange(current, currentQuestion.id, "min", event.target.value),
-                          )
-                        }
-                      />
-                    </Field>
-                    <Field label={copy.maxLabel}>
-                      <Input
-                        type="number"
-                        value={currentRange.max}
-                        onChange={(event) =>
-                          setDraft((current) =>
-                            setQuestionRange(current, currentQuestion.id, "max", event.target.value),
-                          )
-                        }
-                      />
-                    </Field>
-                  </div>
+                  {currentQuestion.step === 1 ? (
+                    <div className="space-y-4">
+                      {sizeQuestions.map((question) => {
+                        const meta = getQuestionMeta(question.id, locale);
+                        const range = getQuestionRange(draft, question.id);
+
+                        return (
+                          <div key={question.id} className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                            <p className="text-sm font-medium text-white">{meta.prompt}</p>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                              <Field label={copy.priceLabel}>
+                                <Input
+                                  type="number"
+                                  value={range.min}
+                                  onChange={(event) =>
+                                    setDraft((current) =>
+                                      setQuestionRange(current, question.id, "min", event.target.value),
+                                    )
+                                  }
+                                />
+                              </Field>
+                              <Field label={copy.maxLabel}>
+                                <Input
+                                  type="number"
+                                  value={range.max}
+                                  onChange={(event) =>
+                                    setDraft((current) =>
+                                      setQuestionRange(current, question.id, "max", event.target.value),
+                                    )
+                                  }
+                                />
+                              </Field>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium text-white">{currentMeta.prompt}</p>
+                      {getQuestionContextLabel(currentQuestion.id, locale) ? (
+                        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+                          {getQuestionContextLabel(currentQuestion.id, locale)}
+                        </p>
+                      ) : null}
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <Field label={copy.priceLabel}>
+                          <Input
+                            type="number"
+                            value={currentRange.min}
+                            onChange={(event) =>
+                              setDraft((current) =>
+                                setQuestionRange(current, currentQuestion.id, "min", event.target.value),
+                              )
+                            }
+                          />
+                        </Field>
+                        <Field label={copy.maxLabel}>
+                          <Input
+                            type="number"
+                            value={currentRange.max}
+                            onChange={(event) =>
+                              setDraft((current) =>
+                                setQuestionRange(current, currentQuestion.id, "max", event.target.value),
+                              )
+                            }
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  )}
                   <p className="mt-3 text-sm text-[var(--foreground-muted)]">{copy.maxHelp}</p>
                 </div>
               </div>
@@ -685,32 +731,9 @@ export function PricingForm({
                     <ArrowRight className="size-4" />
                   </Button>
                 ) : (
-                  <Button
-                    type="button"
-                    onClick={() =>
-                      handleSave(
-                        updateFinalValidationDraft(draft, {
-                          validationRound: 1,
-                          perExampleFeedback: {},
-                          appliedGlobalValidationAdjustment: 1,
-                          validationStatus: "pending",
-                          calibratedAndValidated: false,
-                        }),
-                      )
-                    }
-                    disabled={isSaving}
-                  >
-                    {isSaving ? (
-                      <>
-                        <LoaderCircle className="size-4 animate-spin" />
-                        {copy.saving}
-                      </>
-                    ) : (
-                      <>
-                        <Save className="size-4" />
-                        {copy.save}
-                      </>
-                    )}
+                  <Button type="button" onClick={handleNext}>
+                    {copy.finalCheckStart}
+                    <ArrowRight className="size-4" />
                   </Button>
                 )}
               </div>
@@ -814,6 +837,18 @@ export function PricingForm({
                     {copy.back}
                   </Button>
                 ) : null}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowFinalValidation(false);
+                    setShowCalibration(true);
+                    setScreenIndex(CALIBRATION_QUESTIONS.length - 1);
+                    setStatusMessage(copy.completeQuestionsFirst);
+                  }}
+                >
+                  {copy.edit}
+                </Button>
               </div>
             </>
           ) : null}
