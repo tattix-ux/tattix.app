@@ -117,16 +117,17 @@ function normalizeRange(
 
 function buildDefaultCalibrationReferenceSlots(): PricingCalibrationReferenceSlot[] {
   return [
-    { slotId: "size-tiny", axis: "size", key: "tiny", label: "Size · tiny", assetRef: null },
-    { slotId: "size-small", axis: "size", key: "small", label: "Size · small", assetRef: null },
-    { slotId: "size-medium", axis: "size", key: "medium", label: "Size · medium", assetRef: null },
-    { slotId: "size-large", axis: "size", key: "large", label: "Size · large", assetRef: null },
-    { slotId: "detail-simple", axis: "detailLevel", key: "simple", label: "Detail · simple", assetRef: null },
-    { slotId: "detail-standard", axis: "detailLevel", key: "standard", label: "Detail · standard", assetRef: null },
-    { slotId: "detail-detailed", axis: "detailLevel", key: "detailed", label: "Detail · detailed", assetRef: null },
-    { slotId: "color-black-only", axis: "colorMode", key: "black-only", label: "Color · black-only", assetRef: null },
-    { slotId: "color-black-grey", axis: "colorMode", key: "black-grey", label: "Color · black-grey", assetRef: null },
-    { slotId: "color-full-color", axis: "colorMode", key: "full-color", label: "Color · full-color", assetRef: null },
+    { slotId: "size-8cm", axis: "size", key: "8cm", label: "8 cm referans slotu", assetRef: null },
+    { slotId: "size-12cm", axis: "size", key: "12cm", label: "12 cm referans slotu", assetRef: null },
+    { slotId: "size-18cm", axis: "size", key: "18cm", label: "18 cm referans slotu", assetRef: null },
+    { slotId: "size-25cm", axis: "size", key: "25cm", label: "25 cm referans slotu", assetRef: null },
+    { slotId: "detail-low", axis: "detailLevel", key: "low", label: "Az detay referans slotu", assetRef: null },
+    { slotId: "detail-medium", axis: "detailLevel", key: "medium", label: "Orta detay referans slotu", assetRef: null },
+    { slotId: "detail-high", axis: "detailLevel", key: "high", label: "Çok detay referans slotu", assetRef: null },
+    { slotId: "placement-easy", axis: "placement", key: "easy", label: "Kolay bölge referans slotu", assetRef: null },
+    { slotId: "placement-hard", axis: "placement", key: "hard", label: "Zor bölge referans slotu", assetRef: null },
+    { slotId: "color-black", axis: "colorMode", key: "black", label: "Siyah referans slotu", assetRef: null },
+    { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu", assetRef: null },
   ];
 }
 
