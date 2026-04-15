@@ -115,6 +115,24 @@ export type PricingFinalValidation = {
 export type PricingCalibrationExamples = {
   size: Record<SizeValue, number>;
   sizeCurve?: Record<"8" | "12" | "18" | "25", number>;
+  rawAnswers?: {
+    sizeCurve: Record<"8" | "12" | "18" | "25", PriceRange>;
+    detailLevel: {
+      low: PriceRange;
+      medium: PriceRange;
+      high: PriceRange;
+      ultra?: PriceRange;
+    };
+    placementDifficulty: {
+      easy: PriceRange;
+      medium?: PriceRange;
+      hard: PriceRange;
+    };
+    colorMode: {
+      black: PriceRange;
+      color: PriceRange;
+    };
+  };
   detailLevel: Record<DetailLevelValue, number> & {
     ultra?: number;
   };

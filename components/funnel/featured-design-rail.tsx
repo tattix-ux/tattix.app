@@ -2,17 +2,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getFeaturedCategoryLabel, getPublicCopy, type PublicLocale } from "@/lib/i18n/public";
 import type { ArtistFeaturedDesign } from "@/lib/types";
-import { formatCompactCurrencyRange } from "@/lib/utils";
 
 export function FeaturedDesignRail({
   designs,
-  currency,
   eyebrowLabel,
   titleLabel,
   locale = "en",
 }: {
   designs: ArtistFeaturedDesign[];
-  currency: string;
   eyebrowLabel?: string | null;
   titleLabel?: string | null;
   locale?: PublicLocale;
@@ -81,15 +78,6 @@ export function FeaturedDesignRail({
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
               {design.shortDescription}
             </p>
-            {design.referencePriceMin && design.referencePriceMax ? (
-              <p className="mt-4 text-sm" style={{ color: "var(--artist-primary)" }}>
-                {formatCompactCurrencyRange(
-                  design.referencePriceMin,
-                  design.referencePriceMax,
-                  currency,
-                )}
-              </p>
-            ) : null}
           </Card>
         ))}
       </div>

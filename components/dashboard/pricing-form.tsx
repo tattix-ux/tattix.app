@@ -98,8 +98,7 @@ function getText(locale: PublicLocale) {
       placementHardLabel: "Zor bölge",
       colorContext: "12 cm · Orta detay · Kolay bölge",
       colorBlackLabel: "Siyah",
-      colorBlackGreyLabel: "Black & grey",
-      colorColorLabel: "Full color",
+      colorColorLabel: "Renkli",
       finalCheckTitle: "Son kontrol",
       finalCheckIntro:
         "Son bir kontrol yapalım. Aşağıdaki örnek dövmeler için oluşturduğum tahmini fiyat aralıklarının sana ne kadar uygun göründüğünü seç.",
@@ -170,7 +169,6 @@ function getText(locale: PublicLocale) {
     placementHardLabel: "Hard placement",
     colorContext: "12 cm · Medium detail · Easy placement",
     colorBlackLabel: "Black",
-    colorBlackGreyLabel: "Black & grey",
     colorColorLabel: "Full color",
     finalCheckTitle: "Final check",
     finalCheckIntro:
@@ -300,9 +298,9 @@ export function PricingForm({
       ? areRangesAnswered([draft.size.size8, draft.size.size12, draft.size.size18, draft.size.size25])
       : currentStep === "detail"
         ? areRangesAnswered([draft.detail.low, draft.detail.medium, draft.detail.high, draft.detail.ultra])
-        : currentStep === "placement"
+      : currentStep === "placement"
           ? areRangesAnswered([draft.placement.easy, draft.placement.medium, draft.placement.hard])
-          : areRangesAnswered([draft.color.black, draft.color.blackGrey, draft.color.color]);
+          : areRangesAnswered([draft.color.black, draft.color.color]);
 
   function updateRange(
     section: "size" | "detail" | "placement" | "color",
@@ -347,7 +345,6 @@ export function PricingForm({
       },
       color: {
         black: { min: "", max: "" },
-        blackGrey: { min: "", max: "" },
         color: { min: "", max: "" },
       },
     };
@@ -705,19 +702,13 @@ export function PricingForm({
                   {currentStep === "color" ? (
                     <div className="space-y-4">
                       <p className="text-sm text-[var(--foreground-muted)]">{copy.colorContext}</p>
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-4 md:grid-cols-2">
                         {[
                           {
                             key: "black",
                             label: copy.colorBlackLabel,
                             image: calibrationImages.medium,
                             range: draft.color.black,
-                          },
-                          {
-                            key: "blackGrey",
-                            label: copy.colorBlackGreyLabel,
-                            image: calibrationImages.medium,
-                            range: draft.color.blackGrey,
                           },
                           {
                             key: "color",

@@ -51,7 +51,6 @@ export type CalibrationDraft = {
   };
   color: {
     black: DraftRange;
-    blackGrey: DraftRange;
     color: DraftRange;
   };
 };
@@ -89,7 +88,6 @@ export const CALIBRATION_SLOT_LABELS = [
   { slotId: "placement-medium", axis: "placement", key: "medium", label: "Orta zorluk referans slotu", assetRef: null },
   { slotId: "placement-hard", axis: "placement", key: "hard", label: "Zor bölge referans slotu", assetRef: null },
   { slotId: "color-black", axis: "colorMode", key: "black", label: "Siyah referans slotu", assetRef: null },
-  { slotId: "color-blackgrey", axis: "colorMode", key: "black-grey", label: "Black & grey referans slotu", assetRef: null },
   { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu", assetRef: null },
 ] as const;
 
@@ -116,7 +114,7 @@ export const VALIDATION_SCENARIOS: ValidationScenario[] = [
     sizeCm: 18,
     placement: "ribs",
     detailLevel: "ultra",
-    colorMode: "black-grey",
+    colorMode: "black-only",
   },
   {
     id: "colored-butterfly",
@@ -313,8 +311,11 @@ function combineDetailRange(
 export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): CalibrationDraft {
   const anchorPrice = Math.max(pricingRules.anchorPrice || pricingRules.basePrice || 0, 100);
   const placementDefaults = derivePlacementDefaults(pricingRules, anchorPrice);
+  const rawAnswers = pricingRules.calibrationExamples.rawAnswers;
   const storedPlacementMedium =
-    pricingRules.calibrationExamples.placementDifficulty?.medium
+    rawAnswers?.placementDifficulty?.medium
+      ? rawAnswers.placementDifficulty.medium
+      : pricingRules.calibrationExamples.placementDifficulty?.medium
       ? {
           min: pricingRules.calibrationExamples.placementDifficulty.medium,
           max: pricingRules.calibrationExamples.placementDifficulty.medium,
@@ -323,25 +324,6 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
           min: roundPrice((placementDefaults.easy.min + placementDefaults.hard.min) / 2),
           max: roundPrice((placementDefaults.easy.max + placementDefaults.hard.max) / 2),
         };
-  const storedBlackGrey =
-    pricingRules.calibrationExamples.colorMode["black-grey"]
-      ? {
-          min: pricingRules.calibrationExamples.colorMode["black-grey"],
-          max: pricingRules.calibrationExamples.colorMode["black-grey"],
-        }
-      : {
-          min: roundPrice(
-            ((pricingRules.calibrationExamples.colorMode["black-only"] ?? anchorPrice) +
-              (pricingRules.calibrationExamples.colorMode["full-color"] ?? anchorPrice)) /
-              2,
-          ),
-          max: roundPrice(
-            ((pricingRules.calibrationExamples.colorMode["black-only"] ?? anchorPrice) +
-              (pricingRules.calibrationExamples.colorMode["full-color"] ?? anchorPrice)) /
-              2,
-          ),
-        };
-
   return {
     openingPrice: String(roundPrice(anchorPrice)),
     validation: {
@@ -362,38 +344,56 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
     },
     size: {
       size8: stringRange(
-        pricingRules.calibrationExamples.sizeCurve?.["8"]
+        rawAnswers?.sizeCurve?.["8"]
+          ? rawAnswers.sizeCurve["8"]
+          : pricingRules.calibrationExamples.sizeCurve?.["8"]
           ? { min: pricingRules.calibrationExamples.sizeCurve["8"], max: pricingRules.calibrationExamples.sizeCurve["8"] }
           : priceRangeFromFactors(anchorPrice, pricingRules.sizeModifiers.tiny, { min: 0.35, max: 0.6 }),
       ),
       size12: stringRange(
-        pricingRules.calibrationExamples.sizeCurve?.["12"]
+        rawAnswers?.sizeCurve?.["12"]
+          ? rawAnswers.sizeCurve["12"]
+          : pricingRules.calibrationExamples.sizeCurve?.["12"]
           ? { min: pricingRules.calibrationExamples.sizeCurve["12"], max: pricingRules.calibrationExamples.sizeCurve["12"] }
           : priceRangeFromFactors(anchorPrice, pricingRules.sizeModifiers.small, { min: 0.55, max: 0.85 }),
       ),
       size18: stringRange(
-        pricingRules.calibrationExamples.sizeCurve?.["18"]
+        rawAnswers?.sizeCurve?.["18"]
+          ? rawAnswers.sizeCurve["18"]
+          : pricingRules.calibrationExamples.sizeCurve?.["18"]
           ? { min: pricingRules.calibrationExamples.sizeCurve["18"], max: pricingRules.calibrationExamples.sizeCurve["18"] }
           : priceRangeFromFactors(anchorPrice, pricingRules.sizeModifiers.medium, { min: 0.95, max: 1.2 }),
       ),
       size25: stringRange(
-        pricingRules.calibrationExamples.sizeCurve?.["25"]
+        rawAnswers?.sizeCurve?.["25"]
+          ? rawAnswers.sizeCurve["25"]
+          : pricingRules.calibrationExamples.sizeCurve?.["25"]
           ? { min: pricingRules.calibrationExamples.sizeCurve["25"], max: pricingRules.calibrationExamples.sizeCurve["25"] }
           : priceRangeFromFactors(anchorPrice, pricingRules.sizeModifiers.large, { min: 1.8, max: 2.4 }),
       ),
     },
     detail: {
-      low: stringRange(priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.simple, { min: 0.92, max: 1 })),
+      low: stringRange(
+        rawAnswers?.detailLevel?.low ??
+          priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.simple, { min: 0.92, max: 1 }),
+      ),
       medium: stringRange(
-        pricingRules.calibrationExamples.sizeCurve?.["12"]
+        rawAnswers?.detailLevel?.medium
+          ? rawAnswers.detailLevel.medium
+          : pricingRules.calibrationExamples.sizeCurve?.["12"]
           ? { min: pricingRules.calibrationExamples.sizeCurve["12"], max: pricingRules.calibrationExamples.sizeCurve["12"] }
           : pricingRules.calibrationExamples.detailLevel.standard
             ? { min: pricingRules.calibrationExamples.detailLevel.standard, max: pricingRules.calibrationExamples.detailLevel.standard }
             : priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.standard, { min: 1, max: 1.12 }),
       ),
-      high: stringRange(priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.detailed, { min: 1.12, max: 1.28 })),
+      high: stringRange(
+        rawAnswers?.detailLevel?.high ??
+          priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.detailed, { min: 1.12, max: 1.28 }),
+      ),
       ultra: stringRange(
-        pricingRules.calibrationExamples.detailLevel.ultra
+        rawAnswers?.detailLevel?.ultra
+          ? rawAnswers.detailLevel.ultra
+          : pricingRules.calibrationExamples.detailLevel.ultra
           ? {
               min: pricingRules.calibrationExamples.detailLevel.ultra,
               max: pricingRules.calibrationExamples.detailLevel.ultra,
@@ -410,7 +410,9 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
     },
     placement: {
       easy: stringRange(
-        pricingRules.calibrationExamples.sizeCurve?.["12"]
+        rawAnswers?.placementDifficulty?.easy
+          ? rawAnswers.placementDifficulty.easy
+          : pricingRules.calibrationExamples.sizeCurve?.["12"]
           ? { min: pricingRules.calibrationExamples.sizeCurve["12"], max: pricingRules.calibrationExamples.sizeCurve["12"] }
           : pricingRules.calibrationExamples.placementDifficulty?.easy
             ? { min: pricingRules.calibrationExamples.placementDifficulty.easy, max: pricingRules.calibrationExamples.placementDifficulty.easy }
@@ -418,22 +420,27 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
       ),
       medium: stringRange(storedPlacementMedium),
       hard: stringRange(
-        pricingRules.calibrationExamples.placementDifficulty?.hard
+        rawAnswers?.placementDifficulty?.hard
+          ? rawAnswers.placementDifficulty.hard
+          : pricingRules.calibrationExamples.placementDifficulty?.hard
           ? { min: pricingRules.calibrationExamples.placementDifficulty.hard, max: pricingRules.calibrationExamples.placementDifficulty.hard }
           : placementDefaults.hard,
       ),
     },
     color: {
       black: stringRange(
-        pricingRules.calibrationExamples.sizeCurve?.["12"]
+        rawAnswers?.colorMode?.black
+          ? rawAnswers.colorMode.black
+          : pricingRules.calibrationExamples.sizeCurve?.["12"]
           ? { min: pricingRules.calibrationExamples.sizeCurve["12"], max: pricingRules.calibrationExamples.sizeCurve["12"] }
           : pricingRules.calibrationExamples.colorMode["black-only"]
             ? { min: pricingRules.calibrationExamples.colorMode["black-only"], max: pricingRules.calibrationExamples.colorMode["black-only"] }
             : priceRangeFromFactors(anchorPrice, pricingRules.colorModeModifiers["black-only"], DEFAULT_BLACK_RANGE),
       ),
-      blackGrey: stringRange(storedBlackGrey),
       color: stringRange(
-        pricingRules.calibrationExamples.colorMode["full-color"]
+        rawAnswers?.colorMode?.color
+          ? rawAnswers.colorMode.color
+          : pricingRules.calibrationExamples.colorMode["full-color"]
           ? { min: pricingRules.calibrationExamples.colorMode["full-color"], max: pricingRules.calibrationExamples.colorMode["full-color"] }
           : priceRangeFromFactors(anchorPrice, pricingRules.colorModeModifiers["full-color"], DEFAULT_COLOR_RANGE),
       ),
@@ -542,11 +549,6 @@ export function buildPricingPayloadFromCalibrationDraft(
   );
 
   const blackOnly = factorRangeFromPriceRange(draft.color.black, anchorPrice, DEFAULT_BLACK_RANGE);
-  const blackGrey = factorRangeFromPriceRange(
-    draft.color.blackGrey,
-    anchorPrice,
-    interpolateRange(DEFAULT_BLACK_RANGE, DEFAULT_COLOR_RANGE, 0.45),
-  );
   const fullColor = factorRangeFromPriceRange(draft.color.color, anchorPrice, DEFAULT_COLOR_RANGE);
   const detailedRange = combineDetailRange(anchorPrice, draft.detail.high, draft.detail.ultra);
 
@@ -567,7 +569,7 @@ export function buildPricingPayloadFromCalibrationDraft(
     },
     colorModeModifiers: {
       "black-only": blackOnly,
-      "black-grey": blackGrey,
+      "black-grey": interpolateRange(blackOnly, fullColor, 0.45),
       "full-color": fullColor,
     },
     addonFees: pricingRules.addonFees,
@@ -591,7 +593,11 @@ export function buildPricingPayloadFromCalibrationDraft(
       },
       colorMode: {
         black: normalizeDraftRange(draft.color.black) ?? { min: 0, max: 0 },
-        blackGrey: normalizeDraftRange(draft.color.blackGrey) ?? { min: 0, max: 0 },
+        blackGrey: interpolateRange(
+          normalizeDraftRange(draft.color.black) ?? { min: 0, max: 0 },
+          normalizeDraftRange(draft.color.color) ?? { min: 0, max: 0 },
+          0.45,
+        ),
         color: normalizeDraftRange(draft.color.color) ?? { min: 0, max: 0 },
       },
       validation: {
@@ -614,9 +620,6 @@ export function buildPricingRulesFromCalibrationDraft(
     (easyPlacementPrice + (midpoint(payload.calibrationAnswers?.placementDifficulty.hard) ?? easyPlacementPrice)) / 2;
   const hardPlacementPrice = midpoint(payload.calibrationAnswers?.placementDifficulty.hard) ?? easyPlacementPrice;
   const blackPrice = midpoint(payload.calibrationAnswers?.colorMode.black) ?? payload.basePrice;
-  const blackGreyPrice =
-    midpoint(payload.calibrationAnswers?.colorMode.blackGrey) ??
-    (blackPrice + (midpoint(payload.calibrationAnswers?.colorMode.color) ?? blackPrice)) / 2;
   const colorPrice = midpoint(payload.calibrationAnswers?.colorMode.color) ?? blackPrice;
 
   return {
@@ -654,9 +657,20 @@ export function buildPricingRulesFromCalibrationDraft(
         medium: roundPrice(mediumPlacementPrice),
         hard: roundPrice(hardPlacementPrice),
       },
+      rawAnswers: payload.calibrationAnswers
+        ? {
+            sizeCurve: payload.calibrationAnswers.sizeCurve,
+            detailLevel: payload.calibrationAnswers.detailLevel,
+            placementDifficulty: payload.calibrationAnswers.placementDifficulty,
+            colorMode: {
+              black: payload.calibrationAnswers.colorMode.black,
+              color: payload.calibrationAnswers.colorMode.color,
+            },
+          }
+        : undefined,
       colorMode: {
         "black-only": roundPrice(blackPrice),
-        "black-grey": roundPrice(blackGreyPrice),
+        "black-grey": roundPrice(blackPrice + (colorPrice - blackPrice) * 0.5),
         "full-color": roundPrice(colorPrice),
       },
       globalScale: payload.calibrationAnswers?.validation?.globalScale ?? 1,

@@ -88,9 +88,6 @@ export async function POST(request: Request) {
   const blackPrice = calibrationAnswers
     ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.black, parsed.data.basePrice)
     : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-only"]);
-  const blackGreyPrice = calibrationAnswers
-    ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.blackGrey, blackPrice)
-    : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-grey"]);
   const colorPrice = calibrationAnswers
     ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.color, blackPrice)
     : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["full-color"]);
@@ -121,6 +118,17 @@ export async function POST(request: Request) {
           "18": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.medium),
           "25": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.large),
         },
+    rawAnswers: calibrationAnswers
+      ? {
+          sizeCurve: calibrationAnswers.sizeCurve,
+          detailLevel: calibrationAnswers.detailLevel,
+          placementDifficulty: calibrationAnswers.placementDifficulty,
+          colorMode: {
+            black: calibrationAnswers.colorMode.black,
+            color: calibrationAnswers.colorMode.color,
+          },
+        }
+      : undefined,
     detailLevel: {
       simple: calibrationAnswers
         ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.low, parsed.data.basePrice)
@@ -144,7 +152,7 @@ export async function POST(request: Request) {
     },
     colorMode: {
       "black-only": blackPrice,
-      "black-grey": blackGreyPrice,
+      "black-grey": Math.round(blackPrice + (colorPrice - blackPrice) * 0.5),
       "full-color": colorPrice,
     },
     globalScale: calibrationAnswers?.validation?.globalScale ?? 1,

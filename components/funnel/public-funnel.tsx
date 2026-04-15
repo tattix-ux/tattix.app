@@ -59,7 +59,7 @@ function getDelayMs() {
 }
 
 const detailLevelOptions: DetailLevelValue[] = ["simple", "standard", "detailed"];
-const colorModeOptions: ColorModeValue[] = ["black-only", "black-grey", "full-color"];
+const colorModeOptions: ColorModeValue[] = ["black-only", "full-color"];
 
 export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; locale: PublicLocale }) {
   const {
@@ -427,7 +427,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 <IntentSelectionStep
                   locale={locale}
                   artistId={artist.profile.id}
-                  currency={artist.profile.currency}
                   intent={draft.intent}
                   designs={activeDesigns}
                   selectedDesignId={draft.selectedDesignId}

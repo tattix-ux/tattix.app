@@ -14,7 +14,6 @@ import {
 } from "@/lib/i18n/public";
 import { uploadPublicReferenceImage } from "@/lib/supabase/storage";
 import type { ArtistFeaturedDesign } from "@/lib/types";
-import { formatCompactCurrencyRange } from "@/lib/utils";
 
 function getIntentCategory(intent: IntentValue | "") {
   if (intent === "flash-design") {
@@ -31,7 +30,6 @@ function getIntentCategory(intent: IntentValue | "") {
 export function IntentSelectionStep({
   locale,
   artistId,
-  currency,
   intent,
   designs,
   selectedDesignId,
@@ -45,7 +43,6 @@ export function IntentSelectionStep({
 }: {
   locale: PublicLocale;
   artistId: string;
-  currency: string;
   intent: IntentValue | "";
   designs: ArtistFeaturedDesign[];
   selectedDesignId: string;
@@ -192,15 +189,6 @@ export function IntentSelectionStep({
                         <Badge variant="accent">{locale === "tr" ? "Seçildi" : "Selected"}</Badge>
                       ) : null}
                     </div>
-                    {design.referencePriceMin && design.referencePriceMax ? (
-                      <p className="mt-3 text-sm" style={{ color: "var(--artist-primary)" }}>
-                        {formatCompactCurrencyRange(
-                          design.referencePriceMin,
-                          design.referencePriceMax,
-                          currency,
-                        )}
-                      </p>
-                    ) : null}
                     {process.env.NODE_ENV !== "production" && design.imageUrl ? (
                       <p className="mt-2 break-all text-[11px]" style={{ color: "var(--artist-card-muted)" }}>
                         {design.imageUrl}
@@ -360,15 +348,6 @@ export function IntentSelectionStep({
               <p className="text-sm leading-6 text-[var(--foreground-muted)]">
                 {previewDesign.shortDescription}
               </p>
-              {previewDesign.referencePriceMin && previewDesign.referencePriceMax ? (
-                <p className="text-sm font-medium text-[var(--accent-soft)]">
-                  {formatCompactCurrencyRange(
-                    previewDesign.referencePriceMin,
-                    previewDesign.referencePriceMax,
-                    currency,
-                  )}
-                </p>
-              ) : null}
             </div>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Button
