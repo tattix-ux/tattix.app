@@ -61,7 +61,7 @@ export function SizeEstimationSelector({
               {copy.approximateTattooSize}
             </p>
             <p className="mt-1 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-              {copy.adjustSliderFor} {getPlacementDetailLocaleLabel(selectedPlacement, locale).toLowerCase()}.
+              {getPlacementDetailLocaleLabel(selectedPlacement, locale)} {copy.adjustSliderFor.toLowerCase()}.
             </p>
           </div>
           <div className="text-left sm:text-right">

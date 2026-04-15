@@ -7,11 +7,14 @@ import {
   getStyleLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
-import type { ArtistProfile, SubmissionRequest } from "@/lib/types";
+import type { SubmissionRequest } from "@/lib/types";
 import { sanitizePhoneNumber } from "@/lib/utils";
 
-function formatRawRange(minimum: number, maximum: number, currency: string) {
-  return `${minimum} - ${maximum} ${currency}`;
+function formatCurrencyRange(minimum: number, maximum: number, locale: PublicLocale) {
+  const formatter = new Intl.NumberFormat(locale === "tr" ? "tr-TR" : "en-US");
+  const prefix = locale === "tr" ? "₺" : "TRY ";
+
+  return `${prefix}${formatter.format(minimum)} – ${prefix}${formatter.format(maximum)}`;
 }
 
 function getReferenceUploadLine(locale: PublicLocale, uploaded: boolean) {
@@ -27,15 +30,30 @@ function formatPreferredTiming(
   endDate: string | null | undefined,
   locale: PublicLocale,
 ) {
+  const formatDate = (value: string) => {
+    const date = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat(locale === "tr" ? "tr-TR" : "en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  };
+
   if (!startDate && !endDate) {
     return null;
   }
 
   if (startDate && endDate) {
-    return locale === "tr" ? `${startDate} - ${endDate}` : `${startDate} to ${endDate}`;
+    return locale === "tr"
+      ? `${formatDate(startDate)} - ${formatDate(endDate)}`
+      : `${formatDate(startDate)} to ${formatDate(endDate)}`;
   }
 
-  return startDate ?? endDate ?? null;
+  return startDate ? formatDate(startDate) : endDate ? formatDate(endDate) : null;
 }
 
 function isSafeHttpUrl(value: string | null | undefined) {
@@ -48,7 +66,7 @@ function isSafeHttpUrl(value: string | null | undefined) {
 
 export function buildSubmissionMessage(
   submission: SubmissionRequest,
-  profile: ArtistProfile,
+  _profile: { currency?: string },
   estimatedMin: number,
   estimatedMax: number,
   locale: PublicLocale = "en",
@@ -73,8 +91,7 @@ export function buildSubmissionMessage(
 
   lines.push(
     `${labels.placement}: ${getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale)}`,
-    `${labels.size}: ${sizeLabel}`,
-    `${labels.approximateSize}: ${manualSize}`,
+    `${labels.size}: ${sizeLabel}${manualSize && manualSize !== sizeLabel ? ` (${manualSize})` : ""}`,
   );
 
   if (!selectedDesignTitle) {
@@ -103,16 +120,13 @@ export function buildSubmissionMessage(
   );
 
   if (preferredTiming) {
-    lines.push(`${labels.preferredTiming}: ${preferredTiming}`);
+    lines.push(`${locale === "tr" ? "Tarih" : labels.preferredTiming}: ${preferredTiming}`);
   }
 
   lines.push(
-    `${labels.notes}: ${submission.notes?.trim() ? submission.notes.trim() : labels.noNotes}`,
-    `${labels.estimatedPriceShown}: ${formatRawRange(
-      estimatedMin,
-      estimatedMax,
-      profile.currency,
-    )}`,
+    `${locale === "tr" ? "Not" : labels.notes}: ${submission.notes?.trim() ? submission.notes.trim() : labels.noNotes}`,
+    "",
+    `${labels.estimatedPriceShown}: ${formatCurrencyRange(estimatedMin, estimatedMax, locale)}`,
   );
 
   return lines.join("\n");

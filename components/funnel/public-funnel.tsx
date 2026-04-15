@@ -151,8 +151,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     artist.profile.shortBio ||
     artist.funnelSettings.introDescription ||
     (locale === "tr"
-      ? "Yerleşim, boyut ve tarzı seç. Mesaja geçmeden önce yaklaşık fiyat aralığını görebilirsin."
-      : "Choose the placement, size, and style to see an approximate price range before messaging the artist.");
+      ? "Yerleşim, boyut ve tarzı seç. Yaklaşık fiyatı hemen gör."
+      : "Choose the placement, size, and style. See the approximate price right away.");
   const primaryActionLabel = artist.pageTheme.customCtaLabel || copy.defaultPrimaryCta;
   const { tokens } = buildThemeStyles(artist.pageTheme);
   const primaryButtonClass = "border-0 shadow-none hover:opacity-95";
@@ -664,7 +664,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                   color: tokens.cardText,
                                 }}
                               >
-                                <p className="break-words font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
+                                <p className="break-words font-medium">{locale === "tr" ? "Emin değilim" : "I'm not sure"}</p>
                               </button>
                               <button
                                 type="button"
