@@ -40,7 +40,7 @@ export default async function DashboardLayout({
 
   return (
     <AppShell>
-      <Container className="py-4 sm:py-8">
+      <Container className="py-4 sm:py-8 xl:max-w-[1440px] 2xl:max-w-[1520px]">
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -65,7 +65,7 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[400px_minmax(0,1fr)] xl:gap-8">
+            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[420px_minmax(0,1fr)] xl:gap-8">
               <aside className="max-w-[356px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
@@ -97,7 +97,7 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[356px] xl:max-w-none">
+              <main className="min-w-0 w-full max-w-[356px] xl:w-full xl:max-w-none xl:justify-self-stretch">
                 {children}
               </main>
             </div>
