@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, Pencil, RotateCcw, Save, Trash2 } from "lucide-react";
+import { ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -17,6 +17,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { themePresetOptions, themePresets } from "@/lib/constants/theme";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
+import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import { resolveArtistTheme } from "@/lib/theme";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistPageData, ArtistPageTheme, ArtistSavedTheme } from "@/lib/types";
@@ -95,11 +96,105 @@ function ThemeCardPreview({
   artist: ArtistPageData;
   theme: ArtistPageTheme;
 }) {
+  const title = theme.customWelcomeTitle || artist.funnelSettings.introTitle || artist.profile.welcomeHeadline || "Aklında ne var?";
+  const intro = theme.customIntroText || artist.funnelSettings.introDescription || artist.profile.shortBio || "Dövme fikrini birkaç adımda netleştir.";
+  const cta = theme.customCtaLabel || "Fiyat tahmini al";
+  const background =
+    theme.backgroundType === "image" && theme.backgroundImageUrl
+      ? `linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.48)), url(${theme.backgroundImageUrl})`
+      : theme.backgroundType === "gradient"
+        ? `linear-gradient(180deg, ${theme.gradientStart}, ${theme.gradientEnd})`
+        : theme.backgroundColor;
+
   return (
-    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/20">
-      <div className="relative h-[280px] overflow-hidden">
-        <div className="pointer-events-none absolute left-1/2 top-4 w-[390px] -translate-x-1/2 origin-top scale-[0.64]">
-          <ArtistPagePreview artist={artist} theme={theme} device="mobile" />
+    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/20 p-5">
+      <div className="mx-auto w-full max-w-[250px]">
+        <div
+          className="overflow-hidden rounded-[28px] border p-2 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
+          style={{
+            borderColor: "color-mix(in srgb, white 10%, transparent)",
+            backgroundColor: "color-mix(in srgb, var(--artist-card, #121316) 14%, transparent)",
+          }}
+        >
+          <div
+            className="overflow-hidden rounded-[24px]"
+            style={{
+              background,
+              backgroundSize: theme.backgroundType === "image" ? "cover" : undefined,
+              backgroundPosition: theme.backgroundType === "image" ? "center" : undefined,
+            }}
+          >
+            <div className="space-y-4 p-4">
+              <div className="h-20 rounded-[18px] border border-white/10 bg-black/15" />
+              <div className="-mt-10 flex items-end gap-3">
+                <div className="size-14 rounded-[18px] border border-white/10 bg-black/30" />
+                <div className="min-w-0">
+                  <div
+                    className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
+                    style={{
+                      backgroundColor: theme.secondaryColor,
+                      color: "#0b0b0c",
+                    }}
+                  >
+                    {artist.profile.artistName.toUpperCase()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p
+                  className="text-lg leading-tight"
+                  style={{
+                    fontFamily: "var(--artist-heading-font)",
+                    color: "white",
+                  }}
+                >
+                  {title}
+                </p>
+                <p className="text-xs leading-5 text-white/70">
+                  {intro}
+                </p>
+              </div>
+
+              <div
+                className="inline-flex rounded-full px-4 py-2 text-xs font-medium"
+                style={{
+                  backgroundColor: theme.primaryColor,
+                  color: "#0b0b0c",
+                }}
+              >
+                {cta}
+              </div>
+
+              <div
+                className="rounded-[20px] border p-3"
+                style={{
+                  borderColor: "color-mix(in srgb, white 8%, transparent)",
+                  backgroundColor: theme.cardColor,
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-white">Aklında ne var?</p>
+                    <p className="mt-1 text-[11px] text-white/60">Talep türünü seç.</p>
+                  </div>
+                  <span
+                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
+                    style={{
+                      backgroundColor: theme.secondaryColor,
+                      color: "#0b0b0c",
+                    }}
+                  >
+                    STEP 1
+                  </span>
+                </div>
+                <div className="mt-3 space-y-2">
+                  <div className="rounded-[16px] border border-white/10 bg-black/15 px-3 py-2 text-xs text-white">Özel tasarım dövme</div>
+                  <div className="rounded-[16px] border border-white/10 bg-black/10 px-3 py-2 text-xs text-white/75">Flash tasarım</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -142,10 +237,16 @@ export function CustomizePageForm({
           backgroundsDescription: "Hazır arka planlardan birini seç ya da kendin ayarla.",
           solid: "Düz renk",
           gradient: "Degrade",
+          image: "Görsel",
           backgroundType: "Arka plan türü",
           backgroundColor: "Arka plan rengi",
           gradientStart: "Başlangıç rengi",
           gradientEnd: "Bitiş rengi",
+          backgroundImage: "Arka plan görseli",
+          backgroundImageHelp: "Sadece görsel yükle.",
+          noBackground: "Henüz arka plan görseli seçilmedi",
+          uploadImage: "Görsel yükle",
+          removeImage: "Görseli kaldır",
           fonts: "Font",
           fontsDescription: "Tüm müşteri ekranında kullanılacak font stilini seç.",
           fontLabel: "Font stili",
@@ -185,10 +286,16 @@ export function CustomizePageForm({
           backgroundsDescription: "Choose a ready background or fine tune it.",
           solid: "Solid",
           gradient: "Gradient",
+          image: "Image",
           backgroundType: "Background type",
           backgroundColor: "Background color",
           gradientStart: "Start color",
           gradientEnd: "End color",
+          backgroundImage: "Background image",
+          backgroundImageHelp: "Upload only.",
+          noBackground: "No background image selected",
+          uploadImage: "Upload image",
+          removeImage: "Remove image",
           fonts: "Font",
           fontsDescription: "Pick one font direction for the whole client page.",
           fontLabel: "Font style",
@@ -247,11 +354,11 @@ export function CustomizePageForm({
     resolver: zodResolver(pageThemeSchema),
     defaultValues: {
       presetTheme: theme.presetTheme,
-      backgroundType: theme.backgroundType === "image" ? "gradient" : theme.backgroundType,
+      backgroundType: theme.backgroundType,
       backgroundColor: theme.backgroundColor,
       gradientStart: theme.gradientStart,
       gradientEnd: theme.gradientEnd,
-      backgroundImageUrl: "",
+      backgroundImageUrl: theme.backgroundImageUrl ?? "",
       primaryColor: theme.primaryColor,
       secondaryColor: theme.secondaryColor,
       cardColor: theme.cardColor,
@@ -277,9 +384,7 @@ export function CustomizePageForm({
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
   const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
   const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
-  const currentBackgroundType =
-    (watchedValues.backgroundType === "image" ? "gradient" : watchedValues.backgroundType) ??
-    (theme.backgroundType === "image" ? "gradient" : theme.backgroundType);
+  const currentBackgroundType = watchedValues.backgroundType ?? theme.backgroundType;
   const currentCardOpacity =
     typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
   const currentFontStyle = inferFontStyle(watchedValues.headingFont ?? theme.headingFont);
@@ -293,7 +398,7 @@ export function CustomizePageForm({
         backgroundColor: currentBackgroundColor,
         gradientStart: currentGradientStart,
         gradientEnd: currentGradientEnd,
-        backgroundImageUrl: null,
+        backgroundImageUrl: watchedValues.backgroundImageUrl || null,
         primaryColor: currentPrimaryColor,
         secondaryColor: currentSecondaryColor,
         cardColor: currentCardColor,
@@ -321,6 +426,7 @@ export function CustomizePageForm({
       currentPrimaryColor,
       currentSecondaryColor,
       theme.bodyFont,
+      watchedValues.backgroundImageUrl,
       theme.fontPairingPreset,
       theme.headingFont,
       theme.radiusStyle,
@@ -357,11 +463,11 @@ export function CustomizePageForm({
 
     form.reset({
       presetTheme: storedTheme.presetTheme,
-      backgroundType: storedTheme.backgroundType === "image" ? "gradient" : storedTheme.backgroundType,
+      backgroundType: storedTheme.backgroundType,
       backgroundColor: storedTheme.backgroundColor,
       gradientStart: storedTheme.gradientStart,
       gradientEnd: storedTheme.gradientEnd,
-      backgroundImageUrl: "",
+      backgroundImageUrl: storedTheme.backgroundImageUrl ?? "",
       primaryColor: storedTheme.primaryColor,
       secondaryColor: storedTheme.secondaryColor,
       cardColor: storedTheme.cardColor,
@@ -383,12 +489,69 @@ export function CustomizePageForm({
     await saveTheme(values, false);
   }
 
+  async function handleBackgroundUpload(file: File) {
+    if (demoMode) {
+      form.setError("root", { message: locale === "tr" ? "Demo modunda arka plan görseli yüklenemez." : "Background upload is unavailable in demo mode." });
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      form.setError("root", { message: locale === "tr" ? "Yalnızca görsel dosyaları yükleyebilirsin." : "Only image files are allowed." });
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      form.setError("root", { message: locale === "tr" ? "Görseller en fazla 8 MB olabilir." : "Background images must be 8 MB or smaller." });
+      return;
+    }
+
+    const previousUrl = form.getValues("backgroundImageUrl");
+
+    try {
+      const uploaded = await uploadArtistAsset(file, {
+        artistId: artist.profile.id,
+        bucket: "artist-assets",
+        prefix: "page-background",
+      });
+
+      if (previousUrl?.includes("/storage/v1/object/public/artist-assets/")) {
+        const previousPath = previousUrl.split("/artist-assets/")[1];
+        if (previousPath) {
+          await removeArtistAsset(previousPath, { bucket: "artist-assets" }).catch(() => undefined);
+        }
+      }
+
+      form.setValue("backgroundImageUrl", uploaded.publicUrl, { shouldDirty: true, shouldValidate: true });
+      form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true });
+      form.setError("root", { message: locale === "tr" ? "Arka plan görseli yüklendi." : "Background image uploaded." });
+    } catch (error) {
+      form.setError("root", {
+        message: error instanceof Error ? error.message : locale === "tr" ? "Arka plan görseli yüklenemedi." : "Unable to upload background image.",
+      });
+    }
+  }
+
+  async function handleBackgroundRemove() {
+    const currentUrl = form.getValues("backgroundImageUrl");
+
+    if (!demoMode && currentUrl?.includes("/storage/v1/object/public/artist-assets/")) {
+      const currentPath = currentUrl.split("/artist-assets/")[1];
+      if (currentPath) {
+        await removeArtistAsset(currentPath, { bucket: "artist-assets" }).catch(() => undefined);
+      }
+    }
+
+    form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
+    if (form.getValues("backgroundType") === "image") {
+      form.setValue("backgroundType", "gradient", { shouldDirty: true, shouldValidate: true });
+    }
+  }
+
   function normalizeThemeValues(values: ThemeValues): ThemeValues {
     const resolved = resolveArtistTheme({
       artistId: artist.profile.id,
       ...values,
-      backgroundType: values.backgroundType === "image" ? "gradient" : values.backgroundType,
-      backgroundImageUrl: null,
+      backgroundImageUrl: values.backgroundImageUrl || null,
       themeMode: "dark",
       customWelcomeTitle: values.customWelcomeTitle || null,
       customIntroText: values.customIntroText || null,
@@ -399,11 +562,11 @@ export function CustomizePageForm({
 
     return {
       presetTheme: resolved.presetTheme,
-      backgroundType: resolved.backgroundType === "image" ? "gradient" : resolved.backgroundType,
+      backgroundType: resolved.backgroundType,
       backgroundColor: resolved.backgroundColor,
       gradientStart: resolved.gradientStart,
       gradientEnd: resolved.gradientEnd,
-      backgroundImageUrl: null,
+      backgroundImageUrl: resolved.backgroundImageUrl,
       primaryColor: resolved.primaryColor,
       secondaryColor: resolved.secondaryColor,
       cardColor: resolved.cardColor,
@@ -508,14 +671,14 @@ export function CustomizePageForm({
   function applySavedTheme(savedTheme: ArtistSavedTheme) {
     const values = savedTheme.theme;
     form.setValue("presetTheme", values.presetTheme, { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundType", values.backgroundType === "image" ? "gradient" : values.backgroundType, {
+    form.setValue("backgroundType", values.backgroundType, {
       shouldDirty: true,
       shouldValidate: true,
     });
     form.setValue("backgroundColor", values.backgroundColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientStart", values.gradientStart, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientEnd", values.gradientEnd, { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundImageUrl", values.backgroundImageUrl ?? "", { shouldDirty: true, shouldValidate: true });
     form.setValue("primaryColor", values.primaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("secondaryColor", values.secondaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("cardColor", values.cardColor, { shouldDirty: true, shouldValidate: true });
@@ -739,6 +902,7 @@ export function CustomizePageForm({
                       >
                         <option value="solid">{copy.solid}</option>
                         <option value="gradient">{copy.gradient}</option>
+                        <option value="image">{copy.image}</option>
                       </NativeSelect>
                     </Field>
                     <div className="flex flex-wrap gap-2">
@@ -779,6 +943,51 @@ export function CustomizePageForm({
                         />
                       </div>
                     )}
+                    {currentBackgroundType === "image" ? (
+                      <Field label={copy.backgroundImage} description={copy.backgroundImageHelp}>
+                        <div className="space-y-3">
+                          <div className="relative flex min-h-[180px] items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5">
+                            {watchedValues.backgroundImageUrl ? (
+                              <div
+                                className="absolute inset-0 bg-cover bg-center"
+                                style={{ backgroundImage: `url(${watchedValues.backgroundImageUrl})` }}
+                                aria-label="Background preview"
+                                role="img"
+                              />
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 px-6 text-center text-sm text-[var(--foreground-muted)]">
+                                <ImagePlus className="size-6" />
+                                <span>{copy.noBackground}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
+                              <Upload className="size-4" />
+                              {copy.uploadImage}
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp,image/gif"
+                                className="hidden"
+                                onChange={(event) => {
+                                  const file = event.target.files?.[0];
+                                  if (file) {
+                                    void handleBackgroundUpload(file);
+                                  }
+                                  event.currentTarget.value = "";
+                                }}
+                              />
+                            </label>
+                            {watchedValues.backgroundImageUrl ? (
+                              <Button type="button" variant="ghost" size="sm" onClick={() => void handleBackgroundRemove()}>
+                                <X className="size-4" />
+                                {copy.removeImage}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                      </Field>
+                    ) : null}
                   </div>
 
                   <div className="space-y-4">
@@ -918,7 +1127,7 @@ export function CustomizePageForm({
 
         <input type="hidden" {...form.register("bodyFont")} />
         <input type="hidden" {...form.register("fontPairingPreset")} />
-        <input type="hidden" {...form.register("backgroundImageUrl")} value="" />
+        <input type="hidden" {...form.register("backgroundImageUrl")} />
         <input type="hidden" {...form.register("cardOpacity")} value={String(currentCardOpacity)} />
         <input type="hidden" {...form.register("radiusStyle")} />
         <input type="hidden" {...form.register("themeMode")} value="dark" />
