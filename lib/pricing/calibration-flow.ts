@@ -72,8 +72,8 @@ export type ValidationScenario = {
 
 export type CalibrationQuestion =
   | { id: "size8" | "size12" | "size18" | "size25"; step: 1; stepIndex: number; image: "medium" }
-  | { id: "detailLow" | "detailHigh"; step: 2; stepIndex: number; image: "low" | "high" }
-  | { id: "placementHard"; step: 3; stepIndex: number; image: "medium" }
+  | { id: "placementHard"; step: 2; stepIndex: number; image: "medium" }
+  | { id: "detailLow" | "detailHigh"; step: 3; stepIndex: number; image: "low" | "high" }
   | { id: "colorColor"; step: 4; stepIndex: number; image: "color" };
 
 export const CALIBRATION_QUESTIONS: CalibrationQuestion[] = [
@@ -81,9 +81,9 @@ export const CALIBRATION_QUESTIONS: CalibrationQuestion[] = [
   { id: "size12", step: 1, stepIndex: 2, image: "medium" },
   { id: "size18", step: 1, stepIndex: 3, image: "medium" },
   { id: "size25", step: 1, stepIndex: 4, image: "medium" },
-  { id: "detailLow", step: 2, stepIndex: 1, image: "low" },
-  { id: "detailHigh", step: 2, stepIndex: 2, image: "high" },
-  { id: "placementHard", step: 3, stepIndex: 1, image: "medium" },
+  { id: "placementHard", step: 2, stepIndex: 1, image: "medium" },
+  { id: "detailLow", step: 3, stepIndex: 1, image: "low" },
+  { id: "detailHigh", step: 3, stepIndex: 2, image: "high" },
   { id: "colorColor", step: 4, stepIndex: 1, image: "color" },
 ];
 
