@@ -21,6 +21,10 @@ import type { ArtistFunnelSettings, ArtistStyleOption } from "@/lib/types";
 
 type FunnelValues = z.infer<typeof funnelSettingsSchema>;
 type FunnelFormInput = z.input<typeof funnelSettingsSchema>;
+type PendingDateRange = {
+  start: string;
+  end: string;
+};
 
 export function FunnelSettingsForm({
   settings,
@@ -66,7 +70,9 @@ export function FunnelSettingsForm({
           cityPlaceholder: "Şehir seç",
           noCities: "Henüz şehir eklenmedi.",
           availabilityTitle: "Bu şehir için müsait olduğun tarihleri seç",
-          addDate: "Tarih ekle",
+          addDate: "Tarih aralığı ekle",
+          startDate: "Başlangıç tarihi",
+          endDate: "Bitiş tarihi",
           removeDate: "Tarihi kaldır",
           noDates: "Henüz tarih eklenmedi.",
         }
@@ -102,7 +108,9 @@ export function FunnelSettingsForm({
           cityPlaceholder: "Select city",
           noCities: "No cities added yet.",
           availabilityTitle: "Select the dates you are available in this city",
-          addDate: "Add date",
+          addDate: "Add date range",
+          startDate: "Start date",
+          endDate: "End date",
           removeDate: "Remove date",
           noDates: "No dates added yet.",
         };
@@ -145,7 +153,7 @@ export function FunnelSettingsForm({
     name: "bookingCities",
   });
   const [pendingCity, setPendingCity] = useState("");
-  const [pendingDates, setPendingDates] = useState<Record<number, string>>({});
+  const [pendingDateRanges, setPendingDateRanges] = useState<Record<number, PendingDateRange>>({});
 
   const selectedStyles = useWatch({
     control: form.control,
@@ -239,23 +247,32 @@ export function FunnelSettingsForm({
     setPendingCity("");
   }
 
-  function addBookingDate(index: number) {
-    const nextDate = pendingDates[index];
-    if (!nextDate) {
+  function addBookingDateRange(index: number) {
+    const nextRange = pendingDateRanges[index];
+    if (!nextRange?.start || !nextRange?.end) {
+      return;
+    }
+
+    const start = new Date(`${nextRange.start}T00:00:00`);
+    const end = new Date(`${nextRange.end}T00:00:00`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
       return;
     }
 
     const currentDates = form.getValues(`bookingCities.${index}.availableDates`) ?? [];
-    if (currentDates.includes(nextDate)) {
-      return;
+    const nextDates: string[] = [];
+    const cursor = new Date(start);
+    while (cursor <= end) {
+      nextDates.push(cursor.toISOString().slice(0, 10));
+      cursor.setDate(cursor.getDate() + 1);
     }
 
     form.setValue(
       `bookingCities.${index}.availableDates`,
-      [...currentDates, nextDate].sort(),
+      Array.from(new Set([...currentDates, ...nextDates])).sort(),
       { shouldDirty: true, shouldValidate: true },
     );
-    setPendingDates((current) => ({ ...current, [index]: "" }));
+    setPendingDateRanges((current) => ({ ...current, [index]: { start: "", end: "" } }));
   }
 
   function removeBookingDate(index: number, date: string) {
@@ -296,92 +313,6 @@ export function FunnelSettingsForm({
             <span className="text-sm text-white">{copy.showFeatured}</span>
           </label>
           <input type="hidden" {...form.register("defaultLanguage")} value="tr" />
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Field label={copy.activeStyles} className="gap-1">
-                <div />
-              </Field>
-              <div className="flex items-center gap-2">
-                <Badge variant="muted">{selectedStyles.length} {copy.activeCount}</Badge>
-                <Button type="button" size="sm" variant="outline" onClick={resetStylesToDefault}>
-                  <RotateCcw className="size-4" />
-                  {copy.resetDefaults}
-                </Button>
-              </div>
-            </div>
-            <div className="grid gap-3 lg:grid-cols-2">
-              {builtInStyles.map((style) => {
-                const active = selectedStyles.includes(style.styleKey);
-
-                return (
-                  <div
-                    key={style.id}
-                    className={`rounded-[24px] border px-4 py-4 text-left transition ${
-                      active
-                        ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
-                        : "border-white/8 bg-black/20"
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const nextStyles = active
-                          ? selectedStyles.filter((item) => item !== style.styleKey)
-                          : [...selectedStyles, style.styleKey];
-                        form.setValue("enabledStyles", nextStyles, { shouldValidate: true });
-                      }}
-                      className="w-full text-left"
-                    >
-                      <p className="font-medium text-white">{style.label}</p>
-                    </button>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          form.setValue(
-                            "enabledStyles",
-                            selectedStyles.filter((item) => item !== style.styleKey),
-                            { shouldValidate: true },
-                          );
-                          form.setValue(
-                            "removedBuiltInStyles",
-                            Array.from(new Set([...removedBuiltInStyles, style.styleKey])),
-                            { shouldValidate: true, shouldDirty: true },
-                          );
-                        }}
-                      >
-                        <Trash2 className="size-4" />
-                        {copy.remove}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-              {customStyleCards.map((style) => (
-                <div
-                  key={style.id ?? style.styleKey}
-                  className={`rounded-[24px] border px-4 py-4 text-left transition ${
-                    style.enabled
-                      ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
-                      : "border-white/8 bg-black/20"
-                  }`}
-                >
-                  <p className="font-medium text-white">{style.label || copy.styleLabel}</p>
-                  {style.description ? (
-                    <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
-                      {style.description}
-                    </p>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-            {form.formState.errors.enabledStyles?.message ? (
-              <p className="text-xs text-red-300">{form.formState.errors.enabledStyles.message}</p>
-            ) : null}
-          </div>
-
           <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/20 p-4">
             <div className="space-y-1">
               <p className="text-base font-medium text-white">{copy.bookingTitle}</p>
@@ -450,19 +381,45 @@ export function FunnelSettingsForm({
 
                       <div className="mt-4 space-y-3">
                         <p className="text-sm font-medium text-white">{copy.availabilityTitle}</p>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                          <Input
-                            type="date"
-                            min={new Date().toISOString().slice(0, 10)}
-                            value={pendingDates[index] ?? ""}
-                            onChange={(event) =>
-                              setPendingDates((current) => ({ ...current, [index]: event.target.value }))
-                            }
-                          />
-                          <Button type="button" onClick={() => addBookingDate(index)}>
-                            <Plus className="size-4" />
-                            {copy.addDate}
-                          </Button>
+                        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                          <Field label={copy.startDate}>
+                            <Input
+                              type="date"
+                              min={new Date().toISOString().slice(0, 10)}
+                              value={pendingDateRanges[index]?.start ?? ""}
+                              onChange={(event) =>
+                                setPendingDateRanges((current) => ({
+                                  ...current,
+                                  [index]: {
+                                    start: event.target.value,
+                                    end: current[index]?.end ?? "",
+                                  },
+                                }))
+                              }
+                            />
+                          </Field>
+                          <Field label={copy.endDate}>
+                            <Input
+                              type="date"
+                              min={pendingDateRanges[index]?.start || new Date().toISOString().slice(0, 10)}
+                              value={pendingDateRanges[index]?.end ?? ""}
+                              onChange={(event) =>
+                                setPendingDateRanges((current) => ({
+                                  ...current,
+                                  [index]: {
+                                    start: current[index]?.start ?? "",
+                                    end: event.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                          </Field>
+                          <div className="flex items-end">
+                            <Button type="button" onClick={() => addBookingDateRange(index)}>
+                              <Plus className="size-4" />
+                              {copy.addDate}
+                            </Button>
+                          </div>
                         </div>
 
                         {availableDates.length === 0 ? (
@@ -489,6 +446,93 @@ export function FunnelSettingsForm({
               </div>
             )}
           </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Field label={copy.activeStyles} className="gap-1">
+                <div />
+              </Field>
+              <div className="flex items-center gap-2">
+                <Badge variant="muted">{selectedStyles.length} {copy.activeCount}</Badge>
+                <Button type="button" size="sm" variant="outline" onClick={resetStylesToDefault}>
+                  <RotateCcw className="size-4" />
+                  {copy.resetDefaults}
+                </Button>
+              </div>
+            </div>
+            <div className="grid gap-3 xl:grid-cols-3">
+              {builtInStyles.map((style) => {
+                const active = selectedStyles.includes(style.styleKey);
+
+                return (
+                  <div
+                    key={style.id}
+                    className={`rounded-[20px] border px-3 py-3 text-left transition ${
+                      active
+                        ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
+                        : "border-white/8 bg-black/20"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextStyles = active
+                          ? selectedStyles.filter((item) => item !== style.styleKey)
+                          : [...selectedStyles, style.styleKey];
+                        form.setValue("enabledStyles", nextStyles, { shouldValidate: true });
+                      }}
+                      className="w-full text-left"
+                    >
+                      <p className="font-medium text-white">{style.label}</p>
+                    </button>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue(
+                            "enabledStyles",
+                            selectedStyles.filter((item) => item !== style.styleKey),
+                            { shouldValidate: true },
+                          );
+                          form.setValue(
+                            "removedBuiltInStyles",
+                            Array.from(new Set([...removedBuiltInStyles, style.styleKey])),
+                            { shouldValidate: true, shouldDirty: true },
+                          );
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                        {copy.remove}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+              {customStyleCards.map((style) => (
+                <div
+                  key={style.id ?? style.styleKey}
+                  className={`rounded-[20px] border px-3 py-3 text-left transition ${
+                    style.enabled
+                      ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
+                      : "border-white/8 bg-black/20"
+                  }`}
+                >
+                  <p className="font-medium text-white">{style.label || copy.styleLabel}</p>
+                  {style.description ? (
+                    <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
+                      {style.description}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            {form.formState.errors.enabledStyles?.message ? (
+              <p className="text-xs text-red-300">{form.formState.errors.enabledStyles.message}</p>
+            ) : null}
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Field label={copy.customStyles} className="gap-1">

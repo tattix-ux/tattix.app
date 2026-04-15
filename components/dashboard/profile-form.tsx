@@ -1,6 +1,4 @@
 "use client";
-
-import type { ReactNode } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
@@ -99,7 +97,6 @@ function MediaUploadField({
   imageUrl,
   onUpload,
   onRemove,
-  urlInput,
   emptyLabel,
   uploadLabel,
   removeLabel,
@@ -109,7 +106,6 @@ function MediaUploadField({
   imageUrl: string;
   onUpload: (file: File) => void;
   onRemove: () => void;
-  urlInput: ReactNode;
   emptyLabel: string;
   uploadLabel: string;
   removeLabel: string;
@@ -152,7 +148,6 @@ function MediaUploadField({
             </Button>
           ) : null}
         </div>
-        {urlInput}
       </div>
     </Field>
   );
@@ -288,12 +283,6 @@ export function ProfileForm({
               emptyLabel={copy.noImage}
               uploadLabel={copy.upload}
               removeLabel={copy.remove}
-              urlInput={
-                <Input
-                  placeholder="https://..."
-                  {...form.register("profileImageUrl")}
-                />
-              }
             />
             <MediaUploadField
               label={copy.coverImage}
@@ -304,12 +293,6 @@ export function ProfileForm({
               emptyLabel={copy.noImage}
               uploadLabel={copy.upload}
               removeLabel={copy.remove}
-              urlInput={
-                <Input
-                  placeholder="https://..."
-                  {...form.register("coverImageUrl")}
-                />
-              }
             />
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
