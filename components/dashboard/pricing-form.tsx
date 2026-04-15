@@ -310,6 +310,60 @@ function buildPayloadFromDraft(draft: CalibrationDraft, pricingRules: ArtistPric
       "full-color": fullColor,
     },
     addonFees: pricingRules.addonFees,
+    calibrationAnswers: {
+      sizeCurve: {
+        "8": {
+          min: Number(draft.size.size8.min),
+          max: Number(draft.size.size8.max),
+        },
+        "12": {
+          min: Number(draft.size.size12.min),
+          max: Number(draft.size.size12.max),
+        },
+        "18": {
+          min: Number(draft.size.size18.min),
+          max: Number(draft.size.size18.max),
+        },
+        "25": {
+          min: Number(draft.size.size25.min),
+          max: Number(draft.size.size25.max),
+        },
+      },
+      detailLevel: {
+        low: {
+          min: Number(draft.detail.low.min),
+          max: Number(draft.detail.low.max),
+        },
+        medium: {
+          min: Number(draft.detail.medium.min),
+          max: Number(draft.detail.medium.max),
+        },
+        high: {
+          min: Number(draft.detail.high.min),
+          max: Number(draft.detail.high.max),
+        },
+      },
+      placementDifficulty: {
+        easy: {
+          min: Number(draft.placement.easy.min),
+          max: Number(draft.placement.easy.max),
+        },
+        hard: {
+          min: Number(draft.placement.hard.min),
+          max: Number(draft.placement.hard.max),
+        },
+      },
+      colorMode: {
+        black: {
+          min: Number(draft.color.black.min),
+          max: Number(draft.color.black.max),
+        },
+        color: {
+          min: Number(draft.color.color.min),
+          max: Number(draft.color.color.max),
+        },
+      },
+    },
   };
 }
 

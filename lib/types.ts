@@ -87,8 +87,13 @@ export type ColorModeValue = "black-only" | "black-grey" | "full-color";
 
 export type PricingCalibrationExamples = {
   size: Record<SizeValue, number>;
+  sizeCurve?: Record<"8" | "12" | "18" | "25", number>;
   detailLevel: Record<DetailLevelValue, number>;
   placement: Record<string, number>;
+  placementDifficulty?: {
+    easy: number;
+    hard: number;
+  };
   colorMode: Record<ColorModeValue, number>;
 };
 

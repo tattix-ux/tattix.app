@@ -227,13 +227,18 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
   };
   const placementModifiersResolved =
     Object.keys(placementModifiers).length > 0 ? placementModifiers : derivedPlacementModifiers;
-  const calibrationExamples =
-    (row.calibration_examples as ArtistPricingRules["calibrationExamples"] | undefined) ?? {
+  const defaultCalibrationExamples = {
       size: {
         tiny: Math.round(anchorPrice * midpoint(sizeModifiers.tiny)!),
         small: Math.round(anchorPrice * midpoint(sizeModifiers.small)!),
         medium: Math.round(anchorPrice * midpoint(sizeModifiers.medium)!),
         large: Math.round(anchorPrice * midpoint(sizeModifiers.large)!),
+      },
+      sizeCurve: {
+        "8": Math.round(anchorPrice * midpoint(sizeModifiers.tiny)!),
+        "12": Math.round(anchorPrice * midpoint(sizeModifiers.small)!),
+        "18": Math.round(anchorPrice * midpoint(sizeModifiers.medium)!),
+        "25": Math.round(anchorPrice * midpoint(sizeModifiers.large)!),
       },
       detailLevel: {
         simple: Math.round(anchorPrice * midpoint(detailLevelModifiers.simple)!),
@@ -246,12 +251,27 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
           Math.round(anchorPrice * (midpoint(value) ?? 1)),
         ]),
       ),
+      placementDifficulty: {
+        easy: Math.round(anchorPrice * 1),
+        hard: Math.round(anchorPrice * 1.18),
+      },
       colorMode: {
         "black-only": Math.round(anchorPrice * midpoint(colorModeModifiers["black-only"])!),
         "black-grey": Math.round(anchorPrice * midpoint(colorModeModifiers["black-grey"])!),
         "full-color": Math.round(anchorPrice * midpoint(colorModeModifiers["full-color"])!),
       },
     };
+  const storedCalibrationExamples =
+    (row.calibration_examples as ArtistPricingRules["calibrationExamples"] | undefined) ?? undefined;
+  const calibrationExamples: ArtistPricingRules["calibrationExamples"] = {
+    size: storedCalibrationExamples?.size ?? defaultCalibrationExamples.size,
+    sizeCurve: storedCalibrationExamples?.sizeCurve ?? defaultCalibrationExamples.sizeCurve,
+    detailLevel: storedCalibrationExamples?.detailLevel ?? defaultCalibrationExamples.detailLevel,
+    placement: storedCalibrationExamples?.placement ?? defaultCalibrationExamples.placement,
+    placementDifficulty:
+      storedCalibrationExamples?.placementDifficulty ?? defaultCalibrationExamples.placementDifficulty,
+    colorMode: storedCalibrationExamples?.colorMode ?? defaultCalibrationExamples.colorMode,
+  };
   const calibrationReferenceSlots =
     (row.calibration_reference_slots as PricingCalibrationReferenceSlot[] | undefined) ??
     buildDefaultCalibrationReferenceSlots();

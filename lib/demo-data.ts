@@ -87,9 +87,15 @@ export const demoPricingRules: ArtistPricingRules = {
       medium: 2800,
       large: 5200,
     },
+    sizeCurve: {
+      "8": 1700,
+      "12": 2400,
+      "18": 3400,
+      "25": 5200,
+    },
     detailLevel: {
-      simple: 2200,
-      standard: 2600,
+      simple: 2100,
+      standard: 2400,
       detailed: 3200,
     },
     placement: {
@@ -98,10 +104,14 @@ export const demoPricingRules: ArtistPricingRules = {
       fingers: 2600,
       wrist: 2500,
     },
+    placementDifficulty: {
+      easy: 2400,
+      hard: 3050,
+    },
     colorMode: {
-      "black-only": 2300,
-      "black-grey": 2500,
-      "full-color": 3100,
+      "black-only": 2400,
+      "black-grey": 2700,
+      "full-color": 3300,
     },
   },
   calibrationReferenceSlots: [

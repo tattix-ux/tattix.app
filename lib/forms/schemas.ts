@@ -124,6 +124,29 @@ export const pricingSchema = z.object({
     coverUp: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
     customDesign: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
   }),
+  calibrationAnswers: z
+    .object({
+      sizeCurve: z.object({
+        "8": z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        "12": z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        "18": z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        "25": z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+      }),
+      detailLevel: z.object({
+        low: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        medium: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        high: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+      }),
+      placementDifficulty: z.object({
+        easy: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        hard: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+      }),
+      colorMode: z.object({
+        black: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        color: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+      }),
+    })
+    .optional(),
 }).superRefine((values, ctx) => {
   const rangeEntries = [
     ...Object.entries(values.sizeModifiers).map(([key, range]) => [`sizeModifiers.${key}`, range] as const),
@@ -131,6 +154,14 @@ export const pricingSchema = z.object({
     ...Object.entries(values.detailLevelModifiers).map(([key, range]) => [`detailLevelModifiers.${key}`, range] as const),
     ...Object.entries(values.colorModeModifiers).map(([key, range]) => [`colorModeModifiers.${key}`, range] as const),
     ...Object.entries(values.addonFees).map(([key, range]) => [`addonFees.${key}`, range] as const),
+    ...(values.calibrationAnswers
+      ? [
+          ...Object.entries(values.calibrationAnswers.sizeCurve).map(([key, range]) => [`calibrationAnswers.sizeCurve.${key}`, range] as const),
+          ...Object.entries(values.calibrationAnswers.detailLevel).map(([key, range]) => [`calibrationAnswers.detailLevel.${key}`, range] as const),
+          ...Object.entries(values.calibrationAnswers.placementDifficulty).map(([key, range]) => [`calibrationAnswers.placementDifficulty.${key}`, range] as const),
+          ...Object.entries(values.calibrationAnswers.colorMode).map(([key, range]) => [`calibrationAnswers.colorMode.${key}`, range] as const),
+        ]
+      : []),
   ];
 
   for (const [path, range] of rangeEntries) {

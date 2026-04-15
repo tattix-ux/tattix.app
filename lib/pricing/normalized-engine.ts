@@ -17,6 +17,7 @@ type FactorRange = {
 
 export type NormalizedQuoteInput = {
   size: SizeValue;
+  sizeCm: number;
   placement: BodyAreaDetailValue;
   detailLevel?: DetailLevelValue | null;
   colorMode?: ColorModeValue | null;
@@ -28,6 +29,7 @@ export type NormalizedQuoteInput = {
 export type NormalizedQuoteConfig = {
   anchorPrice: number;
   minimumCharge: number;
+  sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>;
   sizeFactors: Record<SizeValue, FactorRange>;
   placementFactors: Partial<Record<BodyAreaDetailValue, FactorRange>>;
   detailLevelFactors: Record<DetailLevelValue, FactorRange>;
@@ -41,6 +43,20 @@ type QuoteResult = {
 
 const DEFAULT_DETAIL_LEVEL: DetailLevelValue = "standard";
 const DEFAULT_COLOR_MODE: ColorModeValue = "black-grey";
+const SIZE_CURVE_KEYS = ["8", "12", "18", "25"] as const;
+const DEFAULT_HARD_PLACEMENTS = new Set<BodyAreaDetailValue>([
+  "ribs",
+  "spine-area",
+  "neck-front",
+  "neck-side",
+  "hand",
+  "fingers",
+  "foot",
+  "toes",
+  "ankle",
+  "wrist",
+  "head",
+]);
 
 function isFinitePositive(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
@@ -157,6 +173,140 @@ function deriveSizeFactors(
   };
 }
 
+function deriveRepresentativeSizeCm(input: SubmissionRequest) {
+  if (typeof input.approximateSizeCm === "number" && Number.isFinite(input.approximateSizeCm) && input.approximateSizeCm > 0) {
+    return input.approximateSizeCm;
+  }
+
+  const width = typeof input.widthCm === "number" && Number.isFinite(input.widthCm) ? input.widthCm : null;
+  const height = typeof input.heightCm === "number" && Number.isFinite(input.heightCm) ? input.heightCm : null;
+
+  if (width && height) {
+    return Math.max(width, height);
+  }
+
+  if (width) {
+    return width;
+  }
+
+  const fallbackByCategory: Record<SizeValue, number> = {
+    tiny: 8,
+    small: 12,
+    medium: 18,
+    large: 25,
+  };
+
+  return fallbackByCategory[input.sizeCategory] ?? 12;
+}
+
+function deriveSizeCurvePoints(
+  rules: ArtistPricingRules,
+  anchorPrice: number,
+  fallbackSizeFactors: Record<SizeValue, FactorRange>,
+) {
+  const rawCurve = rules.calibrationExamples.sizeCurve;
+
+  if (
+    rawCurve &&
+    SIZE_CURVE_KEYS.every((key) => isFinitePositive(rawCurve[key]))
+  ) {
+    return {
+      "8": rawCurve["8"],
+      "12": rawCurve["12"],
+      "18": rawCurve["18"],
+      "25": rawCurve["25"],
+    } as Record<"8" | "12" | "18" | "25", number>;
+  }
+
+  return {
+    "8": Math.max(
+      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.tiny as PriceRange) ?? 0.7)),
+      1,
+    ),
+    "12": Math.max(
+      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.small as PriceRange) ?? 1)),
+      1,
+    ),
+    "18": Math.max(
+      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.medium as PriceRange) ?? 1.2)),
+      1,
+    ),
+    "25": Math.max(
+      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.large as PriceRange) ?? 1.8)),
+      1,
+    ),
+  };
+}
+
+function resolveHardPlacementDetails(
+  placementFactors: Partial<Record<BodyAreaDetailValue, FactorRange>>,
+  fallbackPlacementFactors: Partial<Record<BodyAreaDetailValue, FactorRange>>,
+) {
+  const source = Object.keys(placementFactors).length > 0 ? placementFactors : fallbackPlacementFactors;
+  const derived = Object.entries(source)
+    .filter(([, range]) => midpoint(range as PriceRange) !== null)
+    .filter(([, range]) => (midpoint(range as PriceRange) ?? 1) >= 1.12)
+    .map(([key]) => key as BodyAreaDetailValue);
+
+  if (derived.length > 0) {
+    return new Set<BodyAreaDetailValue>(derived);
+  }
+
+  return DEFAULT_HARD_PLACEMENTS;
+}
+
+function buildSizeCurveFactorRange(
+  sizeCm: number,
+  points: Record<"8" | "12" | "18" | "25", number>,
+  fallback: FactorRange,
+) {
+  const baselinePrice = points["12"];
+
+  if (!isFinitePositive(sizeCm) || !isFinitePositive(baselinePrice)) {
+    return fallback;
+  }
+
+  const normalizedPoints = [
+    { cm: 8, factor: points["8"] / baselinePrice },
+    { cm: 12, factor: 1 },
+    { cm: 18, factor: points["18"] / baselinePrice },
+    { cm: 25, factor: points["25"] / baselinePrice },
+  ];
+
+  const clampedCm = Math.max(8, Math.min(25, sizeCm));
+  let left = normalizedPoints[0];
+  let right = normalizedPoints[normalizedPoints.length - 1];
+
+  for (let index = 0; index < normalizedPoints.length - 1; index += 1) {
+    const current = normalizedPoints[index];
+    const next = normalizedPoints[index + 1];
+
+    if (clampedCm >= current.cm && clampedCm <= next.cm) {
+      left = current;
+      right = next;
+      break;
+    }
+  }
+
+  const span = Math.max(right.cm - left.cm, 1);
+  const mix = (clampedCm - left.cm) / span;
+  const center = left.factor + (right.factor - left.factor) * mix;
+
+  if (!Number.isFinite(center) || center <= 0) {
+    return fallback;
+  }
+
+  const spread = clampedCm >= 25 ? 0.1 : clampedCm >= 18 ? 0.08 : 0.06;
+
+  return {
+    min: Math.max(0.25, Number((center * (1 - spread)).toFixed(4))),
+    max: Math.max(
+      Math.max(0.25, Number((center * (1 - spread)).toFixed(4))),
+      Number((center * (1 + spread)).toFixed(4)),
+    ),
+  };
+}
+
 export function buildNormalizedQuoteConfig(
   rules: ArtistPricingRules,
 ): NormalizedQuoteConfig {
@@ -177,6 +327,7 @@ export function buildNormalizedQuoteConfig(
       ]),
   ) as Partial<Record<BodyAreaDetailValue, FactorRange>>;
   const useCalibration = hasCalibrationExamples(rules.calibrationExamples);
+  const hardPlacementDetails = resolveHardPlacementDetails(placementFactors, fallbackPlacementFactors);
   const fallbackSizeFactors = rules.sizeModifiers
     ? {
         tiny: clampFactorRange(rules.sizeModifiers.tiny, { min: 0.35, max: 0.6 }),
@@ -185,40 +336,38 @@ export function buildNormalizedQuoteConfig(
         large: clampFactorRange(rules.sizeModifiers.large, { min: 1.8, max: 2.4 }),
       }
     : deriveSizeFactors(rules, anchorPrice);
+  const sizeCurvePoints = deriveSizeCurvePoints(rules, anchorPrice, fallbackSizeFactors);
 
   return {
     anchorPrice,
     minimumCharge: Math.max(0, rules.minimumCharge ?? rules.minimumSessionPrice ?? Math.round(anchorPrice * 0.9)),
+    sizeCurvePoints,
     sizeFactors: useCalibration
       ? {
-          tiny: buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.size.tiny,
-            anchorPrice,
-            0.08,
-            fallbackSizeFactors.tiny,
-          ),
-          small: buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.size.small,
-            anchorPrice,
-            0.08,
-            fallbackSizeFactors.small,
-          ),
-          medium: buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.size.medium,
-            anchorPrice,
-            0.08,
-            fallbackSizeFactors.medium,
-          ),
-          large: buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.size.large,
-            anchorPrice,
-            0.1,
-            fallbackSizeFactors.large,
-          ),
+          tiny: buildSizeCurveFactorRange(8, sizeCurvePoints, fallbackSizeFactors.tiny),
+          small: buildSizeCurveFactorRange(12, sizeCurvePoints, fallbackSizeFactors.small),
+          medium: buildSizeCurveFactorRange(18, sizeCurvePoints, fallbackSizeFactors.medium),
+          large: buildSizeCurveFactorRange(25, sizeCurvePoints, fallbackSizeFactors.large),
         }
       : fallbackSizeFactors,
     placementFactors:
-      useCalibration && Object.keys(rules.calibrationExamples.placement ?? {}).length > 0
+      useCalibration && rules.calibrationExamples.placementDifficulty
+        ? Object.fromEntries(
+            Object.keys(
+              Object.keys(placementFactors).length > 0 ? placementFactors : fallbackPlacementFactors,
+            ).map((key) => [
+              key,
+              hardPlacementDetails.has(key as BodyAreaDetailValue)
+                ? buildFactorRangeFromCalibratedPrice(
+                    rules.calibrationExamples.placementDifficulty?.hard,
+                    rules.calibrationExamples.placementDifficulty?.easy || anchorPrice,
+                    0.05,
+                    { min: 1.14, max: 1.3 },
+                  )
+                : { min: 1, max: 1 },
+            ]),
+          ) as Partial<Record<BodyAreaDetailValue, FactorRange>>
+        : useCalibration && Object.keys(rules.calibrationExamples.placement ?? {}).length > 0
         ? Object.fromEntries(
             Object.entries(rules.calibrationExamples.placement).map(([key, value]) => [
               key,
@@ -239,19 +388,14 @@ export function buildNormalizedQuoteConfig(
       ? {
           simple: buildFactorRangeFromCalibratedPrice(
             rules.calibrationExamples.detailLevel.simple,
-            anchorPrice,
+            rules.calibrationExamples.detailLevel.standard || anchorPrice,
             0.05,
             clampFactorRange(rules.detailLevelModifiers?.simple, { min: 0.92, max: 1 }),
           ),
-          standard: buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.detailLevel.standard,
-            anchorPrice,
-            0.05,
-            clampFactorRange(rules.detailLevelModifiers?.standard, { min: 1, max: 1.12 }),
-          ),
+          standard: { min: 1, max: 1 },
           detailed: buildFactorRangeFromCalibratedPrice(
             rules.calibrationExamples.detailLevel.detailed,
-            anchorPrice,
+            rules.calibrationExamples.detailLevel.standard || anchorPrice,
             0.06,
             clampFactorRange(rules.detailLevelModifiers?.detailed, { min: 1.12, max: 1.28 }),
           ),
@@ -263,21 +407,16 @@ export function buildNormalizedQuoteConfig(
         },
     colorModeFactors: useCalibration
       ? {
-          "black-only": buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.colorMode["black-only"],
-            anchorPrice,
-            0.05,
-            clampFactorRange(rules.colorModeModifiers?.["black-only"], { min: 0.94, max: 1 }),
-          ),
+          "black-only": { min: 1, max: 1 },
           "black-grey": buildFactorRangeFromCalibratedPrice(
             rules.calibrationExamples.colorMode["black-grey"],
-            anchorPrice,
+            rules.calibrationExamples.colorMode["black-only"] || anchorPrice,
             0.05,
             clampFactorRange(rules.colorModeModifiers?.["black-grey"], { min: 1, max: 1.08 }),
           ),
           "full-color": buildFactorRangeFromCalibratedPrice(
             rules.calibrationExamples.colorMode["full-color"],
-            anchorPrice,
+            rules.calibrationExamples.colorMode["black-only"] || anchorPrice,
             0.06,
             clampFactorRange(rules.colorModeModifiers?.["full-color"], { min: 1.18, max: 1.35 }),
           ),
@@ -295,6 +434,7 @@ export function buildNormalizedQuoteInput(
 ): NormalizedQuoteInput {
   return {
     size: submission.sizeCategory,
+    sizeCm: deriveRepresentativeSizeCm(submission),
     placement: submission.bodyAreaDetail,
     detailLevel: submission.detailLevel ?? DEFAULT_DETAIL_LEVEL,
     colorMode: submission.colorMode ?? DEFAULT_COLOR_MODE,
@@ -312,8 +452,15 @@ export function estimateNormalizedQuote(
   input: NormalizedQuoteInput,
   config: NormalizedQuoteConfig,
 ): QuoteResult {
-  const sizeRange = clampFactorRange(config.sizeFactors[input.size], { min: 1, max: 1.12 });
-  const placementRange = clampFactorRange(config.placementFactors[input.placement], { min: 1, max: 1 });
+  const sizeRange = buildSizeCurveFactorRange(
+    input.sizeCm,
+    config.sizeCurvePoints,
+    clampFactorRange(config.sizeFactors[input.size], { min: 1, max: 1.12 }),
+  );
+  const defaultPlacementRange =
+    config.placementFactors[input.placement] ??
+    (input.placement === "placement-not-sure" ? { min: 1, max: 1.04 } : { min: 1, max: 1 });
+  const placementRange = clampFactorRange(defaultPlacementRange, { min: 1, max: 1 });
   const detailRange = clampFactorRange(
     config.detailLevelFactors[input.detailLevel ?? DEFAULT_DETAIL_LEVEL],
     config.detailLevelFactors[DEFAULT_DETAIL_LEVEL],

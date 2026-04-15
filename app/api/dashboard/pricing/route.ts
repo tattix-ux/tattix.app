@@ -14,6 +14,14 @@ function deriveCalibrationPrice(anchorPrice: number, range: PriceRange) {
   return Math.max(Math.round(anchorPrice * midpoint(range)), 0);
 }
 
+function deriveCalibrationPriceFromRange(range: PriceRange | undefined, fallback: number) {
+  if (!range) {
+    return fallback;
+  }
+
+  return Math.max(Math.round(midpoint(range)), 0);
+}
+
 export async function POST(request: Request) {
   const body = await request.json();
   const parsed = pricingSchema.safeParse(body);
@@ -57,6 +65,20 @@ export async function POST(request: Request) {
   const legacyPlacementMultipliers = Object.fromEntries(
     Object.entries(parsed.data.placementModifiers).map(([key, range]) => [key, Number(midpoint(range).toFixed(2))]),
   );
+  const calibrationAnswers = parsed.data.calibrationAnswers;
+  const easyPlacementPrice = calibrationAnswers
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.placementDifficulty.easy, parsed.data.basePrice)
+    : deriveCalibrationPrice(parsed.data.basePrice, { min: 1, max: 1.08 });
+  const hardPlacementPrice = calibrationAnswers
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.placementDifficulty.hard, easyPlacementPrice)
+    : deriveCalibrationPrice(parsed.data.basePrice, { min: 1.14, max: 1.3 });
+  const blackPrice = calibrationAnswers
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.black, parsed.data.basePrice)
+    : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-only"]);
+  const colorPrice = calibrationAnswers
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.color, blackPrice)
+    : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["full-color"]);
+
   const calibrationExamples = {
     size: {
       tiny: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.tiny),
@@ -64,10 +86,29 @@ export async function POST(request: Request) {
       medium: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.medium),
       large: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.large),
     },
+    sizeCurve: calibrationAnswers
+      ? {
+          "8": deriveCalibrationPriceFromRange(calibrationAnswers.sizeCurve["8"], parsed.data.basePrice),
+          "12": deriveCalibrationPriceFromRange(calibrationAnswers.sizeCurve["12"], parsed.data.basePrice),
+          "18": deriveCalibrationPriceFromRange(calibrationAnswers.sizeCurve["18"], parsed.data.basePrice),
+          "25": deriveCalibrationPriceFromRange(calibrationAnswers.sizeCurve["25"], parsed.data.basePrice),
+        }
+      : {
+          "8": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.tiny),
+          "12": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.small),
+          "18": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.medium),
+          "25": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.large),
+        },
     detailLevel: {
-      simple: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.simple),
-      standard: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.standard),
-      detailed: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.detailed),
+      simple: calibrationAnswers
+        ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.low, parsed.data.basePrice)
+        : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.simple),
+      standard: calibrationAnswers
+        ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.medium, parsed.data.basePrice)
+        : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.standard),
+      detailed: calibrationAnswers
+        ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.high, parsed.data.basePrice)
+        : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.detailed),
     },
     placement: Object.fromEntries(
       Object.entries(parsed.data.placementModifiers).map(([key, range]) => [
@@ -75,10 +116,14 @@ export async function POST(request: Request) {
         deriveCalibrationPrice(parsed.data.basePrice, range),
       ]),
     ),
+    placementDifficulty: {
+      easy: easyPlacementPrice,
+      hard: hardPlacementPrice,
+    },
     colorMode: {
-      "black-only": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-only"]),
+      "black-only": blackPrice,
       "black-grey": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-grey"]),
-      "full-color": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["full-color"]),
+      "full-color": colorPrice,
     },
   };
   const existingReferenceSlots =
