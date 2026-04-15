@@ -12,6 +12,11 @@ import type {
   PriceRange,
   SubmissionRequest,
 } from "@/lib/types";
+import {
+  buildNormalizedQuoteConfig,
+  buildNormalizedQuoteInput,
+  estimateNormalizedQuote,
+} from "@/lib/pricing/normalized-engine";
 import { roundToNearestFifty } from "@/lib/utils";
 
 type PricingContext = {
@@ -66,6 +71,23 @@ export function estimateTattooPrice(
   submission: SubmissionRequest,
   context: PricingContext,
 ) {
+  try {
+    const normalizedConfig = buildNormalizedQuoteConfig(context.pricingRules);
+    const normalizedInput = buildNormalizedQuoteInput(submission);
+    const normalizedQuote = estimateNormalizedQuote(normalizedInput, normalizedConfig);
+
+    if (
+      Number.isFinite(normalizedQuote.min) &&
+      Number.isFinite(normalizedQuote.max) &&
+      normalizedQuote.min > 0 &&
+      normalizedQuote.max >= normalizedQuote.min
+    ) {
+      return normalizedQuote;
+    }
+  } catch {
+    // Keep the legacy multiplier path as a narrow fallback while calibration data settles.
+  }
+
   const baseRange = context.pricingRules.sizeBaseRanges[submission.sizeCategory];
   const styleMultiplier = resolveStyleMultiplier(submission.style, context.styleOptions);
   const placementMultiplier = resolvePlacementMultiplier(

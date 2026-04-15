@@ -197,9 +197,35 @@ export async function ensureArtistForUser(user: User) {
     }),
     supabase.from("artist_pricing_rules").upsert({
       artist_id: artist.id,
+      anchor_price: 2400,
       base_price: 3200,
       minimum_charge: 1500,
       minimum_session_price: 1500,
+      calibration_examples: {
+        size: {
+          tiny: 1200,
+          small: 1800,
+          medium: 2800,
+          large: 5200,
+        },
+        detailLevel: {
+          simple: 2200,
+          standard: 2600,
+          detailed: 3200,
+        },
+        placement: {},
+        colorMode: {
+          "black-only": 2300,
+          "black-grey": 2500,
+          "full-color": 3100,
+        },
+      },
+      calibration_reference_slots: [
+        { slotId: "size-tiny", axis: "size", key: "tiny", label: "Size · tiny", assetRef: null },
+        { slotId: "size-small", axis: "size", key: "small", label: "Size · small", assetRef: null },
+        { slotId: "size-medium", axis: "size", key: "medium", label: "Size · medium", assetRef: null },
+        { slotId: "size-large", axis: "size", key: "large", label: "Size · large", assetRef: null },
+      ],
       size_modifiers: {
         tiny: { min: 0.35, max: 0.6 },
         small: { min: 0.55, max: 0.85 },

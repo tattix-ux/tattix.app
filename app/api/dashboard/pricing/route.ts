@@ -10,6 +10,10 @@ function midpoint(range: PriceRange) {
   return (range.min + range.max) / 2;
 }
 
+function deriveCalibrationPrice(anchorPrice: number, range: PriceRange) {
+  return Math.max(Math.round(anchorPrice * midpoint(range)), 0);
+}
+
 export async function POST(request: Request) {
   const body = await request.json();
   const parsed = pricingSchema.safeParse(body);
@@ -53,12 +57,51 @@ export async function POST(request: Request) {
   const legacyPlacementMultipliers = Object.fromEntries(
     Object.entries(parsed.data.placementModifiers).map(([key, range]) => [key, Number(midpoint(range).toFixed(2))]),
   );
+  const calibrationExamples = {
+    size: {
+      tiny: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.tiny),
+      small: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.small),
+      medium: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.medium),
+      large: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.sizeModifiers.large),
+    },
+    detailLevel: {
+      simple: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.simple),
+      standard: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.standard),
+      detailed: deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.detailed),
+    },
+    placement: Object.fromEntries(
+      Object.entries(parsed.data.placementModifiers).map(([key, range]) => [
+        key,
+        deriveCalibrationPrice(parsed.data.basePrice, range),
+      ]),
+    ),
+    colorMode: {
+      "black-only": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-only"]),
+      "black-grey": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-grey"]),
+      "full-color": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["full-color"]),
+    },
+  };
+  const calibrationReferenceSlots = [
+    { slotId: "size-tiny", axis: "size", key: "tiny", label: "Size · tiny", assetRef: null },
+    { slotId: "size-small", axis: "size", key: "small", label: "Size · small", assetRef: null },
+    { slotId: "size-medium", axis: "size", key: "medium", label: "Size · medium", assetRef: null },
+    { slotId: "size-large", axis: "size", key: "large", label: "Size · large", assetRef: null },
+    { slotId: "detail-simple", axis: "detailLevel", key: "simple", label: "Detail · simple", assetRef: null },
+    { slotId: "detail-standard", axis: "detailLevel", key: "standard", label: "Detail · standard", assetRef: null },
+    { slotId: "detail-detailed", axis: "detailLevel", key: "detailed", label: "Detail · detailed", assetRef: null },
+    { slotId: "color-black-only", axis: "colorMode", key: "black-only", label: "Color · black-only", assetRef: null },
+    { slotId: "color-black-grey", axis: "colorMode", key: "black-grey", label: "Color · black-grey", assetRef: null },
+    { slotId: "color-full-color", axis: "colorMode", key: "full-color", label: "Color · full-color", assetRef: null },
+  ];
 
   const { error: pricingError } = await supabase.from("artist_pricing_rules").upsert({
     artist_id: artist.id,
+    anchor_price: Math.round(parsed.data.basePrice),
     base_price: Math.round(parsed.data.basePrice),
     minimum_charge: Math.round(parsed.data.minimumCharge),
     minimum_session_price: Math.round(parsed.data.minimumCharge),
+    calibration_examples: calibrationExamples,
+    calibration_reference_slots: calibrationReferenceSlots,
     size_modifiers: parsed.data.sizeModifiers,
     size_base_ranges: legacySizeBaseRanges,
     placement_modifiers: parsed.data.placementModifiers,

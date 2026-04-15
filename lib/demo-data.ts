@@ -77,8 +77,45 @@ demoStyleOptions.push({
 
 export const demoPricingRules: ArtistPricingRules = {
   artistId: demoArtistId,
+  anchorPrice: 2400,
   basePrice: 3200,
   minimumCharge: 1500,
+  calibrationExamples: {
+    size: {
+      tiny: 1200,
+      small: 1800,
+      medium: 2800,
+      large: 5200,
+    },
+    detailLevel: {
+      simple: 2200,
+      standard: 2600,
+      detailed: 3200,
+    },
+    placement: {
+      "neck-front": 3200,
+      ribs: 3000,
+      fingers: 2600,
+      wrist: 2500,
+    },
+    colorMode: {
+      "black-only": 2300,
+      "black-grey": 2500,
+      "full-color": 3100,
+    },
+  },
+  calibrationReferenceSlots: [
+    { slotId: "size-tiny", axis: "size", key: "tiny", label: "Size · tiny", assetRef: null },
+    { slotId: "size-small", axis: "size", key: "small", label: "Size · small", assetRef: null },
+    { slotId: "size-medium", axis: "size", key: "medium", label: "Size · medium", assetRef: null },
+    { slotId: "size-large", axis: "size", key: "large", label: "Size · large", assetRef: null },
+    { slotId: "detail-simple", axis: "detailLevel", key: "simple", label: "Detail · simple", assetRef: null },
+    { slotId: "detail-standard", axis: "detailLevel", key: "standard", label: "Detail · standard", assetRef: null },
+    { slotId: "detail-detailed", axis: "detailLevel", key: "detailed", label: "Detail · detailed", assetRef: null },
+    { slotId: "color-black-only", axis: "colorMode", key: "black-only", label: "Color · black-only", assetRef: null },
+    { slotId: "color-black-grey", axis: "colorMode", key: "black-grey", label: "Color · black-grey", assetRef: null },
+    { slotId: "color-full-color", axis: "colorMode", key: "full-color", label: "Color · full-color", assetRef: null },
+  ],
   sizeModifiers: {
     tiny: { min: 0.35, max: 0.6 },
     small: { min: 0.55, max: 0.85 },

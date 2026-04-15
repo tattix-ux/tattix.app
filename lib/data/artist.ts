@@ -15,6 +15,7 @@ import type {
   ColorModeValue,
   DetailLevelValue,
   PriceRange,
+  PricingCalibrationReferenceSlot,
 } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -114,9 +115,31 @@ function normalizeRange(
   };
 }
 
+function buildDefaultCalibrationReferenceSlots(): PricingCalibrationReferenceSlot[] {
+  return [
+    { slotId: "size-tiny", axis: "size", key: "tiny", label: "Size · tiny", assetRef: null },
+    { slotId: "size-small", axis: "size", key: "small", label: "Size · small", assetRef: null },
+    { slotId: "size-medium", axis: "size", key: "medium", label: "Size · medium", assetRef: null },
+    { slotId: "size-large", axis: "size", key: "large", label: "Size · large", assetRef: null },
+    { slotId: "detail-simple", axis: "detailLevel", key: "simple", label: "Detail · simple", assetRef: null },
+    { slotId: "detail-standard", axis: "detailLevel", key: "standard", label: "Detail · standard", assetRef: null },
+    { slotId: "detail-detailed", axis: "detailLevel", key: "detailed", label: "Detail · detailed", assetRef: null },
+    { slotId: "color-black-only", axis: "colorMode", key: "black-only", label: "Color · black-only", assetRef: null },
+    { slotId: "color-black-grey", axis: "colorMode", key: "black-grey", label: "Color · black-grey", assetRef: null },
+    { slotId: "color-full-color", axis: "colorMode", key: "full-color", label: "Color · full-color", assetRef: null },
+  ];
+}
+
 function mapPricingRules(row: Record<string, unknown>, artistId: string): ArtistPricingRules {
   const minimumSessionPrice = Number(row.minimum_session_price ?? 0);
   const sizeBaseRanges = row.size_base_ranges as ArtistPricingRules["sizeBaseRanges"];
+  const anchorPrice =
+    Number(row.anchor_price) ||
+    Number(row.base_price) ||
+    midpoint(sizeBaseRanges?.small) ||
+    midpoint(sizeBaseRanges?.medium) ||
+    minimumSessionPrice ||
+    3000;
   const basePrice =
     Number(row.base_price) ||
     midpoint(sizeBaseRanges?.medium) ||
@@ -185,29 +208,64 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
     "black-grey": { min: 1, max: 1.1 },
     "full-color": { min: 1.18, max: 1.35 },
   };
+  const sizeModifiers = {
+    tiny: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.tiny, defaultSizeModifiers.tiny),
+    small: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.small, defaultSizeModifiers.small),
+    medium: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.medium, defaultSizeModifiers.medium),
+    large: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.large, defaultSizeModifiers.large),
+  };
+  const detailLevelModifiers = {
+    simple: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.simple, detailDefaults.simple),
+    standard: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.standard, detailDefaults.standard),
+    detailed: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.detailed, detailDefaults.detailed),
+  };
+  const colorModeModifiers = {
+    "black-only": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["black-only"], colorDefaults["black-only"]),
+    "black-grey": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["black-grey"], colorDefaults["black-grey"]),
+    "full-color": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["full-color"], colorDefaults["full-color"]),
+  };
+  const placementModifiersResolved =
+    Object.keys(placementModifiers).length > 0 ? placementModifiers : derivedPlacementModifiers;
+  const calibrationExamples =
+    (row.calibration_examples as ArtistPricingRules["calibrationExamples"] | undefined) ?? {
+      size: {
+        tiny: Math.round(anchorPrice * midpoint(sizeModifiers.tiny)!),
+        small: Math.round(anchorPrice * midpoint(sizeModifiers.small)!),
+        medium: Math.round(anchorPrice * midpoint(sizeModifiers.medium)!),
+        large: Math.round(anchorPrice * midpoint(sizeModifiers.large)!),
+      },
+      detailLevel: {
+        simple: Math.round(anchorPrice * midpoint(detailLevelModifiers.simple)!),
+        standard: Math.round(anchorPrice * midpoint(detailLevelModifiers.standard)!),
+        detailed: Math.round(anchorPrice * midpoint(detailLevelModifiers.detailed)!),
+      },
+      placement: Object.fromEntries(
+        Object.entries(placementModifiersResolved).map(([key, value]) => [
+          key,
+          Math.round(anchorPrice * (midpoint(value) ?? 1)),
+        ]),
+      ),
+      colorMode: {
+        "black-only": Math.round(anchorPrice * midpoint(colorModeModifiers["black-only"])!),
+        "black-grey": Math.round(anchorPrice * midpoint(colorModeModifiers["black-grey"])!),
+        "full-color": Math.round(anchorPrice * midpoint(colorModeModifiers["full-color"])!),
+      },
+    };
+  const calibrationReferenceSlots =
+    (row.calibration_reference_slots as PricingCalibrationReferenceSlot[] | undefined) ??
+    buildDefaultCalibrationReferenceSlots();
 
   return {
     artistId,
+    anchorPrice,
     basePrice,
     minimumCharge,
-    sizeModifiers: {
-      tiny: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.tiny, defaultSizeModifiers.tiny),
-      small: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.small, defaultSizeModifiers.small),
-      medium: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.medium, defaultSizeModifiers.medium),
-      large: normalizeRange((row.size_modifiers as Record<string, unknown> | undefined)?.large, defaultSizeModifiers.large),
-    },
-    placementModifiers:
-      Object.keys(placementModifiers).length > 0 ? placementModifiers : derivedPlacementModifiers,
-    detailLevelModifiers: {
-      simple: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.simple, detailDefaults.simple),
-      standard: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.standard, detailDefaults.standard),
-      detailed: normalizeRange((row.detail_level_modifiers as Record<string, unknown> | undefined)?.detailed, detailDefaults.detailed),
-    },
-    colorModeModifiers: {
-      "black-only": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["black-only"], colorDefaults["black-only"]),
-      "black-grey": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["black-grey"], colorDefaults["black-grey"]),
-      "full-color": normalizeRange((row.color_mode_modifiers as Record<string, unknown> | undefined)?.["full-color"], colorDefaults["full-color"]),
-    },
+    calibrationExamples,
+    calibrationReferenceSlots,
+    sizeModifiers,
+    placementModifiers: placementModifiersResolved,
+    detailLevelModifiers,
+    colorModeModifiers,
     addonFees: {
       coverUp: normalizeRange((row.addon_fees as Record<string, unknown> | undefined)?.coverUp, {
         min: 500,

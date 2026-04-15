@@ -85,10 +85,28 @@ export type ArtistFeaturedDesign = {
 export type DetailLevelValue = "simple" | "standard" | "detailed";
 export type ColorModeValue = "black-only" | "black-grey" | "full-color";
 
+export type PricingCalibrationExamples = {
+  size: Record<SizeValue, number>;
+  detailLevel: Record<DetailLevelValue, number>;
+  placement: Record<string, number>;
+  colorMode: Record<ColorModeValue, number>;
+};
+
+export type PricingCalibrationReferenceSlot = {
+  slotId: string;
+  axis: "size" | "detailLevel" | "placement" | "colorMode";
+  key: string;
+  label: string;
+  assetRef: string | null;
+};
+
 export type ArtistPricingRules = {
   artistId: string;
+  anchorPrice: number;
   basePrice: number;
   minimumCharge: number;
+  calibrationExamples: PricingCalibrationExamples;
+  calibrationReferenceSlots: PricingCalibrationReferenceSlot[];
   sizeModifiers: Record<SizeValue, PriceRange>;
   placementModifiers: Record<string, PriceRange>;
   detailLevelModifiers: Record<DetailLevelValue, PriceRange>;

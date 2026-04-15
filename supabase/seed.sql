@@ -87,9 +87,12 @@ set
 
 insert into public.artist_pricing_rules (
   artist_id,
+  anchor_price,
   base_price,
   minimum_charge,
   minimum_session_price,
+  calibration_examples,
+  calibration_reference_slots,
   size_modifiers,
   size_base_ranges,
   placement_modifiers,
@@ -102,9 +105,12 @@ insert into public.artist_pricing_rules (
 )
 values (
   '7d53df9f-4fd8-41af-ae82-187a0b81b420',
+  2400,
   3200,
   1500,
   1500,
+  '{"size":{"tiny":1200,"small":1800,"medium":2800,"large":5200},"detailLevel":{"simple":2200,"standard":2600,"detailed":3200},"placement":{"neck-front":3200,"neck-side":3200,"neck-back":3000,"ribs":3000,"fingers":2600,"forearm-outer":2400,"forearm-inner":2500,"wrist":2500,"sternum":2900,"ankle":2600},"colorMode":{"black-only":2300,"black-grey":2500,"full-color":3100}}'::jsonb,
+  '[{"slotId":"size-tiny","axis":"size","key":"tiny","label":"Size · tiny","assetRef":null},{"slotId":"size-small","axis":"size","key":"small","label":"Size · small","assetRef":null},{"slotId":"size-medium","axis":"size","key":"medium","label":"Size · medium","assetRef":null},{"slotId":"size-large","axis":"size","key":"large","label":"Size · large","assetRef":null},{"slotId":"detail-simple","axis":"detailLevel","key":"simple","label":"Detail · simple","assetRef":null},{"slotId":"detail-standard","axis":"detailLevel","key":"standard","label":"Detail · standard","assetRef":null},{"slotId":"detail-detailed","axis":"detailLevel","key":"detailed","label":"Detail · detailed","assetRef":null},{"slotId":"color-black-only","axis":"colorMode","key":"black-only","label":"Color · black-only","assetRef":null},{"slotId":"color-black-grey","axis":"colorMode","key":"black-grey","label":"Color · black-grey","assetRef":null},{"slotId":"color-full-color","axis":"colorMode","key":"full-color","label":"Color · full-color","assetRef":null}]'::jsonb,
   '{"tiny":{"min":0.35,"max":0.6},"small":{"min":0.55,"max":0.85},"medium":{"min":0.95,"max":1.2},"large":{"min":1.8,"max":2.4}}'::jsonb,
   '{"tiny":{"min":1000,"max":1800},"small":{"min":1500,"max":2500},"medium":{"min":3000,"max":5000},"large":{"min":6000,"max":9000}}'::jsonb,
   '{"neck-front":{"min":1.3,"max":1.3},"neck-side":{"min":1.3,"max":1.3},"neck-back":{"min":1.25,"max":1.25},"ribs":{"min":1.25,"max":1.25},"fingers":{"min":1.15,"max":1.15},"forearm-outer":{"min":1.0,"max":1.0},"forearm-inner":{"min":1.05,"max":1.05},"wrist":{"min":1.05,"max":1.05},"sternum":{"min":1.2,"max":1.2},"ankle":{"min":1.1,"max":1.1}}'::jsonb,
@@ -117,9 +123,12 @@ values (
 )
 on conflict (artist_id) do update
 set
+  anchor_price = excluded.anchor_price,
   base_price = excluded.base_price,
   minimum_charge = excluded.minimum_charge,
   minimum_session_price = excluded.minimum_session_price,
+  calibration_examples = excluded.calibration_examples,
+  calibration_reference_slots = excluded.calibration_reference_slots,
   size_modifiers = excluded.size_modifiers,
   size_base_ranges = excluded.size_base_ranges,
   placement_modifiers = excluded.placement_modifiers,
