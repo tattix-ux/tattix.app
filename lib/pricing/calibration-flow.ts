@@ -786,6 +786,22 @@ function resolveValidationStatus(
   adjustment: number;
   needsSecondRound: boolean;
 } {
+  if (round === 1 && (counts.low > 0 || counts.high > 0)) {
+    const adjustment =
+      counts.low > counts.high
+        ? VALIDATION_UPWARD_ADJUSTMENT
+        : counts.high > counts.low
+          ? VALIDATION_DOWNWARD_ADJUSTMENT
+          : 1;
+
+    return {
+      status: "adjusted",
+      calibratedAndValidated: false,
+      adjustment,
+      needsSecondRound: true,
+    };
+  }
+
   if (counts.correct > counts.low && counts.correct > counts.high) {
     return {
       status: "confirmed",
@@ -796,15 +812,6 @@ function resolveValidationStatus(
   }
 
   if (counts.low > counts.correct && counts.low > counts.high) {
-    if (round === 1) {
-      return {
-        status: "adjusted",
-        calibratedAndValidated: false,
-        adjustment: VALIDATION_UPWARD_ADJUSTMENT,
-        needsSecondRound: true,
-      };
-    }
-
     return {
       status: "needs-review",
       calibratedAndValidated: false,
@@ -814,15 +821,6 @@ function resolveValidationStatus(
   }
 
   if (counts.high > counts.correct && counts.high > counts.low) {
-    if (round === 1) {
-      return {
-        status: "adjusted",
-        calibratedAndValidated: false,
-        adjustment: VALIDATION_DOWNWARD_ADJUSTMENT,
-        needsSecondRound: true,
-      };
-    }
-
     return {
       status: "needs-review",
       calibratedAndValidated: false,

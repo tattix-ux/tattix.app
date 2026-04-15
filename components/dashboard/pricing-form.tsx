@@ -341,6 +341,7 @@ export function PricingForm({
   const [validationFeedback, setValidationFeedback] = useState<
     Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>
   >({});
+  const [pendingSaveDraft, setPendingSaveDraft] = useState<CalibrationDraft | null>(null);
   const [awaitingFinalSave, setAwaitingFinalSave] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -404,6 +405,7 @@ export function PricingForm({
     setScreenIndex(0);
     setShowCalibration(false);
     setShowFinalValidation(false);
+    setPendingSaveDraft(null);
     setAwaitingFinalSave(false);
     resetValidationFlow();
     setStatusMessage(null);
@@ -439,6 +441,7 @@ export function PricingForm({
       setStatusMessage(successMessage);
       setShowCalibration(false);
       setShowFinalValidation(false);
+      setPendingSaveDraft(null);
       setAwaitingFinalSave(false);
       router.refresh();
     } finally {
@@ -487,6 +490,7 @@ export function PricingForm({
     setValidationIndex(0);
     setValidationRound(1);
     setValidationFeedback({});
+    setPendingSaveDraft(null);
   }
 
   async function handleValidationChoice(feedback: PricingValidationFeedback) {
@@ -513,6 +517,8 @@ export function PricingForm({
         review,
       );
       setDraft(adjustedDraft);
+      setPendingSaveDraft(null);
+      setAwaitingFinalSave(false);
       setValidationRound(2);
       setValidationIndex(0);
       setValidationFeedback({});
@@ -522,6 +528,7 @@ export function PricingForm({
 
     const nextDraft = updateFinalValidationDraft(draft, review);
     setDraft(nextDraft);
+    setPendingSaveDraft(nextDraft);
     setAwaitingFinalSave(true);
     setStatusMessage(
       review.calibratedAndValidated ? copy.finalCheckReady : copy.validationNeedsReview,
@@ -559,6 +566,7 @@ export function PricingForm({
                 onClick={() => {
                   setShowCalibration((current) => !current);
                   setShowFinalValidation(false);
+                  setPendingSaveDraft(null);
                   setAwaitingFinalSave(false);
                   setScreenIndex(0);
                   setStatusMessage(null);
@@ -727,14 +735,16 @@ export function PricingForm({
                 <p className="mt-4 text-sm text-[var(--foreground-muted)]">{copy.finalCheckIntro}</p>
 
                 <div className="mt-4 overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
-                  <div className="relative aspect-[4/5] w-full bg-black/10">
-                    <Image
-                      src={currentValidationImage}
-                      alt={getValidationScenarioLabel(currentValidationScenario.id, locale)}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, 560px"
-                    />
+                  <div className="mx-auto max-w-[360px] p-3 sm:p-4">
+                    <div className="relative aspect-[4/3] w-full bg-black/10">
+                      <Image
+                        src={currentValidationImage}
+                        alt={getValidationScenarioLabel(currentValidationScenario.id, locale)}
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 768px) 100vw, 360px"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -823,8 +833,8 @@ export function PricingForm({
                     disabled={isSaving}
                     onClick={() =>
                       handleSave(
-                        draft,
-                        draft.validation.finalValidation.calibratedAndValidated
+                        pendingSaveDraft ?? draft,
+                        (pendingSaveDraft ?? draft).validation.finalValidation.calibratedAndValidated
                           ? copy.validationSaved
                           : copy.validationNeedsReview,
                       )
