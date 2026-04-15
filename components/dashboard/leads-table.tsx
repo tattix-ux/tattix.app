@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ImageIcon, StickyNote } from "lucide-react";
+import { ChevronDown, ImageIcon, StickyNote } from "lucide-react";
 
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Badge } from "@/components/ui/badge";
@@ -44,8 +44,6 @@ const leadCopy = {
     filters: {
       status: "Status",
       time: "Date range",
-      withReference: "With reference image",
-      withNotes: "With notes",
       all: "All",
       "7d": "Last 7 days",
       "30d": "Last 30 days",
@@ -119,8 +117,6 @@ const leadCopy = {
     filters: {
       status: "Durum",
       time: "Zaman",
-      withReference: "Referans görselli olanlar",
-      withNotes: "Not içerenler",
       all: "Tümü",
       "7d": "Son 7 gün",
       "30d": "Son 30 gün",
@@ -389,13 +385,9 @@ function filterLeads(
   {
     status,
     range,
-    withReference,
-    withNotes,
   }: {
     status: LeadStatusFilter;
     range: FilterRange;
-    withReference: boolean;
-    withNotes: boolean;
   },
 ) {
   const start = getRangeStart(range);
@@ -406,14 +398,6 @@ function filterLeads(
     }
 
     if (start && new Date(lead.createdAt) < start) {
-      return false;
-    }
-
-    if (withReference && !getReferenceImageUrl(lead)) {
-      return false;
-    }
-
-    if (withNotes && !lead.notes?.trim()) {
       return false;
     }
 
@@ -534,10 +518,9 @@ export function LeadsTable({
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
   const [range, setRange] = useState<FilterRange>("7d");
-  const [withReference, setWithReference] = useState(false);
-  const [withNotes, setWithNotes] = useState(false);
   const [sort, setSort] = useState<LeadSort>("newest");
   const [granularity, setGranularity] = useState<ChartGranularity>("weekly");
+  const [chartOpen, setChartOpen] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -570,12 +553,10 @@ export function LeadsTable({
         filterLeads(localLeads, {
           status: statusFilter,
           range,
-          withReference,
-          withNotes,
         }),
         sort,
       ),
-    [localLeads, range, sort, statusFilter, withNotes, withReference],
+    [localLeads, range, sort, statusFilter],
   );
 
   const totalCount = filteredLeads.length;
@@ -598,7 +579,7 @@ export function LeadsTable({
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, range, withReference, withNotes, sort]);
+  }, [statusFilter, range, sort]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -788,24 +769,6 @@ export function LeadsTable({
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={withReference ? "secondary" : "outline"}
-                        onClick={() => setWithReference((current) => !current)}
-                      >
-                        {copy.filters.withReference}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={withNotes ? "secondary" : "outline"}
-                        onClick={() => setWithNotes((current) => !current)}
-                      >
-                        {copy.filters.withNotes}
-                      </Button>
-                    </div>
                   </div>
 
                   <div className="w-full max-w-xs">
@@ -826,64 +789,75 @@ export function LeadsTable({
               </div>
 
               <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between gap-4 text-left"
+                  onClick={() => setChartOpen((current) => !current)}
+                >
                   <div>
                     <p className="text-lg font-semibold text-white">{copy.chartTitle}</p>
                     <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.chartDescription}</p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(["daily", "weekly", "monthly"] as const).map((item) => (
-                      <Button
-                        key={item}
-                        type="button"
-                        size="sm"
-                        variant={granularity === item ? "secondary" : "outline"}
-                        onClick={() => setGranularity(item)}
-                      >
-                        {copy.granularity[item]}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
+                  <ChevronDown
+                    className={cn("size-5 text-[var(--foreground-muted)] transition-transform", chartOpen ? "rotate-180" : "")}
+                  />
+                </button>
 
-                <div className="mt-5 space-y-4">
-                  <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="size-2 rounded-full bg-white" />
-                      {copy.requests}
-                    </span>
-                    <span className="inline-flex items-center gap-2">
-                      <span className="size-2 rounded-full bg-[var(--accent)]" />
-                      {copy.sales}
-                    </span>
-                  </div>
-
-                  {chartData.length === 0 ? (
-                    <p className="text-sm text-[var(--foreground-muted)]">{copy.emptyFiltered}</p>
-                  ) : (
-                    <div className="grid h-52 grid-cols-[repeat(auto-fit,minmax(52px,1fr))] items-end gap-3">
-                      {chartData.map((item) => (
-                        <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
-                          <div className="flex h-36 w-full items-end justify-center gap-1">
-                            <div
-                              className="w-3 rounded-t-full bg-white/85"
-                              style={{ height: `${Math.max((item.total / chartMax) * 100, 8)}%` }}
-                              title={`${copy.requests}: ${item.total}`}
-                            />
-                            <div
-                              className="w-3 rounded-t-full bg-[var(--accent)]"
-                              style={{ height: `${Math.max((item.sold / chartMax) * 100, item.sold ? 8 : 0)}%` }}
-                              title={`${copy.sales}: ${item.sold}`}
-                            />
-                          </div>
-                          <p className="truncate text-center text-[11px] text-[var(--foreground-muted)]">
-                            {item.label}
-                          </p>
-                        </div>
-                      ))}
+                {chartOpen ? (
+                  <div className="mt-5 space-y-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                        <span className="inline-flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-white" />
+                          {copy.requests}
+                        </span>
+                        <span className="inline-flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-[var(--accent)]" />
+                          {copy.sales}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(["daily", "weekly", "monthly"] as const).map((item) => (
+                          <Button
+                            key={item}
+                            type="button"
+                            size="sm"
+                            variant={granularity === item ? "secondary" : "outline"}
+                            onClick={() => setGranularity(item)}
+                          >
+                            {copy.granularity[item]}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
-                  )}
-                </div>
+
+                    {chartData.length === 0 ? (
+                      <p className="text-sm text-[var(--foreground-muted)]">{copy.emptyFiltered}</p>
+                    ) : (
+                      <div className="grid h-52 grid-cols-[repeat(auto-fit,minmax(52px,1fr))] items-end gap-3">
+                        {chartData.map((item) => (
+                          <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
+                            <div className="flex h-36 w-full items-end justify-center gap-1">
+                              <div
+                                className="w-3 rounded-t-full bg-white/85"
+                                style={{ height: `${Math.max((item.total / chartMax) * 100, 8)}%` }}
+                                title={`${copy.requests}: ${item.total}`}
+                              />
+                              <div
+                                className="w-3 rounded-t-full bg-[var(--accent)]"
+                                style={{ height: `${Math.max((item.sold / chartMax) * 100, item.sold ? 8 : 0)}%` }}
+                                title={`${copy.sales}: ${item.sold}`}
+                              />
+                            </div>
+                            <p className="truncate text-center text-[11px] text-[var(--foreground-muted)]">
+                              {item.label}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </>
           ) : (
@@ -911,8 +885,6 @@ export function LeadsTable({
                 onClick={() => {
                   setStatusFilter("all");
                   setRange("7d");
-                  setWithReference(false);
-                  setWithNotes(false);
                   setSort("newest");
                 }}
               >
