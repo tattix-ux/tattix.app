@@ -6,9 +6,13 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import colorMediumImage from "@/sample-tattoos/colour-medium.png";
+import coloredButterflyImage from "@/sample-tattoos/coloured butterfly.png";
+import daggerImage from "@/sample-tattoos/dagger.png";
 import highDetailImage from "@/sample-tattoos/high.png";
 import lowDetailImage from "@/sample-tattoos/low.png";
 import mediumDetailImage from "@/sample-tattoos/medium.png";
+import minimalLineworkImage from "@/sample-tattoos/minimal linework.png";
+import realisticEyeImage from "@/sample-tattoos/realistic eye.png";
 import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,23 +20,42 @@ import { Input } from "@/components/ui/input";
 import { pricingSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import {
-  buildCalibrationPreviewExamples,
+  buildValidationPreviewExamples,
   buildCalibrationSlots,
   buildInitialCalibrationDraft,
   buildPricingPayloadFromCalibrationDraft,
   CALIBRATION_QUESTIONS,
   isCalibrationReady,
+  summarizeFinalValidationReview,
   updateCalibrationDraftRange,
   updateCalibrationValidationDraft,
+  updateFinalValidationDraft,
+  VALIDATION_SCENARIOS,
   type CalibrationDraft,
 } from "@/lib/pricing/calibration-flow";
-import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
+import type {
+  ArtistPricingRules,
+  ArtistStyleOption,
+  PricingValidationStatus,
+  PricingValidationExampleId,
+  PricingValidationFeedback,
+} from "@/lib/types";
 
 const calibrationImages: Record<"low" | "medium" | "high" | "color", StaticImageData> = {
   low: lowDetailImage,
   medium: mediumDetailImage,
   high: highDetailImage,
   color: colorMediumImage,
+};
+
+const validationImages: Record<
+  "minimal-linework" | "ornamental-dagger" | "realistic-eye" | "colored-butterfly",
+  StaticImageData
+> = {
+  "minimal-linework": minimalLineworkImage,
+  "ornamental-dagger": daggerImage,
+  "realistic-eye": realisticEyeImage,
+  "colored-butterfly": coloredButterflyImage,
 };
 
 function getText(locale: PublicLocale) {
@@ -84,11 +107,29 @@ function getText(locale: PublicLocale) {
       referenceTitle: "Kullanılan referans",
       referenceHelp: "Bu görsel yer tutucu değil; senin verdiğin örnek görseller kullanılıyor. İleride kolayca değiştirilebilir.",
       finalCheckTitle: "Son kontrol",
-      finalCheckBody: "Tattix bu örnek tahminleri üretti. Sana ne kadar uygun görünüyor?",
+      finalCheckIntro:
+        "Son bir kontrol yapalım. Aşağıdaki örnek dövmeler için oluşturduğum tahmini fiyat aralıklarının sana ne kadar uygun göründüğünü seç.",
+      finalCheckReady: "Final kontrol tamamlandı.",
+      finalCheckPending: "Final kontrol henüz tamamlanmadı.",
+      finalCheckStart: "Son kontrolü başlat",
+      finalCheckRestart: "Son kontrolü tekrar yap",
+      finalCheckClose: "Daha sonra bakarım",
       previewRange: "Tahmini aralık",
-      preview1: "Orta boy · orta detay · kolay bölge · siyah",
-      preview2: "Daha büyük · çok detay · zor bölge · siyah",
-      preview3: "Daha büyük · orta detay · kolay bölge · renkli",
+      validationQuestion: "Bu tahmini fiyat aralığı sana ne kadar uygun görünüyor?",
+      validationAdjusted: "Tahminleri biraz güncelledim. Aynı örnekleri bir kez daha kontrol edelim.",
+      validationSaved: "Final kontrol kaydedildi.",
+      validationNeedsReview: "Model hâlâ biraz ayar istiyor. Bu haliyle kaydettim.",
+      scenarioSize: "Yaklaşık boyut",
+      scenarioPlacement: "Bölge",
+      scenario1: "Minimal linework · siyah",
+      scenario2: "Ornamental dagger · siyah",
+      scenario3: "Realistic eye · black & grey",
+      scenario4: "Colored butterfly · renkli",
+      statusPending: "Bekliyor",
+      statusConfirmed: "Onaylandı",
+      statusAdjusted: "Güncellendi",
+      statusNoMajority: "Net bir çoğunluk yok",
+      statusNeedsReview: "Bir tur daha manuel bakılmalı",
       looksRight: "Uygun",
       slightlyLow: "Biraz düşük",
       slightlyHigh: "Biraz yüksek",
@@ -146,11 +187,29 @@ function getText(locale: PublicLocale) {
     referenceTitle: "Reference used",
     referenceHelp: "These images are replaceable and can be swapped with your final calibration images later.",
     finalCheckTitle: "Final check",
-    finalCheckBody: "Tattix generated these sample estimates. How close do they feel?",
+    finalCheckIntro:
+      "One final check. Review how believable these estimated quote ranges look for the example tattoos below.",
+    finalCheckReady: "Final check completed.",
+    finalCheckPending: "Final check has not been completed yet.",
+    finalCheckStart: "Start final check",
+    finalCheckRestart: "Run final check again",
+    finalCheckClose: "Maybe later",
     previewRange: "Estimated range",
-    preview1: "Medium size · medium detail · easy placement · black",
-    preview2: "Larger size · high detail · hard placement · black",
-    preview3: "Larger size · medium detail · easy placement · color",
+    validationQuestion: "How close does this estimated range feel to you?",
+    validationAdjusted: "I updated the estimate slightly. Let's review the same examples once more.",
+    validationSaved: "Final check saved.",
+    validationNeedsReview: "The model still needs a quick manual review. This state was saved.",
+    scenarioSize: "Approximate size",
+    scenarioPlacement: "Placement",
+    scenario1: "Minimal linework · black",
+    scenario2: "Ornamental dagger · black",
+    scenario3: "Realistic eye · black & grey",
+    scenario4: "Colored butterfly · color",
+    statusPending: "Pending",
+    statusConfirmed: "Confirmed",
+    statusAdjusted: "Adjusted",
+    statusNoMajority: "No clear majority",
+    statusNeedsReview: "Needs review",
     looksRight: "Looks right",
     slightlyLow: "Slightly low",
     slightlyHigh: "Slightly high",
@@ -244,6 +303,55 @@ function isQuestionAnswered(range: { min: string; max: string }) {
   return Boolean(range.min.trim());
 }
 
+function getValidationStatusLabel(
+  status: PricingValidationStatus | "pending",
+  locale: PublicLocale,
+) {
+  const copy = getText(locale);
+
+  switch (status) {
+    case "confirmed":
+      return copy.statusConfirmed;
+    case "adjusted":
+      return copy.statusAdjusted;
+    case "completed-no-majority":
+      return copy.statusNoMajority;
+    case "needs-review":
+      return copy.statusNeedsReview;
+    default:
+      return copy.statusPending;
+  }
+}
+
+function getValidationScenarioLabel(
+  id: PricingValidationExampleId,
+  locale: PublicLocale,
+) {
+  const copy = getText(locale);
+
+  switch (id) {
+    case "minimal-linework":
+      return copy.scenario1;
+    case "ornamental-dagger":
+      return copy.scenario2;
+    case "realistic-eye":
+      return copy.scenario3;
+    case "colored-butterfly":
+      return copy.scenario4;
+  }
+}
+
+function getPlacementSummaryLabel(
+  placement: string,
+  locale: PublicLocale,
+) {
+  if (locale === "tr") {
+    return placement === "ribs" ? "Zor bölge" : "Kolay bölge";
+  }
+
+  return placement === "ribs" ? "Hard placement" : "Easy placement";
+}
+
 export function PricingForm({
   pricingRules,
   styles: _styles,
@@ -257,24 +365,35 @@ export function PricingForm({
   const copy = getText(locale);
   const [draft, setDraft] = useState<CalibrationDraft>(() => buildInitialCalibrationDraft(pricingRules));
   const [showCalibration, setShowCalibration] = useState(false);
+  const [showFinalValidation, setShowFinalValidation] = useState(false);
   const [screenIndex, setScreenIndex] = useState(0);
+  const [validationIndex, setValidationIndex] = useState(0);
+  const [validationRound, setValidationRound] = useState<1 | 2>(1);
+  const [validationFeedback, setValidationFeedback] = useState<
+    Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>
+  >({});
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [showValidation, setShowValidation] = useState(false);
 
   const slots = buildCalibrationSlots(pricingRules.calibrationReferenceSlots);
   const ready = isCalibrationReady(pricingRules);
+  const validationReady = draft.validation.finalValidation.calibratedAndValidated;
   const currentQuestion = CALIBRATION_QUESTIONS[screenIndex];
   const currentMeta = getQuestionMeta(currentQuestion.id, locale);
   const currentRange = getQuestionRange(draft, currentQuestion.id);
-  const previewExamples = useMemo(() => buildCalibrationPreviewExamples(draft), [draft]);
-  const previewLabels = [copy.preview1, copy.preview2, copy.preview3];
+  const validationExamples = useMemo(
+    () => buildValidationPreviewExamples(draft, pricingRules),
+    [draft, pricingRules],
+  );
+  const currentValidationScenario = VALIDATION_SCENARIOS[validationIndex] ?? VALIDATION_SCENARIOS[0];
+  const currentValidationRange = validationExamples[validationIndex] ?? validationExamples[0];
+  const currentValidationImage = validationImages[currentValidationScenario.image];
   const currentImage = calibrationImages[currentQuestion.image];
 
-  async function handleSave() {
+  async function persistDraft(nextDraft: CalibrationDraft, successMessage: string) {
     setStatusMessage(null);
 
-    const payload = buildPricingPayloadFromCalibrationDraft(draft, pricingRules);
+    const payload = buildPricingPayloadFromCalibrationDraft(nextDraft, pricingRules);
     const parsed = pricingSchema.safeParse(payload);
 
     if (!parsed.success) {
@@ -297,12 +416,18 @@ export function PricingForm({
         return;
       }
 
-      setStatusMessage(copy.saved);
+      setDraft(nextDraft);
+      setStatusMessage(successMessage);
       setShowCalibration(false);
+      setShowFinalValidation(false);
       router.refresh();
     } finally {
       setIsSaving(false);
     }
+  }
+
+  async function handleSave(nextDraft = draft, successMessage = copy.saved) {
+    await persistDraft(nextDraft, successMessage);
   }
 
   function handleNext() {
@@ -312,24 +437,63 @@ export function PricingForm({
     }
 
     setStatusMessage(null);
-
-    if (screenIndex === CALIBRATION_QUESTIONS.length - 1) {
-      setShowValidation(true);
-      return;
-    }
-
     setScreenIndex((current) => current + 1);
   }
 
   function handleBack() {
     setStatusMessage(null);
+    setScreenIndex((current) => Math.max(0, current - 1));
+  }
 
-    if (showValidation) {
-      setShowValidation(false);
+  function resetValidationFlow() {
+    setValidationIndex(0);
+    setValidationRound(1);
+    setValidationFeedback({});
+  }
+
+  async function handleValidationChoice(feedback: PricingValidationFeedback) {
+    const nextFeedback = {
+      ...validationFeedback,
+      [currentValidationScenario.id]: feedback,
+    };
+    setValidationFeedback(nextFeedback);
+    setStatusMessage(null);
+
+    if (validationIndex < VALIDATION_SCENARIOS.length - 1) {
+      setValidationIndex((current) => current + 1);
       return;
     }
 
-    setScreenIndex((current) => Math.max(0, current - 1));
+    const { review, nextScaleMultiplier, needsSecondRound } = summarizeFinalValidationReview(
+      nextFeedback,
+      validationRound,
+    );
+
+    if (needsSecondRound) {
+      const nextGlobalScale = Math.max(
+        0.85,
+        Math.min(1.15, (Number(draft.validation.globalScale) || 1) * nextScaleMultiplier),
+      );
+      setDraft((current) =>
+        updateFinalValidationDraft(
+          updateCalibrationValidationDraft(current, {
+            globalScale: Number(nextGlobalScale.toFixed(2)).toString(),
+          }),
+          review,
+        ),
+      );
+      setValidationRound(2);
+      setValidationIndex(0);
+      setValidationFeedback({});
+      setStatusMessage(copy.validationAdjusted);
+      return;
+    }
+
+    const nextDraft = updateFinalValidationDraft(draft, review);
+    await handleSave(
+      nextDraft,
+      review.calibratedAndValidated ? copy.validationSaved : copy.validationNeedsReview,
+    );
   }
 
   return (
@@ -380,7 +544,9 @@ export function PricingForm({
                 type="button"
                 onClick={() => {
                   setShowCalibration((current) => !current);
-                  setShowValidation(false);
+                  setShowFinalValidation(false);
+                  setScreenIndex(0);
+                  setStatusMessage(null);
                 }}
               >
                 {ready ? copy.edit : copy.start}
@@ -393,110 +559,227 @@ export function PricingForm({
             </div>
           </div>
 
+          {ready ? (
+            <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-white">{copy.finalCheckTitle}</p>
+                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                    {validationReady ? copy.finalCheckReady : copy.finalCheckPending}
+                  </p>
+                </div>
+                <div className="rounded-full border border-white/8 bg-black/20 px-3 py-1 text-sm text-white">
+                  {getValidationStatusLabel(
+                    draft.validation.finalValidation.validationStatus ?? "pending",
+                    locale,
+                  )}
+                </div>
+              </div>
+              <p className="mt-4 text-sm text-[var(--foreground-muted)]">{copy.finalCheckIntro}</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setShowFinalValidation((current) => !current);
+                    setShowCalibration(false);
+                    resetValidationFlow();
+                    setStatusMessage(null);
+                  }}
+                >
+                  {validationReady ? copy.finalCheckRestart : copy.finalCheckStart}
+                </Button>
+                {showFinalValidation ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowFinalValidation(false);
+                      resetValidationFlow();
+                    }}
+                  >
+                    {copy.finalCheckClose}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           {showCalibration ? (
             <>
-              {!showValidation ? (
-                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                        {copy.stepLabel} {currentQuestion.step} / 4
-                      </p>
-                      <h3 className="mt-2 text-lg font-semibold text-white">{currentMeta.title}</h3>
-                    </div>
-                    <p className="text-sm text-[var(--foreground-muted)]">
-                      {copy.questionLabel} {currentQuestion.stepIndex} / {CALIBRATION_QUESTIONS.filter((item) => item.step === currentQuestion.step).length}
+              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
+                      {copy.stepLabel} {currentQuestion.step} / 4
                     </p>
+                    <h3 className="mt-2 text-lg font-semibold text-white">{currentMeta.title}</h3>
                   </div>
+                  <p className="text-sm text-[var(--foreground-muted)]">
+                    {copy.questionLabel} {currentQuestion.stepIndex} / {CALIBRATION_QUESTIONS.filter((item) => item.step === currentQuestion.step).length}
+                  </p>
+                </div>
 
-                  <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
-                    <p className="text-sm font-medium text-white">{currentMeta.prompt}</p>
-                    <p className="mt-2 text-sm text-[var(--foreground-muted)]">{currentMeta.assumption}</p>
+                <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
+                  <p className="text-sm font-medium text-white">{currentMeta.prompt}</p>
+                  <p className="mt-2 text-sm text-[var(--foreground-muted)]">{currentMeta.assumption}</p>
+                </div>
+
+                <div className="mt-4 overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
+                  <div className="relative aspect-[4/5] w-full bg-black/10">
+                    <Image
+                      src={currentImage}
+                      alt={currentMeta.title}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, 560px"
+                    />
                   </div>
-
-                  <div className="mt-4 overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
-                    <div className="relative aspect-[4/5] w-full bg-black/10">
-                      <Image
-                        src={currentImage}
-                        alt={currentMeta.title}
-                        fill
-                        className="object-contain"
-                        sizes="(max-width: 768px) 100vw, 560px"
-                      />
-                    </div>
-                    <div className="border-t border-white/8 p-4">
-                      <p className="text-sm font-medium text-white">{copy.referenceTitle}</p>
-                      <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.referenceHelp}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Field label={copy.priceLabel}>
-                        <Input
-                          type="number"
-                          value={currentRange.min}
-                          onChange={(event) =>
-                            setDraft((current) =>
-                              setQuestionRange(current, currentQuestion.id, "min", event.target.value),
-                            )
-                          }
-                        />
-                      </Field>
-                      <Field label={copy.maxLabel}>
-                        <Input
-                          type="number"
-                          value={currentRange.max}
-                          onChange={(event) =>
-                            setDraft((current) =>
-                              setQuestionRange(current, currentQuestion.id, "max", event.target.value),
-                            )
-                          }
-                        />
-                      </Field>
-                    </div>
-                    <p className="mt-3 text-sm text-[var(--foreground-muted)]">{copy.maxHelp}</p>
+                  <div className="border-t border-white/8 p-4">
+                    <p className="text-sm font-medium text-white">{copy.referenceTitle}</p>
+                    <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.referenceHelp}</p>
                   </div>
                 </div>
-              ) : (
-                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:p-5">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                    {copy.finalCheckTitle}
-                  </p>
-                  <h3 className="mt-2 text-lg font-semibold text-white">{copy.finalCheckTitle}</h3>
-                  <p className="mt-2 text-sm text-[var(--foreground-muted)]">{copy.finalCheckBody}</p>
 
-                  <div className="mt-5 grid gap-3">
-                    {previewExamples.map((example, index) => (
-                      <div key={example.id} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
-                        <p className="text-sm text-[var(--foreground-muted)]">{previewLabels[index]}</p>
-                        <p className="mt-2 text-base font-medium text-white">
-                          {copy.previewRange}: {example.range.min} - {example.range.max}
-                        </p>
-                      </div>
-                    ))}
+                <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label={copy.priceLabel}>
+                      <Input
+                        type="number"
+                        value={currentRange.min}
+                        onChange={(event) =>
+                          setDraft((current) =>
+                            setQuestionRange(current, currentQuestion.id, "min", event.target.value),
+                          )
+                        }
+                      />
+                    </Field>
+                    <Field label={copy.maxLabel}>
+                      <Input
+                        type="number"
+                        value={currentRange.max}
+                        onChange={(event) =>
+                          setDraft((current) =>
+                            setQuestionRange(current, currentQuestion.id, "max", event.target.value),
+                          )
+                        }
+                      />
+                    </Field>
                   </div>
+                  <p className="mt-3 text-sm text-[var(--foreground-muted)]">{copy.maxHelp}</p>
+                </div>
+              </div>
 
-                  <div className="mt-5 grid gap-2 sm:grid-cols-3">
+              {statusMessage ? <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p> : null}
+
+              <div className="flex flex-wrap items-center gap-3">
+                {screenIndex > 0 ? (
+                  <Button type="button" variant="ghost" onClick={handleBack}>
+                    <ArrowLeft className="size-4" />
+                    {copy.back}
+                  </Button>
+                ) : null}
+
+                {screenIndex < CALIBRATION_QUESTIONS.length - 1 ? (
+                  <Button type="button" onClick={handleNext}>
+                    {copy.next}
+                    <ArrowRight className="size-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      handleSave(
+                        updateFinalValidationDraft(draft, {
+                          validationRound: 1,
+                          perExampleFeedback: {},
+                          appliedGlobalValidationAdjustment: 1,
+                          validationStatus: "pending",
+                          calibratedAndValidated: false,
+                        }),
+                      )
+                    }
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <LoaderCircle className="size-4 animate-spin" />
+                        {copy.saving}
+                      </>
+                    ) : (
+                      <>
+                        <Save className="size-4" />
+                        {copy.save}
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </>
+          ) : null}
+
+          {showFinalValidation ? (
+            <>
+              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
+                      {copy.finalCheckTitle}
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-white">
+                      {copy.stepLabel} {validationRound} / 2
+                    </h3>
+                  </div>
+                  <p className="text-sm text-[var(--foreground-muted)]">
+                    {copy.questionLabel} {validationIndex + 1} / {VALIDATION_SCENARIOS.length}
+                  </p>
+                </div>
+
+                <p className="mt-4 text-sm text-[var(--foreground-muted)]">{copy.finalCheckIntro}</p>
+
+                <div className="mt-4 overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
+                  <div className="relative aspect-[4/5] w-full bg-black/10">
+                    <Image
+                      src={currentValidationImage}
+                      alt={getValidationScenarioLabel(currentValidationScenario.id, locale)}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, 560px"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
+                  <p className="text-sm font-medium text-white">
+                    {getValidationScenarioLabel(currentValidationScenario.id, locale)}
+                  </p>
+                  <div className="mt-3 grid gap-2 text-sm text-[var(--foreground-muted)] sm:grid-cols-2">
+                    <p>
+                      {copy.scenarioSize}: {currentValidationScenario.sizeCm} cm
+                    </p>
+                    <p>
+                      {copy.scenarioPlacement}: {getPlacementSummaryLabel(currentValidationScenario.placement, locale)}
+                    </p>
+                  </div>
+                  <p className="mt-4 text-base font-medium text-white">
+                    {copy.previewRange}: {currentValidationRange.range.min} - {currentValidationRange.range.max}
+                  </p>
+                </div>
+
+                <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
+                  <p className="text-sm font-medium text-white">{copy.validationQuestion}</p>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
                     {[
-                      { key: "looks-right", label: copy.looksRight, scale: "1" },
-                      { key: "slightly-low", label: copy.slightlyLow, scale: "1.06" },
-                      { key: "slightly-high", label: copy.slightlyHigh, scale: "0.94" },
+                      { key: "looks-right", label: copy.looksRight },
+                      { key: "slightly-low", label: copy.slightlyLow },
+                      { key: "slightly-high", label: copy.slightlyHigh },
                     ].map((option) => {
-                      const active = draft.validation.feedback === option.key;
+                      const active = validationFeedback[currentValidationScenario.id] === option.key;
 
                       return (
                         <button
                           key={option.key}
                           type="button"
-                          onClick={() =>
-                            setDraft((current) =>
-                              updateCalibrationValidationDraft(current, {
-                                feedback: option.key as CalibrationDraft["validation"]["feedback"],
-                                globalScale: option.scale,
-                              }),
-                            )
-                          }
+                          onClick={() => handleValidationChoice(option.key as PricingValidationFeedback)}
                           className="rounded-[18px] border px-4 py-3 text-sm transition"
                           style={{
                             borderColor: active ? "var(--primary)" : "rgba(255,255,255,0.08)",
@@ -511,73 +794,26 @@ export function PricingForm({
                       );
                     })}
                   </div>
-
-                  <div className="mt-5 rounded-[20px] border border-white/8 bg-black/20 p-4">
-                    <p className="text-sm font-medium text-white">{copy.scaleLabel}</p>
-                    <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.scaleHelp}</p>
-                    <div className="mt-4 grid grid-cols-5 gap-2">
-                      {["0.92", "0.96", "1", "1.04", "1.08"].map((value) => {
-                        const active = draft.validation.globalScale === value;
-
-                        return (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() =>
-                              setDraft((current) =>
-                                updateCalibrationValidationDraft(current, {
-                                  globalScale: value,
-                                }),
-                              )
-                            }
-                            className="rounded-[16px] border px-2 py-2 text-sm transition"
-                            style={{
-                              borderColor: active ? "var(--primary)" : "rgba(255,255,255,0.08)",
-                              backgroundColor: active
-                                ? "color-mix(in srgb, var(--primary) 18%, transparent)"
-                                : "rgba(255,255,255,0.02)",
-                              color: "white",
-                            }}
-                          >
-                            {value}x
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
-              )}
+              </div>
 
               {statusMessage ? <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p> : null}
 
               <div className="flex flex-wrap items-center gap-3">
-                {(screenIndex > 0 || showValidation) ? (
-                  <Button type="button" variant="ghost" onClick={handleBack}>
+                {(validationIndex > 0 || validationRound > 1) ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      if (validationIndex > 0) {
+                        setValidationIndex((current) => Math.max(0, current - 1));
+                      }
+                    }}
+                  >
                     <ArrowLeft className="size-4" />
                     {copy.back}
                   </Button>
                 ) : null}
-
-                {!showValidation ? (
-                  <Button type="button" onClick={handleNext}>
-                    {copy.next}
-                    <ArrowRight className="size-4" />
-                  </Button>
-                ) : (
-                  <Button type="button" onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? (
-                      <>
-                        <LoaderCircle className="size-4 animate-spin" />
-                        {copy.saving}
-                      </>
-                    ) : (
-                      <>
-                        <Save className="size-4" />
-                        {copy.save}
-                      </>
-                    )}
-                  </Button>
-                )}
               </div>
             </>
           ) : null}

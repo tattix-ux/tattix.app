@@ -84,6 +84,25 @@ export type ArtistFeaturedDesign = {
 
 export type DetailLevelValue = "simple" | "standard" | "detailed";
 export type ColorModeValue = "black-only" | "black-grey" | "full-color";
+export type PricingValidationFeedback = "looks-right" | "slightly-low" | "slightly-high";
+export type PricingValidationExampleId =
+  | "minimal-linework"
+  | "ornamental-dagger"
+  | "realistic-eye"
+  | "colored-butterfly";
+export type PricingValidationStatus =
+  | "pending"
+  | "confirmed"
+  | "adjusted"
+  | "completed-no-majority"
+  | "needs-review";
+export type PricingFinalValidation = {
+  validationRound: 1 | 2;
+  perExampleFeedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
+  appliedGlobalValidationAdjustment: number;
+  validationStatus: PricingValidationStatus;
+  calibratedAndValidated: boolean;
+};
 
 export type PricingCalibrationExamples = {
   size: Record<SizeValue, number>;
@@ -96,6 +115,7 @@ export type PricingCalibrationExamples = {
   };
   colorMode: Record<ColorModeValue, number>;
   globalScale?: number;
+  finalValidation?: PricingFinalValidation;
 };
 
 export type PricingCalibrationReferenceSlot = {

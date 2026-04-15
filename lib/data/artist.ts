@@ -250,6 +250,13 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
         "full-color": Math.round(anchorPrice * midpoint(colorModeModifiers["full-color"])!),
       },
       globalScale: 1,
+      finalValidation: {
+        validationRound: 1 as const,
+        perExampleFeedback: {},
+        appliedGlobalValidationAdjustment: 1,
+        validationStatus: "pending" as const,
+        calibratedAndValidated: false,
+      },
     };
   const storedCalibrationExamples =
     (row.calibration_examples as ArtistPricingRules["calibrationExamples"] | undefined) ?? undefined;
@@ -266,6 +273,8 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
       Number.isFinite(storedCalibrationExamples.globalScale)
         ? storedCalibrationExamples.globalScale
         : defaultCalibrationExamples.globalScale,
+    finalValidation:
+      storedCalibrationExamples?.finalValidation ?? defaultCalibrationExamples.finalValidation,
   };
   const calibrationReferenceSlots =
     (row.calibration_reference_slots as PricingCalibrationReferenceSlot[] | undefined) ??

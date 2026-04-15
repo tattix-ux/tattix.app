@@ -1,8 +1,23 @@
 import type { z } from "zod";
 
+import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
 import { pricingSchema } from "@/lib/forms/schemas";
-import type { ArtistPricingRules, PriceRange } from "@/lib/types";
+import {
+  buildNormalizedQuoteConfig,
+  estimateNormalizedQuote,
+  type NormalizedQuoteInput,
+} from "@/lib/pricing/normalized-engine";
+import type {
+  ArtistPricingRules,
+  ColorModeValue,
+  DetailLevelValue,
+  PriceRange,
+  PricingFinalValidation,
+  PricingValidationExampleId,
+  PricingValidationFeedback,
+  PricingValidationStatus,
+} from "@/lib/types";
 
 export type PricingPayload = z.output<typeof pricingSchema>;
 
@@ -14,8 +29,8 @@ export type DraftRange = {
 export type CalibrationDraft = {
   openingPrice: string;
   validation: {
-    feedback: "looks-right" | "slightly-low" | "slightly-high";
     globalScale: string;
+    finalValidation: PricingFinalValidation;
   };
   size: {
     size8: DraftRange;
@@ -44,6 +59,15 @@ export type CalibrationPreview = {
     min: number;
     max: number;
   };
+};
+
+export type ValidationScenario = {
+  id: PricingValidationExampleId;
+  image: "minimal-linework" | "ornamental-dagger" | "realistic-eye" | "colored-butterfly";
+  sizeCm: number;
+  placement: BodyAreaDetailValue;
+  detailLevel: DetailLevelValue;
+  colorMode: ColorModeValue;
 };
 
 export type CalibrationQuestion =
@@ -80,6 +104,44 @@ export const CALIBRATION_SLOT_LABELS = [
   { slotId: "color-black", axis: "colorMode", key: "black", label: "Siyah referans slotu", assetRef: null },
   { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu", assetRef: null },
 ] as const;
+
+export const VALIDATION_SCENARIOS: ValidationScenario[] = [
+  {
+    id: "minimal-linework",
+    image: "minimal-linework",
+    sizeCm: 6,
+    placement: "forearm-outer",
+    detailLevel: "simple",
+    colorMode: "black-only",
+  },
+  {
+    id: "ornamental-dagger",
+    image: "ornamental-dagger",
+    sizeCm: 14,
+    placement: "forearm-outer",
+    detailLevel: "standard",
+    colorMode: "black-only",
+  },
+  {
+    id: "realistic-eye",
+    image: "realistic-eye",
+    sizeCm: 18,
+    placement: "ribs",
+    detailLevel: "detailed",
+    colorMode: "black-grey",
+  },
+  {
+    id: "colored-butterfly",
+    image: "colored-butterfly",
+    sizeCm: 12,
+    placement: "forearm-outer",
+    detailLevel: "standard",
+    colorMode: "full-color",
+  },
+];
+
+export const VALIDATION_UPWARD_ADJUSTMENT = 1.08;
+export const VALIDATION_DOWNWARD_ADJUSTMENT = 0.92;
 
 const DEFAULT_NEUTRAL_RANGE: PriceRange = { min: 1, max: 1.08 };
 const DEFAULT_HARD_RANGE: PriceRange = { min: 1.14, max: 1.3 };
@@ -251,13 +313,20 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
   return {
     openingPrice: String(roundPrice(anchorPrice)),
     validation: {
-      feedback: "looks-right",
       globalScale: String(
         typeof pricingRules.calibrationExamples.globalScale === "number" &&
           Number.isFinite(pricingRules.calibrationExamples.globalScale)
           ? Number(pricingRules.calibrationExamples.globalScale.toFixed(2))
           : 1,
       ),
+      finalValidation:
+        pricingRules.calibrationExamples.finalValidation ?? {
+          validationRound: 1,
+          perExampleFeedback: {},
+          appliedGlobalValidationAdjustment: 1,
+          validationStatus: "pending",
+          calibratedAndValidated: false,
+        },
     },
     size: {
       size8: stringRange(
@@ -349,6 +418,22 @@ export function updateCalibrationValidationDraft(
   };
 }
 
+export function updateFinalValidationDraft(
+  current: CalibrationDraft,
+  next: Partial<PricingFinalValidation>,
+): CalibrationDraft {
+  return {
+    ...current,
+    validation: {
+      ...current.validation,
+      finalValidation: {
+        ...current.validation.finalValidation,
+        ...next,
+      },
+    },
+  };
+}
+
 export function buildCalibrationSlots(existing: ArtistPricingRules["calibrationReferenceSlots"]) {
   return CALIBRATION_SLOT_LABELS.map((slot) => {
     const existingSlot = existing.find((item) => item.slotId === slot.slotId);
@@ -423,52 +508,212 @@ export function buildPricingPayloadFromCalibrationDraft(
         color: normalizeDraftRange(draft.color.color) ?? { min: 0, max: 0 },
       },
       validation: {
-        feedback: draft.validation.feedback,
+        feedback: "looks-right",
         globalScale: Number(draft.validation.globalScale) || 1,
+      },
+      finalValidation: draft.validation.finalValidation,
+    },
+  };
+}
+
+export function buildPricingRulesFromCalibrationDraft(
+  draft: CalibrationDraft,
+  pricingRules: ArtistPricingRules,
+): ArtistPricingRules {
+  const payload = buildPricingPayloadFromCalibrationDraft(draft, pricingRules);
+  const easyPlacementPrice = midpoint(payload.calibrationAnswers?.placementDifficulty.easy) ?? payload.basePrice;
+  const hardPlacementPrice = midpoint(payload.calibrationAnswers?.placementDifficulty.hard) ?? easyPlacementPrice;
+  const blackPrice = midpoint(payload.calibrationAnswers?.colorMode.black) ?? payload.basePrice;
+  const colorPrice = midpoint(payload.calibrationAnswers?.colorMode.color) ?? blackPrice;
+
+  return {
+    ...pricingRules,
+    anchorPrice: Math.round(payload.basePrice),
+    basePrice: Math.round(payload.basePrice),
+    minimumCharge: Math.round(payload.minimumCharge),
+    calibrationExamples: {
+      size: {
+        tiny: roundPrice(payload.basePrice * midpoint(payload.sizeModifiers.tiny)!),
+        small: roundPrice(payload.basePrice * midpoint(payload.sizeModifiers.small)!),
+        medium: roundPrice(payload.basePrice * midpoint(payload.sizeModifiers.medium)!),
+        large: roundPrice(payload.basePrice * midpoint(payload.sizeModifiers.large)!),
+      },
+      sizeCurve: {
+        "8": roundPrice(midpoint(payload.calibrationAnswers?.sizeCurve["8"]) ?? payload.basePrice),
+        "12": roundPrice(midpoint(payload.calibrationAnswers?.sizeCurve["12"]) ?? payload.basePrice),
+        "18": roundPrice(midpoint(payload.calibrationAnswers?.sizeCurve["18"]) ?? payload.basePrice),
+        "25": roundPrice(midpoint(payload.calibrationAnswers?.sizeCurve["25"]) ?? payload.basePrice),
+      },
+      detailLevel: {
+        simple: roundPrice(midpoint(payload.calibrationAnswers?.detailLevel.low) ?? payload.basePrice),
+        standard: roundPrice(midpoint(payload.calibrationAnswers?.detailLevel.medium) ?? payload.basePrice),
+        detailed: roundPrice(midpoint(payload.calibrationAnswers?.detailLevel.high) ?? payload.basePrice),
+      },
+      placement: Object.fromEntries(
+        Object.entries(payload.placementModifiers).map(([key, value]) => [
+          key,
+          roundPrice(payload.basePrice * midpoint(value)!),
+        ]),
+      ),
+      placementDifficulty: {
+        easy: roundPrice(easyPlacementPrice),
+        hard: roundPrice(hardPlacementPrice),
+      },
+      colorMode: {
+        "black-only": roundPrice(blackPrice),
+        "black-grey": roundPrice(payload.basePrice * midpoint(payload.colorModeModifiers["black-grey"])!),
+        "full-color": roundPrice(colorPrice),
+      },
+      globalScale: payload.calibrationAnswers?.validation?.globalScale ?? 1,
+      finalValidation: payload.calibrationAnswers?.finalValidation,
+    },
+    sizeModifiers: payload.sizeModifiers,
+    placementModifiers: payload.placementModifiers,
+    detailLevelModifiers: payload.detailLevelModifiers,
+    colorModeModifiers: payload.colorModeModifiers,
+    addonFees: payload.addonFees,
+    minimumSessionPrice: Math.round(payload.minimumCharge),
+    sizeBaseRanges: {
+      tiny: {
+        min: roundPrice(payload.basePrice * payload.sizeModifiers.tiny.min),
+        max: roundPrice(payload.basePrice * payload.sizeModifiers.tiny.max),
+      },
+      small: {
+        min: roundPrice(payload.basePrice * payload.sizeModifiers.small.min),
+        max: roundPrice(payload.basePrice * payload.sizeModifiers.small.max),
+      },
+      medium: {
+        min: roundPrice(payload.basePrice * payload.sizeModifiers.medium.min),
+        max: roundPrice(payload.basePrice * payload.sizeModifiers.medium.max),
+      },
+      large: {
+        min: roundPrice(payload.basePrice * payload.sizeModifiers.large.min),
+        max: roundPrice(payload.basePrice * payload.sizeModifiers.large.max),
       },
     },
   };
 }
 
-export function buildCalibrationPreviewExamples(draft: CalibrationDraft): CalibrationPreview[] {
-  const anchor = Math.max(Number(draft.openingPrice) || 0, 1);
-  const scale = Math.max(0.85, Math.min(1.15, Number(draft.validation.globalScale) || 1));
-  const sizeRatios = {
-    "8": ((normalizeDraftRange(draft.size.size8)?.min ?? anchor) + (normalizeDraftRange(draft.size.size8)?.max ?? anchor)) / 2 / anchor,
-    "12": 1,
-    "18": ((normalizeDraftRange(draft.size.size18)?.min ?? anchor) + (normalizeDraftRange(draft.size.size18)?.max ?? anchor)) / 2 / anchor,
-    "25": ((normalizeDraftRange(draft.size.size25)?.min ?? anchor) + (normalizeDraftRange(draft.size.size25)?.max ?? anchor)) / 2 / anchor,
-  };
-  const mediumDetail = Math.max(((normalizeDraftRange(draft.detail.medium)?.min ?? anchor) + (normalizeDraftRange(draft.detail.medium)?.max ?? anchor)) / 2, 1);
-  const easyPlacement = Math.max(((normalizeDraftRange(draft.placement.easy)?.min ?? anchor) + (normalizeDraftRange(draft.placement.easy)?.max ?? anchor)) / 2, 1);
-  const blackBase = Math.max(((normalizeDraftRange(draft.color.black)?.min ?? anchor) + (normalizeDraftRange(draft.color.black)?.max ?? anchor)) / 2, 1);
-  const detailRatios = {
-    low: (((normalizeDraftRange(draft.detail.low)?.min ?? mediumDetail) + (normalizeDraftRange(draft.detail.low)?.max ?? mediumDetail)) / 2) / mediumDetail,
-    medium: 1,
-    high: (((normalizeDraftRange(draft.detail.high)?.min ?? mediumDetail) + (normalizeDraftRange(draft.detail.high)?.max ?? mediumDetail)) / 2) / mediumDetail,
-  };
-  const placementRatios = {
-    easy: 1,
-    hard: (((normalizeDraftRange(draft.placement.hard)?.min ?? easyPlacement) + (normalizeDraftRange(draft.placement.hard)?.max ?? easyPlacement)) / 2) / easyPlacement,
-  };
-  const colorRatios = {
-    black: 1,
-    color: (((normalizeDraftRange(draft.color.color)?.min ?? blackBase) + (normalizeDraftRange(draft.color.color)?.max ?? blackBase)) / 2) / blackBase,
-  };
+export function buildValidationPreviewExamples(
+  draft: CalibrationDraft,
+  pricingRules: ArtistPricingRules,
+): CalibrationPreview[] {
+  const rules = buildPricingRulesFromCalibrationDraft(draft, pricingRules);
+  const config = buildNormalizedQuoteConfig(rules);
 
-  function buildRange(sizeKey: "12" | "18" | "25", detail: "medium" | "high", placement: "easy" | "hard", color: "black" | "color", spread: number) {
-    const center = anchor * sizeRatios[sizeKey] * detailRatios[detail] * placementRatios[placement] * colorRatios[color] * scale;
+  return VALIDATION_SCENARIOS.map((scenario) => {
+    const input: NormalizedQuoteInput = {
+      size: scenario.sizeCm <= 8 ? "tiny" : scenario.sizeCm <= 12 ? "small" : scenario.sizeCm <= 18 ? "medium" : "large",
+      sizeCm: scenario.sizeCm,
+      placement: scenario.placement,
+      detailLevel: scenario.detailLevel,
+      colorMode: scenario.colorMode,
+      coverUp: false,
+      customDesign: false,
+      designType: null,
+    };
+    const range = estimateNormalizedQuote(input, config);
+
     return {
-      min: roundPrice(center * (1 - spread)),
-      max: roundPrice(center * (1 + spread)),
+      id: scenario.id,
+      range,
+    };
+  });
+}
+
+function countFeedback(feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>) {
+  const values = Object.values(feedback);
+  const correct = values.filter((value) => value === "looks-right").length;
+  const low = values.filter((value) => value === "slightly-low").length;
+  const high = values.filter((value) => value === "slightly-high").length;
+
+  return { correct, low, high };
+}
+
+function resolveValidationStatus(
+  round: 1 | 2,
+  counts: ReturnType<typeof countFeedback>,
+): {
+  status: PricingValidationStatus;
+  calibratedAndValidated: boolean;
+  adjustment: number;
+  needsSecondRound: boolean;
+} {
+  if (counts.correct > counts.low && counts.correct > counts.high) {
+    return {
+      status: "confirmed",
+      calibratedAndValidated: true,
+      adjustment: 1,
+      needsSecondRound: false,
     };
   }
 
-  return [
-    { id: "example-1", range: buildRange("12", "medium", "easy", "black", 0.06) },
-    { id: "example-2", range: buildRange("18", "high", "hard", "black", 0.08) },
-    { id: "example-3", range: buildRange("25", "medium", "easy", "color", 0.1) },
-  ];
+  if (counts.low > counts.correct && counts.low > counts.high) {
+    if (round === 1) {
+      return {
+        status: "adjusted",
+        calibratedAndValidated: false,
+        adjustment: VALIDATION_UPWARD_ADJUSTMENT,
+        needsSecondRound: true,
+      };
+    }
+
+    return {
+      status: "needs-review",
+      calibratedAndValidated: false,
+      adjustment: 1,
+      needsSecondRound: false,
+    };
+  }
+
+  if (counts.high > counts.correct && counts.high > counts.low) {
+    if (round === 1) {
+      return {
+        status: "adjusted",
+        calibratedAndValidated: false,
+        adjustment: VALIDATION_DOWNWARD_ADJUSTMENT,
+        needsSecondRound: true,
+      };
+    }
+
+    return {
+      status: "needs-review",
+      calibratedAndValidated: false,
+      adjustment: 1,
+      needsSecondRound: false,
+    };
+  }
+
+  return {
+    status: round === 2 ? "completed-no-majority" : "confirmed",
+    calibratedAndValidated: true,
+    adjustment: 1,
+    needsSecondRound: false,
+  };
+}
+
+export function summarizeFinalValidationReview(
+  feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
+  round: 1 | 2,
+): {
+  review: PricingFinalValidation;
+  nextScaleMultiplier: number;
+  needsSecondRound: boolean;
+} {
+  const counts = countFeedback(feedback);
+  const outcome = resolveValidationStatus(round, counts);
+
+  return {
+    review: {
+      validationRound: round,
+      perExampleFeedback: feedback,
+      appliedGlobalValidationAdjustment: outcome.adjustment,
+      validationStatus: outcome.status,
+      calibratedAndValidated: outcome.calibratedAndValidated,
+    },
+    nextScaleMultiplier: outcome.adjustment,
+    needsSecondRound: outcome.needsSecondRound,
+  };
 }
 
 export function isCalibrationReady(pricingRules: ArtistPricingRules) {
@@ -479,4 +724,3 @@ export function isCalibrationReady(pricingRules: ArtistPricingRules) {
       pricingRules.calibrationExamples.colorMode["black-only"],
   );
 }
-

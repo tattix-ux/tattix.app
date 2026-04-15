@@ -115,6 +115,13 @@ export const demoPricingRules: ArtistPricingRules = {
       "full-color": 3300,
     },
     globalScale: 1,
+    finalValidation: {
+      validationRound: 1 as const,
+      perExampleFeedback: {},
+      appliedGlobalValidationAdjustment: 1,
+      validationStatus: "pending" as const,
+      calibratedAndValidated: false,
+    },
   },
   calibrationReferenceSlots: CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot })),
   sizeModifiers: {

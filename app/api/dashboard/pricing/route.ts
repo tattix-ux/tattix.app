@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { pricingSchema } from "@/lib/forms/schemas";
-import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
+import {
+  CALIBRATION_SLOT_LABELS,
+  summarizeFinalValidationReview,
+} from "@/lib/pricing/calibration-flow";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { PriceRange } from "@/lib/types";
@@ -67,6 +70,12 @@ export async function POST(request: Request) {
     Object.entries(parsed.data.placementModifiers).map(([key, range]) => [key, Number(midpoint(range).toFixed(2))]),
   );
   const calibrationAnswers = parsed.data.calibrationAnswers;
+  const normalizedFinalValidation = calibrationAnswers?.finalValidation
+    ? summarizeFinalValidationReview(
+        calibrationAnswers.finalValidation.perExampleFeedback,
+        calibrationAnswers.finalValidation.validationRound,
+      ).review
+    : undefined;
   const easyPlacementPrice = calibrationAnswers
     ? deriveCalibrationPriceFromRange(calibrationAnswers.placementDifficulty.easy, parsed.data.basePrice)
     : deriveCalibrationPrice(parsed.data.basePrice, { min: 1, max: 1.08 });
@@ -127,6 +136,7 @@ export async function POST(request: Request) {
       "full-color": colorPrice,
     },
     globalScale: calibrationAnswers?.validation?.globalScale ?? 1,
+    finalValidation: normalizedFinalValidation,
   };
   const existingReferenceSlots =
     (existingPricing.data?.calibration_reference_slots as

@@ -151,6 +151,24 @@ export const pricingSchema = z.object({
           globalScale: z.coerce.number().min(0.85).max(1.15),
         })
         .optional(),
+      finalValidation: z
+        .object({
+          validationRound: z.union([z.literal(1), z.literal(2)]),
+          perExampleFeedback: z.record(
+            z.string(),
+            z.enum(["looks-right", "slightly-low", "slightly-high"]),
+          ),
+          appliedGlobalValidationAdjustment: z.coerce.number().min(0.88).max(1.12),
+          validationStatus: z.enum([
+            "pending",
+            "confirmed",
+            "adjusted",
+            "completed-no-majority",
+            "needs-review",
+          ]),
+          calibratedAndValidated: z.boolean(),
+        })
+        .optional(),
     })
     .optional(),
 }).superRefine((values, ctx) => {
