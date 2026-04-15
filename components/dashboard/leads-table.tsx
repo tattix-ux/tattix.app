@@ -65,7 +65,8 @@ const leadCopy = {
       lost: "Lost",
     },
     chartTitle: "Request trend",
-    chartDescription: "Requests and sales over time.",
+    chartDescription: "Show chart",
+    chartToggle: "Chart view",
     requests: "Requests",
     sales: "Sales",
     granularity: {
@@ -138,7 +139,8 @@ const leadCopy = {
       lost: "Satış yapılamadı",
     },
     chartTitle: "Talep görünümü",
-    chartDescription: "Talep ve satış sayılarını kısa görünümde takip et.",
+    chartDescription: "Grafiği göster",
+    chartToggle: "Grafik görünümü",
     requests: "Talep",
     sales: "Satış",
     granularity: {
@@ -729,79 +731,17 @@ export function LeadsTable({
               </div>
 
               <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
-                        {copy.filters.status}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(["all", "new", "contacted", "sold", "lost"] as const).map((item) => (
-                          <Button
-                            key={item}
-                            type="button"
-                            size="sm"
-                            variant={statusFilter === item ? "secondary" : "outline"}
-                            onClick={() => setStatusFilter(item)}
-                          >
-                            {copy.statusLabels[item]}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
-                        {copy.filters.time}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {(["7d", "30d", "90d", "all"] as const).map((item) => (
-                          <Button
-                            key={item}
-                            type="button"
-                            size="sm"
-                            variant={range === item ? "secondary" : "outline"}
-                            onClick={() => setRange(item)}
-                          >
-                            {item === "all" ? copy.filters.all : copy.filters[item]}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <div className="w-full max-w-xs">
-                    <p className="mb-2 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
-                      {copy.filters.sort}
-                    </p>
-                    <NativeSelect
-                      value={sort}
-                      onChange={(event) => setSort(event.target.value as LeadSort)}
-                    >
-                      <option value="newest">{copy.filters.newest}</option>
-                      <option value="oldest">{copy.filters.oldest}</option>
-                      <option value="highest-estimate">{copy.filters.highestEstimate}</option>
-                      <option value="lowest-estimate">{copy.filters.lowestEstimate}</option>
-                    </NativeSelect>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                <button
+                <Button
                   type="button"
-                  className="flex w-full items-center justify-between gap-4 text-left"
+                  variant="outline"
+                  className="w-full justify-between rounded-[18px] border-white/10 bg-black/20 text-left text-white hover:bg-white/5"
                   onClick={() => setChartOpen((current) => !current)}
                 >
-                  <div>
-                    <p className="text-lg font-semibold text-white">{copy.chartTitle}</p>
-                    <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.chartDescription}</p>
-                  </div>
+                  <span>{copy.chartToggle}</span>
                   <ChevronDown
                     className={cn("size-5 text-[var(--foreground-muted)] transition-transform", chartOpen ? "rotate-180" : "")}
                   />
-                </button>
+                </Button>
 
                 {chartOpen ? (
                   <div className="mt-5 space-y-4">
@@ -872,6 +812,65 @@ export function LeadsTable({
           <CardDescription>{copy.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                    {copy.filters.status}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(["all", "new", "contacted", "sold", "lost"] as const).map((item) => (
+                      <Button
+                        key={item}
+                        type="button"
+                        size="sm"
+                        variant={statusFilter === item ? "secondary" : "outline"}
+                        onClick={() => setStatusFilter(item)}
+                      >
+                        {copy.statusLabels[item]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                    {copy.filters.time}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(["7d", "30d", "90d", "all"] as const).map((item) => (
+                      <Button
+                        key={item}
+                        type="button"
+                        size="sm"
+                        variant={range === item ? "secondary" : "outline"}
+                        onClick={() => setRange(item)}
+                      >
+                        {item === "all" ? copy.filters.all : copy.filters[item]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-full max-w-xs">
+                <p className="mb-2 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                  {copy.filters.sort}
+                </p>
+                <NativeSelect
+                  value={sort}
+                  onChange={(event) => setSort(event.target.value as LeadSort)}
+                >
+                  <option value="newest">{copy.filters.newest}</option>
+                  <option value="oldest">{copy.filters.oldest}</option>
+                  <option value="highest-estimate">{copy.filters.highestEstimate}</option>
+                  <option value="lowest-estimate">{copy.filters.lowestEstimate}</option>
+                </NativeSelect>
+              </div>
+            </div>
+          </div>
+
           {filteredLeads.length === 0 ? (
             <div className="rounded-[24px] border border-white/8 bg-black/20 p-6 text-center">
               <p className="text-lg font-medium text-white">{copy.emptyFiltered}</p>
