@@ -449,19 +449,11 @@ export function FunnelSettingsForm({
                         {availableDates.length === 0 ? (
                           <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
                         ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {availableDates.map((date) => (
-                              <button
-                                key={date}
-                                type="button"
-                                onClick={() => removeBookingDate(index, date)}
-                                className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1.5 text-sm text-white"
-                              >
-                                <span>{date}</span>
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            ))}
-                          </div>
+                          <p className="text-sm text-[var(--foreground-muted)]">
+                            {locale === "tr"
+                              ? `${availableDates.length} tarih seçildi`
+                              : `${availableDates.length} dates selected`}
+                          </p>
                         )}
                       </div>
                     </div>

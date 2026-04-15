@@ -245,7 +245,7 @@ export const pricingSchema = z.object({
 
 export const featuredDesignSchema = z.object({
   id: z.string().optional(),
-  category: z.enum(categoryValues as [string, ...string[]]),
+  category: z.string().min(2).max(80),
   title: z.string().min(2),
   shortDescription: z.string().min(12).max(180),
   imageUrl: z.string().url().nullable().or(z.literal("")),

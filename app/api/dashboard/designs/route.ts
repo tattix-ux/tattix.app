@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       reference_price_min: design.referencePriceMin ?? null,
       reference_price_max: design.referencePriceMax ?? null,
       active: design.active ?? true,
-      sort_order: design.sortOrder ?? index,
+      sort_order: index,
     })),
   );
 

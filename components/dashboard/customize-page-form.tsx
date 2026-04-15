@@ -18,8 +18,6 @@ import {
   bodyFontOptions,
   fontPairingPresetOptions,
   headingFontOptions,
-  radiusStyleOptions,
-  themeModeOptions,
   themePresetOptions,
   themePresets,
 } from "@/lib/constants/theme";
@@ -29,6 +27,7 @@ import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import { resolveArtistTheme } from "@/lib/theme";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistPageData, ArtistPageTheme, ArtistSavedTheme } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
@@ -95,16 +94,14 @@ export function CustomizePageForm({
           headingFont: "Başlık fontu",
           bodyFont: "Metin fontu",
           backgroundType: "Arka plan türü",
-          themeMode: "Tema modu",
           gradientStart: "Degrade başlangıcı",
           gradientEnd: "Degrade bitişi",
           backgroundImage: "Arka plan görseli",
-          backgroundImageHelp: "Doğrudan yükleyebilir veya bağlantı kullanabilirsin.",
+          backgroundImageHelp: "Yalnızca görsel yükle.",
           noBackground: "Henüz arka plan seçilmedi",
           uploadImage: "Görsel yükle",
           removeImage: "Görseli kaldır",
           cardGlass: "Kart cam efekti",
-          radiusStyle: "Köşe stili",
           save: "Görünümü kaydet",
           savePreset: "Temayı kaydet",
           presetName: "Tema adı",
@@ -122,11 +119,10 @@ export function CustomizePageForm({
           previewDescription: "Sanatçı sayfanın anlık bir önizlemesi.",
           mobile: "Mobil",
           desktop: "Masaüstü",
-          dark: "Koyu",
-          light: "Açık",
           solid: "Düz renk",
           gradient: "Degrade",
           image: "Görsel",
+          opacityValue: "Cam yoğunluğu",
         }
       : {
           tabs: {
@@ -149,16 +145,14 @@ export function CustomizePageForm({
           headingFont: "Heading font",
           bodyFont: "Body font",
           backgroundType: "Background type",
-          themeMode: "Theme mode",
           gradientStart: "Gradient start",
           gradientEnd: "Gradient end",
           backgroundImage: "Background image",
-          backgroundImageHelp: "Upload directly or keep using a URL.",
+          backgroundImageHelp: "Upload only.",
           noBackground: "No background selected",
           uploadImage: "Upload image",
           removeImage: "Remove image",
           cardGlass: "Card glass",
-          radiusStyle: "Radius style",
           save: "Save customization",
           savePreset: "Save theme",
           presetName: "Theme name",
@@ -176,15 +170,26 @@ export function CustomizePageForm({
           previewDescription: "Real-time approximation of the public artist page.",
           mobile: "Mobile",
           desktop: "Desktop",
-          dark: "Dark",
-          light: "Light",
           solid: "Solid",
           gradient: "Gradient",
           image: "Background image",
+          opacityValue: "Glass intensity",
         };
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [editorTab, setEditorTab] = useState<"presets" | "custom">("presets");
   const [presetName, setPresetName] = useState("");
+
+  function getBackgroundTypeLabel(type: "solid" | "gradient" | "image") {
+    if (type === "gradient") {
+      return copy.gradient;
+    }
+
+    if (type === "image") {
+      return copy.image;
+    }
+
+    return copy.solid;
+  }
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
     resolver: zodResolver(pageThemeSchema),
     defaultValues: {
@@ -219,6 +224,9 @@ export function CustomizePageForm({
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
   const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
   const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
+  const currentBackgroundType = watchedValues.backgroundType ?? theme.backgroundType;
+  const currentCardOpacity =
+    typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
   const previewTheme = useMemo(
     () =>
       resolveArtistTheme({
@@ -555,8 +563,79 @@ export function CustomizePageForm({
   }
 
   return (
-    <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_400px]">
-      <form className="min-w-0 space-y-6 2xl:order-1" onSubmit={form.handleSubmit(onSubmit)}>
+    <div
+      className={cn(
+        "grid gap-4",
+        editorTab === "custom"
+          ? "xl:grid-cols-[300px_minmax(0,1fr)]"
+          : "2xl:grid-cols-[minmax(0,1fr)_400px]",
+      )}
+    >
+      <div
+        className={cn(
+          "order-first min-w-0 space-y-3",
+          editorTab === "custom"
+            ? "xl:sticky xl:top-6 xl:self-start"
+            : "2xl:order-2 2xl:sticky 2xl:top-6 2xl:self-start",
+        )}
+      >
+        <Card className="surface-border">
+          <CardHeader>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle>{copy.preview}</CardTitle>
+                <CardDescription>
+                  {copy.previewDescription}
+                </CardDescription>
+              </div>
+              {editorTab !== "custom" ? (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={device === "mobile" ? "secondary" : "outline"}
+                    onClick={() => setDevice("mobile")}
+                  >
+                    <Smartphone className="size-4" />
+                    {copy.mobile}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={device === "desktop" ? "secondary" : "outline"}
+                    onClick={() => setDevice("desktop")}
+                  >
+                    <Monitor className="size-4" />
+                    {copy.desktop}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          </CardHeader>
+          <CardContent className={cn("overflow-hidden", editorTab === "custom" ? "p-3" : "p-2.5 sm:p-4")}>
+            <div
+              className={
+                editorTab === "custom" || device === "mobile"
+                  ? "mx-auto w-full max-w-[248px]"
+                  : "mx-auto w-full max-w-[760px] overflow-x-auto"
+              }
+            >
+              <div className="origin-top">
+                <ArtistPagePreview
+                  artist={{ ...artist, pageTheme: previewTheme }}
+                  theme={previewTheme}
+                  device={editorTab === "custom" ? "mobile" : device}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <form
+        className={cn("min-w-0 space-y-6", editorTab === "custom" ? "xl:order-2" : "2xl:order-1")}
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <Card className="surface-border">
           <CardContent className="flex flex-wrap gap-2 p-3 sm:p-4">
             <Button
@@ -614,7 +693,7 @@ export function CustomizePageForm({
                       </div>
                     </div>
                     <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-                      {preset.themeMode === "dark" ? copy.dark : copy.light} mode, {preset.radiusStyle} radius.
+                      {getBackgroundTypeLabel(preset.backgroundType)}
                     </p>
                   </button>
                 );
@@ -750,11 +829,6 @@ export function CustomizePageForm({
               </CardHeader>
               <CardContent className="grid gap-4 lg:grid-cols-2">
                 <ColorField
-                  label={copy.backgroundColor}
-                  value={currentBackgroundColor}
-                  onChange={(value) => form.setValue("backgroundColor", value)}
-                />
-                <ColorField
                   label={copy.primaryColor}
                   value={currentPrimaryColor}
                   onChange={(value) => form.setValue("primaryColor", value)}
@@ -778,7 +852,7 @@ export function CustomizePageForm({
                 <CardDescription>{copy.backgroundsDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                <div className="grid gap-5 lg:grid-cols-2">
+                <div className="grid gap-5 lg:grid-cols-1">
                   <Field label={copy.backgroundType}>
                     <NativeSelect {...form.register("backgroundType")}>
                       <option value="solid">{copy.solid}</option>
@@ -786,33 +860,34 @@ export function CustomizePageForm({
                       <option value="image">{copy.image}</option>
                     </NativeSelect>
                   </Field>
-                  <Field label={copy.themeMode}>
-                    <NativeSelect {...form.register("themeMode")}>
-                      {themeModeOptions.map((mode) => (
-                        <option key={mode} value={mode}>
-                          {mode === "dark" ? copy.dark : copy.light}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  </Field>
                 </div>
-                <div className="grid gap-4 lg:grid-cols-2">
+                {currentBackgroundType === "solid" ? (
                   <ColorField
-                    label={copy.gradientStart}
-                    value={currentGradientStart}
-                    onChange={(value) => form.setValue("gradientStart", value)}
+                    label={copy.backgroundColor}
+                    value={currentBackgroundColor}
+                    onChange={(value) => form.setValue("backgroundColor", value)}
                   />
-                  <ColorField
-                    label={copy.gradientEnd}
-                    value={currentGradientEnd}
-                    onChange={(value) => form.setValue("gradientEnd", value)}
-                  />
-                </div>
+                ) : null}
+                {currentBackgroundType === "gradient" ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <ColorField
+                      label={copy.gradientStart}
+                      value={currentGradientStart}
+                      onChange={(value) => form.setValue("gradientStart", value)}
+                    />
+                    <ColorField
+                      label={copy.gradientEnd}
+                      value={currentGradientEnd}
+                      onChange={(value) => form.setValue("gradientEnd", value)}
+                    />
+                  </div>
+                ) : null}
                 <div className="grid gap-5 xl:grid-cols-3">
-                  <Field
-                    label={copy.backgroundImage}
-                    description={copy.backgroundImageHelp}
-                  >
+                  {currentBackgroundType === "image" ? (
+                    <Field
+                      label={copy.backgroundImage}
+                      description={copy.backgroundImageHelp}
+                    >
                     <div className="space-y-3">
                       <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-28 sm:rounded-[22px]">
                         {watchedValues.backgroundImageUrl ? (
@@ -853,27 +928,35 @@ export function CustomizePageForm({
                           </Button>
                         ) : null}
                       </div>
-                      <Input placeholder="https://..." {...form.register("backgroundImageUrl")} />
+                      <input type="hidden" {...form.register("backgroundImageUrl")} />
+                    </div>
+                    </Field>
+                  ) : (
+                    <input type="hidden" {...form.register("backgroundImageUrl")} />
+                  )}
+                  <Field label={copy.cardGlass}>
+                    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                      <input
+                        type="range"
+                        min={0.45}
+                        max={0.98}
+                        step={0.01}
+                        value={currentCardOpacity}
+                        onChange={(event) =>
+                          form.setValue("cardOpacity", Number(event.target.value), {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }
+                        className="h-3 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-[var(--accent)]"
+                      />
+                      <p className="mt-3 text-sm text-[var(--foreground-muted)]">
+                        {copy.opacityValue}: {currentCardOpacity.toFixed(2)}
+                      </p>
                     </div>
                   </Field>
-                  <Field label={copy.cardGlass}>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0.45"
-                      max="0.98"
-                      {...form.register("cardOpacity")}
-                    />
-                  </Field>
-                  <Field label={copy.radiusStyle}>
-                    <NativeSelect {...form.register("radiusStyle")}>
-                      {radiusStyleOptions.map((radius) => (
-                        <option key={radius} value={radius}>
-                          {radius[0].toUpperCase() + radius.slice(1)}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  </Field>
+                  <input type="hidden" {...form.register("radiusStyle")} />
+                  <input type="hidden" {...form.register("themeMode")} />
                 </div>
               </CardContent>
             </Card>
@@ -901,57 +984,6 @@ export function CustomizePageForm({
         ) : null}
       </form>
 
-      <div className="order-first min-w-0 space-y-3 2xl:order-2 2xl:sticky 2xl:top-6 2xl:self-start">
-        <Card className="surface-border">
-          <CardHeader>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <CardTitle>{copy.preview}</CardTitle>
-                <CardDescription>
-                  {copy.previewDescription}
-                </CardDescription>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={device === "mobile" ? "secondary" : "outline"}
-                  onClick={() => setDevice("mobile")}
-                >
-                  <Smartphone className="size-4" />
-                  {copy.mobile}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={device === "desktop" ? "secondary" : "outline"}
-                  onClick={() => setDevice("desktop")}
-                >
-                  <Monitor className="size-4" />
-                  {copy.desktop}
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="overflow-hidden p-2.5 sm:p-4">
-            <div
-              className={
-                device === "mobile"
-                  ? "mx-auto h-[260px] max-w-[210px] overflow-hidden sm:h-[360px] sm:max-w-[280px]"
-                  : "mx-auto w-full max-w-[760px] overflow-x-auto"
-              }
-            >
-              <div className={device === "mobile" ? "origin-top scale-[0.72] sm:scale-[0.86]" : "origin-top"}>
-                <ArtistPagePreview
-                  artist={{ ...artist, pageTheme: previewTheme }}
-                  theme={previewTheme}
-                  device={device}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

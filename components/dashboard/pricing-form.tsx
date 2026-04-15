@@ -63,7 +63,6 @@ function getText(locale: PublicLocale) {
       description: "Tattix’e örnek fiyatlar ver. Sistem fiyat modelini buna göre kursun.",
       openingPrice: "Başlangıç fiyatın",
       openingPriceHelp: "Küçük ve standart bir dövmeyi genelde kaçtan başlatıyorsun?",
-      openingPriceNote: "Bu değer modelin taban fiyatı olur.",
       start: "Fiyatlandırma analizimi başlat",
       edit: "Kalibrasyonu düzenle",
       reset: "Sıfırla",
@@ -132,7 +131,6 @@ function getText(locale: PublicLocale) {
     description: "Give Tattix sample prices so it can build the quote model.",
     openingPrice: "Opening price",
     openingPriceHelp: "What do you usually start a small, standard tattoo at?",
-    openingPriceNote: "This becomes the anchor of the pricing model.",
     start: "Start pricing analysis",
     edit: "Edit calibration",
     reset: "Reset",
@@ -585,7 +583,6 @@ export function PricingForm({
               />
             </Field>
             <p className="mt-3 text-sm text-[var(--foreground-muted)]">{copy.openingPriceHelp}</p>
-            <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.openingPriceNote}</p>
           </div>
 
           <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">

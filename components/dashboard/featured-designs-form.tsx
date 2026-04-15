@@ -3,7 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { ImagePlus, LoaderCircle, Plus, Save, Trash2, Upload, X } from "lucide-react";
+import { GripVertical, ImagePlus, LoaderCircle, Plus, Save, Trash2, Upload, X } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { Field } from "@/components/shared/field";
@@ -31,11 +32,12 @@ const copy = {
     saveFailed: "Unable to save designs.",
     saved: "Designs saved.",
     title: "Designs",
-    description:
-      "Manage flash and discounted designs. These cards appear only when the client selects a matching intent.",
+    description: "Manage your designs.",
     item: "Design",
     remove: "Remove",
     category: "Category",
+    customCategory: "Custom category",
+    customCategoryPlaceholder: "e.g. Floral",
     titleLabel: "Title",
     shortDescription: "Short description",
     image: "Design image",
@@ -44,14 +46,17 @@ const copy = {
     uploadImage: "Upload image",
     removeImage: "Remove image",
     showPublicly: "Show this design publicly",
-    priceNote: "Optional price note",
-    priceMin: "Reference price min",
-    priceMax: "Reference price max",
-    sortOrder: "Sort order",
+    priceNote: "Reference size",
+    priceMin: "Min price",
+    priceMax: "Max price",
     addDesign: "Add design",
     saving: "Saving",
     save: "Save designs",
     pricePlaceholder: "From 2800 TRY",
+    flash: "Flash designs",
+    discounted: "Discounted designs",
+    customOption: "Custom category",
+    dragHint: "Drag to reorder",
   },
   tr: {
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
@@ -62,11 +67,12 @@ const copy = {
     saveFailed: "Tasarımlar kaydedilemedi.",
     saved: "Tasarımlar kaydedildi.",
     title: "Tasarımlar",
-    description:
-      "Flash ve indirimli tasarımları yönet. Bu kartlar yalnızca müşteri eşleşen intent’i seçtiğinde görünür.",
+    description: "Tasarımlarını yönet.",
     item: "Tasarım",
     remove: "Kaldır",
     category: "Kategori",
+    customCategory: "Özel kategori",
+    customCategoryPlaceholder: "Örn. Floral",
     titleLabel: "Başlık",
     shortDescription: "Kısa açıklama",
     image: "Tasarım görseli",
@@ -75,14 +81,17 @@ const copy = {
     uploadImage: "Görsel yükle",
     removeImage: "Görseli kaldır",
     showPublicly: "Bu tasarımı herkese açık sayfada göster",
-    priceNote: "Opsiyonel fiyat notu",
-    priceMin: "Referans min fiyat",
-    priceMax: "Referans maks fiyat",
-    sortOrder: "Sıralama",
+    priceNote: "Referans boyut",
+    priceMin: "Min fiyat",
+    priceMax: "Maks fiyat",
     addDesign: "Tasarım ekle",
     saving: "Kaydediliyor",
     save: "Tasarımları kaydet",
     pricePlaceholder: "2800 TRY'den başlayan fiyatlarla",
+    flash: "Flash tasarımlar",
+    discounted: "İndirimli tasarımlar",
+    customOption: "Özel kategori",
+    dragHint: "Sıralamak için sürükle",
   },
 } as const;
 
@@ -99,6 +108,8 @@ export function FeaturedDesignsForm({
 }) {
   const router = useRouter();
   const labels = copy[locale];
+  const [expandedId, setExpandedId] = useState<string | null>(designs[0]?.id ?? null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const form = useForm<FeaturedDesignFormInput, unknown, FeaturedDesignValues>({
     resolver: zodResolver(featuredDesignsSchema),
     defaultValues: {
@@ -127,6 +138,22 @@ export function FeaturedDesignsForm({
     name: "designs",
     defaultValue: form.getValues("designs"),
   });
+
+  function getCategorySelectValue(category: string) {
+    return featuredDesignCategories.some((item) => item.value === category) ? category : "__custom__";
+  }
+
+  function getCategoryLabel(category: string) {
+    if (category === "flash-designs") {
+      return labels.flash;
+    }
+
+    if (category === "discounted-designs") {
+      return labels.discounted;
+    }
+
+    return category;
+  }
 
   async function handleImageUpload(index: number, file: File) {
     if (demoMode) {
@@ -210,125 +237,187 @@ export function FeaturedDesignsForm({
               const currentDesign = watchedDesigns?.[index];
 
               return (
-                <div key={field.id} className="rounded-[22px] border border-white/8 bg-black/20 p-3.5 sm:rounded-[24px] sm:p-4">
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                      {labels.item} {index + 1}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => designsFieldArray.remove(index)}
-                    >
-                      <Trash2 className="size-4" />
-                      {labels.remove}
-                    </Button>
-                  </div>
+                <div
+                  key={field.id}
+                  draggable
+                  onDragStart={() => setDragIndex(index)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => {
+                    if (dragIndex === null || dragIndex === index) {
+                      setDragIndex(null);
+                      return;
+                    }
 
-                  <div className="grid gap-5 lg:grid-cols-2">
-                    <Field label={labels.category}>
-                      <NativeSelect {...form.register(`designs.${index}.category`)}>
-                        {featuredDesignCategories.map((category) => (
-                          <option key={category.value} value={category.value}>
-                            {locale === "tr"
-                              ? category.value === "discounted-designs"
-                                ? "İndirimli tasarımlar"
-                                : "Flash tasarımlar"
-                              : category.label}
-                          </option>
-                        ))}
-                      </NativeSelect>
-                    </Field>
-                    <Field label={labels.titleLabel}>
-                      <Input {...form.register(`designs.${index}.title`)} />
-                    </Field>
-                  </div>
-
-                  <Field className="mt-5" label={labels.shortDescription}>
-                    <Textarea {...form.register(`designs.${index}.shortDescription`)} />
-                  </Field>
-
-                  <div className="mt-5 space-y-5">
-                    <Field label={labels.image} description={labels.imageDescription}>
-                      <div className="space-y-3">
-                        <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
-                          {currentDesign?.imageUrl ? (
-                            <div
-                              className="absolute inset-0 bg-cover bg-center"
-                              style={{ backgroundImage: `url(${currentDesign.imageUrl})` }}
-                              aria-label={currentDesign.title || `${labels.item} ${index + 1}`}
-                              role="img"
-                            />
-                          ) : (
-                            <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
-                              <ImagePlus className="size-5" />
-                              <span>{labels.noImage}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
-                          <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
-                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
-                            <Upload className="size-4" />
-                            {labels.uploadImage}
-                            <input
-                              type="file"
-                              accept="image/png,image/jpeg,image/webp,image/gif"
-                              className="hidden"
-                              onChange={(event) => {
-                                const file = event.target.files?.[0];
-                                if (file) {
-                                  void handleImageUpload(index, file);
-                                }
-                                event.currentTarget.value = "";
-                              }}
-                            />
-                          </label>
-                          {currentDesign?.imageUrl ? (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="text-xs sm:text-sm"
-                              onClick={() => void handleImageRemove(index)}
-                            >
-                              <X className="size-4" />
-                              {labels.removeImage}
-                            </Button>
-                          ) : null}
-                        </div>
+                    designsFieldArray.move(dragIndex, index);
+                    setDragIndex(null);
+                  }}
+                  className="rounded-[22px] border border-white/8 bg-black/20 p-3.5 sm:rounded-[24px] sm:p-4"
+                >
+                  <div
+                    className="flex cursor-pointer flex-wrap items-center justify-between gap-3"
+                    onClick={() =>
+                      setExpandedId((current) => (current === field.id ? null : field.id))
+                    }
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        className="inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white/70"
+                        aria-label={labels.dragHint}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <GripVertical className="size-4" />
+                      </button>
+                      <div>
+                        <p className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
+                          {labels.item} {index + 1}
+                        </p>
+                        <p className="mt-1 text-base font-medium text-white">
+                          {currentDesign?.title || labels.titleLabel}
+                        </p>
+                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                          {getCategoryLabel(currentDesign?.category || "flash-designs")}
+                        </p>
                       </div>
-                    </Field>
-                    <label className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-                      <input
-                        type="checkbox"
-                        className="size-4 accent-[var(--accent)]"
-                        {...form.register(`designs.${index}.active`)}
-                      />
-                      <span className="text-sm text-white">{labels.showPublicly}</span>
-                    </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-2">
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-[var(--accent)]"
+                          {...form.register(`designs.${index}.active`)}
+                          onClick={(event) => event.stopPropagation()}
+                        />
+                        <span className="text-sm text-white">{labels.showPublicly}</span>
+                      </label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          designsFieldArray.remove(index);
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                        {labels.remove}
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="mt-5 grid gap-5 lg:grid-cols-3">
-                    <Field label={labels.priceNote}>
-                      <Input
-                        placeholder={labels.pricePlaceholder}
-                        {...form.register(`designs.${index}.priceNote`)}
-                      />
-                    </Field>
-                    <Field label={labels.priceMin}>
-                      <Input type="number" {...form.register(`designs.${index}.referencePriceMin`)} />
-                    </Field>
-                    <Field label={labels.priceMax}>
-                      <Input type="number" {...form.register(`designs.${index}.referencePriceMax`)} />
-                    </Field>
-                  </div>
+                  {expandedId === field.id ? (
+                    <>
+                      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                        <Field label={labels.category}>
+                          <NativeSelect
+                            value={getCategorySelectValue(currentDesign?.category || "")}
+                            onChange={(event) =>
+                              form.setValue(
+                                `designs.${index}.category`,
+                                event.target.value === "__custom__" ? "" : event.target.value,
+                                { shouldDirty: true, shouldValidate: true },
+                              )
+                            }
+                          >
+                            <option value="flash-designs">{labels.flash}</option>
+                            <option value="discounted-designs">{labels.discounted}</option>
+                            <option value="__custom__">{labels.customOption}</option>
+                          </NativeSelect>
+                        </Field>
+                        <Field label={labels.titleLabel}>
+                          <Input {...form.register(`designs.${index}.title`)} />
+                        </Field>
+                      </div>
 
-                  <Field className="mt-5" label={labels.sortOrder}>
-                    <Input type="number" {...form.register(`designs.${index}.sortOrder`)} />
-                  </Field>
+                      {getCategorySelectValue(currentDesign?.category || "") === "__custom__" ? (
+                        <Field className="mt-5" label={labels.customCategory}>
+                          <Input
+                            placeholder={labels.customCategoryPlaceholder}
+                            value={currentDesign?.category || ""}
+                            onChange={(event) =>
+                              form.setValue(`designs.${index}.category`, event.target.value, {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              })
+                            }
+                          />
+                        </Field>
+                      ) : null}
+
+                      <Field className="mt-5" label={labels.shortDescription}>
+                        <Textarea {...form.register(`designs.${index}.shortDescription`)} />
+                      </Field>
+
+                      <div className="mt-5 space-y-5">
+                        <Field label={labels.image} description={labels.imageDescription}>
+                          <div className="space-y-3">
+                            <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
+                              {currentDesign?.imageUrl ? (
+                                <div
+                                  className="absolute inset-0 bg-cover bg-center"
+                                  style={{ backgroundImage: `url(${currentDesign.imageUrl})` }}
+                                  aria-label={currentDesign.title || `${labels.item} ${index + 1}`}
+                                  role="img"
+                                />
+                              ) : (
+                                <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
+                                  <ImagePlus className="size-5" />
+                                  <span>{labels.noImage}</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
+                              <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
+                              <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
+                                <Upload className="size-4" />
+                                {labels.uploadImage}
+                                <input
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/webp,image/gif"
+                                  className="hidden"
+                                  onChange={(event) => {
+                                    const file = event.target.files?.[0];
+                                    if (file) {
+                                      void handleImageUpload(index, file);
+                                    }
+                                    event.currentTarget.value = "";
+                                  }}
+                                />
+                              </label>
+                              {currentDesign?.imageUrl ? (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-xs sm:text-sm"
+                                  onClick={() => void handleImageRemove(index)}
+                                >
+                                  <X className="size-4" />
+                                  {labels.removeImage}
+                                </Button>
+                              ) : null}
+                            </div>
+                          </div>
+                        </Field>
+                      </div>
+
+                      <div className="mt-5 grid gap-5 lg:grid-cols-3">
+                        <Field label={labels.priceNote}>
+                          <Input
+                            placeholder="12 cm"
+                            {...form.register(`designs.${index}.priceNote`)}
+                          />
+                        </Field>
+                        <Field label={labels.priceMin}>
+                          <Input type="number" {...form.register(`designs.${index}.referencePriceMin`)} />
+                        </Field>
+                        <Field label={labels.priceMax}>
+                          <Input type="number" {...form.register(`designs.${index}.referencePriceMax`)} />
+                        </Field>
+                      </div>
+                    </>
+                  ) : null}
                 </div>
               );
             })}

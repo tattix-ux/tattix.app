@@ -2,12 +2,7 @@ import type {
   BodyAreaDetailValue,
   PlacementCategoryValue,
 } from "@/lib/constants/body-placement";
-import type {
-  FeaturedCategoryValue,
-  IntentValue,
-  SizeValue,
-  StyleValue,
-} from "@/lib/constants/options";
+import type { IntentValue, SizeValue, StyleValue } from "@/lib/constants/options";
 
 export type PublicLocale = "en" | "tr";
 
@@ -93,7 +88,7 @@ const styleDescriptions: Record<string, LocalizedText> = {
   },
 };
 
-const featuredCategoryLabels: Record<FeaturedCategoryValue, LocalizedText> = {
+const featuredCategoryLabels: Record<string, LocalizedText> = {
   "discounted-designs": { en: "Discounted designs", tr: "İndirimli tasarımlar" },
   "flash-designs": { en: "Flash designs", tr: "Flash tasarımlar" },
 };
@@ -247,7 +242,7 @@ export const publicCopy = {
       standard: "A balanced level that fits most tattoo ideas.",
       detailed: "More texture, finer lines, and a denser look.",
     },
-    colorModeTitle: "Color",
+    colorModeTitle: "How should the color be?",
     colorModeHelp: "",
     colorModes: {
       "black-only": "Black only",
@@ -263,8 +258,8 @@ export const publicCopy = {
     coverUpHelp: "Cover-ups usually need extra planning and passes.",
     coverUpYes: "Yes, it covers an older tattoo",
     coverUpNo: "No, it will be on clean skin",
-    optionalStyleTitle: "Style",
-    optionalStyleHelp: "Style stays as context for the artist, but it is no longer the main price driver.",
+    optionalStyleTitle: "How should the style be?",
+    optionalStyleHelp: "",
     close: "Close",
     summaryLabels: {
       intent: "Intent",
@@ -375,7 +370,7 @@ export const publicCopy = {
       standard: "Çoğu dövme fikri için dengeli bir detay seviyesidir.",
       detailed: "Daha fazla doku, daha ince çizgi ve yoğun detay içerir.",
     },
-    colorModeTitle: "Renk",
+    colorModeTitle: "Renk nasıl olsun?",
     colorModeHelp: "",
     colorModes: {
       "black-only": "Sadece siyah",
@@ -391,8 +386,8 @@ export const publicCopy = {
     coverUpHelp: "Kapatma işleri genelde ekstra planlama ve daha fazla çalışma ister.",
     coverUpYes: "Evet, eski bir dövmenin üstü kapanacak",
     coverUpNo: "Hayır, temiz cilde uygulanacak",
-    optionalStyleTitle: "Stil",
-    optionalStyleHelp: "Stil hâlâ sanatçı için faydalı bir bağlamdır, ama artık fiyatın ana belirleyicisi değildir.",
+    optionalStyleTitle: "Stil nasıl olsun?",
+    optionalStyleHelp: "",
     close: "Kapat",
     summaryLabels: {
       intent: "Talep",
@@ -433,8 +428,8 @@ export function getStyleDescription(value: StyleValue, locale: PublicLocale) {
   return styleDescriptions[value] ? pick(styleDescriptions[value], locale) : null;
 }
 
-export function getFeaturedCategoryLabel(value: FeaturedCategoryValue, locale: PublicLocale) {
-  return pick(featuredCategoryLabels[value], locale);
+export function getFeaturedCategoryLabel(value: string, locale: PublicLocale) {
+  return featuredCategoryLabels[value] ? pick(featuredCategoryLabels[value], locale) : value;
 }
 
 export function getPlacementDetailLocaleLabel(

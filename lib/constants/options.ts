@@ -45,5 +45,4 @@ export const currencyOptions = [
 export type IntentValue = (typeof intentOptions)[number]["value"];
 export type SizeValue = (typeof sizeOptions)[number]["value"];
 export type StyleValue = string;
-export type FeaturedCategoryValue =
-  (typeof featuredDesignCategories)[number]["value"];
+export type FeaturedCategoryValue = string;
