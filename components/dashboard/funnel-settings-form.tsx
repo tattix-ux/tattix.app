@@ -4,14 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { LoaderCircle, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/shared/field";
+import { turkeyCities } from "@/lib/constants/cities";
 import { funnelSettingsSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistFunnelSettings, ArtistStyleOption } from "@/lib/types";
@@ -56,6 +59,16 @@ export function FunnelSettingsForm({
           saving: "Kaydediliyor",
           saveFailed: "Akış ayarları kaydedilemedi.",
           saved: "Akış ayarları kaydedildi.",
+          bookingTitle: "Çalıştığın şehirler",
+          bookingDescription: "Müşteri yalnızca burada tanımladığın şehirleri ve tarihleri görür.",
+          addCity: "Şehir ekle",
+          cityName: "Şehir",
+          cityPlaceholder: "Şehir seç",
+          noCities: "Henüz şehir eklenmedi.",
+          availabilityTitle: "Bu şehir için müsait olduğun tarihleri seç",
+          addDate: "Tarih ekle",
+          removeDate: "Tarihi kaldır",
+          noDates: "Henüz tarih eklenmedi.",
         }
       : {
           title: "Funnel settings",
@@ -82,6 +95,16 @@ export function FunnelSettingsForm({
           saving: "Saving",
           saveFailed: "Unable to save funnel settings.",
           saved: "Funnel settings saved.",
+          bookingTitle: "Working cities",
+          bookingDescription: "Customers only see the cities and dates you define here.",
+          addCity: "Add city",
+          cityName: "City",
+          cityPlaceholder: "Select city",
+          noCities: "No cities added yet.",
+          availabilityTitle: "Select the dates you are available in this city",
+          addDate: "Add date",
+          removeDate: "Remove date",
+          noDates: "No dates added yet.",
         };
   const form = useForm<FunnelFormInput, unknown, FunnelValues>({
     resolver: zodResolver(funnelSettingsSchema),
@@ -106,12 +129,23 @@ export function FunnelSettingsForm({
           description: style.description ?? "",
           enabled: style.enabled,
         })),
+      bookingCities: settings.bookingCities.map((city) => ({
+        id: city.id,
+        cityName: city.cityName,
+        availableDates: city.availableDates,
+      })),
     },
   });
   const customStylesFieldArray = useFieldArray({
     control: form.control,
     name: "customStyles",
   });
+  const bookingCitiesFieldArray = useFieldArray({
+    control: form.control,
+    name: "bookingCities",
+  });
+  const [pendingCity, setPendingCity] = useState("");
+  const [pendingDates, setPendingDates] = useState<Record<number, string>>({});
 
   const selectedStyles = useWatch({
     control: form.control,
@@ -182,6 +216,56 @@ export function FunnelSettingsForm({
         enabled: style.enabled,
       })),
   }) ?? [];
+  const bookingCities = useWatch({
+    control: form.control,
+    name: "bookingCities",
+    defaultValue: settings.bookingCities.map((city) => ({
+      id: city.id,
+      cityName: city.cityName,
+      availableDates: city.availableDates,
+    })),
+  }) ?? [];
+
+  function addBookingCity() {
+    const nextCity = pendingCity.trim();
+    if (!nextCity) {
+      return;
+    }
+
+    bookingCitiesFieldArray.append({
+      cityName: nextCity,
+      availableDates: [],
+    });
+    setPendingCity("");
+  }
+
+  function addBookingDate(index: number) {
+    const nextDate = pendingDates[index];
+    if (!nextDate) {
+      return;
+    }
+
+    const currentDates = form.getValues(`bookingCities.${index}.availableDates`) ?? [];
+    if (currentDates.includes(nextDate)) {
+      return;
+    }
+
+    form.setValue(
+      `bookingCities.${index}.availableDates`,
+      [...currentDates, nextDate].sort(),
+      { shouldDirty: true, shouldValidate: true },
+    );
+    setPendingDates((current) => ({ ...current, [index]: "" }));
+  }
+
+  function removeBookingDate(index: number, date: string) {
+    const currentDates = form.getValues(`bookingCities.${index}.availableDates`) ?? [];
+    form.setValue(
+      `bookingCities.${index}.availableDates`,
+      currentDates.filter((item) => item !== date),
+      { shouldDirty: true, shouldValidate: true },
+    );
+  }
 
   return (
     <Card className="surface-border">
@@ -296,6 +380,114 @@ export function FunnelSettingsForm({
             {form.formState.errors.enabledStyles?.message ? (
               <p className="text-xs text-red-300">{form.formState.errors.enabledStyles.message}</p>
             ) : null}
+          </div>
+
+          <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/20 p-4">
+            <div className="space-y-1">
+              <p className="text-base font-medium text-white">{copy.bookingTitle}</p>
+              <p className="text-sm text-[var(--foreground-muted)]">{copy.bookingDescription}</p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <NativeSelect value={pendingCity} onChange={(event) => setPendingCity(event.target.value)}>
+                <option value="">{copy.cityPlaceholder}</option>
+                {turkeyCities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </NativeSelect>
+              <Button type="button" onClick={addBookingCity}>
+                <Plus className="size-4" />
+                {copy.addCity}
+              </Button>
+            </div>
+
+            {bookingCities.length === 0 ? (
+              <p className="text-sm text-[var(--foreground-muted)]">{copy.noCities}</p>
+            ) : (
+              <div className="space-y-4">
+                {bookingCitiesFieldArray.fields.map((field, index) => {
+                  const city = bookingCities[index];
+                  const availableDates = city?.availableDates ?? [];
+
+                  return (
+                    <div key={field.id} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                        <div className="flex-1">
+                          <Field
+                            label={copy.cityName}
+                            error={form.formState.errors.bookingCities?.[index]?.cityName?.message}
+                          >
+                            <NativeSelect
+                              value={city?.cityName ?? ""}
+                              onChange={(event) =>
+                                form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                })
+                              }
+                            >
+                              <option value="">{copy.cityPlaceholder}</option>
+                              {turkeyCities.map((cityOption) => (
+                                <option key={cityOption} value={cityOption}>
+                                  {cityOption}
+                                </option>
+                              ))}
+                            </NativeSelect>
+                          </Field>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => bookingCitiesFieldArray.remove(index)}
+                        >
+                          <Trash2 className="size-4" />
+                          {copy.remove}
+                        </Button>
+                      </div>
+
+                      <div className="mt-4 space-y-3">
+                        <p className="text-sm font-medium text-white">{copy.availabilityTitle}</p>
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                          <Input
+                            type="date"
+                            min={new Date().toISOString().slice(0, 10)}
+                            value={pendingDates[index] ?? ""}
+                            onChange={(event) =>
+                              setPendingDates((current) => ({ ...current, [index]: event.target.value }))
+                            }
+                          />
+                          <Button type="button" onClick={() => addBookingDate(index)}>
+                            <Plus className="size-4" />
+                            {copy.addDate}
+                          </Button>
+                        </div>
+
+                        {availableDates.length === 0 ? (
+                          <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {availableDates.map((date) => (
+                              <button
+                                key={date}
+                                type="button"
+                                onClick={() => removeBookingDate(index, date)}
+                                className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1.5 text-sm text-white"
+                              >
+                                <span>{date}</span>
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">

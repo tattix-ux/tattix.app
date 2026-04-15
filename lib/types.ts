@@ -53,6 +53,13 @@ export type ArtistFunnelSettings = {
   introDescription: string;
   showFeaturedDesigns: boolean;
   defaultLanguage: PublicLocale;
+  bookingCities: ArtistBookingCity[];
+};
+
+export type ArtistBookingCity = {
+  id: string;
+  cityName: string;
+  availableDates: string[];
 };
 
 export type ArtistStyleOption = {

@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-import { turkeyCities } from "@/lib/constants/cities";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import {
   getPublicCopy,
@@ -75,6 +74,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   } = useFunnelStore();
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
   const [styleInfoKey, setStyleInfoKey] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const flowCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -105,6 +105,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     [activeDesigns, draft.selectedDesignId],
   );
   const isProArtist = hasProAccess(artist.profile);
+  const bookingCities = artist.funnelSettings.bookingCities;
+  const selectedBookingCity = bookingCities.find((city) => city.cityName === draft.city) ?? null;
+  const availableDatesForSelectedCity = selectedBookingCity?.availableDates ?? [];
+  const requiresBookingSelection = bookingCities.length > 0;
   const availableIntents = useMemo<readonly IntentValue[]>(
     () => {
       const intents: IntentValue[] = ["custom-tattoo", "design-in-mind"];
@@ -162,6 +166,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       draft.intent !== "discounted-design");
 
   async function handleFinalSubmit() {
+    if (requiresBookingSelection) {
+      if (!draft.city || !selectedBookingCity) {
+        setBookingError(copy.cityLabel);
+        return;
+      }
+
+      if (!draft.preferredStartDate || !availableDatesForSelectedCity.includes(draft.preferredStartDate)) {
+        setBookingError(copy.noAvailableDates);
+        return;
+      }
+    }
+
+    setBookingError(null);
     setSubmitting(true);
     setResult(null);
     setStep(6);
@@ -716,90 +733,92 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     onChange={(event) => setField("notes", event.target.value)}
                     placeholder={copy.notesPlaceholder}
                   />
-                  <div
-                    className="rounded-[24px] border p-4"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                    }}
-                  >
-                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {copy.cityLabel}
-                    </p>
-                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.cityHelp}
-                    </p>
-                    <div className="mt-4">
-                      <NativeSelect
-                        value={draft.city}
-                        onChange={(event) => setField("city", event.target.value)}
-                        style={{
-                          borderColor: "var(--artist-border)",
-                          color: "var(--artist-card-text)",
-                        }}
-                      >
-                        <option value="">{copy.cityPlaceholder}</option>
-                        {turkeyCities.map((city) => (
-                          <option key={city} value={city}>
-                            {city}
-                          </option>
-                        ))}
-                      </NativeSelect>
-                    </div>
-                  </div>
-                  <div
-                    className="rounded-[24px] border p-4"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                    }}
-                  >
-                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {copy.preferredTimingLabel}
-                    </p>
-                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.preferredTimingHelp}
-                    </p>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <label className="space-y-2">
-                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
-                          {copy.preferredStartDate}
-                        </span>
-                        <input
-                          type="date"
-                          value={draft.preferredStartDate}
+                  {requiresBookingSelection ? (
+                    <div
+                      className="rounded-[24px] border p-4"
+                      style={{
+                        borderColor: "var(--artist-border)",
+                        backgroundColor: "rgba(0,0,0,0.12)",
+                      }}
+                    >
+                      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                        {copy.cityLabel}
+                      </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.cityHelp}
+                      </p>
+                      <div className="mt-4">
+                        <NativeSelect
+                          value={draft.city}
                           onChange={(event) => {
-                            const nextValue = event.target.value;
-                            setField("preferredStartDate", nextValue);
-                            if (draft.preferredEndDate && nextValue && draft.preferredEndDate < nextValue) {
-                              setField("preferredEndDate", "");
-                            }
+                            setField("city", event.target.value);
+                            setField("preferredStartDate", "");
+                            setField("preferredEndDate", "");
+                            setBookingError(null);
                           }}
-                          className="h-11 w-full rounded-[18px] border bg-transparent px-4 text-sm"
                           style={{
                             borderColor: "var(--artist-border)",
                             color: "var(--artist-card-text)",
                           }}
-                        />
-                      </label>
-                      <label className="space-y-2">
-                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
-                          {copy.preferredEndDate}
-                        </span>
-                        <input
-                          type="date"
-                          min={draft.preferredStartDate || undefined}
-                          value={draft.preferredEndDate}
-                          onChange={(event) => setField("preferredEndDate", event.target.value)}
-                          className="h-11 w-full rounded-[18px] border bg-transparent px-4 text-sm"
-                          style={{
-                            borderColor: "var(--artist-border)",
-                            color: "var(--artist-card-text)",
-                          }}
-                        />
-                      </label>
+                        >
+                          <option value="">{copy.cityPlaceholder}</option>
+                          {bookingCities.map((city) => (
+                            <option key={city.id} value={city.cityName}>
+                              {city.cityName}
+                            </option>
+                          ))}
+                        </NativeSelect>
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
+                  {requiresBookingSelection ? (
+                    <div
+                      className="rounded-[24px] border p-4"
+                      style={{
+                        borderColor: "var(--artist-border)",
+                        backgroundColor: "rgba(0,0,0,0.12)",
+                      }}
+                    >
+                      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                        {copy.preferredTimingLabel}
+                      </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.preferredTimingHelp}
+                      </p>
+                      <div className="mt-4">
+                        <label className="space-y-2">
+                          <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                            {copy.preferredStartDate}
+                          </span>
+                          <NativeSelect
+                            disabled={!draft.city || availableDatesForSelectedCity.length === 0}
+                            value={draft.preferredStartDate}
+                            onChange={(event) => {
+                              setField("preferredStartDate", event.target.value);
+                              setField("preferredEndDate", "");
+                              setBookingError(null);
+                            }}
+                            style={{
+                              borderColor: "var(--artist-border)",
+                              color: "var(--artist-card-text)",
+                            }}
+                          >
+                            <option value="">{copy.preferredStartDate}</option>
+                            {availableDatesForSelectedCity.map((date) => (
+                              <option key={date} value={date}>
+                                {date}
+                              </option>
+                            ))}
+                          </NativeSelect>
+                        </label>
+                      </div>
+                      {draft.city && availableDatesForSelectedCity.length === 0 ? (
+                        <p className="mt-3 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                          {copy.noAvailableDates}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <div
                     className="rounded-[24px] border p-4 text-sm"
                     style={{
@@ -968,7 +987,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               <Button
                 className={`w-full whitespace-normal sm:ml-auto sm:w-auto ${primaryButtonClass}`}
                 onClick={handleFinalSubmit}
-                disabled={submitting}
+                disabled={
+                  submitting ||
+                  (requiresBookingSelection &&
+                    (!draft.city || !draft.preferredStartDate || !selectedBookingCity))
+                }
                 style={{
                   backgroundColor: "var(--artist-primary)",
                   color: "var(--artist-primary-foreground)",
@@ -996,6 +1019,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               </Button>
             ) : null}
           </div>
+          {bookingError ? (
+            <p className="mt-3 text-sm text-[var(--accent-soft)]">{bookingError}</p>
+          ) : null}
         </CardContent>
         </Card>
       </div>

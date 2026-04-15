@@ -41,6 +41,18 @@ export const demoFunnelSettings: ArtistFunnelSettings = {
     "Perfect for Instagram bio traffic. Collect warmer leads, surface flash designs, and move straight into WhatsApp with context.",
   showFeaturedDesigns: true,
   defaultLanguage: "tr",
+  bookingCities: [
+    {
+      id: "demo-city-istanbul",
+      cityName: "İstanbul",
+      availableDates: ["2026-04-20", "2026-04-22", "2026-04-26"],
+    },
+    {
+      id: "demo-city-izmir",
+      cityName: "İzmir",
+      availableDates: ["2026-04-24", "2026-04-28"],
+    },
+  ],
 };
 
 export const demoStyleOptions: ArtistStyleOption[] = baseStyleOptions.map((style, index) => {

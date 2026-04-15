@@ -5,6 +5,7 @@ import { demoArtistPageData } from "@/lib/demo-data";
 import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
 import { buildDefaultArtistTheme } from "@/lib/theme";
 import type {
+  ArtistBookingCity,
   ArtistFeaturedDesign,
   ArtistFunnelSettings,
   ArtistPageData,
@@ -48,7 +49,29 @@ function mapFunnelSettings(row: Record<string, unknown>, artistId: string): Arti
     introDescription: String(row.intro_description ?? ""),
     showFeaturedDesigns: Boolean(row.show_featured_designs ?? true),
     defaultLanguage: String(row.default_language ?? "tr") as ArtistFunnelSettings["defaultLanguage"],
+    bookingCities: [],
   };
+}
+
+function mapBookingCities(
+  rows: Array<Record<string, unknown>>,
+  dateRows: Array<Record<string, unknown>>,
+): ArtistBookingCity[] {
+  return rows
+    .map((row) => {
+      const locationId = String(row.id);
+      const availableDates = dateRows
+        .filter((dateRow) => String(dateRow.artist_location_id) === locationId)
+        .map((dateRow) => String(dateRow.available_date))
+        .sort();
+
+      return {
+        id: locationId,
+        cityName: String(row.city_name),
+        availableDates,
+      };
+    })
+    .sort((left, right) => left.cityName.localeCompare(right.cityName, "tr"));
 }
 
 function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption {
@@ -367,7 +390,7 @@ function mapSavedTheme(row: Record<string, unknown>, artistId: string): ArtistSa
 
 const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistId: string) {
   const supabase = await createSupabaseServerClient();
-  const [artistRow, funnelSettingsRow, styleRows, designRows, pricingRulesRow, pageThemeRow, savedThemesRows] =
+  const [artistRow, funnelSettingsRow, styleRows, designRows, pricingRulesRow, pageThemeRow, savedThemesRows, bookingLocationRows] =
     await Promise.all([
       supabase.from("artists").select("*").eq("id", artistId).maybeSingle(),
       supabase
@@ -400,7 +423,23 @@ const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistI
         .select("*")
         .eq("artist_id", artistId)
         .order("created_at", { ascending: true }),
+      supabase
+        .from("artist_booking_locations")
+        .select("*")
+        .eq("artist_id", artistId)
+        .order("city_name"),
     ]);
+
+  const bookingLocationIds =
+    (bookingLocationRows.data ?? []).map((row) => String((row as Record<string, unknown>).id));
+  const bookingDateRows =
+    bookingLocationIds.length > 0
+      ? await supabase
+          .from("artist_booking_location_dates")
+          .select("*")
+          .in("artist_location_id", bookingLocationIds)
+          .order("available_date")
+      : { data: [], error: null };
 
   if (!artistRow.data) {
     return null;
@@ -408,10 +447,13 @@ const fetchArtistBundleById = cache(async function fetchArtistBundleById(artistI
 
   return {
     profile: mapArtistProfile(artistRow.data as Record<string, unknown>),
-    funnelSettings: mapFunnelSettings(
-      (funnelSettingsRow.data ?? {}) as Record<string, unknown>,
-      artistId,
-    ),
+    funnelSettings: {
+      ...mapFunnelSettings((funnelSettingsRow.data ?? {}) as Record<string, unknown>, artistId),
+      bookingCities: mapBookingCities(
+        (bookingLocationRows.data ?? []) as Array<Record<string, unknown>>,
+        (bookingDateRows.data ?? []) as Array<Record<string, unknown>>,
+      ),
+    },
     styleOptions: (styleRows.data ?? [])
       .map((row) => mapStyleOption(row as Record<string, unknown>))
       .filter((style) => !style.deleted),

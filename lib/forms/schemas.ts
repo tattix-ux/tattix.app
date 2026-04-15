@@ -86,6 +86,12 @@ const customStyleSchema = z.object({
   enabled: z.boolean().default(true),
 });
 
+const bookingCitySchema = z.object({
+  id: z.string().optional(),
+  cityName: z.string().min(2).max(80),
+  availableDates: z.array(z.string().max(20)).default([]),
+});
+
 export const funnelSettingsSchema = z.object({
   introEyebrow: z.string().max(48),
   introTitle: z.string().max(120),
@@ -95,6 +101,47 @@ export const funnelSettingsSchema = z.object({
   enabledStyles: z.array(z.string().min(1)).default([]),
   removedBuiltInStyles: z.array(z.string().min(1)).default([]),
   customStyles: z.array(customStyleSchema).default([]),
+  bookingCities: z.array(bookingCitySchema).default([]),
+}).superRefine((values, ctx) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const seen = new Set<string>();
+
+  values.bookingCities.forEach((city, index) => {
+    const normalized = city.cityName.trim().toLocaleLowerCase("tr-TR");
+
+    if (seen.has(normalized)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bookingCities", index, "cityName"],
+        message: "City names must be unique.",
+      });
+    } else {
+      seen.add(normalized);
+    }
+
+    const dateSeen = new Set<string>();
+    city.availableDates.forEach((date, dateIndex) => {
+      if (dateSeen.has(date)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["bookingCities", index, "availableDates", dateIndex],
+          message: "Dates must be unique for each city.",
+        });
+      } else {
+        dateSeen.add(date);
+      }
+
+      const parsedDate = new Date(`${date}T00:00:00`);
+      if (Number.isNaN(parsedDate.getTime()) || parsedDate < today) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["bookingCities", index, "availableDates", dateIndex],
+          message: "Past dates are not allowed.",
+        });
+      }
+    });
+  });
 });
 
 export const pricingSchema = z.object({
