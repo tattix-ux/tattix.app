@@ -192,11 +192,7 @@ export function IntentSelectionStep({
                         <Badge variant="accent">{locale === "tr" ? "Seçildi" : "Selected"}</Badge>
                       ) : null}
                     </div>
-                    {design.priceNote ? (
-                      <p className="mt-3 text-sm" style={{ color: "var(--artist-primary)" }}>
-                        {design.priceNote}
-                      </p>
-                    ) : design.referencePriceMin && design.referencePriceMax ? (
+                    {design.referencePriceMin && design.referencePriceMax ? (
                       <p className="mt-3 text-sm" style={{ color: "var(--artist-primary)" }}>
                         {formatCompactCurrencyRange(
                           design.referencePriceMin,
@@ -364,9 +360,7 @@ export function IntentSelectionStep({
               <p className="text-sm leading-6 text-[var(--foreground-muted)]">
                 {previewDesign.shortDescription}
               </p>
-              {previewDesign.priceNote ? (
-                <p className="text-sm font-medium text-[var(--accent-soft)]">{previewDesign.priceNote}</p>
-              ) : previewDesign.referencePriceMin && previewDesign.referencePriceMax ? (
+              {previewDesign.referencePriceMin && previewDesign.referencePriceMax ? (
                 <p className="text-sm font-medium text-[var(--accent-soft)]">
                   {formatCompactCurrencyRange(
                     previewDesign.referencePriceMin,

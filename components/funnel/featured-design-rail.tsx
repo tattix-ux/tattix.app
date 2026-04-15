@@ -81,11 +81,7 @@ export function FeaturedDesignRail({
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
               {design.shortDescription}
             </p>
-            {design.priceNote ? (
-              <p className="mt-4 text-sm" style={{ color: "var(--artist-primary)" }}>
-                {design.priceNote}
-              </p>
-            ) : design.referencePriceMin && design.referencePriceMax ? (
+            {design.referencePriceMin && design.referencePriceMax ? (
               <p className="mt-4 text-sm" style={{ color: "var(--artist-primary)" }}>
                 {formatCompactCurrencyRange(
                   design.referencePriceMin,
