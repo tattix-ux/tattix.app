@@ -100,6 +100,8 @@ function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedDesign {
     imageUrl: row.image_url ? String(row.image_url) : null,
     imagePath: row.image_path ? String(row.image_path) : null,
     priceNote: row.price_note ? String(row.price_note) : null,
+    referenceDetailLevel:
+      row.reference_detail_level ? String(row.reference_detail_level) as DetailLevelValue : null,
     referencePriceMin:
       row.reference_price_min === null ? null : Number(row.reference_price_min),
     referencePriceMax:

@@ -21,8 +21,8 @@ export default async function DashboardDesignsPage() {
         }
         description={
           isTurkish
-            ? "Bu yüklenen tasarımlar yalnızca müşteri eşleşen talep türünü seçtiğinde görünür."
-            : "These uploaded designs only appear when the client selects a matching intent in the public flow."
+            ? "Yüklediğin tasarımlar, müşteri ilgili tasarım kategorisini seçtiğinde sanatçı sayfanda gösterilir."
+            : "Uploaded designs appear on the artist page when the client chooses the matching design category."
         }
       />
       {hasProAccess(data.profile) ? (

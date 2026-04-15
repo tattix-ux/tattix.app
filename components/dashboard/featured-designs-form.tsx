@@ -47,6 +47,7 @@ const copy = {
     removeImage: "Remove image",
     showPublicly: "Show this design publicly",
     priceNote: "Reference size",
+    detailLevel: "Reference detail",
     priceMin: "Min price",
     priceMax: "Max price",
     addDesign: "Add design",
@@ -82,6 +83,7 @@ const copy = {
     removeImage: "Görseli kaldır",
     showPublicly: "Bu tasarımı herkese açık sayfada göster",
     priceNote: "Referans boyut",
+    detailLevel: "Referans detay",
     priceMin: "Min fiyat",
     priceMax: "Maks fiyat",
     addDesign: "Tasarım ekle",
@@ -121,6 +123,7 @@ export function FeaturedDesignsForm({
         imageUrl: design.imageUrl ?? "",
         imagePath: design.imagePath ?? "",
         priceNote: design.priceNote ?? "",
+        referenceDetailLevel: design.referenceDetailLevel ?? "standard",
         referencePriceMin: design.referencePriceMin,
         referencePriceMax: design.referencePriceMax,
         active: design.active,
@@ -402,12 +405,19 @@ export function FeaturedDesignsForm({
                         </Field>
                       </div>
 
-                      <div className="mt-5 grid gap-5 lg:grid-cols-3">
+                      <div className="mt-5 grid gap-5 lg:grid-cols-4">
                         <Field label={labels.priceNote}>
                           <Input
                             placeholder="12 cm"
                             {...form.register(`designs.${index}.priceNote`)}
                           />
+                        </Field>
+                        <Field label={labels.detailLevel}>
+                          <NativeSelect {...form.register(`designs.${index}.referenceDetailLevel`)}>
+                            <option value="simple">{locale === "tr" ? "Az detay" : "Low detail"}</option>
+                            <option value="standard">{locale === "tr" ? "Orta detay" : "Medium detail"}</option>
+                            <option value="detailed">{locale === "tr" ? "Çok detay" : "High detail"}</option>
+                          </NativeSelect>
                         </Field>
                         <Field label={labels.priceMin}>
                           <Input type="number" {...form.register(`designs.${index}.referencePriceMin`)} />
@@ -435,6 +445,7 @@ export function FeaturedDesignsForm({
                   imageUrl: "",
                   imagePath: "",
                   priceNote: "",
+                  referenceDetailLevel: "standard",
                   referencePriceMin: null,
                   referencePriceMax: null,
                   active: true,

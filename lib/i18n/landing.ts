@@ -24,7 +24,7 @@ export const landingCopy = {
     },
     problemTitle: "Dövme talepleri çoğu zaman eksik ve dağınık geliyor.",
     problemDescription:
-      "Kimisi fiyat yazmıyor, kimisi bölgeyi belirtmiyor, kimisi ne istediğini düzgün anlatmıyor. Aynı şeyleri tekrar tekrar sormak zorunda kalıyorsun.",
+      "Kimisi fiyatı görünce seni ghostluyor, kimisi bölgeyi belirtmiyor, kimisi ne istediğini düzgün anlatmıyor. Aynı şeyleri tekrar tekrar sormak zorunda kalıyorsun.",
     featuresTitle: "TatBot neyi düzeltir?",
     features: [
       {

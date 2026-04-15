@@ -50,6 +50,7 @@ export async function POST(request: Request) {
   const estimate = estimateTattooPrice(submission, {
     pricingRules: artist.pricingRules,
     styleOptions: artist.styleOptions,
+    featuredDesigns: artist.featuredDesigns,
   });
   const copy = getPublicCopy(locale);
   const message = buildSubmissionMessage(
@@ -98,7 +99,13 @@ export async function POST(request: Request) {
     estimatedMin: estimate.min,
     estimatedMax: estimate.max,
     summary: buildEstimateSummary(submission, locale, selectedStyle?.label ?? null),
-    disclaimer: copy.disclaimer,
+    disclaimer:
+      submission.coverUp ||
+      (!submission.selectedDesignId &&
+        submission.intent !== "flash-design" &&
+        submission.intent !== "discounted-design")
+        ? copy.coverUpCustomWarning
+        : copy.disclaimer,
     whatsappLink: buildWhatsAppLink(artist.profile.whatsappNumber, message),
     message,
   });

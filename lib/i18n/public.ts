@@ -213,6 +213,8 @@ export const publicCopy = {
     disclaimer: "This is an approximate estimate. Final price may change after consultation.",
     scopeWarning:
       "This is an estimated starting range. Final price may change after the design and scope are clarified.",
+    coverUpCustomWarning:
+      "This is the general price of a design with these features. For cover-ups and custom designs, the final price may change significantly after talking with the artist.",
     chooseDesign: "Choose a design",
     chooseDesignHelp: "Select one uploaded design before you continue.",
     noMatchingDesigns: "No matching designs are live right now.",
@@ -341,6 +343,8 @@ export const publicCopy = {
     disclaimer: "Bu yaklaşık bir tahmindir. Nihai fiyat görüşmeden sonra değişebilir.",
     scopeWarning:
       "Bu sadece başlangıç için tahmini bir aralıktır. Tasarım ve kapsam netleştikçe nihai fiyat değişebilir.",
+    coverUpCustomWarning:
+      "Bu özelliklerdeki bir tasarımın genel fiyatıdır. Cover-up ve özel tasarımlar için fiyat sanatçı ile görüşme sonrasında büyük ölçüde değişebilir.",
     chooseDesign: "Bir tasarım seç",
     chooseDesignHelp: "Devam etmeden önce yüklenen tasarımlardan birini seç.",
     noMatchingDesigns: "Bu kategori için şu anda aktif tasarım görünmüyor.",

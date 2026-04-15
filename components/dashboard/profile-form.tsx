@@ -326,10 +326,7 @@ export function ProfileForm({
               </NativeSelect>
             </Field>
           </div>
-          <label className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-            <input type="checkbox" className="size-4 accent-[var(--accent)]" {...form.register("active")} />
-            <span className="text-sm text-white">{copy.active}</span>
-          </label>
+          <input type="hidden" {...form.register("active")} />
           {form.formState.errors.root?.message ? (
             <p className="text-sm text-[var(--accent-soft)]">
               {form.formState.errors.root.message}

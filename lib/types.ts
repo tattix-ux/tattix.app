@@ -83,6 +83,7 @@ export type ArtistFeaturedDesign = {
   imageUrl: string | null;
   imagePath: string | null;
   priceNote: string | null;
+  referenceDetailLevel?: DetailLevelValue | null;
   referencePriceMin: number | null;
   referencePriceMax: number | null;
   active: boolean;

@@ -71,6 +71,7 @@ export async function POST(request: Request) {
       image_url: design.imageUrl || null,
       image_path: design.imagePath || null,
       price_note: design.priceNote || null,
+      reference_detail_level: design.referenceDetailLevel || null,
       reference_price_min: design.referencePriceMin ?? null,
       reference_price_max: design.referencePriceMax ?? null,
       active: design.active ?? true,

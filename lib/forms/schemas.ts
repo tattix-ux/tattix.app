@@ -254,6 +254,7 @@ export const featuredDesignSchema = z.object({
   imageUrl: z.string().url().nullable().or(z.literal("")),
   imagePath: z.string().nullable().or(z.literal("")).optional(),
   priceNote: z.string().max(48).nullable().or(z.literal("")).optional(),
+  referenceDetailLevel: z.enum(["simple", "standard", "detailed"]).nullable().optional(),
   referencePriceMin: nullableNumberSchema.optional(),
   referencePriceMax: nullableNumberSchema.optional(),
   active: z.boolean().default(true),

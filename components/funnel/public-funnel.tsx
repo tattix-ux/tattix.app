@@ -159,12 +159,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const primaryButtonClass = "border-0 shadow-none hover:opacity-95";
   const secondaryButtonClass = "border-0 shadow-none hover:opacity-95";
   const styleStepActive = requiresStyleSelection(draft.intent);
+  const isSelectedDesignFlow = Boolean(draft.selectedDesignId);
   const compactArtistHeader = step > 1 || Boolean(draft.intent);
-  const showScopeWarning =
-    Boolean(draft.coverUp) ||
-    (!draft.selectedDesignId &&
-      draft.intent !== "flash-design" &&
-      draft.intent !== "discounted-design");
 
   async function handleFinalSubmit() {
     if (requiresBookingSelection) {
@@ -273,8 +269,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     (step === 2 && Boolean(draft.bodyAreaGroup && draft.bodyAreaDetail)) ||
     (step === 3 && Boolean(draft.approximateSizeCm && draft.sizeCategory)) ||
     (step === 4 &&
-      Boolean(draft.detailLevel) &&
-      Boolean(draft.colorMode)) ||
+      (isSelectedDesignFlow || (Boolean(draft.detailLevel) && Boolean(draft.colorMode)))) ||
     step === 5;
 
   return (
@@ -475,91 +470,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
               {step === 4 ? (
                 <div className="space-y-3">
-                  <div
-                    className="rounded-[24px] border p-4"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                    }}
-                  >
-                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {copy.detailLevelTitle}
-                    </p>
-                    {copy.detailLevelHelp ? (
-                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                        {copy.detailLevelHelp}
-                      </p>
-                    ) : null}
-                    <div className="mt-4 grid gap-2.5 sm:gap-3">
-                      {detailLevelOptions.map((level) => {
-                        const active = draft.detailLevel === level;
-                        return (
-                          <button
-                            key={level}
-                            type="button"
-                            onClick={() => setField("detailLevel", level)}
-                            className="rounded-[24px] border px-4 py-4 text-left transition"
-                            style={{
-                              borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                              backgroundColor: active
-                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                                : "rgba(0,0,0,0.12)",
-                              color: tokens.cardText,
-                            }}
-                          >
-                            <p className="break-words font-medium">{copy.detailLevels[level]}</p>
-                            <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                              {copy.detailLevelDescriptions[level]}
-                            </p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div
-                    className="rounded-[24px] border p-4"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                    }}
-                  >
-                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {copy.colorModeTitle}
-                    </p>
-                    {copy.colorModeHelp ? (
-                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                        {copy.colorModeHelp}
-                      </p>
-                    ) : null}
-                    <div className="mt-4 grid gap-2.5 sm:gap-3">
-                      {colorModeOptions.map((mode) => {
-                        const active = draft.colorMode === mode;
-                        return (
-                          <button
-                            key={mode}
-                            type="button"
-                            onClick={() => setField("colorMode", mode)}
-                            className="rounded-[24px] border px-4 py-4 text-left transition"
-                            style={{
-                              borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                              backgroundColor: active
-                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                                : "rgba(0,0,0,0.12)",
-                              color: tokens.cardText,
-                            }}
-                          >
-                            <p className="break-words font-medium">{copy.colorModes[mode]}</p>
-                            <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                              {copy.colorModeDescriptions[mode]}
-                            </p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {styleStepActive ? (
+                  {isSelectedDesignFlow ? (
                     <div
                       className="rounded-[24px] border p-4"
                       style={{
@@ -567,28 +478,38 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         backgroundColor: "rgba(0,0,0,0.12)",
                       }}
                     >
-                      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                        {copy.optionalStyleTitle}
+                      <p className="text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {locale === "tr"
+                          ? "Bu tasarım seçildiği için renk, stil ve detay adımları atlanır."
+                          : "Because this design is selected, color, style, and detail are skipped."}
                       </p>
-                      {copy.optionalStyleHelp ? (
-                        <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                          {copy.optionalStyleHelp}
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        className="rounded-[24px] border p-4"
+                        style={{
+                          borderColor: "var(--artist-border)",
+                          backgroundColor: "rgba(0,0,0,0.12)",
+                        }}
+                      >
+                        <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                          {copy.detailLevelTitle}
                         </p>
-                      ) : null}
-                      <div className="mt-4 grid gap-2.5 sm:gap-3">
-                        {enabledStyles.map((style) => {
-                          const active = draft.style === style.styleKey;
-                          return (
-                            <div
-                              key={style.id}
-                              className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]"
-                            >
+                        {copy.detailLevelHelp ? (
+                          <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                            {copy.detailLevelHelp}
+                          </p>
+                        ) : null}
+                        <div className="mt-4 grid gap-2.5 sm:gap-3">
+                          {detailLevelOptions.map((level) => {
+                            const active = draft.detailLevel === level;
+                            return (
                               <button
+                                key={level}
                                 type="button"
-                                onClick={() => {
-                                  setField("style", style.styleKey);
-                                }}
-                                className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                                onClick={() => setField("detailLevel", level)}
+                                className="rounded-[24px] border px-4 py-4 text-left transition"
                                 style={{
                                   borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                                   backgroundColor: active
@@ -597,14 +518,132 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                   color: tokens.cardText,
                                 }}
                               >
-                                <p className="break-words font-medium">
-                                  {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                                <p className="break-words font-medium">{copy.detailLevels[level]}</p>
+                                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                  {copy.detailLevelDescriptions[level]}
                                 </p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div
+                        className="rounded-[24px] border p-4"
+                        style={{
+                          borderColor: "var(--artist-border)",
+                          backgroundColor: "rgba(0,0,0,0.12)",
+                        }}
+                      >
+                        <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                          {copy.colorModeTitle}
+                        </p>
+                        <div className="mt-4 grid gap-2.5 sm:gap-3">
+                          {colorModeOptions.map((mode) => {
+                            const active = draft.colorMode === mode;
+                            return (
+                              <button
+                                key={mode}
+                                type="button"
+                                onClick={() => setField("colorMode", mode)}
+                                className="rounded-[24px] border px-4 py-4 text-left transition"
+                                style={{
+                                  borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                                  backgroundColor: active
+                                    ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                    : "rgba(0,0,0,0.12)",
+                                  color: tokens.cardText,
+                                }}
+                              >
+                                <p className="break-words font-medium">{copy.colorModes[mode]}</p>
+                                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                  {copy.colorModeDescriptions[mode]}
+                                </p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {styleStepActive ? (
+                        <div
+                          className="rounded-[24px] border p-4"
+                          style={{
+                            borderColor: "var(--artist-border)",
+                            backgroundColor: "rgba(0,0,0,0.12)",
+                          }}
+                        >
+                          <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                            {copy.optionalStyleTitle}
+                          </p>
+                          {copy.optionalStyleHelp ? (
+                            <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                              {copy.optionalStyleHelp}
+                            </p>
+                          ) : null}
+                          <div className="mt-4 grid gap-2.5 sm:gap-3">
+                            {enabledStyles.map((style) => {
+                              const active = draft.style === style.styleKey;
+                              return (
+                                <div
+                                  key={style.id}
+                                  className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setField("style", style.styleKey);
+                                    }}
+                                    className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                                    style={{
+                                      borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                                      backgroundColor: active
+                                        ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                        : "rgba(0,0,0,0.12)",
+                                      color: tokens.cardText,
+                                    }}
+                                  >
+                                    <p className="break-words font-medium">
+                                      {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
+                                    </p>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label={copy.styleInfoButton}
+                                    onClick={() => setStyleInfoKey(style.styleKey)}
+                                    className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
+                                    style={{
+                                      borderColor: "var(--artist-border)",
+                                      backgroundColor: "rgba(0,0,0,0.12)",
+                                      color: "var(--artist-card-text)",
+                                    }}
+                                  >
+                                    <Info className="size-4" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                            <div className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setField("style", "not-sure-style");
+                                }}
+                                className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                                style={{
+                                  borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
+                                  backgroundColor: draft.style === "not-sure-style"
+                                    ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                    : "rgba(0,0,0,0.12)",
+                                  color: tokens.cardText,
+                                }}
+                              >
+                                <p className="break-words font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
                               </button>
                               <button
                                 type="button"
                                 aria-label={copy.styleInfoButton}
-                                onClick={() => setStyleInfoKey(style.styleKey)}
+                                onClick={() => setStyleInfoKey("not-sure-style")}
                                 className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
                                 style={{
                                   borderColor: "var(--artist-border)",
@@ -615,42 +654,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                 <Info className="size-4" />
                               </button>
                             </div>
-                          );
-                        })}
-                        <div className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setField("style", "not-sure-style");
-                            }}
-                            className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
-                            style={{
-                              borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
-                              backgroundColor: draft.style === "not-sure-style"
-                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                                : "rgba(0,0,0,0.12)",
-                              color: tokens.cardText,
-                            }}
-                          >
-                            <p className="break-words font-medium">{locale === "tr" ? "Henüz emin değilim" : "I'm not sure"}</p>
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={copy.styleInfoButton}
-                            onClick={() => setStyleInfoKey("not-sure-style")}
-                            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
-                            style={{
-                              borderColor: "var(--artist-border)",
-                              backgroundColor: "rgba(0,0,0,0.12)",
-                              color: "var(--artist-card-text)",
-                            }}
-                          >
-                            <Info className="size-4" />
-                          </button>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ) : null}
+                      ) : null}
+                    </>
+                  )}
                 </div>
               ) : null}
 
@@ -890,11 +898,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     <p className="mt-3 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                       {result.disclaimer}
                     </p>
-                    {showScopeWarning ? (
-                      <p className="mt-3 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                        {copy.scopeWarning}
-                      </p>
-                    ) : null}
                   </div>
                   <div className="grid gap-2.5 sm:gap-3">
                     <Button asChild className="w-full">

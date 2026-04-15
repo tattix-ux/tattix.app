@@ -109,7 +109,7 @@ export default async function DashboardUpgradePage() {
             />
             <p className="text-xs text-[var(--foreground-muted)]">
               {isTurkish
-                ? "Mail uygulaması açılmazsa talep metnini kopyalayıp gizemoderr@gmail.com adresine gönderebilirsin."
+                ? ""
                 : "If your mail app does not open, copy the request text and send it to gizemoderr@gmail.com."}
             </p>
           </div>

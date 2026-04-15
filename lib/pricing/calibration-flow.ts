@@ -130,8 +130,6 @@ export const VALIDATION_SCENARIOS: ValidationScenario[] = [
 
 export const VALIDATION_UPWARD_ADJUSTMENT = 1.06;
 export const VALIDATION_DOWNWARD_ADJUSTMENT = 0.94;
-const VALIDATION_AXIS_NUDGE_UP = 1.03;
-const VALIDATION_AXIS_NUDGE_DOWN = 0.97;
 const MIN_VALIDATION_ADJUSTMENT = 0.94;
 const MAX_VALIDATION_ADJUSTMENT = 1.08;
 
@@ -156,19 +154,6 @@ const DEFAULT_HARD_PLACEMENTS = new Set([
 
 function roundPrice(value: number) {
   return Math.max(0, Math.round(value));
-}
-
-function scaleDraftRange(range: DraftRange, multiplier: number): DraftRange {
-  const normalized = normalizeDraftRange(range);
-
-  if (!normalized) {
-    return range;
-  }
-
-  return {
-    min: String(roundPrice(normalized.min * multiplier)),
-    max: String(roundPrice(Math.max(normalized.min, normalized.max) * multiplier)),
-  };
 }
 
 function midpoint(range: PriceRange | undefined) {
@@ -506,10 +491,10 @@ export function updateFinalValidationDraft(
 
 export function applyValidationFeedbackAdjustments(
   draft: CalibrationDraft,
-  feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
+  _feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
   scaleMultiplier: number,
 ): CalibrationDraft {
-  let nextDraft: CalibrationDraft = {
+  return {
     ...draft,
     validation: {
       ...draft.validation,
@@ -521,80 +506,6 @@ export function applyValidationFeedbackAdjustments(
       ).toString(),
     },
   };
-
-  const applyScenarioAdjustment = (
-    scenarioId: PricingValidationExampleId,
-    mutate: (current: CalibrationDraft, axisMultiplier: number) => CalibrationDraft,
-  ) => {
-    const currentFeedback = feedback[scenarioId];
-
-    if (!currentFeedback || currentFeedback === "looks-right") {
-      return;
-    }
-
-    const axisMultiplier =
-      currentFeedback === "slightly-low"
-        ? VALIDATION_AXIS_NUDGE_UP
-        : VALIDATION_AXIS_NUDGE_DOWN;
-
-    nextDraft = mutate(nextDraft, axisMultiplier);
-  };
-
-  applyScenarioAdjustment("minimal-linework", (current, axisMultiplier) => ({
-    ...current,
-    size: {
-      ...current.size,
-      size8: scaleDraftRange(current.size.size8, axisMultiplier),
-    },
-    detail: {
-      ...current.detail,
-      low: scaleDraftRange(current.detail.low, axisMultiplier),
-    },
-  }));
-
-  applyScenarioAdjustment("ornamental-dagger", (current, axisMultiplier) => ({
-    ...current,
-    size: {
-      ...current.size,
-      size12: scaleDraftRange(current.size.size12, axisMultiplier),
-      size18: scaleDraftRange(current.size.size18, axisMultiplier),
-    },
-    detail: {
-      ...current.detail,
-      high: scaleDraftRange(current.detail.high, axisMultiplier),
-    },
-  }));
-
-  applyScenarioAdjustment("realistic-eye", (current, axisMultiplier) => ({
-    ...current,
-    size: {
-      ...current.size,
-      size18: scaleDraftRange(current.size.size18, axisMultiplier),
-    },
-    detail: {
-      ...current.detail,
-      high: scaleDraftRange(current.detail.high, axisMultiplier),
-      ultra: scaleDraftRange(current.detail.ultra, axisMultiplier),
-    },
-    placement: {
-      ...current.placement,
-      hard: scaleDraftRange(current.placement.hard, axisMultiplier),
-    },
-  }));
-
-  applyScenarioAdjustment("colored-butterfly", (current, axisMultiplier) => ({
-    ...current,
-    size: {
-      ...current.size,
-      size12: scaleDraftRange(current.size.size12, axisMultiplier),
-    },
-    color: {
-      ...current.color,
-      color: scaleDraftRange(current.color.color, axisMultiplier),
-    },
-  }));
-
-  return nextDraft;
 }
 
 export function buildCalibrationSlots(existing: ArtistPricingRules["calibrationReferenceSlots"]) {
