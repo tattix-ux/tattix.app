@@ -406,9 +406,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               <CardTitle className="break-words text-base sm:text-lg" style={{ color: "var(--artist-card-text)" }}>
                 {result ? visibleStepMeta[visibleStepMeta.length - 1]?.title : displayMeta?.title}
               </CardTitle>
-              <CardDescription className="break-words text-[13px] leading-5 sm:text-sm sm:leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                {result ? visibleStepMeta[visibleStepMeta.length - 1]?.description : displayMeta?.description}
-              </CardDescription>
+              {(result ? visibleStepMeta[visibleStepMeta.length - 1]?.description : displayMeta?.description) ? (
+                <CardDescription className="break-words text-[13px] leading-5 sm:text-sm sm:leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                  {result ? visibleStepMeta[visibleStepMeta.length - 1]?.description : displayMeta?.description}
+                </CardDescription>
+              ) : null}
             </div>
             <Badge
               variant="muted"
@@ -920,8 +922,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       backgroundColor: "rgba(0,0,0,0.12)",
                     }}
                   >
-                    <p className="text-sm" style={{ color: "var(--artist-card-text)" }}>{result.summary}</p>
-                    <p className="mt-3 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                    <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                       {result.disclaimer}
                     </p>
                   </div>

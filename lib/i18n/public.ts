@@ -167,7 +167,7 @@ export const publicCopy = {
       "Choose the tattoo size in cm.",
       "Choose detail level and color.",
       "Add any extra notes you want to share.",
-      "Your estimate is ready.",
+      "",
     ],
     featuredEyebrow: "Featured collections",
     featuredTitle: "Artist designs available for this request",
@@ -297,7 +297,7 @@ export const publicCopy = {
       "Dövmenin boyutunu cm olarak seç.",
       "Detay seviyesini ve rengi seç.",
       "Eklemek istediğin bilgileri yazabilirsin.",
-      "Tahminin hazır.",
+      "",
     ],
     featuredEyebrow: "Öne çıkan koleksiyonlar",
     featuredTitle: "Bu talep için uygun tasarımlar",
@@ -344,7 +344,7 @@ export const publicCopy = {
     scopeWarning:
       "Bu sadece başlangıç için tahmini bir aralıktır. Tasarım ve kapsam netleştikçe nihai fiyat değişebilir.",
     coverUpCustomWarning:
-      "Bu özelliklerdeki bir tasarımın genel fiyatıdır. Cover-up ve özel tasarımlar için fiyat sanatçı ile görüşme sonrasında büyük ölçüde değişebilir.",
+      "Bu özelliklerdeki bir tasarımın genel fiyatıdır. Cover-up ve özel tasarımlarda fiyat, sanatçıyla görüştükten sonra büyük ölçüde değişebilir.",
     chooseDesign: "Bir tasarım seç",
     chooseDesignHelp: "Devam etmeden önce yüklenen tasarımlardan birini seç.",
     noMatchingDesigns: "Bu kategori için şu anda aktif tasarım görünmüyor.",

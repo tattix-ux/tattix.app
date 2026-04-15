@@ -243,7 +243,7 @@ export function CustomizePageForm({
           gradientStart: "Başlangıç rengi",
           gradientEnd: "Bitiş rengi",
           backgroundImage: "Arka plan görseli",
-          backgroundImageHelp: "Sadece görsel yükle.",
+          backgroundImageHelp: "Sadece görsel yükle. Mobil için dikey 1080 × 1920'e yakın bir görsel en iyi sonucu verir.",
           noBackground: "Henüz arka plan görseli seçilmedi",
           uploadImage: "Görsel yükle",
           removeImage: "Görseli kaldır",
@@ -292,7 +292,7 @@ export function CustomizePageForm({
           gradientStart: "Start color",
           gradientEnd: "End color",
           backgroundImage: "Background image",
-          backgroundImageHelp: "Upload only.",
+          backgroundImageHelp: "Upload only. A vertical image close to 1080 × 1920 works best on mobile.",
           noBackground: "No background image selected",
           uploadImage: "Upload image",
           removeImage: "Remove image",
@@ -894,7 +894,7 @@ export function CustomizePageForm({
                       <NativeSelect
                         value={currentBackgroundType}
                         onChange={(event) =>
-                          form.setValue("backgroundType", event.target.value as "solid" | "gradient", {
+                          form.setValue("backgroundType", event.target.value as "solid" | "gradient" | "image", {
                             shouldDirty: true,
                             shouldValidate: true,
                           })
@@ -905,18 +905,6 @@ export function CustomizePageForm({
                         <option value="image">{copy.image}</option>
                       </NativeSelect>
                     </Field>
-                    <div className="flex flex-wrap gap-2">
-                      {backgroundGradientPresets.map((preset) => (
-                        <button
-                          key={preset.key}
-                          type="button"
-                          onClick={() => applyBackgroundPreset(preset)}
-                          className="rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/8"
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
                     {currentBackgroundType === "solid" ? (
                       <ColorField
                         label={copy.backgroundColor}
@@ -925,7 +913,21 @@ export function CustomizePageForm({
                         swatches={backgroundSolidSwatches}
                         customLabel={copy.customColor}
                       />
-                    ) : (
+                    ) : null}
+                    {currentBackgroundType === "gradient" ? (
+                      <>
+                        <div className="flex flex-wrap gap-2">
+                          {backgroundGradientPresets.map((preset) => (
+                            <button
+                              key={preset.key}
+                              type="button"
+                              onClick={() => applyBackgroundPreset(preset)}
+                              className="rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/8"
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
                       <div className="grid gap-4 lg:grid-cols-2">
                         <ColorField
                           label={copy.gradientStart}
@@ -942,7 +944,8 @@ export function CustomizePageForm({
                           customLabel={copy.customColor}
                         />
                       </div>
-                    )}
+                      </>
+                    ) : null}
                     {currentBackgroundType === "image" ? (
                       <Field label={copy.backgroundImage} description={copy.backgroundImageHelp}>
                         <div className="space-y-3">
