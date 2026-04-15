@@ -832,86 +832,88 @@ export function CustomizePageForm({
           </div>
         )}
 
-        <Card className="surface-border">
-          <CardHeader>
-            <CardTitle>{copy.saveTheme}</CardTitle>
-            <CardDescription>{copy.saveThemeDescription}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="min-w-0 flex-1">
-                <Field label={copy.presetName}>
-                  <Input
-                    value={presetName}
-                    onChange={(event) => setPresetName(event.target.value)}
-                    placeholder={copy.presetNamePlaceholder}
-                  />
-                </Field>
+        {mode === "custom" ? (
+          <Card className="surface-border">
+            <CardHeader>
+              <CardTitle>{copy.saveTheme}</CardTitle>
+              <CardDescription>{copy.saveThemeDescription}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="min-w-0 flex-1">
+                  <Field label={copy.presetName}>
+                    <Input
+                      value={presetName}
+                      onChange={(event) => setPresetName(event.target.value)}
+                      placeholder={copy.presetNamePlaceholder}
+                    />
+                  </Field>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={form.formState.isSubmitting}
+                  onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
+                >
+                  <Save className="size-4" />
+                  {copy.savePreset}
+                </Button>
+                <Button type="button" variant="ghost" onClick={resetThemeToDefault}>
+                  <RotateCcw className="size-4" />
+                  {copy.resetDefaults}
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={form.formState.isSubmitting}
-                onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
-              >
-                <Save className="size-4" />
-                {copy.savePreset}
-              </Button>
-              <Button type="button" variant="ghost" onClick={resetThemeToDefault}>
-                <RotateCcw className="size-4" />
-                {copy.resetDefaults}
-              </Button>
-            </div>
 
-            {savedThemes.length ? (
-              <div className="grid gap-3 lg:grid-cols-2">
-                {savedThemes.map((savedTheme) => (
-                  <div key={savedTheme.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium text-white">{savedTheme.name}</p>
-                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.savedThemesDescription}</p>
+              {savedThemes.length ? (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {savedThemes.map((savedTheme) => (
+                    <div key={savedTheme.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium text-white">{savedTheme.name}</p>
+                          <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.savedThemesDescription}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <span
+                            className="size-4 rounded-full border border-white/10"
+                            style={{ backgroundColor: savedTheme.theme.primaryColor }}
+                          />
+                          <span
+                            className="size-4 rounded-full border border-white/10"
+                            style={{ backgroundColor: savedTheme.theme.cardColor }}
+                          />
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <span
-                          className="size-4 rounded-full border border-white/10"
-                          style={{ backgroundColor: savedTheme.theme.primaryColor }}
-                        />
-                        <span
-                          className="size-4 rounded-full border border-white/10"
-                          style={{ backgroundColor: savedTheme.theme.cardColor }}
-                        />
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button type="button" size="sm" variant="secondary" onClick={() => applySavedTheme(savedTheme)}>
+                          {copy.applyTheme}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void renameSavedTheme(savedTheme.id, savedTheme.name)}
+                        >
+                          <Pencil className="size-4" />
+                          {copy.renameTheme}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => void deleteSavedTheme(savedTheme.id)}
+                        >
+                          <Trash2 className="size-4" />
+                          {copy.deleteTheme}
+                        </Button>
                       </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Button type="button" size="sm" variant="secondary" onClick={() => applySavedTheme(savedTheme)}>
-                        {copy.applyTheme}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => void renameSavedTheme(savedTheme.id, savedTheme.name)}
-                      >
-                        <Pencil className="size-4" />
-                        {copy.renameTheme}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => void deleteSavedTheme(savedTheme.id)}
-                      >
-                        <Trash2 className="size-4" />
-                        {copy.deleteTheme}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : null}
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={form.formState.isSubmitting}>
