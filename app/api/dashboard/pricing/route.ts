@@ -125,6 +125,7 @@ export async function POST(request: Request) {
       "black-grey": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-grey"]),
       "full-color": colorPrice,
     },
+    globalScale: calibrationAnswers?.validation?.globalScale ?? 1,
   };
   const existingReferenceSlots =
     (existingPricing.data?.calibration_reference_slots as

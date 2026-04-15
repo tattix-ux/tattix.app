@@ -19,14 +19,14 @@ export default async function DashboardPricingPage() {
         }
         description={
           isTurkish
-            ? "Tattix sadece ön tahmin yapar, son kararı her zaman sen verirsin."
-            : "Tattix gives an initial estimate, but the final decision is always yours."
+            ? "Açılış fiyatını belirle, kalibrasyonu tamamla ve model özetini kontrol et."
+            : "Set the opening price, finish calibration, and review the model summary."
         }
       />
       <p className="-mt-2 max-w-2xl text-sm leading-6 text-[var(--foreground-muted)]">
         {isTurkish
-          ? "Temel fiyatı, boyut etkisini, yerleşimi ve ek ücretleri birlikte belirleyebilirsin."
-          : "You can set the base price, size effect, placement effect, and addon fees together."}
+          ? "Tattix fiyatı boyut, detay, bölge ve renge göre kalibre eder. Özel tasarım ve kapatma işi sadece açıklama notu olarak kalır."
+          : "Tattix calibrates quotes from size, detail, placement, and color. Custom design and cover-up stay as context notes only."}
       </p>
       <PricingForm
         pricingRules={data.pricingRules}

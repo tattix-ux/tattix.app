@@ -95,6 +95,7 @@ export type PricingCalibrationExamples = {
     hard: number;
   };
   colorMode: Record<ColorModeValue, number>;
+  globalScale?: number;
 };
 
 export type PricingCalibrationReferenceSlot = {

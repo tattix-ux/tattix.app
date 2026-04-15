@@ -29,6 +29,7 @@ export type NormalizedQuoteInput = {
 export type NormalizedQuoteConfig = {
   anchorPrice: number;
   minimumCharge: number;
+  globalScale: number;
   sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>;
   sizeFactors: Record<SizeValue, FactorRange>;
   placementFactors: Partial<Record<BodyAreaDetailValue, FactorRange>>;
@@ -341,6 +342,12 @@ export function buildNormalizedQuoteConfig(
   return {
     anchorPrice,
     minimumCharge: Math.max(0, rules.minimumCharge ?? rules.minimumSessionPrice ?? Math.round(anchorPrice * 0.9)),
+    globalScale:
+      typeof rules.calibrationExamples.globalScale === "number" &&
+      Number.isFinite(rules.calibrationExamples.globalScale) &&
+      rules.calibrationExamples.globalScale > 0
+        ? rules.calibrationExamples.globalScale
+        : 1,
     sizeCurvePoints,
     sizeFactors: useCalibration
       ? {
@@ -475,13 +482,15 @@ export function estimateNormalizedQuote(
       sizeRange.min *
       placementRange.min *
       detailRange.min *
-      colorRange.min;
+      colorRange.min *
+      config.globalScale;
   const rawMax =
     config.anchorPrice *
       sizeRange.max *
       placementRange.max *
       detailRange.max *
-      colorRange.max;
+      colorRange.max *
+      config.globalScale;
 
   const roundedMin = Math.max(roundToNearestFifty(rawMin), config.minimumCharge);
   const roundedMax = Math.max(roundToNearestFifty(rawMax), roundedMin);

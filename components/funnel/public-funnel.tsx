@@ -155,6 +155,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const secondaryButtonClass = "border-0 shadow-none hover:opacity-95";
   const styleStepActive = requiresStyleSelection(draft.intent);
   const compactArtistHeader = step > 1 || Boolean(draft.intent);
+  const showScopeWarning =
+    Boolean(draft.coverUp) ||
+    (!draft.selectedDesignId &&
+      draft.intent !== "flash-design" &&
+      draft.intent !== "discounted-design");
 
   async function handleFinalSubmit() {
     setSubmitting(true);
@@ -251,8 +256,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     (step === 3 && Boolean(draft.approximateSizeCm && draft.sizeCategory)) ||
     (step === 4 &&
       Boolean(draft.detailLevel) &&
-      Boolean(draft.colorMode) &&
-      draft.coverUp !== null) ||
+      Boolean(draft.colorMode)) ||
     step === 5;
 
   return (
@@ -547,51 +551,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     </div>
                   </div>
 
-                  <div
-                    className="rounded-[24px] border p-4"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                    }}
-                  >
-                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {copy.coverUpTitle}
-                    </p>
-                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.coverUpHelp}
-                    </p>
-                    <div className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setField("coverUp", false)}
-                        className="rounded-[24px] border px-4 py-4 text-left transition"
-                        style={{
-                          borderColor: draft.coverUp === false ? "var(--artist-primary)" : "var(--artist-border)",
-                          backgroundColor: draft.coverUp === false
-                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                            : "rgba(0,0,0,0.12)",
-                          color: tokens.cardText,
-                        }}
-                      >
-                        <p className="break-words font-medium">{copy.coverUpNo}</p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setField("coverUp", true)}
-                        className="rounded-[24px] border px-4 py-4 text-left transition"
-                        style={{
-                          borderColor: draft.coverUp === true ? "var(--artist-primary)" : "var(--artist-border)",
-                          backgroundColor: draft.coverUp === true
-                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                            : "rgba(0,0,0,0.12)",
-                          color: tokens.cardText,
-                        }}
-                      >
-                        <p className="break-words font-medium">{copy.coverUpYes}</p>
-                      </button>
-                    </div>
-                  </div>
-
                   {styleStepActive ? (
                     <div
                       className="rounded-[24px] border p-4"
@@ -703,6 +662,50 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       </p>
                     </div>
                   ) : null}
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.contextTitle}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.contextHelp}
+                    </p>
+                    <div className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setField("coverUp", false)}
+                        className="rounded-[24px] border px-4 py-4 text-left transition"
+                        style={{
+                          borderColor: draft.coverUp === false ? "var(--artist-primary)" : "var(--artist-border)",
+                          backgroundColor: draft.coverUp === false
+                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                            : "rgba(0,0,0,0.12)",
+                          color: tokens.cardText,
+                        }}
+                      >
+                        <p className="break-words font-medium">{copy.coverUpNo}</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setField("coverUp", true)}
+                        className="rounded-[24px] border px-4 py-4 text-left transition"
+                        style={{
+                          borderColor: draft.coverUp === true ? "var(--artist-primary)" : "var(--artist-border)",
+                          backgroundColor: draft.coverUp === true
+                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                            : "rgba(0,0,0,0.12)",
+                          color: tokens.cardText,
+                        }}
+                      >
+                        <p className="break-words font-medium">{copy.coverUpYes}</p>
+                      </button>
+                    </div>
+                  </div>
                   <Textarea
                     style={{
                       backgroundColor: "rgba(0,0,0,0.12)",
@@ -881,6 +884,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     <p className="mt-3 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                       {result.disclaimer}
                     </p>
+                    {showScopeWarning ? (
+                      <p className="mt-3 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.scopeWarning}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="grid gap-2.5 sm:gap-3">
                     <Button asChild className="w-full">

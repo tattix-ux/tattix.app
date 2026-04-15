@@ -145,6 +145,12 @@ export const pricingSchema = z.object({
         black: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
         color: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
       }),
+      validation: z
+        .object({
+          feedback: z.enum(["looks-right", "slightly-low", "slightly-high"]),
+          globalScale: z.coerce.number().min(0.85).max(1.15),
+        })
+        .optional(),
     })
     .optional(),
 }).superRefine((values, ctx) => {

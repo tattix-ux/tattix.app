@@ -229,6 +229,7 @@ export async function ensureArtistForUser(user: User) {
           "black-grey": 2700,
           "full-color": 3300,
         },
+        globalScale: 1,
       },
       calibration_reference_slots: [
         { slotId: "size-8cm", axis: "size", key: "8cm", label: "8 cm referans slotu", assetRef: null },

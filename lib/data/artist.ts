@@ -260,6 +260,7 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
         "black-grey": Math.round(anchorPrice * midpoint(colorModeModifiers["black-grey"])!),
         "full-color": Math.round(anchorPrice * midpoint(colorModeModifiers["full-color"])!),
       },
+      globalScale: 1,
     };
   const storedCalibrationExamples =
     (row.calibration_examples as ArtistPricingRules["calibrationExamples"] | undefined) ?? undefined;
@@ -271,6 +272,11 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
     placementDifficulty:
       storedCalibrationExamples?.placementDifficulty ?? defaultCalibrationExamples.placementDifficulty,
     colorMode: storedCalibrationExamples?.colorMode ?? defaultCalibrationExamples.colorMode,
+    globalScale:
+      typeof storedCalibrationExamples?.globalScale === "number" &&
+      Number.isFinite(storedCalibrationExamples.globalScale)
+        ? storedCalibrationExamples.globalScale
+        : defaultCalibrationExamples.globalScale,
   };
   const calibrationReferenceSlots =
     (row.calibration_reference_slots as PricingCalibrationReferenceSlot[] | undefined) ??

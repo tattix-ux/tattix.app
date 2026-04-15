@@ -113,6 +113,7 @@ export const demoPricingRules: ArtistPricingRules = {
       "black-grey": 2700,
       "full-color": 3300,
     },
+    globalScale: 1,
   },
   calibrationReferenceSlots: [
     { slotId: "size-8cm", axis: "size", key: "8cm", label: "8 cm referans slotu", assetRef: null },

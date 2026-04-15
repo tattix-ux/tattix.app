@@ -23,6 +23,10 @@ type DraftRange = {
 
 type CalibrationDraft = {
   openingPrice: string;
+  validation: {
+    feedback: "looks-right" | "slightly-low" | "slightly-high";
+    globalScale: string;
+  };
   size: {
     size8: DraftRange;
     size12: DraftRange;
@@ -202,6 +206,15 @@ function buildInitialDraft(pricingRules: ArtistPricingRules): CalibrationDraft {
 
   return {
     openingPrice: String(roundPrice(anchorPrice)),
+    validation: {
+      feedback: "looks-right",
+      globalScale: String(
+        typeof pricingRules.calibrationExamples.globalScale === "number" &&
+          Number.isFinite(pricingRules.calibrationExamples.globalScale)
+          ? Number(pricingRules.calibrationExamples.globalScale.toFixed(2))
+          : 1,
+      ),
+    },
     size: {
       size8: stringRange(priceRangeFromFactors(anchorPrice, pricingRules.sizeModifiers.tiny, { min: 0.35, max: 0.6 })),
       size12: stringRange(priceRangeFromFactors(anchorPrice, pricingRules.sizeModifiers.small, { min: 0.55, max: 0.85 })),
@@ -226,7 +239,7 @@ function buildInitialDraft(pricingRules: ArtistPricingRules): CalibrationDraft {
 
 function updateDraftRange(
   current: CalibrationDraft,
-  section: keyof Omit<CalibrationDraft, "openingPrice">,
+  section: keyof Omit<CalibrationDraft, "openingPrice" | "validation">,
   key: string,
   edge: keyof DraftRange,
   value: string,
@@ -241,6 +254,19 @@ function updateDraftRange(
       },
     },
   } as CalibrationDraft;
+}
+
+function updateValidationDraft(
+  current: CalibrationDraft,
+  next: Partial<CalibrationDraft["validation"]>,
+): CalibrationDraft {
+  return {
+    ...current,
+    validation: {
+      ...current.validation,
+      ...next,
+    },
+  };
 }
 
 function buildCalibrationSlots(existing: ArtistPricingRules["calibrationReferenceSlots"]) {
@@ -363,6 +389,10 @@ function buildPayloadFromDraft(draft: CalibrationDraft, pricingRules: ArtistPric
           max: Number(draft.color.color.max),
         },
       },
+      validation: {
+        feedback: draft.validation.feedback,
+        globalScale: Number(draft.validation.globalScale) || 1,
+      },
     },
   };
 }
@@ -377,6 +407,19 @@ function getText(locale: PublicLocale) {
       openingPriceNote: "Bu değer modelin taban fiyatı olarak kullanılır.",
       placeholderTitle: "Referans görsel slotu",
       placeholderDescription: "Görseli sonra sen yükleyeceksin. Şimdilik sadece yerini hazırlıyoruz.",
+      calibrationSummaryTitle: "Kalibrasyon özeti",
+      calibrationSummaryBody: "Açılış fiyatı, referans slotları ve genel model ayarı burada özetlenir.",
+      calibrationSummaryReady: "Kalibrasyon modeli hazır.",
+      calibrationSummaryNotReady: "Henüz kalibrasyon tamamlanmadı.",
+      startCalibration: "Kalibrasyonu başlat",
+      editCalibration: "Kalibrasyonu düzenle",
+      validationTitle: "Son kontrol",
+      validationDescription: "Tattix bu örnek tahminleri üretti. Genel olarak doğru görünüyor mu?",
+      validationLooksRight: "Doğru görünüyor",
+      validationLow: "Biraz düşük",
+      validationHigh: "Biraz yüksek",
+      globalScaleLabel: "Son ince ayar",
+      globalScaleHelp: "Tüm modeli küçük bir oranda yukarı veya aşağı taşıyabilirsin.",
       rangeMin: "Minimum",
       rangeMax: "Maksimum",
       back: "Geri",
@@ -410,6 +453,7 @@ function getText(locale: PublicLocale) {
       placementHard: "Zor bölge",
       colorBlack: "Sadece siyah",
       colorColor: "Renkli",
+      previewRange: "Tahmini aralık",
     };
   }
 
@@ -421,6 +465,19 @@ function getText(locale: PublicLocale) {
     openingPriceNote: "This becomes the anchor price of the model.",
     placeholderTitle: "Reference image slot",
     placeholderDescription: "You will upload the real reference later. For now we only keep the slot ready.",
+    calibrationSummaryTitle: "Calibration summary",
+    calibrationSummaryBody: "A quick summary of the opening price, reference slots, and final model adjustment.",
+    calibrationSummaryReady: "Calibration model is ready.",
+    calibrationSummaryNotReady: "Calibration is not complete yet.",
+    startCalibration: "Start calibration",
+    editCalibration: "Edit calibration",
+    validationTitle: "Final check",
+    validationDescription: "Tattix generated these sample estimates. Does the overall level look right?",
+    validationLooksRight: "Looks right",
+    validationLow: "Slightly low",
+    validationHigh: "Slightly high",
+    globalScaleLabel: "Final fine-tune",
+    globalScaleHelp: "You can move the whole model slightly up or down.",
     rangeMin: "Min",
     rangeMax: "Max",
     back: "Back",
@@ -454,6 +511,7 @@ function getText(locale: PublicLocale) {
     placementHard: "Hard placement",
     colorBlack: "Black",
     colorColor: "Color",
+    previewRange: "Estimated range",
   };
 }
 
@@ -485,6 +543,83 @@ function RangeQuestion({
   );
 }
 
+function buildPreviewExamples(draft: CalibrationDraft, locale: PublicLocale) {
+  const anchor = Math.max(Number(draft.openingPrice) || 0, 1);
+  const scale = Math.max(0.85, Math.min(1.15, Number(draft.validation.globalScale) || 1));
+
+  const sizeRatios = {
+    "8": (Number(draft.size.size8.min) + Number(draft.size.size8.max)) / 2 / anchor,
+    "12": 1,
+    "18": (Number(draft.size.size18.min) + Number(draft.size.size18.max)) / 2 / anchor,
+    "25": (Number(draft.size.size25.min) + Number(draft.size.size25.max)) / 2 / anchor,
+  };
+  const detailRatios = {
+    low:
+      ((Number(draft.detail.low.min) + Number(draft.detail.low.max)) / 2) /
+      Math.max((Number(draft.detail.medium.min) + Number(draft.detail.medium.max)) / 2, 1),
+    medium: 1,
+    high:
+      ((Number(draft.detail.high.min) + Number(draft.detail.high.max)) / 2) /
+      Math.max((Number(draft.detail.medium.min) + Number(draft.detail.medium.max)) / 2, 1),
+  };
+  const placementRatios = {
+    easy: 1,
+    hard:
+      ((Number(draft.placement.hard.min) + Number(draft.placement.hard.max)) / 2) /
+      Math.max((Number(draft.placement.easy.min) + Number(draft.placement.easy.max)) / 2, 1),
+  };
+  const colorRatios = {
+    black: 1,
+    color:
+      ((Number(draft.color.color.min) + Number(draft.color.color.max)) / 2) /
+      Math.max((Number(draft.color.black.min) + Number(draft.color.black.max)) / 2, 1),
+  };
+
+  function interpolateSizeFactor(sizeCm: 8 | 12 | 18 | 25) {
+    return sizeRatios[String(sizeCm) as keyof typeof sizeRatios];
+  }
+
+  function buildRange(sizeCm: 8 | 12 | 18 | 25, detail: "low" | "medium" | "high", placement: "easy" | "hard", color: "black" | "color") {
+    const center =
+      anchor *
+      interpolateSizeFactor(sizeCm) *
+      detailRatios[detail] *
+      placementRatios[placement] *
+      colorRatios[color] *
+      scale;
+
+    const spread = sizeCm >= 25 ? 0.1 : sizeCm >= 18 ? 0.08 : 0.06;
+    return {
+      min: roundPrice(center * (1 - spread)),
+      max: roundPrice(center * (1 + spread)),
+    };
+  }
+
+  return [
+    {
+      label:
+        locale === "tr"
+          ? "12 cm · orta detay · kolay bölge · siyah"
+          : "12 cm · medium detail · easy placement · black",
+      range: buildRange(12, "medium", "easy", "black"),
+    },
+    {
+      label:
+        locale === "tr"
+          ? "18 cm · çok detay · zor bölge · siyah"
+          : "18 cm · high detail · hard placement · black",
+      range: buildRange(18, "high", "hard", "black"),
+    },
+    {
+      label:
+        locale === "tr"
+          ? "25 cm · orta detay · kolay bölge · renkli"
+          : "25 cm · medium detail · easy placement · color",
+      range: buildRange(25, "medium", "easy", "color"),
+    },
+  ];
+}
+
 export function PricingForm({
   pricingRules,
   styles: _styles,
@@ -498,9 +633,12 @@ export function PricingForm({
   const copy = getText(locale);
   const [activeStep, setActiveStep] = useState(0);
   const [draft, setDraft] = useState<CalibrationDraft>(() => buildInitialDraft(pricingRules));
+  const [showCalibration, setShowCalibration] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const slots = buildCalibrationSlots(pricingRules.calibrationReferenceSlots);
+  const previewExamples = buildPreviewExamples(draft, locale);
+  const hasCalibration = Boolean(pricingRules.calibrationExamples.sizeCurve);
 
   const steps = [
     {
@@ -624,6 +762,94 @@ export function PricingForm({
         </div>
       ),
     },
+    {
+      key: "validation",
+      title: copy.validationTitle,
+      description: copy.validationDescription,
+      assumption: copy.globalScaleHelp,
+      slotLabels: [],
+      content: (
+        <div className="space-y-4">
+          <div className="grid gap-3">
+            {previewExamples.map((example) => (
+              <div key={example.label} className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                <p className="text-sm text-[var(--foreground-muted)]">{example.label}</p>
+                <p className="mt-2 text-base font-medium text-white">
+                  {copy.previewRange}: {example.range.min} - {example.range.max}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-3">
+            {[
+              { key: "looks-right", label: copy.validationLooksRight, scale: "1" },
+              { key: "slightly-low", label: copy.validationLow, scale: "1.06" },
+              { key: "slightly-high", label: copy.validationHigh, scale: "0.94" },
+            ].map((option) => {
+              const active = draft.validation.feedback === option.key;
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() =>
+                    setDraft((current) =>
+                      updateValidationDraft(current, {
+                        feedback: option.key as CalibrationDraft["validation"]["feedback"],
+                        globalScale: option.scale,
+                      }),
+                    )
+                  }
+                  className="rounded-[18px] border px-4 py-3 text-sm transition"
+                  style={{
+                    borderColor: active ? "var(--primary)" : "rgba(255,255,255,0.08)",
+                    backgroundColor: active
+                      ? "color-mix(in srgb, var(--primary) 18%, transparent)"
+                      : "rgba(255,255,255,0.02)",
+                    color: "white",
+                  }}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+            <p className="text-sm font-medium text-white">{copy.globalScaleLabel}</p>
+            <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.globalScaleHelp}</p>
+            <div className="mt-4 grid grid-cols-5 gap-2">
+              {["0.92", "0.96", "1", "1.04", "1.08"].map((value) => {
+                const active = draft.validation.globalScale === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() =>
+                      setDraft((current) =>
+                        updateValidationDraft(current, {
+                          globalScale: value,
+                        }),
+                      )
+                    }
+                    className="rounded-[16px] border px-2 py-2 text-sm transition"
+                    style={{
+                      borderColor: active ? "var(--primary)" : "rgba(255,255,255,0.08)",
+                      backgroundColor: active
+                        ? "color-mix(in srgb, var(--primary) 18%, transparent)"
+                        : "rgba(255,255,255,0.02)",
+                      color: "white",
+                    }}
+                  >
+                    {value}x
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ),
+    },
   ];
 
   async function onSubmit() {
@@ -688,7 +914,36 @@ export function PricingForm({
             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.openingPriceNote}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+            <p className="text-sm font-medium text-white">{copy.calibrationSummaryTitle}</p>
+            <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.calibrationSummaryBody}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">{copy.openingPrice}</p>
+                <p className="mt-2 text-lg font-semibold text-white">{draft.openingPrice || "-"}</p>
+              </div>
+              <div className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">{copy.placeholderTitle}</p>
+                <p className="mt-2 text-lg font-semibold text-white">{slots.length}</p>
+              </div>
+              <div className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">{copy.globalScaleLabel}</p>
+                <p className="mt-2 text-lg font-semibold text-white">{draft.validation.globalScale}x</p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-[var(--foreground-muted)]">
+              {hasCalibration ? copy.calibrationSummaryReady : copy.calibrationSummaryNotReady}
+            </p>
+            <div className="mt-4">
+              <Button type="button" onClick={() => setShowCalibration((current) => !current)}>
+                {hasCalibration ? copy.editCalibration : copy.startCalibration}
+              </Button>
+            </div>
+          </div>
+
+          {showCalibration ? (
+            <>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
             {steps.map((step, index) => {
               const active = index === activeStep;
 
@@ -722,6 +977,7 @@ export function PricingForm({
             <p className="mt-2 text-sm text-[var(--foreground-muted)]">{currentStep.description}</p>
             <p className="mt-2 text-sm text-[var(--foreground-muted)]">{currentStep.assumption}</p>
 
+            {currentStep.slotLabels.length ? (
             <div className="mt-4 rounded-[18px] border border-dashed border-white/12 bg-black/20 p-4">
               <p className="text-sm font-medium text-white">{copy.placeholderTitle}</p>
               <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.placeholderDescription}</p>
@@ -736,6 +992,7 @@ export function PricingForm({
                 ))}
               </div>
             </div>
+            ) : null}
 
             <div className="mt-5">{currentStep.content}</div>
           </div>
@@ -771,6 +1028,8 @@ export function PricingForm({
               </Button>
             )}
           </div>
+            </>
+          ) : null}
         </div>
       </CardContent>
     </Card>
