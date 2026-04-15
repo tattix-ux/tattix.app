@@ -23,7 +23,7 @@ export const styleOptions = [
   { value: "traditional", label: "Traditional" },
   { value: "neo-traditional", label: "Neo traditional" },
   { value: "blackwork", label: "Blackwork" },
-  { value: "realism", label: "Realism" },
+  { value: "realism", label: "Realistic" },
   { value: "micro-realism", label: "Micro realism" },
   { value: "ornamental", label: "Ornamental" },
   { value: "lettering", label: "Lettering" },

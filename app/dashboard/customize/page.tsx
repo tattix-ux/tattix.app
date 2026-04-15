@@ -21,7 +21,7 @@ export default async function DashboardCustomizePage() {
         }
         description={
           isTurkish
-            ? "Hazır temalar, seçilmiş fontlar ve güvenli renk ayarlarıyla sayfanı kişiselleştir."
+            ? "Hazır temalar, fontlar ve renk ayarlarıyla sayfanı kişiselleştir."
             : "Preset themes, curated fonts, safe color overrides, and a live preview help you personalize the page while keeping it readable."
         }
       />

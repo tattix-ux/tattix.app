@@ -19,15 +19,23 @@ export default async function DashboardPricingPage() {
         }
         description={
           isTurkish
-            ? "Açılış fiyatını belirle ve kalibrasyonu tamamla."
+            ? "En basit iş için alacağın minimum ücreti gir."
             : "Set the opening price and complete calibration."
         }
       />
-      <p className="-mt-2 max-w-2xl text-sm leading-6 text-[var(--foreground-muted)]">
-        {isTurkish
-          ? "Tattix fiyatı boyut, detay, bölge ve renge göre kalibre eder. Özel tasarım ve cover-up işlemlerini müşteri ile görüşünce fiyatlandırırsın."
-          : "Tattix calibrates quotes from size, detail, placement, and color. You price custom design and cover-up after speaking with the client."}
-      </p>
+      <div className="-mt-2 max-w-2xl space-y-2 text-sm leading-6 text-[var(--foreground-muted)]">
+        {isTurkish ? (
+          <>
+            <p>Tattix; boyut, detay, bölge ve renge göre fiyat önerisi oluşturur.</p>
+            <p>Özel tasarım ve cover-up gibi durumlarda son fiyatı müşteriyle netleştirirsin.</p>
+          </>
+        ) : (
+          <>
+            <p>Tattix suggests pricing based on size, detail, placement, and color.</p>
+            <p>You confirm the final price for custom design and cover-up after speaking with the client.</p>
+          </>
+        )}
+      </div>
       <PricingForm
         pricingRules={data.pricingRules}
         styles={data.styleOptions}

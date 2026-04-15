@@ -14,7 +14,7 @@ export default async function DashboardFunnelPage() {
         eyebrow={isTurkish ? "Akış" : "Funnel"}
         title={
           isTurkish
-            ? "Müşteri akışını ve görünür stilleri düzenle."
+            ? "Müşteri akışını ve çalıştığın stilleri düzenle."
             : "Tune the public flow and style availability."
         }
         description={

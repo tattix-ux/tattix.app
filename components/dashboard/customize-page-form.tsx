@@ -15,8 +15,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import {
-  bodyFontOptions,
-  fontPairingPresetOptions,
   headingFontOptions,
   themePresetOptions,
   themePresets,
@@ -80,8 +78,8 @@ export function CustomizePageForm({
           },
           presets: "Tema hazırları",
           presetsDescription: "Önce güçlü bir hazır tema seç, sonra sadece ihtiyacın olan ayarları değiştir.",
-          fonts: "Fontlar",
-          fontsDescription: "Sayfanın premium ve okunaklı kalması için font seçimleri sınırlı tutulur.",
+          fonts: "Font",
+          fontsDescription: "Sayfanın tamamında kullanılacak fontu seç.",
           colors: "Renkler",
           colorsDescription: "Marka renklerini ayarla.",
           backgrounds: "Arka planlar",
@@ -101,7 +99,6 @@ export function CustomizePageForm({
           noBackground: "Henüz arka plan seçilmedi",
           uploadImage: "Görsel yükle",
           removeImage: "Görseli kaldır",
-          cardGlass: "Kart cam efekti",
           save: "Görünümü kaydet",
           savePreset: "Temayı kaydet",
           presetName: "Tema adı",
@@ -122,7 +119,7 @@ export function CustomizePageForm({
           solid: "Düz renk",
           gradient: "Degrade",
           image: "Görsel",
-          opacityValue: "Cam yoğunluğu",
+          singleFont: "Font",
         }
       : {
           tabs: {
@@ -131,8 +128,8 @@ export function CustomizePageForm({
           },
           presets: "Theme Presets",
           presetsDescription: "Start with a polished preset, then fine-tune only what you need.",
-          fonts: "Fonts",
-          fontsDescription: "Keep font choices curated so the page stays readable and premium.",
+          fonts: "Font",
+          fontsDescription: "Choose the font used across the whole page.",
           colors: "Colors",
           colorsDescription: "Set your brand colors.",
           backgrounds: "Backgrounds",
@@ -152,7 +149,6 @@ export function CustomizePageForm({
           noBackground: "No background selected",
           uploadImage: "Upload image",
           removeImage: "Remove image",
-          cardGlass: "Card glass",
           save: "Save customization",
           savePreset: "Save theme",
           presetName: "Theme name",
@@ -173,8 +169,15 @@ export function CustomizePageForm({
           solid: "Solid",
           gradient: "Gradient",
           image: "Background image",
-          opacityValue: "Glass intensity",
+          singleFont: "Font",
         };
+  const unifiedFontMap = {
+    "display-serif": { headingFont: "display-serif", bodyFont: "clean-sans", fontPairingPreset: "premium-editorial" },
+    "modern-sans": { headingFont: "modern-sans", bodyFont: "clean-sans", fontPairingPreset: "bold-modern" },
+    "gothic-sans": { headingFont: "gothic-sans", bodyFont: "clean-sans", fontPairingPreset: "edgy-clean" },
+    "editorial-serif": { headingFont: "editorial-serif", bodyFont: "editorial-sans", fontPairingPreset: "elegant-editorial" },
+    "mono-display": { headingFont: "mono-display", bodyFont: "mono-body", fontPairingPreset: "minimal-sans" },
+  } as const;
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [editorTab, setEditorTab] = useState<"presets" | "custom">("presets");
   const [presetName, setPresetName] = useState("");
@@ -798,18 +801,17 @@ export function CustomizePageForm({
                 <CardTitle>{copy.fonts}</CardTitle>
                 <CardDescription>{copy.fontsDescription}</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-5 xl:grid-cols-3">
-                <Field label={copy.fontPairing}>
-                  <NativeSelect {...form.register("fontPairingPreset")}>
-                    {fontPairingPresetOptions.map((preset) => (
-                      <option key={preset} value={preset}>
-                        {preset.replaceAll("-", " ")}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                </Field>
-                <Field label={copy.headingFont}>
-                  <NativeSelect {...form.register("headingFont")}>
+              <CardContent className="grid gap-5 xl:grid-cols-1">
+                <Field label={copy.singleFont}>
+                  <NativeSelect
+                    value={watchedValues.headingFont ?? theme.headingFont}
+                    onChange={(event) => {
+                      const next = unifiedFontMap[event.target.value as keyof typeof unifiedFontMap];
+                      form.setValue("headingFont", next.headingFont, { shouldDirty: true, shouldValidate: true });
+                      form.setValue("bodyFont", next.bodyFont, { shouldDirty: true, shouldValidate: true });
+                      form.setValue("fontPairingPreset", next.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
+                    }}
+                  >
                     {headingFontOptions.map((font) => (
                       <option key={font.value} value={font.value}>
                         {font.label}
@@ -817,15 +819,8 @@ export function CustomizePageForm({
                     ))}
                   </NativeSelect>
                 </Field>
-                <Field label={copy.bodyFont}>
-                  <NativeSelect {...form.register("bodyFont")}>
-                    {bodyFontOptions.map((font) => (
-                      <option key={font.value} value={font.value}>
-                        {font.label}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                </Field>
+                <input type="hidden" {...form.register("bodyFont")} />
+                <input type="hidden" {...form.register("fontPairingPreset")} />
               </CardContent>
             </Card>
 
@@ -941,27 +936,7 @@ export function CustomizePageForm({
                   ) : (
                     <input type="hidden" {...form.register("backgroundImageUrl")} />
                   )}
-                  <Field label={copy.cardGlass}>
-                    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                      <input
-                        type="range"
-                        min={0.45}
-                        max={0.98}
-                        step={0.01}
-                        value={currentCardOpacity}
-                        onChange={(event) =>
-                          form.setValue("cardOpacity", Number(event.target.value), {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          })
-                        }
-                        className="h-3 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-[var(--accent)]"
-                      />
-                      <p className="mt-3 text-sm text-[var(--foreground-muted)]">
-                        {copy.opacityValue}: {currentCardOpacity.toFixed(2)}
-                      </p>
-                    </div>
-                  </Field>
+                  <input type="hidden" {...form.register("cardOpacity")} value={String(currentCardOpacity)} />
                   <input type="hidden" {...form.register("radiusStyle")} />
                   <input type="hidden" {...form.register("themeMode")} />
                 </div>

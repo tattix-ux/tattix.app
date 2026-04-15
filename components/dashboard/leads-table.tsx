@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, TrendingUp, X } from "lucide-react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { CheckCircle2, TrendingUp } from "lucide-react";
 
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Badge } from "@/components/ui/badge";
@@ -421,6 +421,110 @@ export function LeadsTable({
   );
   const chartMax = Math.max(...chartData.map((item) => item.total), 1);
 
+  function toggleLeadDetails(lead: ClientSubmission) {
+    setSelectedLead((current) => (current?.id === lead.id ? null : lead));
+  }
+
+  function renderLeadDetailPanel(lead: ClientSubmission) {
+    return (
+      <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="space-y-3 rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
+          <p><span className="text-white">{copy.placement}:</span> {formatPlacement(lead.bodyAreaDetail, locale)}</p>
+          <p><span className="text-white">{copy.size}:</span> {formatApproximateSizeLabel(lead) ?? lead.sizeCategory}</p>
+          <p><span className="text-white">{copy.city}:</span> {lead.city || copy.noCity}</p>
+          <p><span className="text-white">{copy.style}:</span> {formatStyle(lead.style, locale)}</p>
+          <p><span className="text-white">{copy.estimate}:</span> {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
+          <p><span className="text-white">{copy.notes}:</span> {lead.notes || copy.noNotes}</p>
+          <p><span className="text-white">{copy.referenceDescription}:</span> {lead.referenceDescription || copy.noReferenceDescription}</p>
+          <p>
+            <span className="text-white">{copy.preferredTiming}:</span>{" "}
+            {lead.preferredStartDate || lead.preferredEndDate
+              ? `${lead.preferredStartDate ?? "?"} - ${lead.preferredEndDate ?? "?"}`
+              : copy.noTiming}
+          </p>
+          <p>
+            <span className="text-white">{copy.selectedDesign}:</span>{" "}
+            {lead.selectedDesignId
+              ? designs.find((design) => design.id === lead.selectedDesignId)?.title ?? "Selected design"
+              : copy.noDesign}
+          </p>
+          <p>
+            <span className="text-white">{copy.soldAt}:</span>{" "}
+            {lead.soldAt ? formatDateLabel(lead.soldAt) : copy.unsoldBadge}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+            <p className="text-sm font-medium text-white">{copy.openFullImage === "Open full image" ? "Reference image" : "Referans görsel"}</p>
+            {lead.referenceImageUrl ? (
+              <div className="mt-3 space-y-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={lead.referenceImageUrl}
+                  alt="Reference"
+                  className="h-64 w-full rounded-[18px] object-cover"
+                />
+                <a
+                  href={lead.referenceImageUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-[var(--accent-soft)] underline-offset-4 hover:underline"
+                >
+                  {copy.openFullImage}
+                </a>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-[var(--foreground-muted)]">
+                {copy.noReferenceImage}
+              </p>
+            )}
+          </div>
+          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+            <p className="text-sm font-medium text-white">{copy.leadStatus}</p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <Badge variant={lead.contacted ? "accent" : "muted"}>
+                {lead.contacted ? copy.contacted : copy.new}
+              </Badge>
+              <Badge variant={lead.convertedToSale ? "accent" : "muted"}>
+                {lead.convertedToSale ? copy.soldBadge : copy.unsoldBadge}
+              </Badge>
+              <Button
+                size="sm"
+                variant={lead.contacted ? "outline" : "secondary"}
+                onClick={() =>
+                  void updateLead(
+                    lead.id,
+                    { contacted: !lead.contacted },
+                    { contacted: !lead.contacted },
+                  )
+                }
+              >
+                {lead.contacted ? copy.markNotContacted : copy.markContacted}
+              </Button>
+              <Button
+                size="sm"
+                variant={lead.convertedToSale ? "secondary" : "outline"}
+                onClick={() =>
+                  void updateLead(
+                    lead.id,
+                    { convertedToSale: !lead.convertedToSale },
+                    {
+                      convertedToSale: !lead.convertedToSale,
+                      soldAt: !lead.convertedToSale ? new Date().toISOString() : null,
+                    },
+                  )
+                }
+              >
+                <TrendingUp className="size-4" />
+                {lead.convertedToSale ? copy.markUnsold : copy.markSold}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     setPage(1);
   }, [range, view]);
@@ -633,9 +737,10 @@ export function LeadsTable({
                   <CheckCircle2 className="size-4" />
                   {lead.convertedToSale ? copy.markUnsold : copy.markSold}
                 </Button>
-                <Button className="mt-2 w-full" variant="outline" onClick={() => setSelectedLead(lead)}>
+                <Button className="mt-2 w-full" variant="outline" onClick={() => toggleLeadDetails(lead)}>
                   {copy.viewDetails}
                 </Button>
+                {selectedLead?.id === lead.id ? renderLeadDetailPanel(lead) : null}
               </div>
             ))}
           </div>
@@ -655,53 +760,62 @@ export function LeadsTable({
               </TableHeader>
                 <TableBody>
                 {paginatedLeads.map((lead) => (
-                  <TableRow key={lead.id}>
-                    <TableCell>{formatDateLabel(lead.createdAt)}</TableCell>
-                    <TableCell>{formatIntent(lead.intent, locale)}</TableCell>
-                    <TableCell>{formatPlacement(lead.bodyAreaDetail, locale)}</TableCell>
-                    <TableCell>{formatStyle(lead.style, locale)}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <p>{formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
-                        <p className="text-xs text-[var(--foreground-muted)]">
-                          {copy.size}: {formatApproximateSizeLabel(lead) ?? lead.sizeCategory}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{notesPreview(lead.notes, copy.noNotes)}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          variant={lead.contacted ? "outline" : "secondary"}
-                          onClick={() =>
-                            void updateLead(lead.id, { contacted: !lead.contacted }, { contacted: !lead.contacted })
-                          }
-                        >
-                          {lead.contacted ? copy.contacted : copy.markContacted}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={lead.convertedToSale ? "secondary" : "outline"}
-                          onClick={() =>
-                            void updateLead(
-                              lead.id,
-                              { convertedToSale: !lead.convertedToSale },
-                              {
-                                convertedToSale: !lead.convertedToSale,
-                                soldAt: !lead.convertedToSale ? new Date().toISOString() : null,
-                              },
-                            )
-                          }
-                        >
-                          {lead.convertedToSale ? copy.soldBadge : copy.markSold}
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => setSelectedLead(lead)}>
-                          {copy.details}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <Fragment key={lead.id}>
+                    <TableRow key={lead.id}>
+                      <TableCell>{formatDateLabel(lead.createdAt)}</TableCell>
+                      <TableCell>{formatIntent(lead.intent, locale)}</TableCell>
+                      <TableCell>{formatPlacement(lead.bodyAreaDetail, locale)}</TableCell>
+                      <TableCell>{formatStyle(lead.style, locale)}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <p>{formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
+                          <p className="text-xs text-[var(--foreground-muted)]">
+                            {copy.size}: {formatApproximateSizeLabel(lead) ?? lead.sizeCategory}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{notesPreview(lead.notes, copy.noNotes)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant={lead.contacted ? "outline" : "secondary"}
+                            onClick={() =>
+                              void updateLead(lead.id, { contacted: !lead.contacted }, { contacted: !lead.contacted })
+                            }
+                          >
+                            {lead.contacted ? copy.contacted : copy.markContacted}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={lead.convertedToSale ? "secondary" : "outline"}
+                            onClick={() =>
+                              void updateLead(
+                                lead.id,
+                                { convertedToSale: !lead.convertedToSale },
+                                {
+                                  convertedToSale: !lead.convertedToSale,
+                                  soldAt: !lead.convertedToSale ? new Date().toISOString() : null,
+                                },
+                              )
+                            }
+                          >
+                            {lead.convertedToSale ? copy.soldBadge : copy.markSold}
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => toggleLeadDetails(lead)}>
+                            {copy.details}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {selectedLead?.id === lead.id ? (
+                      <TableRow key={`${lead.id}-details`}>
+                        <TableCell colSpan={7}>
+                          {renderLeadDetailPanel(lead)}
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>
@@ -732,122 +846,6 @@ export function LeadsTable({
               </Button>
             </div>
           </div>
-
-          {selectedLead ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4">
-              <div className="my-auto w-full max-w-2xl rounded-[28px] border border-white/10 bg-[#0f0f11] p-5 shadow-2xl">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-[var(--foreground-muted)]">
-                      {formatDateLabel(selectedLead.createdAt)}
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold text-white">
-                      {formatIntent(selectedLead.intent, locale)}
-                    </h3>
-                  </div>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setSelectedLead(null)}>
-                    <X className="size-4" />
-                  </Button>
-                </div>
-
-                <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <div className="space-y-3 rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
-                    <p><span className="text-white">{copy.placement}:</span> {formatPlacement(selectedLead.bodyAreaDetail, locale)}</p>
-                    <p><span className="text-white">{copy.size}:</span> {formatApproximateSizeLabel(selectedLead) ?? selectedLead.sizeCategory}</p>
-                    <p><span className="text-white">{copy.city}:</span> {selectedLead.city || copy.noCity}</p>
-                    <p><span className="text-white">{copy.style}:</span> {formatStyle(selectedLead.style, locale)}</p>
-                    <p><span className="text-white">{copy.estimate}:</span> {formatCompactCurrencyRange(selectedLead.estimatedMin, selectedLead.estimatedMax, currency)}</p>
-                    <p><span className="text-white">{copy.notes}:</span> {selectedLead.notes || copy.noNotes}</p>
-                    <p><span className="text-white">{copy.referenceDescription}:</span> {selectedLead.referenceDescription || copy.noReferenceDescription}</p>
-                    <p>
-                      <span className="text-white">{copy.preferredTiming}:</span>{" "}
-                      {selectedLead.preferredStartDate || selectedLead.preferredEndDate
-                        ? `${selectedLead.preferredStartDate ?? "?"} - ${selectedLead.preferredEndDate ?? "?"}`
-                        : copy.noTiming}
-                    </p>
-                    <p>
-                      <span className="text-white">{copy.selectedDesign}:</span>{" "}
-                      {selectedLead.selectedDesignId
-                        ? designs.find((design) => design.id === selectedLead.selectedDesignId)?.title ?? "Selected design"
-                        : copy.noDesign}
-                    </p>
-                    <p>
-                      <span className="text-white">{copy.soldAt}:</span>{" "}
-                      {selectedLead.soldAt ? formatDateLabel(selectedLead.soldAt) : copy.unsoldBadge}
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                      <p className="text-sm font-medium text-white">{copy.openFullImage === "Open full image" ? "Reference image" : "Referans görsel"}</p>
-                      {selectedLead.referenceImageUrl ? (
-                        <div className="mt-3 space-y-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={selectedLead.referenceImageUrl}
-                            alt="Reference"
-                            className="h-64 w-full rounded-[18px] object-cover"
-                          />
-                          <a
-                            href={selectedLead.referenceImageUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sm text-[var(--accent-soft)] underline-offset-4 hover:underline"
-                          >
-                            {copy.openFullImage}
-                          </a>
-                        </div>
-                      ) : (
-                        <p className="mt-3 text-sm text-[var(--foreground-muted)]">
-                          {copy.noReferenceImage}
-                        </p>
-                      )}
-                    </div>
-                    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                      <p className="text-sm font-medium text-white">{copy.leadStatus}</p>
-                      <div className="mt-3 flex flex-wrap gap-3">
-                        <Badge variant={selectedLead.contacted ? "accent" : "muted"}>
-                          {selectedLead.contacted ? copy.contacted : copy.new}
-                        </Badge>
-                        <Badge variant={selectedLead.convertedToSale ? "accent" : "muted"}>
-                          {selectedLead.convertedToSale ? copy.soldBadge : copy.unsoldBadge}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          variant={selectedLead.contacted ? "outline" : "secondary"}
-                          onClick={() =>
-                            void updateLead(
-                              selectedLead.id,
-                              { contacted: !selectedLead.contacted },
-                              { contacted: !selectedLead.contacted },
-                            )
-                          }
-                        >
-                          {selectedLead.contacted ? copy.markNotContacted : copy.markContacted}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={selectedLead.convertedToSale ? "secondary" : "outline"}
-                          onClick={() =>
-                            void updateLead(
-                              selectedLead.id,
-                              { convertedToSale: !selectedLead.convertedToSale },
-                              {
-                                convertedToSale: !selectedLead.convertedToSale,
-                                soldAt: !selectedLead.convertedToSale ? new Date().toISOString() : null,
-                              },
-                            )
-                          }
-                        >
-                          <TrendingUp className="size-4" />
-                          {selectedLead.convertedToSale ? copy.markUnsold : copy.markSold}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
         </CardContent>
       </Card>
     </div>

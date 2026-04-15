@@ -31,6 +31,15 @@ export function FunnelSettingsForm({
   styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
+  const hiddenBuiltInStyleKeys = new Set([
+    "fine-line",
+    "traditional",
+    "neo-traditional",
+    "lettering",
+    "custom",
+    "ornamental",
+  ]);
+
   function buildStyleKey(label: string, usedKeys: Set<string>) {
     const base =
       label
@@ -55,6 +64,11 @@ export function FunnelSettingsForm({
 
     return {
       ...values,
+      showFeaturedDesigns: false,
+      enabledStyles: values.enabledStyles.filter((styleKey) => !hiddenBuiltInStyleKeys.has(styleKey)),
+      removedBuiltInStyles: Array.from(
+        new Set([...values.removedBuiltInStyles, ...Array.from(hiddenBuiltInStyleKeys)]),
+      ),
       customStyles: values.customStyles.map((style) => ({
         ...style,
         styleKey: buildStyleKey(style.label, usedKeys),
@@ -72,11 +86,10 @@ export function FunnelSettingsForm({
     locale === "tr"
       ? {
           title: "Akış ayarları",
-          description: "Müşteri akışının metinlerini ve görünür stil seçeneklerini buradan yönet.",
+          description: "",
           introEyebrow: "Üst kısa etiket",
           introTitle: "Giriş başlığı",
           introDescription: "Giriş açıklaması",
-          showFeatured: "Hazır tasarım kartlarını sanatçı sayfasında göster",
           activeStyles: "Çalıştığın stiller",
           activeCount: "aktif",
           customStyles: "Özel stiller",
@@ -105,11 +118,10 @@ export function FunnelSettingsForm({
         }
       : {
           title: "Funnel settings",
-          description: "Tune the copy and visible styles that shape your intake flow.",
+          description: "",
           introEyebrow: "Intro eyebrow",
           introTitle: "Intro title",
           introDescription: "Intro description",
-          showFeatured: "Show featured designs on the public page",
           activeStyles: "Working styles",
           activeCount: "active",
           customStyles: "Custom styles",
@@ -223,20 +235,26 @@ export function FunnelSettingsForm({
   }
 
   function resetStylesToDefault() {
-    form.setValue("enabledStyles", ["blackwork", "fine-line", "micro-realism"], {
+    form.setValue("enabledStyles", ["blackwork", "minimal", "micro-realism", "realism"], {
       shouldValidate: true,
       shouldDirty: true,
     });
-    form.setValue("removedBuiltInStyles", [], {
+    form.setValue("removedBuiltInStyles", Array.from(hiddenBuiltInStyleKeys), {
       shouldValidate: true,
       shouldDirty: true,
     });
   }
 
   const builtInStyles = styles
-    .filter((style) => !style.isCustom && !style.deleted && !removedBuiltInStyles.includes(style.styleKey))
+    .filter(
+      (style) =>
+        !style.isCustom &&
+        !style.deleted &&
+        !removedBuiltInStyles.includes(style.styleKey) &&
+        !hiddenBuiltInStyleKeys.has(style.styleKey),
+    )
     .sort((left, right) => {
-      const preferredOrder = ["blackwork", "fine-line", "micro-realism"];
+      const preferredOrder = ["blackwork", "minimal", "micro-realism", "realism"];
       const leftRank = preferredOrder.indexOf(left.styleKey);
       const rightRank = preferredOrder.indexOf(right.styleKey);
 
@@ -244,7 +262,9 @@ export function FunnelSettingsForm({
         return (leftRank === -1 ? 99 : leftRank) - (rightRank === -1 ? 99 : rightRank);
       }
 
-      return left.label.localeCompare(right.label);
+      const leftLabel = left.styleKey === "realism" ? "Realistic" : left.label;
+      const rightLabel = right.styleKey === "realism" ? "Realistic" : right.label;
+      return leftLabel.localeCompare(rightLabel);
     });
   const customStyleCards = useWatch({
     control: form.control,
@@ -338,7 +358,7 @@ export function FunnelSettingsForm({
     <Card className="surface-border">
       <CardHeader>
         <CardTitle>{copy.title}</CardTitle>
-        <CardDescription>{copy.description}</CardDescription>
+        {copy.description ? <CardDescription>{copy.description}</CardDescription> : null}
       </CardHeader>
       <CardContent>
         <form className="space-y-5">
@@ -361,14 +381,6 @@ export function FunnelSettingsForm({
               }
             />
           </Field>
-          <label className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-            <input
-              type="checkbox"
-              className="size-4 accent-[var(--accent)]"
-              {...form.register("showFeaturedDesigns")}
-            />
-            <span className="text-sm text-white">{copy.showFeatured}</span>
-          </label>
           <input type="hidden" {...form.register("defaultLanguage")} value="tr" />
           <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/20 p-4">
             <div className="space-y-1">
@@ -477,7 +489,7 @@ export function FunnelSettingsForm({
                 </Button>
               </div>
             </div>
-            <div className="grid gap-2 lg:grid-cols-6 xl:grid-cols-7">
+            <div className="flex flex-wrap gap-2">
               {builtInStyles.map((style) => {
                 const active = selectedStyles.includes(style.styleKey);
 
@@ -501,7 +513,7 @@ export function FunnelSettingsForm({
                         }}
                         className="min-w-0 flex-1 text-left"
                       >
-                        <p className="truncate text-xs font-medium leading-4 text-white">{style.label}</p>
+                        <p className="text-xs font-medium leading-4 text-white">{style.styleKey === "realism" ? "Realistic" : style.label}</p>
                       </button>
                       <Button
                         type="button"
@@ -538,7 +550,7 @@ export function FunnelSettingsForm({
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="truncate text-xs font-medium leading-4 text-white">{style.label || copy.styleLabel}</p>
+                    <p className="text-xs font-medium leading-4 text-white">{style.label || copy.styleLabel}</p>
                     <Button
                       type="button"
                       variant="ghost"

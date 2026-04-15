@@ -61,42 +61,39 @@ const validationImages: Record<
 function getText(locale: PublicLocale) {
   if (locale === "tr") {
     return {
-      title: "Fiyat kalibrasyonu",
-      description: "Tattix’e örnek fiyatlar ver. Sistem fiyat modelini buna göre kursun.",
+      title: "Fiyat ayarını yap",
+      description:
+        "Sana birkaç örnek dövme gösterilecek.\nHer biri için “bunu kaça yaparsın?” sorusuna fiyat gir.\n\nSistem, verdiğin bu örneklere bakarak senin fiyat mantığını öğrenir ve ona göre öneri yapar.",
       openingPrice: "Başlangıç fiyatın",
       openingPriceHelp: "Küçük ve standart bir dövmeyi genelde kaçtan başlatıyorsun?",
-      start: "Fiyatlandırma analizimi başlat",
-      edit: "Kalibrasyonu düzenle",
+      start: "Fiyat Ayarını Başlat",
+      edit: "Fiyat ayarını düzenle",
       reset: "Sıfırla",
       close: "Daha sonra devam et",
       priceLabel: "Fiyat alt sınır",
       maxLabel: "Fiyat üst sınır",
-      maxHelp: "Boş bırakırsan tek fiyat olarak kaydederiz.",
+      maxHelp: "",
       next: "Devam",
       back: "Geri",
-      save: "Kalibrasyonu kaydet",
+      save: "Ayarları kaydet",
       saving: "Kaydediliyor",
-      saveFailed: "Kalibrasyon kaydedilemedi.",
-      saved: "Kalibrasyon kaydedildi.",
+      saveFailed: "Fiyat ayarı kaydedilemedi.",
+      saved: "Fiyat ayarı kaydedildi.",
       invalid: "Bu sorunun fiyatını girmen gerekiyor.",
       stepLabel: "Adım",
       questionLabel: "Soru",
-      sizeStep: "Boyut kalibrasyonu",
-      detailStep: "Detay kalibrasyonu",
-      placementStep: "Bölge kalibrasyonu",
-      colorStep: "Renk kalibrasyonu",
       sizeQuestion8: "Bu dövme 8 cm ön kolda olsa kaç ₺ fiyatlarsın?",
       sizeQuestion12: "Bu dövme 12 cm ön kolda olsa kaç ₺ fiyatlarsın?",
       sizeQuestion18: "Bu dövme 18 cm ön kolda olsa kaç ₺ fiyatlarsın?",
       sizeQuestion25: "Bu dövme 25 cm ön kolda olsa kaç ₺ fiyatlarsın?",
-      detailQuestionLow: "Bu dövmeyi bu detay seviyesinde yaklaşık kaç ₺ fiyatlarsın?",
-      detailQuestionMedium: "Bu seviyede kaç ₺ olur?",
-      detailQuestionHigh: "Bu kadar detaylı olursa kaç ₺ olur?",
-      detailQuestionUltra: "Ultra detaylı, realism seviyesinde olsa kaç ₺ olur?",
-      placementQuestionEasy: "Bu dövme kolay bir bölgede (örneğin ön kol) olsa kaç ₺ olur?",
-      placementQuestionHard: "Zor bir bölgede (örneğin kaburga, boyun, el) olsa kaç ₺ olur?",
-      colorQuestionBlack: "Siyah hali kaç ₺ olur?",
-      colorQuestionColor: "Renkli hali kaç ₺ olur?",
+      detailQuestionLow: "Bu dövme 12 cm, ön kolda ve siyah olarak az detaylı olsa kaç ₺ fiyatlarsın?",
+      detailQuestionMedium: "Bu dövme 12 cm, ön kolda ve siyah olarak orta detaylı olsa kaç ₺ olur?",
+      detailQuestionHigh: "Bu dövme 12 cm, ön kolda ve siyah olarak çok detaylı olsa kaç ₺ olur?",
+      detailQuestionUltra: "Bu dövme 12 cm, ön kolda ve siyah olarak ultra detaylı realism seviyesinde olsa kaç ₺ olur?",
+      placementQuestionEasy: "Bu dövme 12 cm, orta detaylı ve siyah olarak ön kolda olsa kaç ₺ olur?",
+      placementQuestionHard: "Bu dövme 12 cm, orta detaylı ve siyah olarak zor bir bölgede olsa kaç ₺ olur?",
+      colorQuestionBlack: "Bu dövme 12 cm, ön kolda ve orta detaylı olarak siyah olsa kaç ₺ olur?",
+      colorQuestionColor: "Bu dövme 12 cm, ön kolda ve orta detaylı olarak renkli olsa kaç ₺ olur?",
       finalCheckTitle: "Son kontrol",
       finalCheckIntro:
         "Son bir kontrol yapalım. Aşağıdaki örnek dövmeler için oluşturduğum tahmini fiyat aralıklarının sana ne kadar uygun göründüğünü seç.",
@@ -110,7 +107,7 @@ function getText(locale: PublicLocale) {
       validationAdjusted: "Tahminleri biraz güncelledim. Aynı örnekleri bir kez daha kontrol edelim.",
       validationSaved: "Final kontrol kaydedildi.",
       validationNeedsReview: "Model hâlâ biraz ayar istiyor. Bu haliyle kaydettim.",
-      saveAfterValidation: "Kalibrasyonu kaydet",
+      saveAfterValidation: "Ayarları kaydet",
       scenarioSize: "Yaklaşık boyut",
       scenarioPlacement: "Bölge",
       scenario1: "Minimal linework · siyah",
@@ -125,47 +122,44 @@ function getText(locale: PublicLocale) {
       looksRight: "Uygun",
       slightlyLow: "Biraz düşük",
       slightlyHigh: "Biraz yüksek",
-      completeQuestionsFirst: "Önce kalibrasyon sorularını tamamla.",
+      completeQuestionsFirst: "Önce fiyat sorularını tamamla.",
     };
   }
 
   return {
-    title: "Pricing calibration",
-    description: "Give Tattix sample prices so it can build the quote model.",
+    title: "Set up pricing",
+    description:
+      "You will see a few sample tattoos. Enter what you would charge for each one so the system can learn your pricing logic.",
     openingPrice: "Opening price",
     openingPriceHelp: "What do you usually start a small, standard tattoo at?",
-    start: "Start pricing analysis",
-    edit: "Edit calibration",
+    start: "Start pricing setup",
+    edit: "Edit pricing setup",
     reset: "Reset",
     close: "Continue later",
     priceLabel: "Price min",
     maxLabel: "Price max",
-    maxHelp: "Leave blank to save a single price.",
+    maxHelp: "",
     next: "Next",
     back: "Back",
-    save: "Save calibration",
+    save: "Save settings",
     saving: "Saving",
-    saveFailed: "Calibration could not be saved.",
-    saved: "Calibration saved.",
+    saveFailed: "Pricing setup could not be saved.",
+    saved: "Pricing setup saved.",
     invalid: "Please enter a price for this question.",
     stepLabel: "Step",
     questionLabel: "Question",
-    sizeStep: "Size calibration",
-    detailStep: "Detail calibration",
-    placementStep: "Placement calibration",
-    colorStep: "Color calibration",
     sizeQuestion8: "What would you charge if this tattoo were 8 cm on the forearm?",
     sizeQuestion12: "What would you charge if it were 12 cm on the forearm?",
     sizeQuestion18: "What would you charge if it were 18 cm on the forearm?",
     sizeQuestion25: "What would you charge if it were 25 cm on the forearm?",
-    detailQuestionLow: "At this level of detail, what would you charge?",
-    detailQuestionMedium: "What would it be at this level?",
-    detailQuestionHigh: "What would it be if it were this detailed?",
-    detailQuestionUltra: "What would it be at an ultra-detailed realism level?",
-    placementQuestionEasy: "If this tattoo were in an easy placement (like forearm), what would it be?",
-    placementQuestionHard: "What would it be in a harder placement (like ribs, neck, hand)?",
-    colorQuestionBlack: "What would the black version cost?",
-    colorQuestionColor: "What would the colored version cost?",
+    detailQuestionLow: "What would you charge if this tattoo were 12 cm, black, on the forearm, and low detail?",
+    detailQuestionMedium: "What would it be if it were 12 cm, black, on the forearm, and medium detail?",
+    detailQuestionHigh: "What would it be if it were 12 cm, black, on the forearm, and high detail?",
+    detailQuestionUltra: "What would it be if it were 12 cm, black, on the forearm, and ultra-detailed realism?",
+    placementQuestionEasy: "What would this tattoo cost if it were 12 cm, medium detail, black, and on the forearm?",
+    placementQuestionHard: "What would this tattoo cost if it were 12 cm, medium detail, black, and in a harder placement?",
+    colorQuestionBlack: "What would this tattoo cost if it were 12 cm, medium detail, and black on the forearm?",
+    colorQuestionColor: "What would this tattoo cost if it were 12 cm, medium detail, and colored on the forearm?",
     finalCheckTitle: "Final check",
     finalCheckIntro:
       "One final check. Review how believable these estimated quote ranges look for the example tattoos below.",
@@ -179,7 +173,7 @@ function getText(locale: PublicLocale) {
     validationAdjusted: "I updated the estimate slightly. Let's review the same examples once more.",
     validationSaved: "Final check saved.",
     validationNeedsReview: "The model still needs a quick manual review. This state was saved.",
-    saveAfterValidation: "Save calibration",
+    saveAfterValidation: "Save settings",
     scenarioSize: "Approximate size",
     scenarioPlacement: "Placement",
     scenario1: "Minimal linework · black",
@@ -194,7 +188,7 @@ function getText(locale: PublicLocale) {
     looksRight: "Looks right",
     slightlyLow: "Slightly low",
     slightlyHigh: "Slightly high",
-    completeQuestionsFirst: "Finish the calibration questions first.",
+    completeQuestionsFirst: "Finish the pricing questions first.",
   };
 }
 
@@ -202,15 +196,15 @@ function getQuestionMeta(questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"
   const copy = getText(locale);
 
   const map = {
-    size8: { title: copy.sizeStep, prompt: copy.sizeQuestion8 },
-    size12: { title: copy.sizeStep, prompt: copy.sizeQuestion12 },
-    size18: { title: copy.sizeStep, prompt: copy.sizeQuestion18 },
-    size25: { title: copy.sizeStep, prompt: copy.sizeQuestion25 },
-    placementHard: { title: copy.placementStep, prompt: copy.placementQuestionHard },
-    colorColor: { title: copy.colorStep, prompt: copy.colorQuestionColor },
-    detailLow: { title: copy.detailStep, prompt: copy.detailQuestionLow },
-    detailHigh: { title: copy.detailStep, prompt: copy.detailQuestionHigh },
-    detailUltra: { title: copy.detailStep, prompt: copy.detailQuestionUltra },
+    size8: { title: "", prompt: copy.sizeQuestion8 },
+    size12: { title: "", prompt: copy.sizeQuestion12 },
+    size18: { title: "", prompt: copy.sizeQuestion18 },
+    size25: { title: "", prompt: copy.sizeQuestion25 },
+    placementHard: { title: "", prompt: copy.placementQuestionHard },
+    colorColor: { title: "", prompt: copy.colorQuestionColor },
+    detailLow: { title: "", prompt: copy.detailQuestionLow },
+    detailHigh: { title: "", prompt: copy.detailQuestionHigh },
+    detailUltra: { title: "", prompt: copy.detailQuestionUltra },
   } as const;
 
   return map[questionId];
@@ -324,39 +318,6 @@ function getPlacementSummaryLabel(
   }
 
   return placement === "ribs" ? "Ribs" : "Forearm";
-}
-
-function getQuestionContextLabel(
-  questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"],
-  locale: PublicLocale,
-) {
-  if (locale === "tr") {
-    switch (questionId) {
-      case "detailLow":
-      case "detailHigh":
-      case "detailUltra":
-        return "12 cm · ön kol · siyah";
-      case "placementHard":
-        return "12 cm · orta detay · siyah";
-      case "colorColor":
-        return "12 cm · ön kol · orta detay";
-      default:
-        return null;
-    }
-  }
-
-  switch (questionId) {
-    case "detailLow":
-    case "detailHigh":
-    case "detailUltra":
-      return "12 cm · forearm · black";
-    case "placementHard":
-      return "12 cm · medium detail · black";
-    case "colorColor":
-      return "12 cm · forearm · medium detail";
-    default:
-      return null;
-  }
 }
 
 export function PricingForm({
@@ -577,7 +538,7 @@ export function PricingForm({
     <Card className="surface-border">
       <CardHeader>
         <CardTitle>{copy.title}</CardTitle>
-        <CardDescription>{copy.description}</CardDescription>
+        <CardDescription className="whitespace-pre-line">{copy.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -632,7 +593,6 @@ export function PricingForm({
                     <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                       {copy.stepLabel} {currentQuestion.step} / 4
                     </p>
-                    <h3 className="mt-2 text-lg font-semibold text-white">{currentMeta.title}</h3>
                   </div>
                   <p className="text-sm text-[var(--foreground-muted)]">
                     {copy.questionLabel}{" "}
@@ -643,8 +603,8 @@ export function PricingForm({
                   </p>
                 </div>
 
-                <div className="mt-3 overflow-hidden rounded-[18px] border border-white/8 bg-black/20">
-                  <div className="relative aspect-[5/4] w-full bg-black/10">
+                <div className="mx-auto mt-3 max-w-[360px] overflow-hidden rounded-[18px] border border-white/8 bg-black/20">
+                  <div className="relative aspect-[4/3] w-full bg-black/10">
                     <Image
                       src={currentImage}
                       alt={currentMeta.title}
@@ -696,11 +656,6 @@ export function PricingForm({
                   ) : (
                     <div>
                       <p className="text-sm font-medium text-white">{currentMeta.prompt}</p>
-                      {getQuestionContextLabel(currentQuestion.id, locale) ? (
-                        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-                          {getQuestionContextLabel(currentQuestion.id, locale)}
-                        </p>
-                      ) : null}
                       <div className="mt-3 grid gap-3 sm:grid-cols-2">
                         <Field label={copy.priceLabel}>
                           <Input
@@ -727,7 +682,9 @@ export function PricingForm({
                       </div>
                     </div>
                   )}
-                  <p className="mt-3 text-sm text-[var(--foreground-muted)]">{copy.maxHelp}</p>
+                  {copy.maxHelp ? (
+                    <p className="mt-3 text-sm text-[var(--foreground-muted)]">{copy.maxHelp}</p>
+                  ) : null}
                 </div>
               </div>
 

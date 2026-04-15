@@ -33,7 +33,7 @@ const styleLabels: Record<StyleValue, LocalizedText> = {
   traditional: { en: "Traditional", tr: "Traditional" },
   "neo-traditional": { en: "Neo traditional", tr: "Neo traditional" },
   blackwork: { en: "Blackwork", tr: "Blackwork" },
-  realism: { en: "Realism", tr: "Realism" },
+  realism: { en: "Realistic", tr: "Realistic" },
   "micro-realism": { en: "Micro realism", tr: "Micro realism" },
   ornamental: { en: "Ornamental", tr: "Ornamental" },
   lettering: { en: "Lettering", tr: "Yazı" },
