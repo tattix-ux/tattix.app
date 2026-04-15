@@ -25,7 +25,7 @@ export const landingCopy = {
     problemTitle: "Dövme talepleri çoğu zaman eksik ve dağınık geliyor.",
     problemDescription:
       "Kimisi fiyatı görünce seni ghostluyor, kimisi bölgeyi belirtmiyor, kimisi ne istediğini düzgün anlatmıyor. Aynı şeyleri tekrar tekrar sormak zorunda kalıyorsun.",
-    featuresTitle: "TatBot neyi düzeltir?",
+    featuresTitle: "Tattix neyi düzeltir?",
     features: [
       {
         title: "Eksiksiz başvurular al",
@@ -85,7 +85,7 @@ export const landingCopy = {
     problemTitle: "Tattoo inquiries usually arrive incomplete and messy.",
     problemDescription:
       "Some do not mention budget, some skip placement, and some cannot explain what they want clearly. You end up asking the same things again and again.",
-    featuresTitle: "What TatBot fixes",
+    featuresTitle: "What Tattix fixes",
     features: [
       {
         title: "Get complete requests",
@@ -104,7 +104,7 @@ export const landingCopy = {
       },
     ],
     positioningTitle: "More messages are not the goal. Better inquiries are.",
-    positioningSubtitle: "TatBot makes incoming requests more structured and easier to manage.",
+    positioningSubtitle: "Tattix makes incoming requests more structured and easier to manage.",
     positioningBullets: [
       "Less time wasted on DMs",
       "Better prepared clients",
