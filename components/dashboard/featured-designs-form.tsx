@@ -80,7 +80,6 @@ const copy = {
     dragHint: "Drag to reorder",
     preview: "Client preview",
     previewEmptyTitle: "Title will appear here",
-    previewEmptyPrice: "Price range appears here",
     currencyPrefix: "TRY",
   },
   tr: {
@@ -131,30 +130,9 @@ const copy = {
     dragHint: "Sıralamak için sürükle",
     preview: "Müşteri önizlemesi",
     previewEmptyTitle: "Başlık burada görünür",
-    previewEmptyPrice: "Fiyat aralığı burada görünür",
     currencyPrefix: "₺",
   },
 } as const;
-
-function formatFeaturedPrice(min: number | null | undefined, max: number | null | undefined, currencyPrefix: string) {
-  if (typeof min === "number" && typeof max === "number") {
-    return `${currencyPrefix}${min.toLocaleString("tr-TR")} - ${currencyPrefix}${max.toLocaleString("tr-TR")}`;
-  }
-
-  if (typeof min === "number") {
-    return `${currencyPrefix}${min.toLocaleString("tr-TR")}`;
-  }
-
-  if (typeof max === "number") {
-    return `${currencyPrefix}${max.toLocaleString("tr-TR")}`;
-  }
-
-  return null;
-}
-
-function normalizePriceValue(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
 
 export function FeaturedDesignsForm({
   designs,
@@ -319,11 +297,6 @@ export function FeaturedDesignsForm({
             {designsFieldArray.fields.map((field, index) => {
               const currentDesign = watchedDesigns?.[index];
               const isExpanded = expandedId === field.id;
-              const pricePreview = formatFeaturedPrice(
-                normalizePriceValue(currentDesign?.referencePriceMin),
-                normalizePriceValue(currentDesign?.referencePriceMax),
-                labels.currencyPrefix,
-              );
               const cardTitle = currentDesign?.title?.trim() || `${labels.newItem} ${index + 1}`;
               const isCustomCategory = getCategorySelectValue(currentDesign?.category || "") === "__custom__";
 
@@ -571,7 +544,7 @@ export function FeaturedDesignsForm({
                               {labels.preview}
                             </p>
                             <div className="mt-4 overflow-hidden rounded-[20px] border border-white/10 bg-white/5">
-                              <div className="relative flex aspect-[4/5] items-center justify-center bg-black/10">
+                              <div className="relative flex aspect-[4/5] items-end overflow-hidden bg-black/10 p-4">
                                 {currentDesign?.imageUrl ? (
                                   <div
                                     className="absolute inset-0 bg-cover bg-center"
@@ -583,21 +556,19 @@ export function FeaturedDesignsForm({
                                     <span>{labels.noImage}</span>
                                   </div>
                                 )}
+                                {currentDesign?.imageUrl ? (
+                                  <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/55" />
+                                ) : null}
+                                <span className="relative z-10 inline-flex rounded-full border border-white/10 bg-black/40 px-2.5 py-1 text-[11px] text-white">
+                                  {getCategoryLabel(currentDesign?.category || "flash-designs")}
+                                </span>
                               </div>
                               <div className="space-y-2 p-4">
-                                <div className="flex items-center justify-between gap-3">
-                                  <p className="min-w-0 truncate text-base font-medium text-white">
-                                    {currentDesign?.title?.trim() || labels.previewEmptyTitle}
-                                  </p>
-                                  <span className="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[11px] text-[var(--foreground-muted)]">
-                                    {currentDesign?.active ? labels.liveOn : labels.liveOff}
-                                  </span>
-                                </div>
+                                <p className="min-w-0 truncate text-base font-medium text-white">
+                                  {currentDesign?.title?.trim() || labels.previewEmptyTitle}
+                                </p>
                                 <p className="text-sm text-[var(--foreground-muted)]">
                                   {currentDesign?.shortDescription?.trim() || " "}
-                                </p>
-                                <p className="text-lg font-semibold text-white">
-                                  {pricePreview || labels.previewEmptyPrice}
                                 </p>
                               </div>
                             </div>
