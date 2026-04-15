@@ -563,8 +563,7 @@ export function PricingForm({
           </div>
 
           <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-            <p className="text-sm text-[var(--foreground-muted)]">{ready ? copy.ready : copy.notReady}</p>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button
                 type="button"
                 onClick={() => {
@@ -576,7 +575,7 @@ export function PricingForm({
               >
                 {ready ? copy.edit : copy.start}
               </Button>
-              {ready ? (
+              {ready && draft.validation.finalValidation.validationStatus !== "pending" ? (
                 <Button type="button" variant="ghost" onClick={resetDraft}>
                   {copy.reset}
                 </Button>
