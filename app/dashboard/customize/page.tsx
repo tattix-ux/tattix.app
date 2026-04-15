@@ -16,13 +16,13 @@ export default async function DashboardCustomizePage() {
         eyebrow={isTurkish ? "Sayfa görünümü" : "Customize Page"}
         title={
           isTurkish
-            ? "Sanatçı sayfanın görünümünü özelleştir."
-            : "Style your public artist page without touching the funnel."
+            ? "Sanatçı sayfanın görünümünü seç."
+            : "Choose how your public artist page looks."
         }
         description={
           isTurkish
-            ? "Hazır temalar, fontlar ve renk ayarlarıyla sayfanı kişiselleştir."
-            : "Preset themes, curated fonts, safe color overrides, and a live preview help you personalize the page while keeping it readable."
+            ? "Hazır tema seç ya da kendi stilini oluştur."
+            : "Pick a preset theme or build your own style."
         }
       />
       {hasProAccess(data.profile) ? (
