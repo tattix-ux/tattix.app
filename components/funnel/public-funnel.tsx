@@ -141,7 +141,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     title,
     description: copy.stepDescriptions[index],
   }));
-  const progress = (Math.min(step, stepMeta.length) / stepMeta.length) * 100;
   const introTitle =
     artist.pageTheme.customWelcomeTitle ||
     artist.funnelSettings.introTitle ||
@@ -161,6 +160,20 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const styleStepActive = requiresStyleSelection(draft.intent);
   const isSelectedDesignFlow = Boolean(draft.selectedDesignId);
   const compactArtistHeader = step > 1 || Boolean(draft.intent);
+  const resultStep = 6;
+  const visibleStepMeta = isSelectedDesignFlow
+    ? [stepMeta[0], stepMeta[1], stepMeta[2], stepMeta[4], stepMeta[5]]
+    : stepMeta;
+  const displayStep = isSelectedDesignFlow
+    ? step <= 3
+      ? step
+      : step === 5
+        ? 4
+        : 5
+    : Math.min(step, 6);
+  const displayMeta =
+    visibleStepMeta[Math.max(0, Math.min(displayStep, visibleStepMeta.length) - 1)];
+  const displayProgress = (displayStep / visibleStepMeta.length) * 100;
 
   async function handleFinalSubmit() {
     if (requiresBookingSelection) {
@@ -178,7 +191,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setBookingError(null);
     setSubmitting(true);
     setResult(null);
-    setStep(6);
+    setStep(resultStep);
 
     const requestPromise = fetch("/api/public/submit", {
       method: "POST",
@@ -251,12 +264,22 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   }
 
   function handleNext() {
+    if (isSelectedDesignFlow && step === 3) {
+      setStep(5);
+      return;
+    }
+
     if (step < 5) {
       setStep(step + 1);
     }
   }
 
   function handleBack() {
+    if (isSelectedDesignFlow && step === 5) {
+      setStep(3);
+      return;
+    }
+
     setStep(Math.max(step - 1, 1));
   }
 
@@ -361,10 +384,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <CardTitle className="break-words text-base sm:text-lg" style={{ color: "var(--artist-card-text)" }}>
-                {result ? copy.stepTitles[5] : stepMeta[Math.min(step, 6) - 1]?.title}
+                {result ? visibleStepMeta[visibleStepMeta.length - 1]?.title : displayMeta?.title}
               </CardTitle>
               <CardDescription className="break-words text-[13px] leading-5 sm:text-sm sm:leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                {result ? copy.stepDescriptions[5] : stepMeta[Math.min(step, 6) - 1]?.description}
+                {result ? visibleStepMeta[visibleStepMeta.length - 1]?.description : displayMeta?.description}
               </CardDescription>
             </div>
             <Badge
@@ -376,15 +399,15 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   "color-mix(in srgb, var(--artist-card) 88%, white 12%)",
                 borderColor: "var(--artist-border)",
               }}
-            >
-              {copy.stepLabel} {Math.min(step, 6)} / 6
+              >
+              {copy.stepLabel} {displayStep} / {visibleStepMeta.length}
             </Badge>
           </div>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/6 sm:mt-4 sm:h-2">
             <div
               className="h-full rounded-full transition-all"
               style={{
-                width: `${progress}%`,
+                width: `${displayProgress}%`,
                 background: `linear-gradient(90deg, ${artist.pageTheme.primaryColor}, ${artist.pageTheme.secondaryColor})`,
               }}
             />
@@ -468,24 +491,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 />
               ) : null}
 
-              {step === 4 ? (
+              {step === 4 && !isSelectedDesignFlow ? (
                 <div className="space-y-3">
-                  {isSelectedDesignFlow ? (
-                    <div
-                      className="rounded-[24px] border p-4"
-                      style={{
-                        borderColor: "var(--artist-border)",
-                        backgroundColor: "rgba(0,0,0,0.12)",
-                      }}
-                    >
-                      <p className="text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                        {locale === "tr"
-                          ? "Bu tasarım seçildiği için renk, stil ve detay adımları atlanır."
-                          : "Because this design is selected, color, style, and detail are skipped."}
-                      </p>
-                    </div>
-                  ) : (
-                    <>
                       <div
                         className="rounded-[24px] border p-4"
                         style={{
@@ -657,8 +664,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           </div>
                         </div>
                       ) : null}
-                    </>
-                  )}
                 </div>
               ) : null}
 
@@ -827,7 +832,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 </div>
               ) : null}
 
-              {step === 6 && !result ? (
+              {step === resultStep && !result ? (
                 <div
                   className="rounded-[28px] border p-6"
                   style={{
@@ -858,7 +863,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 </div>
               ) : null}
 
-              {step === 6 && result ? (
+              {step === resultStep && result ? (
                 <div className="space-y-4 sm:space-y-5">
                   <div
                     className="rounded-[24px] border p-4 sm:rounded-[28px] sm:p-5"
@@ -942,7 +947,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           </AnimatePresence>
 
           <div className="mt-5 flex flex-col gap-2.5 sm:mt-6 sm:flex-row sm:items-center sm:gap-3">
-            {step > 1 && step < 6 ? (
+            {step > 1 && step < resultStep ? (
               <Button
                 variant="outline"
                 onClick={handleBack}
@@ -991,7 +996,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               </Button>
             ) : null}
 
-            {step === 6 && result ? (
+            {step === resultStep && result ? (
               <Button
                 className={`w-full whitespace-normal sm:ml-auto sm:w-auto ${secondaryButtonClass}`}
                 variant="outline"

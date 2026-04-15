@@ -1,7 +1,5 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
-
 import {
   clampCm,
   deriveSizeCategoryFromCm,
@@ -48,46 +46,6 @@ export function SizeEstimationSelector({
   const constraint = getPlacementSizeConstraint(selectedPlacement);
   const safeCm = clampCm(approximateSizeCm ?? constraint.defaultCm, constraint);
   const sizeCategory = deriveSizeCategoryFromCm(safeCm);
-  const toneAccent = "var(--artist-primary)";
-  const simpleGuidance =
-    locale === "tr"
-      ? {
-          tiny: {
-            headline: "Bu boyut küçük ve sade dövmeler için uygundur.",
-            supporting: "Daha minimal fikirler, semboller veya kısa yazılar için iyi çalışır.",
-          },
-          small: {
-            headline: "Bu boyut çoğu küçük dövme fikri için dengeli bir seçimdir.",
-            supporting: "Hem temiz görünür hem de günlük kullanımda çok baskın durmaz.",
-          },
-          medium: {
-            headline: "Bu boyut detay ve görünürlük arasında iyi bir denge sunar.",
-            supporting: "Biraz daha belirgin duran ve rahat okunabilen dövmeler için uygundur.",
-          },
-          large: {
-            headline: "Bu boyut daha belirgin ve yaygın bir alan kaplayan dövmeler içindir.",
-            supporting: "Daha fazla detay veya daha güçlü görünürlük isteyen fikirlerde daha uygundur.",
-          },
-        }
-      : {
-          tiny: {
-            headline: "This size works best for small and simple tattoos.",
-            supporting: "It suits minimal ideas, symbols, or short lettering.",
-          },
-          small: {
-            headline: "This is a balanced choice for most small tattoo ideas.",
-            supporting: "It stays clear without feeling too dominant on the body.",
-          },
-          medium: {
-            headline: "This size gives a good balance between detail and visibility.",
-            supporting: "It works well for tattoos that should read more clearly.",
-          },
-          large: {
-            headline: "This size suits tattoos that take up more space and stand out more.",
-            supporting: "It is better when the idea needs stronger presence or more detail.",
-          },
-        };
-
   return (
     <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
       <div
@@ -141,27 +99,6 @@ export function SizeEstimationSelector({
         </div>
       </div>
 
-      <div
-        className="rounded-[22px] border p-4 sm:rounded-[24px]"
-        style={{
-          borderColor: "var(--artist-border)",
-          backgroundColor: "rgba(0,0,0,0.12)",
-        }}
-      >
-        <div className="flex items-start gap-3">
-          <Sparkles className="mt-0.5 size-4" style={{ color: toneAccent }} />
-          <div className="space-y-3">
-            <div>
-              <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
-                {simpleGuidance[sizeCategory].headline}
-              </p>
-              <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                {simpleGuidance[sizeCategory].supporting}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
