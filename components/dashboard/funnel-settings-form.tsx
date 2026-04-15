@@ -38,6 +38,7 @@ export function FunnelSettingsForm({
     "lettering",
     "custom",
     "ornamental",
+    "not-sure-style",
   ]);
 
   function buildStyleKey(label: string, usedKeys: Set<string>) {
@@ -90,17 +91,18 @@ export function FunnelSettingsForm({
           introEyebrow: "Üst kısa etiket",
           introTitle: "Giriş başlığı",
           introDescription: "Giriş açıklaması",
-          activeStyles: "Çalıştığın stiller",
-          activeCount: "aktif",
-          customStyles: "Özel stiller",
-          addStyle: "Stil ekle",
-          customStylesHelp: "Eklediğin özel stiller burada görünür ve aktifse public akış ile fiyatlama ekranına yansır.",
-          customStyleDescription: "Stil açıklaması",
-          customStyleDescriptionHelp: "Public bilgi butonunda kısa açıklama olarak görünür.",
-          emptyStyles: "Henüz özel stil eklenmedi.",
+          activeStyles: "Müşteriye hangi tarzları sunmak istiyorsun?",
+          activeStylesHelp: "Müşteri sadece seçtiğin tarzları görür.",
+          activeCount: "seçili",
+          customStyles: "Kendi eklediğin tarzlar",
+          addStyle: "Kendi stilini ekle",
+          customStylesHelp: "Listede yoksa kendi tarzını ekleyebilirsin.",
+          emptyStyles: "Özel bir tarzın varsa ekleyebilirsin.",
           styleLabel: "Stil adı",
           enabled: "Aktif",
           remove: "Kaldır",
+          deleteConfirm: "Bu özel tarzı silmek istediğine emin misin?",
+          addStyleTitle: "Kendi stilini ekle",
           resetDefaults: "Varsayılan stillere dön",
           saving: "Kaydediliyor",
           saveFailed: "Akış ayarları kaydedilemedi.",
@@ -122,17 +124,18 @@ export function FunnelSettingsForm({
           introEyebrow: "Intro eyebrow",
           introTitle: "Intro title",
           introDescription: "Intro description",
-          activeStyles: "Working styles",
-          activeCount: "active",
+          activeStyles: "Which styles do you want to show customers?",
+          activeStylesHelp: "Customers only see the styles you select.",
+          activeCount: "selected",
           customStyles: "Custom styles",
-          addStyle: "Add style",
-          customStylesHelp: "New styles appear here automatically and flow into the public step and pricing when enabled.",
-          customStyleDescription: "Style description",
-          customStyleDescriptionHelp: "Shown inside the public style info modal.",
-          emptyStyles: "No custom styles yet.",
+          addStyle: "Add your own style",
+          customStylesHelp: "If it is not listed, you can add your own style.",
+          emptyStyles: "Add a custom style if you have one.",
           styleLabel: "Style label",
           enabled: "Enabled",
           remove: "Remove",
+          deleteConfirm: "Are you sure you want to delete this custom style?",
+          addStyleTitle: "Add your own style",
           resetDefaults: "Reset styles",
           saving: "Saving",
           saveFailed: "Unable to save funnel settings.",
@@ -189,6 +192,8 @@ export function FunnelSettingsForm({
   const [pendingCity, setPendingCity] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAddStyleModalOpen, setIsAddStyleModalOpen] = useState(false);
+  const [newStyleLabel, setNewStyleLabel] = useState("");
   const initialSyncRef = useRef(true);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -322,6 +327,55 @@ export function FunnelSettingsForm({
       currentDates.filter((item) => item !== date),
       { shouldDirty: true, shouldValidate: true },
     );
+  }
+
+  function toggleBuiltInStyle(styleKey: string) {
+    const active = selectedStyles.includes(styleKey);
+    const nextStyles = active
+      ? selectedStyles.filter((item) => item !== styleKey)
+      : [...selectedStyles, styleKey];
+
+    form.setValue("enabledStyles", nextStyles, { shouldValidate: true, shouldDirty: true });
+  }
+
+  function toggleCustomStyle(styleKey: string) {
+    const styleIndex = customStyleCards.findIndex((item) => (item.id ?? item.styleKey) === styleKey);
+    if (styleIndex === -1) {
+      return;
+    }
+
+    const current = form.getValues(`customStyles.${styleIndex}.enabled`);
+    form.setValue(`customStyles.${styleIndex}.enabled`, !current, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }
+
+  function addCustomStyle() {
+    const label = newStyleLabel.trim();
+    if (label.length < 2) {
+      return;
+    }
+
+    customStylesFieldArray.append({
+      styleKey: "",
+      label,
+      description: "",
+      enabled: true,
+    });
+    setNewStyleLabel("");
+    setIsAddStyleModalOpen(false);
+  }
+
+  function removeCustomStyle(styleKey: string) {
+    if (!window.confirm(copy.deleteConfirm)) {
+      return;
+    }
+
+    const styleIndex = customStyleCards.findIndex((item) => (item.id ?? item.styleKey) === styleKey);
+    if (styleIndex !== -1) {
+      customStylesFieldArray.remove(styleIndex);
+    }
   }
 
   useEffect(() => {
@@ -478,7 +532,7 @@ export function FunnelSettingsForm({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Field label={copy.activeStyles} className="gap-1">
+              <Field label={copy.activeStyles} description={copy.activeStylesHelp} className="gap-1">
                 <div />
               </Field>
               <div className="flex items-center gap-2">
@@ -494,88 +548,22 @@ export function FunnelSettingsForm({
                 const active = selectedStyles.includes(style.styleKey);
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={style.id}
+                    onClick={() => toggleBuiltInStyle(style.styleKey)}
                     className={`rounded-[12px] border px-2 py-1.5 text-left transition ${
                       active
                         ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
-                        : "border-white/8 bg-black/20"
+                        : "border-white/8 bg-black/20 text-[var(--foreground-muted)]"
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const nextStyles = active
-                            ? selectedStyles.filter((item) => item !== style.styleKey)
-                            : [...selectedStyles, style.styleKey];
-                          form.setValue("enabledStyles", nextStyles, { shouldValidate: true });
-                        }}
-                        className="min-w-0 flex-1 text-left"
-                      >
-                        <p className="text-xs font-medium leading-4 text-white">{style.styleKey === "realism" ? "Realistic" : style.label}</p>
-                      </button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        aria-label={copy.remove}
-                        className="h-6 w-6 px-0"
-                        onClick={() => {
-                          form.setValue(
-                            "enabledStyles",
-                            selectedStyles.filter((item) => item !== style.styleKey),
-                            { shouldValidate: true },
-                          );
-                          form.setValue(
-                            "removedBuiltInStyles",
-                            Array.from(new Set([...removedBuiltInStyles, style.styleKey])),
-                            { shouldValidate: true, shouldDirty: true },
-                          );
-                        }}
-                      >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+                    <span className={`text-xs font-medium leading-4 ${active ? "text-white" : "text-[var(--foreground-muted)]"}`}>
+                      {style.styleKey === "realism" ? "Realistic" : style.label}
+                    </span>
+                  </button>
                 );
               })}
-              {customStyleCards.map((style) => (
-                <div
-                  key={style.id ?? style.styleKey}
-                    className={`rounded-[12px] border px-2 py-1.5 text-left transition ${
-                    style.enabled
-                      ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
-                      : "border-white/8 bg-black/20"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs font-medium leading-4 text-white">{style.label || copy.styleLabel}</p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      aria-label={copy.remove}
-                      className="h-6 w-6 px-0"
-                      onClick={() => {
-                        const styleIndex = customStyleCards.findIndex(
-                          (item) => (item.id ?? item.styleKey) === (style.id ?? style.styleKey),
-                        );
-                        if (styleIndex !== -1) {
-                          customStylesFieldArray.remove(styleIndex);
-                        }
-                      }}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                  {style.description ? (
-                    <p className="mt-1 text-[10px] leading-4 text-[var(--foreground-muted)]">
-                      {style.description}
-                    </p>
-                  ) : null}
-                </div>
-              ))}
             </div>
             {form.formState.errors.enabledStyles?.message ? (
               <p className="text-xs text-red-300">{form.formState.errors.enabledStyles.message}</p>
@@ -584,75 +572,61 @@ export function FunnelSettingsForm({
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Field label={copy.customStyles} className="gap-1">
+              <Field label={copy.customStyles} description={copy.customStylesHelp} className="gap-1">
                 <div />
               </Field>
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={() =>
-                  customStylesFieldArray.append({
-                    styleKey: "",
-                    label: "",
-                    enabled: true,
-                  })
-                }
+                onClick={() => setIsAddStyleModalOpen(true)}
               >
                 <Plus className="size-4" />
                 {copy.addStyle}
               </Button>
             </div>
-            <p className="text-sm text-[var(--foreground-muted)]">
-              {copy.customStylesHelp}
-            </p>
-            <div className="space-y-3">
-              {customStylesFieldArray.fields.length === 0 ? (
-                <div className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
-                  {copy.emptyStyles}
-                </div>
-              ) : null}
-              {customStylesFieldArray.fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="rounded-[24px] border border-white/8 bg-black/20 p-4"
-                >
-                  <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-                    <Field
-                      label={copy.styleLabel}
-                      error={form.formState.errors.customStyles?.[index]?.label?.message}
-                    >
-                      <Input {...form.register(`customStyles.${index}.label`)} placeholder="Etching" />
-                    </Field>
-                    <input type="hidden" {...form.register(`customStyles.${index}.styleKey`)} />
-                    <div className="flex items-end gap-3">
-                      <label className="flex h-10 items-center gap-2 rounded-full border border-white/8 bg-black/20 px-4">
-                        <input
-                          type="checkbox"
-                          className="size-4 accent-[var(--accent)]"
-                          {...form.register(`customStyles.${index}.enabled`)}
-                        />
-                        <span className="text-sm text-white">{copy.enabled}</span>
-                      </label>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => customStylesFieldArray.remove(index)}>
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <Field
-                    className="mt-4"
-                    label={copy.customStyleDescription}
-                    description={copy.customStyleDescriptionHelp}
-                    error={form.formState.errors.customStyles?.[index]?.description?.message}
+            {customStyleCards.length === 0 ? (
+              <div className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
+                {copy.emptyStyles}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {customStyleCards.map((style, index) => {
+                  const styleIdentifier = style.id ?? style.styleKey ?? `custom-style-${index}`;
+
+                  return (
+                  <div
+                    key={styleIdentifier}
+                    className={`flex items-center gap-2 rounded-[12px] border px-2 py-1.5 text-left transition ${
+                    style.enabled
+                      ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
+                      : "border-white/8 bg-black/20"
+                    }`}
                   >
-                    <Textarea
-                      {...form.register(`customStyles.${index}.description`)}
-                      placeholder={locale === "tr" ? "İnce dokular ve oyma hissi veren çizgiler." : "Fine textures with an engraved feel."}
-                    />
-                  </Field>
-                </div>
-              ))}
-            </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleCustomStyle(styleIdentifier)}
+                      className="text-left"
+                    >
+                      <p className={`text-xs font-medium leading-4 ${style.enabled ? "text-white" : "text-[var(--foreground-muted)]"}`}>
+                        {style.label || copy.styleLabel}
+                      </p>
+                    </button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={copy.remove}
+                      className="h-6 w-6 px-0"
+                      onClick={() => removeCustomStyle(styleIdentifier)}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           {statusMessage && !isSaving ? (
             <p className="text-sm text-[var(--accent-soft)]">
@@ -660,6 +634,41 @@ export function FunnelSettingsForm({
             </p>
           ) : null}
         </form>
+
+        {isAddStyleModalOpen ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+            <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#171515] p-5 shadow-2xl">
+              <div className="space-y-1">
+                <p className="text-base font-medium text-white">{copy.addStyleTitle}</p>
+                <p className="text-sm text-[var(--foreground-muted)]">{copy.customStylesHelp}</p>
+              </div>
+              <div className="mt-4 space-y-4">
+                <Field label={copy.styleLabel}>
+                  <Input
+                    value={newStyleLabel}
+                    onChange={(event) => setNewStyleLabel(event.target.value)}
+                    placeholder={locale === "tr" ? "Örn. Etching" : "e.g. Etching"}
+                  />
+                </Field>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setNewStyleLabel("");
+                      setIsAddStyleModalOpen(false);
+                    }}
+                  >
+                    {locale === "tr" ? "Vazgeç" : "Cancel"}
+                  </Button>
+                  <Button type="button" onClick={addCustomStyle} disabled={newStyleLabel.trim().length < 2}>
+                    {copy.addStyle}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
