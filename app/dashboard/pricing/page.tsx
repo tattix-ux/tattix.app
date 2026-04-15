@@ -19,7 +19,7 @@ export default async function DashboardPricingPage() {
         }
         description={
           isTurkish
-            ? "En basit iş için alacağın minimum ücreti gir."
+            ? "En küçük ve en basit iş için alacağın başlangıç ücretini gir."
             : "Set the opening price and complete calibration."
         }
       />

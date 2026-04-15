@@ -61,12 +61,12 @@ const validationImages: Record<
 function getText(locale: PublicLocale) {
   if (locale === "tr") {
     return {
-      title: "Fiyat ayarını yap",
+      title: "Fiyat ayarı",
       description:
-        "Sana birkaç örnek dövme gösterilecek.\nHer biri için “bunu kaça yaparsın?” sorusuna fiyat gir.\n\nSistem, verdiğin bu örneklere bakarak senin fiyat mantığını öğrenir ve ona göre öneri yapar.",
-      openingPrice: "Başlangıç fiyatın",
-      openingPriceHelp: "Küçük ve standart bir dövmeyi genelde kaçtan başlatıyorsun?",
-      start: "Fiyat Ayarını Başlat",
+        "Sana birkaç örnek dövme gösterilecek.\nHer biri için “bunu kaça yaparsın?” diyeceğiz.\n\nVerdiğin fiyatlara göre sistem senin fiyat mantığını öğrenir ve buna göre öneri yapar.",
+      openingPrice: "Başlangıç fiyatı",
+      openingPriceHelp: "En basit, en küçük dövmeyi genelde kaçtan başlatıyorsun?",
+      start: "Fiyat ayarını başlat (daha doğru)",
       edit: "Fiyat ayarını düzenle",
       reset: "Sıfırla",
       close: "Daha sonra devam et",
