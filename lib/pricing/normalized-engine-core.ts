@@ -15,11 +15,13 @@ type SurchargeRange = {
   max: number;
 };
 
+type QuoteDetailLevel = DetailLevelValue | "ultra";
+
 export type NormalizedQuoteInput = {
   size: SizeValue;
   sizeCm: number;
   placement: BodyAreaDetailValue;
-  detailLevel?: DetailLevelValue | null;
+  detailLevel?: QuoteDetailLevel | null;
   colorMode?: ColorModeValue | null;
   coverUp?: boolean | null;
   customDesign?: boolean | null;
@@ -33,9 +35,10 @@ export type NormalizedQuoteConfig = {
   baselinePrice: number;
   sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>;
   hardPlacementDetails: Set<BodyAreaDetailValue>;
-  detailSurcharges: Record<DetailLevelValue, SurchargeRange>;
+  detailSurcharges: Record<QuoteDetailLevel, SurchargeRange>;
   placementSurcharges: {
     easy: SurchargeRange;
+    medium: SurchargeRange;
     hard: SurchargeRange;
     "not-sure": SurchargeRange;
   };
@@ -54,7 +57,7 @@ type QuoteResult = {
   };
 };
 
-const DEFAULT_DETAIL_LEVEL: DetailLevelValue = "standard";
+const DEFAULT_DETAIL_LEVEL: QuoteDetailLevel = "standard";
 const DEFAULT_COLOR_MODE: ColorModeValue = "black-grey";
 const SIZE_CURVE_KEYS = ["8", "12", "18", "25"] as const;
 const MIN_VALIDATION_ADJUSTMENT = 0.94;
@@ -312,16 +315,23 @@ function derivePlacementSurcharges(
   hardPlacementDetails: Set<BodyAreaDetailValue>,
 ) {
   const calibrationEasy = rules.calibrationExamples.placementDifficulty?.easy;
+  const calibrationMedium = rules.calibrationExamples.placementDifficulty?.medium;
   const calibrationHard = rules.calibrationExamples.placementDifficulty?.hard;
 
   if (isFinitePositive(calibrationEasy) && isFinitePositive(calibrationHard)) {
     const safeEasy = Number(calibrationEasy);
+    const safeMedium =
+      isFinitePositive(calibrationMedium)
+        ? Number(calibrationMedium)
+        : safeEasy + (Number(calibrationHard) - safeEasy) * 0.55;
     const safeHard = Number(calibrationHard);
+    const mediumDelta = Math.max(0, safeMedium - safeEasy);
     const hardDelta = safeHard - safeEasy;
     return {
       easy: { min: 0, max: 0 },
+      medium: createCenteredRange(mediumDelta, Math.max(28, safeEasy * 0.018), 0),
       hard: createCenteredRange(hardDelta, Math.max(40, safeEasy * 0.025), 0),
-      "not-sure": createCenteredRange(hardDelta * 0.45, Math.max(24, safeEasy * 0.015), 0),
+      "not-sure": createCenteredRange(mediumDelta, Math.max(24, safeEasy * 0.015), 0),
     };
   }
 
@@ -341,11 +351,13 @@ function derivePlacementSurcharges(
       ? hardFactors.reduce((sum, value) => sum + value, 0) / hardFactors.length
       : Math.max(easyMid, 1.18);
   const hardDelta = Math.max(0, (hardMid - easyMid) * baselinePrice);
+  const mediumDelta = hardDelta * 0.55;
 
   return {
     easy: { min: 0, max: 0 },
+    medium: createCenteredRange(mediumDelta, Math.max(28, baselinePrice * 0.018), 0),
     hard: createCenteredRange(hardDelta, Math.max(40, baselinePrice * 0.025), 0),
-    "not-sure": createCenteredRange(hardDelta * 0.45, Math.max(24, baselinePrice * 0.015), 0),
+    "not-sure": createCenteredRange(mediumDelta, Math.max(24, baselinePrice * 0.015), 0),
   };
 }
 
@@ -463,6 +475,10 @@ function buildUncertaintyBand(
     band += 0.01;
   }
 
+  if ((input.detailLevel ?? DEFAULT_DETAIL_LEVEL) === "ultra") {
+    band += 0.02;
+  }
+
   if ((input.colorMode ?? DEFAULT_COLOR_MODE) === "black-grey") {
     band += 0.005;
   }
@@ -520,6 +536,7 @@ export function buildNormalizedQuoteConfig(
       simple: clampRange(deriveDetailSurcharges(rules, baselinePrice).simple, { min: -120, max: -40 }),
       standard: { min: 0, max: 0 },
       detailed: clampRange(deriveDetailSurcharges(rules, baselinePrice).detailed, { min: 180, max: 320 }),
+      ultra: clampRange(deriveDetailSurcharges(rules, baselinePrice).ultra, { min: 320, max: 520 }),
     },
     placementSurcharges: derivePlacementSurcharges(rules, baselinePrice, hardPlacementDetails),
     colorSurcharges: deriveColorSurcharges(rules, baselinePrice),

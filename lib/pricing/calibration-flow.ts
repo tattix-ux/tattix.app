@@ -46,10 +46,12 @@ export type CalibrationDraft = {
   };
   placement: {
     easy: DraftRange;
+    medium: DraftRange;
     hard: DraftRange;
   };
   color: {
     black: DraftRange;
+    blackGrey: DraftRange;
     color: DraftRange;
   };
 };
@@ -67,27 +69,12 @@ export type ValidationScenario = {
   image: "minimal-linework" | "ornamental-dagger" | "realistic-eye" | "colored-butterfly";
   sizeCm: number;
   placement: BodyAreaDetailValue;
-  detailLevel: DetailLevelValue;
+  detailLevel: DetailLevelValue | "ultra";
   colorMode: ColorModeValue;
 };
 
-export type CalibrationQuestion =
-  | { id: "size8" | "size12" | "size18" | "size25"; step: 1; stepIndex: number; image: "medium" }
-  | { id: "placementHard"; step: 2; stepIndex: number; image: "medium" }
-  | { id: "colorColor"; step: 3; stepIndex: number; image: "color" }
-  | { id: "detailLow" | "detailHigh" | "detailUltra"; step: 4; stepIndex: number; image: "low" | "high" | "ultra" };
-
-export const CALIBRATION_QUESTIONS: CalibrationQuestion[] = [
-  { id: "size8", step: 1, stepIndex: 1, image: "medium" },
-  { id: "size12", step: 1, stepIndex: 2, image: "medium" },
-  { id: "size18", step: 1, stepIndex: 3, image: "medium" },
-  { id: "size25", step: 1, stepIndex: 4, image: "medium" },
-  { id: "placementHard", step: 2, stepIndex: 1, image: "medium" },
-  { id: "colorColor", step: 3, stepIndex: 1, image: "color" },
-  { id: "detailLow", step: 4, stepIndex: 1, image: "low" },
-  { id: "detailHigh", step: 4, stepIndex: 2, image: "high" },
-  { id: "detailUltra", step: 4, stepIndex: 3, image: "ultra" },
-];
+export const CALIBRATION_STEPS = ["size", "detail", "placement", "color"] as const;
+export type CalibrationStepId = (typeof CALIBRATION_STEPS)[number];
 
 export const CALIBRATION_SLOT_LABELS = [
   { slotId: "size-8cm", axis: "size", key: "8cm", label: "8 cm referans slotu", assetRef: null },
@@ -99,8 +86,10 @@ export const CALIBRATION_SLOT_LABELS = [
   { slotId: "detail-high", axis: "detailLevel", key: "high", label: "Çok detay referans slotu", assetRef: null },
   { slotId: "detail-realism", axis: "detailLevel", key: "realism", label: "Realism referans slotu", assetRef: null },
   { slotId: "placement-easy", axis: "placement", key: "easy", label: "Kolay bölge referans slotu", assetRef: null },
+  { slotId: "placement-medium", axis: "placement", key: "medium", label: "Orta zorluk referans slotu", assetRef: null },
   { slotId: "placement-hard", axis: "placement", key: "hard", label: "Zor bölge referans slotu", assetRef: null },
   { slotId: "color-black", axis: "colorMode", key: "black", label: "Siyah referans slotu", assetRef: null },
+  { slotId: "color-blackgrey", axis: "colorMode", key: "black-grey", label: "Black & grey referans slotu", assetRef: null },
   { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu", assetRef: null },
 ] as const;
 
@@ -126,7 +115,7 @@ export const VALIDATION_SCENARIOS: ValidationScenario[] = [
     image: "realistic-eye",
     sizeCm: 18,
     placement: "ribs",
-    detailLevel: "detailed",
+    detailLevel: "ultra",
     colorMode: "black-grey",
   },
   {
@@ -339,6 +328,34 @@ function combineDetailRange(
 export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): CalibrationDraft {
   const anchorPrice = Math.max(pricingRules.anchorPrice || pricingRules.basePrice || 0, 100);
   const placementDefaults = derivePlacementDefaults(pricingRules, anchorPrice);
+  const storedPlacementMedium =
+    pricingRules.calibrationExamples.placementDifficulty?.medium
+      ? {
+          min: pricingRules.calibrationExamples.placementDifficulty.medium,
+          max: pricingRules.calibrationExamples.placementDifficulty.medium,
+        }
+      : {
+          min: roundPrice((placementDefaults.easy.min + placementDefaults.hard.min) / 2),
+          max: roundPrice((placementDefaults.easy.max + placementDefaults.hard.max) / 2),
+        };
+  const storedBlackGrey =
+    pricingRules.calibrationExamples.colorMode["black-grey"]
+      ? {
+          min: pricingRules.calibrationExamples.colorMode["black-grey"],
+          max: pricingRules.calibrationExamples.colorMode["black-grey"],
+        }
+      : {
+          min: roundPrice(
+            ((pricingRules.calibrationExamples.colorMode["black-only"] ?? anchorPrice) +
+              (pricingRules.calibrationExamples.colorMode["full-color"] ?? anchorPrice)) /
+              2,
+          ),
+          max: roundPrice(
+            ((pricingRules.calibrationExamples.colorMode["black-only"] ?? anchorPrice) +
+              (pricingRules.calibrationExamples.colorMode["full-color"] ?? anchorPrice)) /
+              2,
+          ),
+        };
 
   return {
     openingPrice: String(roundPrice(anchorPrice)),
@@ -414,6 +431,7 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
             ? { min: pricingRules.calibrationExamples.placementDifficulty.easy, max: pricingRules.calibrationExamples.placementDifficulty.easy }
             : placementDefaults.easy,
       ),
+      medium: stringRange(storedPlacementMedium),
       hard: stringRange(
         pricingRules.calibrationExamples.placementDifficulty?.hard
           ? { min: pricingRules.calibrationExamples.placementDifficulty.hard, max: pricingRules.calibrationExamples.placementDifficulty.hard }
@@ -428,6 +446,7 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
             ? { min: pricingRules.calibrationExamples.colorMode["black-only"], max: pricingRules.calibrationExamples.colorMode["black-only"] }
             : priceRangeFromFactors(anchorPrice, pricingRules.colorModeModifiers["black-only"], DEFAULT_BLACK_RANGE),
       ),
+      blackGrey: stringRange(storedBlackGrey),
       color: stringRange(
         pricingRules.calibrationExamples.colorMode["full-color"]
           ? { min: pricingRules.calibrationExamples.colorMode["full-color"], max: pricingRules.calibrationExamples.colorMode["full-color"] }
@@ -591,6 +610,11 @@ export function buildPricingPayloadFromCalibrationDraft(
 ): PricingPayload {
   const anchorPrice = Math.max(Number(draft.openingPrice) || 0, 1);
   const easyPlacement = factorRangeFromPriceRange(draft.placement.easy, anchorPrice, DEFAULT_NEUTRAL_RANGE);
+  const mediumPlacement = factorRangeFromPriceRange(
+    draft.placement.medium,
+    anchorPrice,
+    interpolateRange(DEFAULT_NEUTRAL_RANGE, DEFAULT_HARD_RANGE, 0.5),
+  );
   const hardPlacement = factorRangeFromPriceRange(draft.placement.hard, anchorPrice, DEFAULT_HARD_RANGE);
   const hardKeys = resolveHardPlacementKeys(pricingRules);
   const placementModifiers = Object.fromEntries(
@@ -598,7 +622,7 @@ export function buildPricingPayloadFromCalibrationDraft(
       group.details.map((detail) => [
         detail.value,
         detail.value === "placement-not-sure"
-          ? DEFAULT_NOT_SURE_RANGE
+          ? mediumPlacement
           : hardKeys.has(detail.value)
             ? hardPlacement
             : easyPlacement,
@@ -607,8 +631,12 @@ export function buildPricingPayloadFromCalibrationDraft(
   );
 
   const blackOnly = factorRangeFromPriceRange(draft.color.black, anchorPrice, DEFAULT_BLACK_RANGE);
+  const blackGrey = factorRangeFromPriceRange(
+    draft.color.blackGrey,
+    anchorPrice,
+    interpolateRange(DEFAULT_BLACK_RANGE, DEFAULT_COLOR_RANGE, 0.45),
+  );
   const fullColor = factorRangeFromPriceRange(draft.color.color, anchorPrice, DEFAULT_COLOR_RANGE);
-  const blackGrey = interpolateRange(blackOnly, fullColor, 0.45);
   const detailedRange = combineDetailRange(anchorPrice, draft.detail.high, draft.detail.ultra);
 
   return {
@@ -623,11 +651,11 @@ export function buildPricingPayloadFromCalibrationDraft(
     placementModifiers,
     detailLevelModifiers: {
       simple: factorRangeFromPriceRange(draft.detail.low, anchorPrice, { min: 0.92, max: 1 }),
-      standard: factorRangeFromPriceRange(draft.size.size12, anchorPrice, { min: 1, max: 1 }),
+      standard: factorRangeFromPriceRange(draft.detail.medium, anchorPrice, { min: 1, max: 1 }),
       detailed: detailedRange,
     },
     colorModeModifiers: {
-      "black-only": factorRangeFromPriceRange(draft.size.size12, anchorPrice, DEFAULT_BLACK_RANGE),
+      "black-only": blackOnly,
       "black-grey": blackGrey,
       "full-color": fullColor,
     },
@@ -641,16 +669,18 @@ export function buildPricingPayloadFromCalibrationDraft(
       },
       detailLevel: {
         low: normalizeDraftRange(draft.detail.low) ?? { min: 0, max: 0 },
-        medium: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
+        medium: normalizeDraftRange(draft.detail.medium) ?? { min: 0, max: 0 },
         high: normalizeDraftRange(draft.detail.high) ?? { min: 0, max: 0 },
         ultra: normalizeDraftRange(draft.detail.ultra) ?? { min: 0, max: 0 },
       },
       placementDifficulty: {
-        easy: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
+        easy: normalizeDraftRange(draft.placement.easy) ?? { min: 0, max: 0 },
+        medium: normalizeDraftRange(draft.placement.medium) ?? { min: 0, max: 0 },
         hard: normalizeDraftRange(draft.placement.hard) ?? { min: 0, max: 0 },
       },
       colorMode: {
-        black: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
+        black: normalizeDraftRange(draft.color.black) ?? { min: 0, max: 0 },
+        blackGrey: normalizeDraftRange(draft.color.blackGrey) ?? { min: 0, max: 0 },
         color: normalizeDraftRange(draft.color.color) ?? { min: 0, max: 0 },
       },
       validation: {
@@ -668,8 +698,14 @@ export function buildPricingRulesFromCalibrationDraft(
 ): ArtistPricingRules {
   const payload = buildPricingPayloadFromCalibrationDraft(draft, pricingRules);
   const easyPlacementPrice = midpoint(payload.calibrationAnswers?.placementDifficulty.easy) ?? payload.basePrice;
+  const mediumPlacementPrice =
+    midpoint(payload.calibrationAnswers?.placementDifficulty.medium) ??
+    (easyPlacementPrice + (midpoint(payload.calibrationAnswers?.placementDifficulty.hard) ?? easyPlacementPrice)) / 2;
   const hardPlacementPrice = midpoint(payload.calibrationAnswers?.placementDifficulty.hard) ?? easyPlacementPrice;
   const blackPrice = midpoint(payload.calibrationAnswers?.colorMode.black) ?? payload.basePrice;
+  const blackGreyPrice =
+    midpoint(payload.calibrationAnswers?.colorMode.blackGrey) ??
+    (blackPrice + (midpoint(payload.calibrationAnswers?.colorMode.color) ?? blackPrice)) / 2;
   const colorPrice = midpoint(payload.calibrationAnswers?.colorMode.color) ?? blackPrice;
 
   return {
@@ -704,11 +740,12 @@ export function buildPricingRulesFromCalibrationDraft(
       ),
       placementDifficulty: {
         easy: roundPrice(easyPlacementPrice),
+        medium: roundPrice(mediumPlacementPrice),
         hard: roundPrice(hardPlacementPrice),
       },
       colorMode: {
         "black-only": roundPrice(blackPrice),
-        "black-grey": roundPrice(payload.basePrice * midpoint(payload.colorModeModifiers["black-grey"])!),
+        "black-grey": roundPrice(blackGreyPrice),
         "full-color": roundPrice(colorPrice),
       },
       globalScale: payload.calibrationAnswers?.validation?.globalScale ?? 1,

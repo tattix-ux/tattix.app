@@ -266,6 +266,7 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
       ),
       placementDifficulty: {
         easy: Math.round(anchorPrice * 1),
+        medium: Math.round(anchorPrice * 1.1),
         hard: Math.round(anchorPrice * 1.18),
       },
       colorMode: {
@@ -294,8 +295,17 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
         defaultCalibrationExamples.detailLevel.ultra,
     },
     placement: storedCalibrationExamples?.placement ?? defaultCalibrationExamples.placement,
-    placementDifficulty:
-      storedCalibrationExamples?.placementDifficulty ?? defaultCalibrationExamples.placementDifficulty,
+    placementDifficulty: {
+      easy:
+        storedCalibrationExamples?.placementDifficulty?.easy ??
+        defaultCalibrationExamples.placementDifficulty.easy,
+      medium:
+        storedCalibrationExamples?.placementDifficulty?.medium ??
+        defaultCalibrationExamples.placementDifficulty.medium,
+      hard:
+        storedCalibrationExamples?.placementDifficulty?.hard ??
+        defaultCalibrationExamples.placementDifficulty.hard,
+    },
     colorMode: storedCalibrationExamples?.colorMode ?? defaultCalibrationExamples.colorMode,
     globalScale:
       typeof storedCalibrationExamples?.globalScale === "number" &&

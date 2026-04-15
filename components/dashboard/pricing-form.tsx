@@ -25,10 +25,9 @@ import {
   buildValidationPreviewExamples,
   buildInitialCalibrationDraft,
   buildPricingPayloadFromCalibrationDraft,
-  CALIBRATION_QUESTIONS,
+  CALIBRATION_STEPS,
   summarizeFinalValidationReview,
   updateCalibrationDraftRange,
-  updateCalibrationValidationDraft,
   updateFinalValidationDraft,
   VALIDATION_SCENARIOS,
   type CalibrationDraft,
@@ -87,14 +86,20 @@ function getText(locale: PublicLocale) {
       sizeQuestion12: "Bu dövme 12 cm ön kolda olsa kaç ₺ fiyatlarsın?",
       sizeQuestion18: "Bu dövme 18 cm ön kolda olsa kaç ₺ fiyatlarsın?",
       sizeQuestion25: "Bu dövme 25 cm ön kolda olsa kaç ₺ fiyatlarsın?",
-      detailQuestionLow: "Bu dövme 12 cm, ön kolda ve siyah olarak az detaylı olsa kaç ₺ fiyatlarsın?",
-      detailQuestionMedium: "Bu dövme 12 cm, ön kolda ve siyah olarak orta detaylı olsa kaç ₺ olur?",
-      detailQuestionHigh: "Bu dövme 12 cm, ön kolda ve siyah olarak çok detaylı olsa kaç ₺ olur?",
-      detailQuestionUltra: "Bu dövme 12 cm, ön kolda ve siyah olarak ultra detaylı realism seviyesinde olsa kaç ₺ olur?",
-      placementQuestionEasy: "Bu dövme 12 cm, orta detaylı ve siyah olarak ön kolda olsa kaç ₺ olur?",
-      placementQuestionHard: "Bu dövme 12 cm, orta detaylı ve siyah olarak zor bir bölgede olsa kaç ₺ olur?",
-      colorQuestionBlack: "Bu dövme 12 cm, ön kolda ve orta detaylı olarak siyah olsa kaç ₺ olur?",
-      colorQuestionColor: "Bu dövme 12 cm, ön kolda ve orta detaylı olarak renkli olsa kaç ₺ olur?",
+      detailContext: "12 cm · kolay bölge · siyah",
+      detailLowLabel: "Az detay",
+      detailMediumLabel: "Orta detay",
+      detailHighLabel: "Çok detay",
+      detailUltraLabel: "Realism",
+      detailUltraHelp: "Yumuşak gölgelendirme ve yüksek işçilik gerektiren detaylı işler",
+      placementContext: "12 cm · Orta detay · Siyah",
+      placementEasyLabel: "Kolay bölge",
+      placementMediumLabel: "Orta zorluk",
+      placementHardLabel: "Zor bölge",
+      colorContext: "12 cm · Orta detay · Kolay bölge",
+      colorBlackLabel: "Siyah",
+      colorBlackGreyLabel: "Black & grey",
+      colorColorLabel: "Full color",
       finalCheckTitle: "Son kontrol",
       finalCheckIntro:
         "Son bir kontrol yapalım. Aşağıdaki örnek dövmeler için oluşturduğum tahmini fiyat aralıklarının sana ne kadar uygun göründüğünü seç.",
@@ -113,7 +118,7 @@ function getText(locale: PublicLocale) {
       scenarioPlacement: "Bölge",
       scenario1: "Minimal linework · siyah",
       scenario2: "Ornamental dagger · siyah",
-      scenario3: "Realistic eye · black & grey",
+      scenario3: "Realism · black & grey",
       scenario4: "Colored butterfly · renkli",
       statusPending: "Bekliyor",
       statusConfirmed: "Onaylandı",
@@ -153,14 +158,20 @@ function getText(locale: PublicLocale) {
     sizeQuestion12: "What would you charge if it were 12 cm on the forearm?",
     sizeQuestion18: "What would you charge if it were 18 cm on the forearm?",
     sizeQuestion25: "What would you charge if it were 25 cm on the forearm?",
-    detailQuestionLow: "What would you charge if this tattoo were 12 cm, black, on the forearm, and low detail?",
-    detailQuestionMedium: "What would it be if it were 12 cm, black, on the forearm, and medium detail?",
-    detailQuestionHigh: "What would it be if it were 12 cm, black, on the forearm, and high detail?",
-    detailQuestionUltra: "What would it be if it were 12 cm, black, on the forearm, and ultra-detailed realism?",
-    placementQuestionEasy: "What would this tattoo cost if it were 12 cm, medium detail, black, and on the forearm?",
-    placementQuestionHard: "What would this tattoo cost if it were 12 cm, medium detail, black, and in a harder placement?",
-    colorQuestionBlack: "What would this tattoo cost if it were 12 cm, medium detail, and black on the forearm?",
-    colorQuestionColor: "What would this tattoo cost if it were 12 cm, medium detail, and colored on the forearm?",
+    detailContext: "12 cm · easy placement · black",
+    detailLowLabel: "Low detail",
+    detailMediumLabel: "Medium detail",
+    detailHighLabel: "High detail",
+    detailUltraLabel: "Realism",
+    detailUltraHelp: "Detailed work with soft shading and higher craftsmanship",
+    placementContext: "12 cm · Medium detail · Black",
+    placementEasyLabel: "Easy placement",
+    placementMediumLabel: "Medium difficulty",
+    placementHardLabel: "Hard placement",
+    colorContext: "12 cm · Medium detail · Easy placement",
+    colorBlackLabel: "Black",
+    colorBlackGreyLabel: "Black & grey",
+    colorColorLabel: "Full color",
     finalCheckTitle: "Final check",
     finalCheckIntro:
       "One final check. Review how believable these estimated quote ranges look for the example tattoos below.",
@@ -179,7 +190,7 @@ function getText(locale: PublicLocale) {
     scenarioPlacement: "Placement",
     scenario1: "Minimal linework · black",
     scenario2: "Ornamental dagger · black",
-    scenario3: "Realistic eye · black & grey",
+    scenario3: "Realism · black & grey",
     scenario4: "Colored butterfly · color",
     statusPending: "Pending",
     statusConfirmed: "Confirmed",
@@ -193,83 +204,12 @@ function getText(locale: PublicLocale) {
   };
 }
 
-function getQuestionMeta(questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"], locale: PublicLocale) {
-  const copy = getText(locale);
-
-  const map = {
-    size8: { title: "", prompt: copy.sizeQuestion8 },
-    size12: { title: "", prompt: copy.sizeQuestion12 },
-    size18: { title: "", prompt: copy.sizeQuestion18 },
-    size25: { title: "", prompt: copy.sizeQuestion25 },
-    placementHard: { title: "", prompt: copy.placementQuestionHard },
-    colorColor: { title: "", prompt: copy.colorQuestionColor },
-    detailLow: { title: "", prompt: copy.detailQuestionLow },
-    detailHigh: { title: "", prompt: copy.detailQuestionHigh },
-    detailUltra: { title: "", prompt: copy.detailQuestionUltra },
-  } as const;
-
-  return map[questionId];
-}
-
-function getQuestionRange(draft: CalibrationDraft, questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"]) {
-  switch (questionId) {
-    case "size8":
-      return draft.size.size8;
-    case "size12":
-      return draft.size.size12;
-    case "size18":
-      return draft.size.size18;
-    case "size25":
-      return draft.size.size25;
-    case "detailLow":
-      return draft.detail.low;
-    case "detailHigh":
-      return draft.detail.high;
-    case "detailUltra":
-      return draft.detail.ultra;
-    case "placementHard":
-      return draft.placement.hard;
-    case "colorColor":
-      return draft.color.color;
-  }
-}
-
-function setQuestionRange(
-  draft: CalibrationDraft,
-  questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"],
-  edge: "min" | "max",
-  value: string,
-) {
-  switch (questionId) {
-    case "size8":
-      return updateCalibrationDraftRange(draft, "size", "size8", edge, value);
-    case "size12":
-      return updateCalibrationDraftRange(draft, "size", "size12", edge, value);
-    case "size18":
-      return updateCalibrationDraftRange(draft, "size", "size18", edge, value);
-    case "size25":
-      return updateCalibrationDraftRange(draft, "size", "size25", edge, value);
-    case "detailLow":
-      return updateCalibrationDraftRange(draft, "detail", "low", edge, value);
-    case "detailHigh":
-      return updateCalibrationDraftRange(draft, "detail", "high", edge, value);
-    case "detailUltra":
-      return updateCalibrationDraftRange(draft, "detail", "ultra", edge, value);
-    case "placementHard":
-      return updateCalibrationDraftRange(draft, "placement", "hard", edge, value);
-    case "colorColor":
-      return updateCalibrationDraftRange(draft, "color", "color", edge, value);
-  }
-}
-
 function isQuestionAnswered(range: { min: string; max: string }) {
   return Boolean(range.min.trim());
 }
 
-function areSizeQuestionsAnswered(draft: CalibrationDraft) {
-  return [draft.size.size8, draft.size.size12, draft.size.size18, draft.size.size25].every(
-    isQuestionAnswered,
-  );
+function areRangesAnswered(ranges: Array<{ min: string; max: string }>) {
+  return ranges.every(isQuestionAnswered);
 }
 
 function getValidationStatusLabel(
@@ -347,10 +287,7 @@ export function PricingForm({
   const [isSaving, setIsSaving] = useState(false);
 
   const ready = draft.validation.finalValidation.validationStatus !== "pending";
-  const currentQuestion = CALIBRATION_QUESTIONS[screenIndex];
-  const currentMeta = getQuestionMeta(currentQuestion.id, locale);
-  const currentRange = getQuestionRange(draft, currentQuestion.id);
-  const sizeQuestions = CALIBRATION_QUESTIONS.filter((item) => item.step === 1);
+  const currentStep = CALIBRATION_STEPS[screenIndex] ?? CALIBRATION_STEPS[0];
   const validationExamples = useMemo(
     () => buildValidationPreviewExamples(draft, pricingRules),
     [draft, pricingRules],
@@ -358,7 +295,23 @@ export function PricingForm({
   const currentValidationScenario = VALIDATION_SCENARIOS[validationIndex] ?? VALIDATION_SCENARIOS[0];
   const currentValidationRange = validationExamples[validationIndex] ?? validationExamples[0];
   const currentValidationImage = validationImages[currentValidationScenario.image];
-  const currentImage = calibrationImages[currentQuestion.image];
+  const stepReady =
+    currentStep === "size"
+      ? areRangesAnswered([draft.size.size8, draft.size.size12, draft.size.size18, draft.size.size25])
+      : currentStep === "detail"
+        ? areRangesAnswered([draft.detail.low, draft.detail.medium, draft.detail.high, draft.detail.ultra])
+        : currentStep === "placement"
+          ? areRangesAnswered([draft.placement.easy, draft.placement.medium, draft.placement.hard])
+          : areRangesAnswered([draft.color.black, draft.color.blackGrey, draft.color.color]);
+
+  function updateRange(
+    section: "size" | "detail" | "placement" | "color",
+    key: string,
+    edge: "min" | "max",
+    value: string,
+  ) {
+    setDraft((current) => updateCalibrationDraftRange(current, section, key, edge, value));
+  }
 
   function buildEmptyDraft() {
     const base = buildInitialCalibrationDraft(pricingRules);
@@ -389,10 +342,12 @@ export function PricingForm({
       },
       placement: {
         easy: { min: "", max: "" },
+        medium: { min: "", max: "" },
         hard: { min: "", max: "" },
       },
       color: {
         black: { min: "", max: "" },
+        blackGrey: { min: "", max: "" },
         color: { min: "", max: "" },
       },
     };
@@ -454,24 +409,13 @@ export function PricingForm({
   }
 
   function handleNext() {
-    if (currentQuestion.step === 1) {
-      if (!areSizeQuestionsAnswered(draft)) {
-        setStatusMessage(copy.invalid);
-        return;
-      }
-
-      setStatusMessage(null);
-      setScreenIndex(4);
-      return;
-    }
-
-    if (!isQuestionAnswered(currentRange)) {
+    if (!stepReady) {
       setStatusMessage(copy.invalid);
       return;
     }
 
     setStatusMessage(null);
-    if (screenIndex === CALIBRATION_QUESTIONS.length - 1) {
+    if (screenIndex === CALIBRATION_STEPS.length - 1) {
       setShowCalibration(false);
       setShowFinalValidation(true);
       resetValidationFlow();
@@ -593,97 +537,229 @@ export function PricingForm({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                      {copy.stepLabel} {currentQuestion.step} / 4
+                      {copy.stepLabel} {screenIndex + 1} / {CALIBRATION_STEPS.length}
                     </p>
                   </div>
                   <p className="text-sm text-[var(--foreground-muted)]">
-                    {copy.questionLabel}{" "}
-                    {currentQuestion.step === 1 ? 1 : currentQuestion.stepIndex} /{" "}
-                    {currentQuestion.step === 1
-                      ? 1
-                      : CALIBRATION_QUESTIONS.filter((item) => item.step === currentQuestion.step).length}
+                    {copy.questionLabel} {screenIndex + 1} / {CALIBRATION_STEPS.length}
                   </p>
                 </div>
 
-                <div className="mx-auto mt-3 max-w-[360px] overflow-hidden rounded-[18px] border border-white/8 bg-black/20">
-                  <div className="relative aspect-[4/3] w-full bg-black/10">
-                    <Image
-                      src={currentImage}
-                      alt={currentMeta.title}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, 460px"
-                    />
-                  </div>
-                </div>
-
                 <div className="mt-3 rounded-[18px] border border-white/8 bg-black/20 p-3">
-                  {currentQuestion.step === 1 ? (
+                  {currentStep === "size" ? (
                     <div className="space-y-4">
-                      {sizeQuestions.map((question) => {
-                        const meta = getQuestionMeta(question.id, locale);
-                        const range = getQuestionRange(draft, question.id);
+                      <div className="mx-auto max-w-[360px] overflow-hidden rounded-[18px] border border-white/8 bg-black/20">
+                        <div className="relative aspect-[4/3] w-full bg-black/10">
+                          <Image
+                            src={calibrationImages.medium}
+                            alt="Baseline tattoo"
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 100vw, 360px"
+                          />
+                        </div>
+                      </div>
+                      {[
+                        { key: "size8", label: copy.sizeQuestion8, range: draft.size.size8 },
+                        { key: "size12", label: copy.sizeQuestion12, range: draft.size.size12 },
+                        { key: "size18", label: copy.sizeQuestion18, range: draft.size.size18 },
+                        { key: "size25", label: copy.sizeQuestion25, range: draft.size.size25 },
+                      ].map((item) => (
+                        <div key={item.key} className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                          <p className="text-sm font-medium text-white">{item.label}</p>
+                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                            <Field label={copy.priceLabel}>
+                              <Input
+                                type="number"
+                                value={item.range.min}
+                                onChange={(event) => updateRange("size", item.key, "min", event.target.value)}
+                              />
+                            </Field>
+                            <Field label={copy.maxLabel}>
+                              <Input
+                                type="number"
+                                value={item.range.max}
+                                onChange={(event) => updateRange("size", item.key, "max", event.target.value)}
+                              />
+                            </Field>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
 
-                        return (
-                          <div key={question.id} className="rounded-[18px] border border-white/8 bg-black/20 p-4">
-                            <p className="text-sm font-medium text-white">{meta.prompt}</p>
+                  {currentStep === "detail" ? (
+                    <div className="space-y-4">
+                      <p className="text-sm text-[var(--foreground-muted)]">{copy.detailContext}</p>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {[
+                          {
+                            key: "low",
+                            label: copy.detailLowLabel,
+                            help: "",
+                            image: calibrationImages.low,
+                            range: draft.detail.low,
+                          },
+                          {
+                            key: "medium",
+                            label: copy.detailMediumLabel,
+                            help: "",
+                            image: calibrationImages.medium,
+                            range: draft.detail.medium,
+                          },
+                          {
+                            key: "high",
+                            label: copy.detailHighLabel,
+                            help: "",
+                            image: calibrationImages.high,
+                            range: draft.detail.high,
+                          },
+                          {
+                            key: "ultra",
+                            label: copy.detailUltraLabel,
+                            help: copy.detailUltraHelp,
+                            image: calibrationImages.ultra,
+                            range: draft.detail.ultra,
+                          },
+                        ].map((item) => (
+                          <div key={item.key} className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                            <div className="overflow-hidden rounded-[16px] border border-white/8 bg-black/10">
+                              <div className="relative aspect-[4/3] w-full">
+                                <Image
+                                  src={item.image}
+                                  alt={item.label}
+                                  fill
+                                  className="object-contain"
+                                  sizes="(max-width: 768px) 100vw, 320px"
+                                />
+                              </div>
+                            </div>
+                            <p className="mt-3 text-sm font-medium text-white">{item.label}</p>
+                            {item.help ? (
+                              <p className="mt-1 text-xs text-[var(--foreground-muted)]">{item.help}</p>
+                            ) : null}
                             <div className="mt-3 grid gap-3 sm:grid-cols-2">
                               <Field label={copy.priceLabel}>
                                 <Input
                                   type="number"
-                                  value={range.min}
-                                  onChange={(event) =>
-                                    setDraft((current) =>
-                                      setQuestionRange(current, question.id, "min", event.target.value),
-                                    )
-                                  }
+                                  value={item.range.min}
+                                  onChange={(event) => updateRange("detail", item.key, "min", event.target.value)}
                                 />
                               </Field>
                               <Field label={copy.maxLabel}>
                                 <Input
                                   type="number"
-                                  value={range.max}
-                                  onChange={(event) =>
-                                    setDraft((current) =>
-                                      setQuestionRange(current, question.id, "max", event.target.value),
-                                    )
-                                  }
+                                  value={item.range.max}
+                                  onChange={(event) => updateRange("detail", item.key, "max", event.target.value)}
                                 />
                               </Field>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-sm font-medium text-white">{currentMeta.prompt}</p>
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <Field label={copy.priceLabel}>
-                          <Input
-                            type="number"
-                            value={currentRange.min}
-                            onChange={(event) =>
-                              setDraft((current) =>
-                                setQuestionRange(current, currentQuestion.id, "min", event.target.value),
-                              )
-                            }
-                          />
-                        </Field>
-                        <Field label={copy.maxLabel}>
-                          <Input
-                            type="number"
-                            value={currentRange.max}
-                            onChange={(event) =>
-                              setDraft((current) =>
-                                setQuestionRange(current, currentQuestion.id, "max", event.target.value),
-                              )
-                            }
-                          />
-                        </Field>
+                        ))}
                       </div>
                     </div>
-                  )}
+                  ) : null}
+
+                  {currentStep === "placement" ? (
+                    <div className="space-y-4">
+                      <div className="mx-auto max-w-[360px] overflow-hidden rounded-[18px] border border-white/8 bg-black/20">
+                        <div className="relative aspect-[4/3] w-full bg-black/10">
+                          <Image
+                            src={calibrationImages.medium}
+                            alt="Placement reference"
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 100vw, 360px"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-sm text-[var(--foreground-muted)]">{copy.placementContext}</p>
+                      {[
+                        { key: "easy", label: copy.placementEasyLabel, range: draft.placement.easy },
+                        { key: "medium", label: copy.placementMediumLabel, range: draft.placement.medium },
+                        { key: "hard", label: copy.placementHardLabel, range: draft.placement.hard },
+                      ].map((item) => (
+                        <div key={item.key} className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                          <p className="text-sm font-medium text-white">{item.label}</p>
+                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                            <Field label={copy.priceLabel}>
+                              <Input
+                                type="number"
+                                value={item.range.min}
+                                onChange={(event) => updateRange("placement", item.key, "min", event.target.value)}
+                              />
+                            </Field>
+                            <Field label={copy.maxLabel}>
+                              <Input
+                                type="number"
+                                value={item.range.max}
+                                onChange={(event) => updateRange("placement", item.key, "max", event.target.value)}
+                              />
+                            </Field>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {currentStep === "color" ? (
+                    <div className="space-y-4">
+                      <p className="text-sm text-[var(--foreground-muted)]">{copy.colorContext}</p>
+                      <div className="grid gap-4 md:grid-cols-3">
+                        {[
+                          {
+                            key: "black",
+                            label: copy.colorBlackLabel,
+                            image: calibrationImages.medium,
+                            range: draft.color.black,
+                          },
+                          {
+                            key: "blackGrey",
+                            label: copy.colorBlackGreyLabel,
+                            image: calibrationImages.medium,
+                            range: draft.color.blackGrey,
+                          },
+                          {
+                            key: "color",
+                            label: copy.colorColorLabel,
+                            image: calibrationImages.color,
+                            range: draft.color.color,
+                          },
+                        ].map((item) => (
+                          <div key={item.key} className="rounded-[18px] border border-white/8 bg-black/20 p-4">
+                            <div className="overflow-hidden rounded-[16px] border border-white/8 bg-black/10">
+                              <div className="relative aspect-[4/3] w-full">
+                                <Image
+                                  src={item.image}
+                                  alt={item.label}
+                                  fill
+                                  className="object-contain"
+                                  sizes="(max-width: 768px) 100vw, 260px"
+                                />
+                              </div>
+                            </div>
+                            <p className="mt-3 text-sm font-medium text-white">{item.label}</p>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                              <Field label={copy.priceLabel}>
+                                <Input
+                                  type="number"
+                                  value={item.range.min}
+                                  onChange={(event) => updateRange("color", item.key, "min", event.target.value)}
+                                />
+                              </Field>
+                              <Field label={copy.maxLabel}>
+                                <Input
+                                  type="number"
+                                  value={item.range.max}
+                                  onChange={(event) => updateRange("color", item.key, "max", event.target.value)}
+                                />
+                              </Field>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                   {copy.maxHelp ? (
                     <p className="mt-3 text-sm text-[var(--foreground-muted)]">{copy.maxHelp}</p>
                   ) : null}
@@ -700,7 +776,7 @@ export function PricingForm({
                   </Button>
                 ) : null}
 
-                {screenIndex < CALIBRATION_QUESTIONS.length - 1 ? (
+                {screenIndex < CALIBRATION_STEPS.length - 1 ? (
                   <Button type="button" onClick={handleNext}>
                     {copy.next}
                     <ArrowRight className="size-4" />
@@ -821,7 +897,7 @@ export function PricingForm({
                     setAwaitingFinalSave(false);
                     setShowFinalValidation(false);
                     setShowCalibration(true);
-                    setScreenIndex(CALIBRATION_QUESTIONS.length - 1);
+                    setScreenIndex(CALIBRATION_STEPS.length - 1);
                     setStatusMessage(copy.completeQuestionsFirst);
                   }}
                 >

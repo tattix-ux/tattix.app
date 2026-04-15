@@ -184,10 +184,12 @@ export const pricingSchema = z.object({
       }),
       placementDifficulty: z.object({
         easy: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        medium: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }).optional(),
         hard: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
       }),
       colorMode: z.object({
         black: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        blackGrey: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
         color: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
       }),
       validation: z

@@ -82,9 +82,15 @@ export async function POST(request: Request) {
   const hardPlacementPrice = calibrationAnswers
     ? deriveCalibrationPriceFromRange(calibrationAnswers.placementDifficulty.hard, easyPlacementPrice)
     : deriveCalibrationPrice(parsed.data.basePrice, { min: 1.14, max: 1.3 });
+  const mediumPlacementPrice = calibrationAnswers?.placementDifficulty.medium
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.placementDifficulty.medium, easyPlacementPrice)
+    : Math.round(easyPlacementPrice + (hardPlacementPrice - easyPlacementPrice) * 0.55);
   const blackPrice = calibrationAnswers
     ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.black, parsed.data.basePrice)
     : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-only"]);
+  const blackGreyPrice = calibrationAnswers
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.blackGrey, blackPrice)
+    : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-grey"]);
   const colorPrice = calibrationAnswers
     ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.color, blackPrice)
     : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["full-color"]);
@@ -133,11 +139,12 @@ export async function POST(request: Request) {
     ),
     placementDifficulty: {
       easy: easyPlacementPrice,
+      medium: mediumPlacementPrice,
       hard: hardPlacementPrice,
     },
     colorMode: {
       "black-only": blackPrice,
-      "black-grey": deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["black-grey"]),
+      "black-grey": blackGreyPrice,
       "full-color": colorPrice,
     },
     globalScale: calibrationAnswers?.validation?.globalScale ?? 1,

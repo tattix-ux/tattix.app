@@ -120,6 +120,7 @@ export type PricingCalibrationExamples = {
   placement: Record<string, number>;
   placementDifficulty?: {
     easy: number;
+    medium?: number;
     hard: number;
   };
   colorMode: Record<ColorModeValue, number>;
