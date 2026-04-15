@@ -89,23 +89,21 @@ function ColorField({
 }
 
 function ThemeCardPreview({
-  background,
-  primary,
-  card,
+  artist,
+  theme,
 }: {
-  background: string;
-  primary: string;
-  card: string;
+  artist: ArtistPageData;
+  theme: ArtistPageTheme;
 }) {
   return (
-    <div className="relative h-36 overflow-hidden rounded-[24px] border border-white/10" style={{ background }}>
-      <div
-        className="absolute left-4 top-4 h-16 w-24 rounded-[18px] border border-white/10"
-        style={{ backgroundColor: card }}
-      />
-      <div className="absolute left-4 top-[5.75rem] h-2.5 w-28 rounded-full bg-white/15" />
-      <div className="absolute left-4 top-[6.75rem] h-2.5 w-20 rounded-full bg-white/10" />
-      <div className="absolute bottom-4 right-4 h-10 w-32 rounded-full" style={{ backgroundColor: primary }} />
+    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/20">
+      <div className="pointer-events-none h-[280px] overflow-hidden">
+        <div className="origin-top scale-[0.64]">
+          <div className="-mb-[150px] -ml-[58px] w-[390px]">
+            <ArtistPagePreview artist={artist} theme={theme} device="mobile" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -678,10 +676,33 @@ export function CustomizePageForm({
                 {themePresetOptions.map((presetKey) => {
                   const preset = themePresets[presetKey];
                   const active = currentPreset === presetKey;
-                  const background =
-                    preset.backgroundType === "gradient"
-                      ? `linear-gradient(135deg, ${preset.gradientStart}, ${preset.gradientEnd})`
-                      : preset.backgroundColor;
+                  const presetTheme = resolveArtistTheme({
+                    artistId: artist.profile.id,
+                    presetTheme: presetKey,
+                    backgroundType: preset.backgroundType,
+                    backgroundColor: preset.backgroundColor,
+                    gradientStart: preset.gradientStart,
+                    gradientEnd: preset.gradientEnd,
+                    backgroundImageUrl: null,
+                    primaryColor: preset.primaryColor,
+                    secondaryColor: preset.secondaryColor,
+                    cardColor: preset.cardColor,
+                    cardOpacity: preset.cardOpacity,
+                    headingFont: preset.headingFont,
+                    bodyFont: preset.bodyFont,
+                    fontPairingPreset: preset.fontPairingPreset,
+                    radiusStyle: preset.radiusStyle,
+                    themeMode: preset.themeMode,
+                    customWelcomeTitle: artist.funnelSettings.introTitle || artist.profile.welcomeHeadline,
+                    customIntroText: artist.funnelSettings.introDescription || artist.profile.shortBio,
+                    customCtaLabel: locale === "tr" ? "Fiyat tahmini al" : "Start estimate",
+                    featuredSectionLabel1: null,
+                    featuredSectionLabel2: null,
+                  });
+                  const presetArtist = {
+                    ...artist,
+                    pageTheme: presetTheme,
+                  };
 
                   return (
                     <button
@@ -695,7 +716,7 @@ export function CustomizePageForm({
                           : "border-white/8 bg-black/20 hover:border-white/14 hover:bg-white/5",
                       )}
                     >
-                      <ThemeCardPreview background={background} primary={preset.primaryColor} card={preset.cardColor} />
+                      <ThemeCardPreview artist={presetArtist} theme={presetTheme} />
                       <div className="mt-4 flex items-start justify-between gap-4">
                         <div>
                           <p className="text-base font-medium text-white">{preset.label}</p>
@@ -838,15 +859,7 @@ export function CustomizePageForm({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <ThemeCardPreview
-                  background={
-                    currentBackgroundType === "gradient"
-                      ? `linear-gradient(135deg, ${currentGradientStart}, ${currentGradientEnd})`
-                      : currentBackgroundColor
-                  }
-                  primary={currentPrimaryColor}
-                  card={currentCardColor}
-                />
+                <ThemeCardPreview artist={previewArtist} theme={previewTheme} />
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="text-sm font-medium text-white">
                     {previewTheme.customWelcomeTitle || artist.funnelSettings.introTitle || artist.profile.welcomeHeadline}
