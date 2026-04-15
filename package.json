@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:pricing": "node --experimental-specifier-resolution=node --test scripts/hybrid-pricing.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -143,6 +143,8 @@ export const VALIDATION_UPWARD_ADJUSTMENT = 1.06;
 export const VALIDATION_DOWNWARD_ADJUSTMENT = 0.94;
 const VALIDATION_AXIS_NUDGE_UP = 1.03;
 const VALIDATION_AXIS_NUDGE_DOWN = 0.97;
+const MIN_VALIDATION_ADJUSTMENT = 0.94;
+const MAX_VALIDATION_ADJUSTMENT = 1.08;
 
 const DEFAULT_NEUTRAL_RANGE: PriceRange = { min: 1, max: 1.08 };
 const DEFAULT_HARD_RANGE: PriceRange = { min: 1.14, max: 1.3 };
@@ -493,7 +495,10 @@ export function applyValidationFeedbackAdjustments(
     validation: {
       ...draft.validation,
       globalScale: Number(
-        Math.max(0.85, Math.min(1.2, (Number(draft.validation.globalScale) || 1) * scaleMultiplier)).toFixed(2),
+        Math.max(
+          MIN_VALIDATION_ADJUSTMENT,
+          Math.min(MAX_VALIDATION_ADJUSTMENT, (Number(draft.validation.globalScale) || 1) * scaleMultiplier),
+        ).toFixed(2),
       ).toString(),
     },
   };

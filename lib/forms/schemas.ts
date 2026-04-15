@@ -193,7 +193,7 @@ export const pricingSchema = z.object({
       validation: z
         .object({
           feedback: z.enum(["looks-right", "slightly-low", "slightly-high"]),
-          globalScale: z.coerce.number().min(0.85).max(1.15),
+          globalScale: z.coerce.number().min(0.94).max(1.08),
         })
         .optional(),
       finalValidation: z
@@ -203,7 +203,7 @@ export const pricingSchema = z.object({
             z.string(),
             z.enum(["looks-right", "slightly-low", "slightly-high"]),
           ),
-          appliedGlobalValidationAdjustment: z.coerce.number().min(0.88).max(1.12),
+          appliedGlobalValidationAdjustment: z.coerce.number().min(0.94).max(1.08),
           validationStatus: z.enum([
             "pending",
             "confirmed",
