@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { pricingSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import {
+  applyValidationFeedbackAdjustments,
   buildValidationPreviewExamples,
   buildInitialCalibrationDraft,
   buildPricingPayloadFromCalibrationDraft,
@@ -507,18 +508,11 @@ export function PricingForm({
     );
 
     if (needsSecondRound) {
-      const nextGlobalScale = Math.max(
-        0.85,
-        Math.min(1.15, (Number(draft.validation.globalScale) || 1) * nextScaleMultiplier),
+      const adjustedDraft = updateFinalValidationDraft(
+        applyValidationFeedbackAdjustments(draft, nextFeedback, nextScaleMultiplier),
+        review,
       );
-      setDraft((current) =>
-        updateFinalValidationDraft(
-          updateCalibrationValidationDraft(current, {
-            globalScale: Number(nextGlobalScale.toFixed(2)).toString(),
-          }),
-          review,
-        ),
-      );
+      setDraft(adjustedDraft);
       setValidationRound(2);
       setValidationIndex(0);
       setValidationFeedback({});
