@@ -42,6 +42,7 @@ export type CalibrationDraft = {
     low: DraftRange;
     medium: DraftRange;
     high: DraftRange;
+    ultra: DraftRange;
   };
   placement: {
     easy: DraftRange;
@@ -73,8 +74,8 @@ export type ValidationScenario = {
 export type CalibrationQuestion =
   | { id: "size8" | "size12" | "size18" | "size25"; step: 1; stepIndex: number; image: "medium" }
   | { id: "placementHard"; step: 2; stepIndex: number; image: "medium" }
-  | { id: "detailLow" | "detailHigh"; step: 3; stepIndex: number; image: "low" | "high" }
-  | { id: "colorColor"; step: 4; stepIndex: number; image: "color" };
+  | { id: "colorColor"; step: 3; stepIndex: number; image: "color" }
+  | { id: "detailLow" | "detailHigh" | "detailUltra"; step: 4; stepIndex: number; image: "low" | "high" | "ultra" };
 
 export const CALIBRATION_QUESTIONS: CalibrationQuestion[] = [
   { id: "size8", step: 1, stepIndex: 1, image: "medium" },
@@ -82,9 +83,10 @@ export const CALIBRATION_QUESTIONS: CalibrationQuestion[] = [
   { id: "size18", step: 1, stepIndex: 3, image: "medium" },
   { id: "size25", step: 1, stepIndex: 4, image: "medium" },
   { id: "placementHard", step: 2, stepIndex: 1, image: "medium" },
-  { id: "detailLow", step: 3, stepIndex: 1, image: "low" },
-  { id: "detailHigh", step: 3, stepIndex: 2, image: "high" },
-  { id: "colorColor", step: 4, stepIndex: 1, image: "color" },
+  { id: "colorColor", step: 3, stepIndex: 1, image: "color" },
+  { id: "detailLow", step: 4, stepIndex: 1, image: "low" },
+  { id: "detailHigh", step: 4, stepIndex: 2, image: "high" },
+  { id: "detailUltra", step: 4, stepIndex: 3, image: "ultra" },
 ];
 
 export const CALIBRATION_SLOT_LABELS = [
@@ -303,6 +305,20 @@ function interpolateRange(left: PriceRange, right: PriceRange, mix = 0.5): Price
   };
 }
 
+function combineDetailRange(
+  anchorPrice: number,
+  highRange: DraftRange,
+  ultraRange: DraftRange,
+) {
+  const high = factorRangeFromPriceRange(highRange, anchorPrice, { min: 1.12, max: 1.28 });
+  const ultra = factorRangeFromPriceRange(ultraRange, anchorPrice, { min: 1.32, max: 1.55 });
+
+  return {
+    min: Math.max(0.25, Math.min(high.min, high.max)),
+    max: Math.max(Math.max(high.min, high.max), ultra.max),
+  };
+}
+
 export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): CalibrationDraft {
   const anchorPrice = Math.max(pricingRules.anchorPrice || pricingRules.basePrice || 0, 100);
   const placementDefaults = derivePlacementDefaults(pricingRules, anchorPrice);
@@ -357,6 +373,21 @@ export function buildInitialCalibrationDraft(pricingRules: ArtistPricingRules): 
             : priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.standard, { min: 1, max: 1.12 }),
       ),
       high: stringRange(priceRangeFromFactors(anchorPrice, pricingRules.detailLevelModifiers.detailed, { min: 1.12, max: 1.28 })),
+      ultra: stringRange(
+        pricingRules.calibrationExamples.detailLevel.ultra
+          ? {
+              min: pricingRules.calibrationExamples.detailLevel.ultra,
+              max: pricingRules.calibrationExamples.detailLevel.ultra,
+            }
+          : {
+              min: roundPrice(
+                (pricingRules.calibrationExamples.detailLevel.detailed || anchorPrice) * 1.14,
+              ),
+              max: roundPrice(
+                (pricingRules.calibrationExamples.detailLevel.detailed || anchorPrice) * 1.14,
+              ),
+            },
+      ),
     },
     placement: {
       easy: stringRange(
@@ -468,6 +499,7 @@ export function buildPricingPayloadFromCalibrationDraft(
   const blackOnly = factorRangeFromPriceRange(draft.color.black, anchorPrice, DEFAULT_BLACK_RANGE);
   const fullColor = factorRangeFromPriceRange(draft.color.color, anchorPrice, DEFAULT_COLOR_RANGE);
   const blackGrey = interpolateRange(blackOnly, fullColor, 0.45);
+  const detailedRange = combineDetailRange(anchorPrice, draft.detail.high, draft.detail.ultra);
 
   return {
     basePrice: anchorPrice,
@@ -482,7 +514,7 @@ export function buildPricingPayloadFromCalibrationDraft(
     detailLevelModifiers: {
       simple: factorRangeFromPriceRange(draft.detail.low, anchorPrice, { min: 0.92, max: 1 }),
       standard: factorRangeFromPriceRange(draft.size.size12, anchorPrice, { min: 1, max: 1 }),
-      detailed: factorRangeFromPriceRange(draft.detail.high, anchorPrice, { min: 1.12, max: 1.28 }),
+      detailed: detailedRange,
     },
     colorModeModifiers: {
       "black-only": factorRangeFromPriceRange(draft.size.size12, anchorPrice, DEFAULT_BLACK_RANGE),
@@ -501,6 +533,7 @@ export function buildPricingPayloadFromCalibrationDraft(
         low: normalizeDraftRange(draft.detail.low) ?? { min: 0, max: 0 },
         medium: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
         high: normalizeDraftRange(draft.detail.high) ?? { min: 0, max: 0 },
+        ultra: normalizeDraftRange(draft.detail.ultra) ?? { min: 0, max: 0 },
       },
       placementDifficulty: {
         easy: normalizeDraftRange(draft.size.size12) ?? { min: 0, max: 0 },
@@ -551,6 +584,7 @@ export function buildPricingRulesFromCalibrationDraft(
         simple: roundPrice(midpoint(payload.calibrationAnswers?.detailLevel.low) ?? payload.basePrice),
         standard: roundPrice(midpoint(payload.calibrationAnswers?.detailLevel.medium) ?? payload.basePrice),
         detailed: roundPrice(midpoint(payload.calibrationAnswers?.detailLevel.high) ?? payload.basePrice),
+        ultra: roundPrice(midpoint(payload.calibrationAnswers?.detailLevel.ultra) ?? payload.basePrice),
       },
       placement: Object.fromEntries(
         Object.entries(payload.placementModifiers).map(([key, value]) => [

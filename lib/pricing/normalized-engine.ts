@@ -119,6 +119,30 @@ function buildFactorRangeFromCalibratedPrice(
   };
 }
 
+function buildDetailedFactorRange(
+  detailedPrice: number | null | undefined,
+  ultraPrice: number | null | undefined,
+  anchorPrice: number,
+  fallback: FactorRange,
+) {
+  const base = buildFactorRangeFromCalibratedPrice(detailedPrice, anchorPrice, 0.06, fallback);
+
+  if (!isFinitePositive(ultraPrice) || !isFinitePositive(anchorPrice)) {
+    return base;
+  }
+
+  const ultraCenter = Number(ultraPrice) / anchorPrice;
+
+  if (!Number.isFinite(ultraCenter) || ultraCenter <= 0) {
+    return base;
+  }
+
+  return {
+    min: base.min,
+    max: Math.max(base.max, Number((ultraCenter * 1.06).toFixed(4))),
+  };
+}
+
 function hasCalibrationExamples(examples: PricingCalibrationExamples | undefined) {
   return Boolean(
     examples &&
@@ -400,10 +424,10 @@ export function buildNormalizedQuoteConfig(
             clampFactorRange(rules.detailLevelModifiers?.simple, { min: 0.92, max: 1 }),
           ),
           standard: { min: 1, max: 1 },
-          detailed: buildFactorRangeFromCalibratedPrice(
+          detailed: buildDetailedFactorRange(
             rules.calibrationExamples.detailLevel.detailed,
+            rules.calibrationExamples.detailLevel.ultra,
             rules.calibrationExamples.detailLevel.standard || anchorPrice,
-            0.06,
             clampFactorRange(rules.detailLevelModifiers?.detailed, { min: 1.12, max: 1.28 }),
           ),
         }

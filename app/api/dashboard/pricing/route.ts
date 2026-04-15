@@ -88,6 +88,12 @@ export async function POST(request: Request) {
   const colorPrice = calibrationAnswers
     ? deriveCalibrationPriceFromRange(calibrationAnswers.colorMode.color, blackPrice)
     : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.colorModeModifiers["full-color"]);
+  const detailedPrice = calibrationAnswers
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.high, parsed.data.basePrice)
+    : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.detailed);
+  const ultraDetailPrice = calibrationAnswers?.detailLevel.ultra
+    ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.ultra, detailedPrice)
+    : Math.round(detailedPrice * 1.14);
 
   const calibrationExamples = {
     size: {
@@ -116,9 +122,8 @@ export async function POST(request: Request) {
       standard: calibrationAnswers
         ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.medium, parsed.data.basePrice)
         : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.standard),
-      detailed: calibrationAnswers
-        ? deriveCalibrationPriceFromRange(calibrationAnswers.detailLevel.high, parsed.data.basePrice)
-        : deriveCalibrationPrice(parsed.data.basePrice, parsed.data.detailLevelModifiers.detailed),
+      detailed: detailedPrice,
+      ultra: ultraDetailPrice,
     },
     placement: Object.fromEntries(
       Object.entries(parsed.data.placementModifiers).map(([key, range]) => [

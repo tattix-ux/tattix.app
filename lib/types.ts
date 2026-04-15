@@ -114,7 +114,9 @@ export type PricingFinalValidation = {
 export type PricingCalibrationExamples = {
   size: Record<SizeValue, number>;
   sizeCurve?: Record<"8" | "12" | "18" | "25", number>;
-  detailLevel: Record<DetailLevelValue, number>;
+  detailLevel: Record<DetailLevelValue, number> & {
+    ultra?: number;
+  };
   placement: Record<string, number>;
   placementDifficulty?: {
     easy: number;

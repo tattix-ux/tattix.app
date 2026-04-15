@@ -13,6 +13,7 @@ import lowDetailImage from "@/sample-tattoos/low.png";
 import mediumDetailImage from "@/sample-tattoos/medium.png";
 import minimalLineworkImage from "@/sample-tattoos/minimal linework.png";
 import realisticEyeImage from "@/sample-tattoos/realistic eye.png";
+import ultraHighDetailImage from "@/sample-tattoos/ultrahigh.png";
 import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,10 +40,11 @@ import type {
   PricingValidationFeedback,
 } from "@/lib/types";
 
-const calibrationImages: Record<"low" | "medium" | "high" | "color", StaticImageData> = {
+const calibrationImages: Record<"low" | "medium" | "high" | "ultra" | "color", StaticImageData> = {
   low: lowDetailImage,
   medium: mediumDetailImage,
   high: highDetailImage,
+  ultra: ultraHighDetailImage,
   color: colorMediumImage,
 };
 
@@ -90,6 +92,7 @@ function getText(locale: PublicLocale) {
       detailQuestionLow: "Bu dövmeyi bu detay seviyesinde yaklaşık kaç ₺ fiyatlarsın?",
       detailQuestionMedium: "Bu seviyede kaç ₺ olur?",
       detailQuestionHigh: "Bu kadar detaylı olursa kaç ₺ olur?",
+      detailQuestionUltra: "Ultra detaylı, realism seviyesinde olsa kaç ₺ olur?",
       placementQuestionEasy: "Bu dövme kolay bir bölgede (örneğin ön kol) olsa kaç ₺ olur?",
       placementQuestionHard: "Zor bir bölgede (örneğin kaburga, boyun, el) olsa kaç ₺ olur?",
       colorQuestionBlack: "Siyah hali kaç ₺ olur?",
@@ -158,6 +161,7 @@ function getText(locale: PublicLocale) {
     detailQuestionLow: "At this level of detail, what would you charge?",
     detailQuestionMedium: "What would it be at this level?",
     detailQuestionHigh: "What would it be if it were this detailed?",
+    detailQuestionUltra: "What would it be at an ultra-detailed realism level?",
     placementQuestionEasy: "If this tattoo were in an easy placement (like forearm), what would it be?",
     placementQuestionHard: "What would it be in a harder placement (like ribs, neck, hand)?",
     colorQuestionBlack: "What would the black version cost?",
@@ -202,10 +206,11 @@ function getQuestionMeta(questionId: (typeof CALIBRATION_QUESTIONS)[number]["id"
     size12: { title: copy.sizeStep, prompt: copy.sizeQuestion12 },
     size18: { title: copy.sizeStep, prompt: copy.sizeQuestion18 },
     size25: { title: copy.sizeStep, prompt: copy.sizeQuestion25 },
-    detailLow: { title: copy.detailStep, prompt: copy.detailQuestionLow },
-    detailHigh: { title: copy.detailStep, prompt: copy.detailQuestionHigh },
     placementHard: { title: copy.placementStep, prompt: copy.placementQuestionHard },
     colorColor: { title: copy.colorStep, prompt: copy.colorQuestionColor },
+    detailLow: { title: copy.detailStep, prompt: copy.detailQuestionLow },
+    detailHigh: { title: copy.detailStep, prompt: copy.detailQuestionHigh },
+    detailUltra: { title: copy.detailStep, prompt: copy.detailQuestionUltra },
   } as const;
 
   return map[questionId];
@@ -225,6 +230,8 @@ function getQuestionRange(draft: CalibrationDraft, questionId: (typeof CALIBRATI
       return draft.detail.low;
     case "detailHigh":
       return draft.detail.high;
+    case "detailUltra":
+      return draft.detail.ultra;
     case "placementHard":
       return draft.placement.hard;
     case "colorColor":
@@ -251,6 +258,8 @@ function setQuestionRange(
       return updateCalibrationDraftRange(draft, "detail", "low", edge, value);
     case "detailHigh":
       return updateCalibrationDraftRange(draft, "detail", "high", edge, value);
+    case "detailUltra":
+      return updateCalibrationDraftRange(draft, "detail", "ultra", edge, value);
     case "placementHard":
       return updateCalibrationDraftRange(draft, "placement", "hard", edge, value);
     case "colorColor":
@@ -325,6 +334,7 @@ function getQuestionContextLabel(
     switch (questionId) {
       case "detailLow":
       case "detailHigh":
+      case "detailUltra":
         return "12 cm · ön kol · siyah";
       case "placementHard":
         return "12 cm · orta detay · siyah";
@@ -338,6 +348,7 @@ function getQuestionContextLabel(
   switch (questionId) {
     case "detailLow":
     case "detailHigh":
+    case "detailUltra":
       return "12 cm · forearm · black";
     case "placementHard":
       return "12 cm · medium detail · black";
@@ -411,6 +422,7 @@ export function PricingForm({
         low: { min: "", max: "" },
         medium: { min: "", max: "" },
         high: { min: "", max: "" },
+        ultra: { min: "", max: "" },
       },
       placement: {
         easy: { min: "", max: "" },

@@ -256,6 +256,7 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
         simple: Math.round(anchorPrice * midpoint(detailLevelModifiers.simple)!),
         standard: Math.round(anchorPrice * midpoint(detailLevelModifiers.standard)!),
         detailed: Math.round(anchorPrice * midpoint(detailLevelModifiers.detailed)!),
+        ultra: Math.round(anchorPrice * Math.max((midpoint(detailLevelModifiers.detailed) ?? 1.18) * 1.14, 1.34)),
       },
       placement: Object.fromEntries(
         Object.entries(placementModifiersResolved).map(([key, value]) => [
@@ -286,7 +287,12 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
   const calibrationExamples: ArtistPricingRules["calibrationExamples"] = {
     size: storedCalibrationExamples?.size ?? defaultCalibrationExamples.size,
     sizeCurve: storedCalibrationExamples?.sizeCurve ?? defaultCalibrationExamples.sizeCurve,
-    detailLevel: storedCalibrationExamples?.detailLevel ?? defaultCalibrationExamples.detailLevel,
+    detailLevel: {
+      ...(storedCalibrationExamples?.detailLevel ?? defaultCalibrationExamples.detailLevel),
+      ultra:
+        storedCalibrationExamples?.detailLevel?.ultra ??
+        defaultCalibrationExamples.detailLevel.ultra,
+    },
     placement: storedCalibrationExamples?.placement ?? defaultCalibrationExamples.placement,
     placementDifficulty:
       storedCalibrationExamples?.placementDifficulty ?? defaultCalibrationExamples.placementDifficulty,

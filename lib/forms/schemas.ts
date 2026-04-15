@@ -180,6 +180,7 @@ export const pricingSchema = z.object({
         low: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
         medium: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
         high: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
+        ultra: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }).optional(),
       }),
       placementDifficulty: z.object({
         easy: z.object({ min: z.coerce.number().min(0), max: z.coerce.number().min(0) }),
