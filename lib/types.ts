@@ -212,6 +212,7 @@ export type ArtistSavedTheme = {
 export type ClientSubmission = {
   id: string;
   artistId: string;
+  status: LeadStatus;
   intent: IntentValue;
   selectedDesignId: string | null;
   bodyAreaGroup: BodyAreaGroupValue;
@@ -237,6 +238,8 @@ export type ClientSubmission = {
   soldAt: string | null;
   createdAt: string;
 };
+
+export type LeadStatus = "new" | "contacted" | "sold" | "lost";
 
 export type SubmissionDraft = {
   intent: IntentValue | "";

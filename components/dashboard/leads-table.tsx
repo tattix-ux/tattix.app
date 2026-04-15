@@ -1,12 +1,13 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, TrendingUp } from "lucide-react";
+import { ImageIcon, StickyNote } from "lucide-react";
 
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
   Table,
   TableBody,
@@ -19,145 +20,164 @@ import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/bo
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import { intentOptions, styleOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { ArtistFeaturedDesign, ClientSubmission } from "@/lib/types";
-import { formatCompactCurrencyRange, formatDateLabel, notesPreview } from "@/lib/utils";
+import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
+import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
 type FilterRange = "7d" | "30d" | "90d" | "all";
 type ChartGranularity = "daily" | "weekly" | "monthly";
-type LeadView = "weekly" | "contacted" | "sold" | "not-contacted";
+type LeadStatusFilter = "all" | LeadStatus;
+type LeadSort = "newest" | "oldest" | "highest-estimate" | "lowest-estimate";
 
 const leadCopy = {
   en: {
-    title: "Leads",
-    empty: "No submissions yet. Share your Tattix link in bio to start collecting requests.",
-    description: "Every finished estimate lands here with enough context to continue in WhatsApp or Instagram.",
-    totalRequests: "Total requests",
-    soldRequests: "Sold requests",
-    conversionRate: "Conversion rate",
-    summary: (total: number, sold: number) =>
-      `You received ${total} requests and converted ${sold} into sales.`,
+    title: "Requests",
+    description: "Review incoming requests and track their status.",
+    empty: "No requests yet.",
+    emptyFiltered: "No requests match these filters.",
+    resetFilters: "Clear filters",
+    summary: {
+      total: "Total requests",
+      fresh: "New",
+      sold: "Sold",
+      rate: "Sale rate",
+    },
     filters: {
+      status: "Status",
+      time: "Date range",
+      withReference: "With reference image",
+      withNotes: "With notes",
+      all: "All",
       "7d": "Last 7 days",
       "30d": "Last 30 days",
       "90d": "Last 3 months",
-      all: "All time",
+      contacted: "Client contacted",
+      sold: "Sold",
+      lost: "Lost",
+      newest: "Newest",
+      oldest: "Oldest",
+      highestEstimate: "Highest estimate",
+      lowestEstimate: "Lowest estimate",
+      sort: "Sort",
     },
+    statusLabels: {
+      all: "All",
+      new: "New",
+      contacted: "Client contacted",
+      sold: "Sold",
+      lost: "Lost",
+    },
+    chartTitle: "Request trend",
+    chartDescription: "Requests and sales over time.",
+    requests: "Requests",
+    sales: "Sales",
     granularity: {
       daily: "Daily",
       weekly: "Weekly",
       monthly: "Monthly",
     },
-    chartTitle: "Request trend",
-    chartDescription: "Compare incoming requests and sold jobs over time.",
-    requests: "Requests",
-    sold: "Sold",
-    date: "Date",
-    intent: "Intent",
-    placement: "Placement",
-    style: "Style",
-    estimate: "Estimate",
-    notes: "Notes",
-    status: "Status",
-    size: "Approx. size",
-    city: "City",
-    details: "Details",
-    viewDetails: "View details",
-    noNotes: "No notes provided.",
-    noReferenceDescription: "No reference description.",
-    noTiming: "No timing shared.",
-    noDesign: "No ready-made design selected.",
-    noCity: "No city shared.",
-    noReferenceImage: "No reference image uploaded.",
-    openFullImage: "Open full image",
-    leadStatus: "Lead status",
-    contacted: "Contacted",
-    new: "New",
-    markContacted: "Mark contacted",
-    markNotContacted: "Mark not contacted",
-    soldBadge: "Sold",
-    unsoldBadge: "Open",
-    markSold: "Mark sold",
-    markUnsold: "Mark unsold",
-    soldAt: "Sold at",
-    page: "Page",
-    previous: "Previous",
-    next: "Next",
-    pageSummary: (current: number, total: number) => `Page ${current} of ${total}`,
-    views: {
-      weekly: "This week",
-      contacted: "Contacted",
-      sold: "Sold",
-      "not-contacted": "Not contacted",
+    table: {
+      estimate: "Estimate",
+      request: "Request",
+      details: "Details",
+      status: "Status",
+      actions: "Actions",
+      detailButton: "Details",
+      placement: "Placement",
+      size: "Size",
+      intent: "Request type",
+      style: "Style",
+      city: "City",
+      timing: "Preferred time",
+      notes: "Notes",
+      reference: "Reference image",
+      shownEstimate: "Estimate shown",
+      selectedDesign: "Selected design",
+      noCity: "Not shared",
+      noTiming: "Not shared",
+      noNotes: "No notes",
+      noReference: "No reference image",
+      noDesign: "No design selected",
+      soldAt: "Marked sold",
+      pageSummary: (current: number, total: number) => `Page ${current} / ${total}`,
+      previous: "Previous",
+      next: "Next",
+      openImage: "Open full image",
     },
-    referenceDescription: "Reference description",
-    preferredTiming: "Preferred timing",
-    selectedDesign: "Selected design",
   },
   tr: {
     title: "Talepler",
-    empty: "Henüz talep yok. İstek toplamaya başlamak için Tattix linkini biyona ekle.",
-    description: "Tamamlanan her tahmin, WhatsApp veya Instagram’dan devam edebilmen için burada saklanır.",
-    totalRequests: "Toplam talep",
-    soldRequests: "Satışa dönen",
-    conversionRate: "Dönüşüm oranı",
-    summary: (total: number, sold: number) =>
-      `${total} talep aldın ve bunların ${sold} tanesini satışa dönüştürdün.`,
+    description: "Gelen talepleri incele ve durumlarını takip et.",
+    empty: "Henüz talep yok.",
+    emptyFiltered: "Bu filtrelerle eşleşen talep bulunamadı.",
+    resetFilters: "Filtreleri temizle",
+    summary: {
+      total: "Toplam talep",
+      fresh: "Yeni",
+      sold: "Satış yapıldı",
+      rate: "Satış oranı",
+    },
     filters: {
+      status: "Durum",
+      time: "Zaman",
+      withReference: "Referans görselli olanlar",
+      withNotes: "Not içerenler",
+      all: "Tümü",
       "7d": "Son 7 gün",
       "30d": "Son 30 gün",
       "90d": "Son 3 ay",
-      all: "Tüm zamanlar",
+      contacted: "Müşteri iletişime geçti",
+      sold: "Satış yapıldı",
+      lost: "Satış yapılamadı",
+      newest: "En yeni",
+      oldest: "En eski",
+      highestEstimate: "En yüksek tahmin",
+      lowestEstimate: "En düşük tahmin",
+      sort: "Sıralama",
     },
+    statusLabels: {
+      all: "Tümü",
+      new: "Yeni",
+      contacted: "Müşteri iletişime geçti",
+      sold: "Satış yapıldı",
+      lost: "Satış yapılamadı",
+    },
+    chartTitle: "Talep görünümü",
+    chartDescription: "Talep ve satış sayılarını kısa görünümde takip et.",
+    requests: "Talep",
+    sales: "Satış",
     granularity: {
       daily: "Günlük",
       weekly: "Haftalık",
       monthly: "Aylık",
     },
-    chartTitle: "Talep grafiği",
-    chartDescription: "Gelen talepleri ve satışa dönen işleri zaman içinde karşılaştır.",
-    requests: "Talepler",
-    sold: "Satışlar",
-    date: "Tarih",
-    intent: "Talep",
-    placement: "Yerleşim",
-    style: "Stil",
-    estimate: "Tahmin",
-    notes: "Notlar",
-    status: "Durum",
-    size: "Yakl. boyut",
-    city: "Şehir",
-    details: "Detay",
-    viewDetails: "Detayları gör",
-    noNotes: "Not bırakılmadı.",
-    noReferenceDescription: "Referans açıklaması yok.",
-    noTiming: "Zaman bilgisi paylaşılmadı.",
-    noDesign: "Hazır tasarım seçilmedi.",
-    noCity: "Şehir bilgisi paylaşılmadı.",
-    noReferenceImage: "Referans görsel yüklenmedi.",
-    openFullImage: "Görseli aç",
-    leadStatus: "Talep durumu",
-    contacted: "İletişime geçildi",
-    new: "Yeni",
-    markContacted: "İletişime geçildi olarak işaretle",
-    markNotContacted: "İletişime geçilmedi olarak işaretle",
-    soldBadge: "Satış",
-    unsoldBadge: "Açık",
-    markSold: "Satış olarak işaretle",
-    markUnsold: "Satış değil",
-    soldAt: "Satış tarihi",
-    page: "Sayfa",
-    previous: "Önceki",
-    next: "Sonraki",
-    pageSummary: (current: number, total: number) => `${current} / ${total}. sayfa`,
-    views: {
-      weekly: "Bu hafta",
-      contacted: "İletişime geçilen",
-      sold: "Satışa dönen",
-      "not-contacted": "İletişime geçilmeyen",
+    table: {
+      estimate: "Tahmin",
+      request: "Talep",
+      details: "Detaylar",
+      status: "Durum",
+      actions: "İşlem",
+      detailButton: "Detay",
+      placement: "Yerleşim",
+      size: "Yaklaşık boyut",
+      intent: "Talep tipi",
+      style: "Stil",
+      city: "Şehir",
+      timing: "Tercih edilen zaman",
+      notes: "Notlar",
+      reference: "Referans görsel",
+      shownEstimate: "Müşteriye gösterilen tahmin",
+      selectedDesign: "Seçilen tasarım",
+      noCity: "Paylaşılmadı",
+      noTiming: "Paylaşılmadı",
+      noNotes: "Not yok",
+      noReference: "Referans görsel yok",
+      noDesign: "Hazır tasarım seçilmedi",
+      soldAt: "Satış tarihi",
+      pageSummary: (current: number, total: number) => `${current} / ${total}. sayfa`,
+      previous: "Önceki",
+      next: "Sonraki",
+      openImage: "Görseli aç",
     },
-    referenceDescription: "Referans açıklaması",
-    preferredTiming: "Tercih edilen tarih",
-    selectedDesign: "Seçilen tasarım",
   },
 } as const;
 
@@ -166,22 +186,34 @@ const intentLabelsTr: Record<ClientSubmission["intent"], string> = {
   "design-in-mind": "Aklımda bir tasarım var",
   "flash-design": "Flash tasarım",
   "discounted-design": "İndirimli tasarım",
-  "not-sure": "Henüz emin değilim",
+  "not-sure": "Emin değilim",
 };
 
 const styleLabelsTr: Record<string, string> = {
   "fine-line": "Fine line",
   minimal: "Minimal",
-  traditional: "Traditional",
-  "neo-traditional": "Neo traditional",
   blackwork: "Blackwork",
-  realism: "Realism",
+  realistic: "Realistic",
+  realism: "Realistic",
   "micro-realism": "Micro realism",
-  ornamental: "Ornamental",
-  lettering: "Lettering",
   "not-sure-style": "Emin değilim",
   custom: "Özel",
 };
+
+const sizeLabels = {
+  tr: {
+    tiny: "Çok küçük",
+    small: "Küçük",
+    medium: "Orta",
+    large: "Büyük",
+  },
+  en: {
+    tiny: "Tiny",
+    small: "Small",
+    medium: "Medium",
+    large: "Large",
+  },
+} as const;
 
 const placementLabelsTr = Object.fromEntries(
   bodyPlacementGroups.flatMap((group) =>
@@ -246,6 +278,16 @@ function formatPlacement(detail: ClientSubmission["bodyAreaDetail"], locale: Pub
   return getPlacementDetailLabel(detail);
 }
 
+function formatLeadDate(value: string, locale: PublicLocale) {
+  return new Intl.DateTimeFormat(locale === "tr" ? "tr-TR" : "en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -293,28 +335,112 @@ function getRangeStart(range: FilterRange) {
   return startOfDay(start);
 }
 
-function filterLeads(leads: ClientSubmission[], range: FilterRange) {
-  const start = getRangeStart(range);
-
-  if (!start) {
-    return leads;
-  }
-
-  return leads.filter((lead) => new Date(lead.createdAt) >= start);
+function getEstimateCenter(lead: ClientSubmission) {
+  return (lead.estimatedMin + lead.estimatedMax) / 2;
 }
 
-function filterLeadsByView(leads: ClientSubmission[], view: LeadView) {
-  switch (view) {
-    case "contacted":
-      return leads.filter((lead) => lead.contacted);
-    case "sold":
-      return leads.filter((lead) => lead.convertedToSale);
-    case "not-contacted":
-      return leads.filter((lead) => !lead.contacted);
-    case "weekly":
-    default:
-      return filterLeads(leads, "7d");
+function getSizeLabel(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.approximateSizeCm) {
+    return `${Math.round(lead.approximateSizeCm)} cm`;
   }
+
+  return (
+    formatApproximateSizeLabel(lead) ??
+    sizeLabels[locale === "tr" ? "tr" : "en"][lead.sizeCategory]
+  );
+}
+
+function getPreferredTimingLabel(lead: ClientSubmission, locale: PublicLocale, noTiming: string) {
+  if (lead.preferredStartDate && lead.preferredEndDate) {
+    return `${lead.preferredStartDate} - ${lead.preferredEndDate}`;
+  }
+
+  if (lead.preferredStartDate) {
+    return lead.preferredStartDate;
+  }
+
+  if (lead.preferredEndDate) {
+    return lead.preferredEndDate;
+  }
+
+  return noTiming;
+}
+
+function getReferenceImageUrl(lead: ClientSubmission) {
+  return lead.referenceImageUrl ?? null;
+}
+
+function getStatusTone(status: LeadStatus) {
+  switch (status) {
+    case "contacted":
+      return "border-[var(--accent)]/35 bg-[var(--accent)]/15 text-[var(--accent-soft)]";
+    case "sold":
+      return "border-emerald-500/30 bg-emerald-500/12 text-emerald-200";
+    case "lost":
+      return "border-rose-500/25 bg-rose-500/10 text-rose-200";
+    case "new":
+    default:
+      return "border-white/10 bg-white/6 text-[var(--foreground-muted)]";
+  }
+}
+
+function filterLeads(
+  leads: ClientSubmission[],
+  {
+    status,
+    range,
+    withReference,
+    withNotes,
+  }: {
+    status: LeadStatusFilter;
+    range: FilterRange;
+    withReference: boolean;
+    withNotes: boolean;
+  },
+) {
+  const start = getRangeStart(range);
+
+  return leads.filter((lead) => {
+    if (status !== "all" && lead.status !== status) {
+      return false;
+    }
+
+    if (start && new Date(lead.createdAt) < start) {
+      return false;
+    }
+
+    if (withReference && !getReferenceImageUrl(lead)) {
+      return false;
+    }
+
+    if (withNotes && !lead.notes?.trim()) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+function sortLeads(leads: ClientSubmission[], sort: LeadSort) {
+  const sorted = [...leads];
+
+  sorted.sort((left, right) => {
+    if (sort === "oldest") {
+      return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
+    }
+
+    if (sort === "highest-estimate") {
+      return getEstimateCenter(right) - getEstimateCenter(left);
+    }
+
+    if (sort === "lowest-estimate") {
+      return getEstimateCenter(left) - getEstimateCenter(right);
+    }
+
+    return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+  });
+
+  return sorted;
 }
 
 function buildChartData(
@@ -332,6 +458,7 @@ function buildChartData(
         : granularity === "weekly"
           ? startOfWeek(source)
           : startOfMonth(source);
+
     const key = bucketDate.toISOString();
     const existing = buckets.get(key) ?? {
       label: formatBucketLabel(bucketDate, granularity, locale),
@@ -341,7 +468,7 @@ function buildChartData(
     };
 
     existing.total += 1;
-    existing.sold += lead.convertedToSale ? 1 : 0;
+    existing.sold += lead.status === "sold" ? 1 : 0;
     buckets.set(key, existing);
   });
 
@@ -354,6 +481,37 @@ function formatConversionRate(total: number, sold: number) {
   }
 
   return `${Math.round((sold / total) * 100)}%`;
+}
+
+function StatusBadge({
+  status,
+  locale,
+}: {
+  status: LeadStatus;
+  locale: PublicLocale;
+}) {
+  const copy = leadCopy[locale].statusLabels;
+
+  return (
+    <Badge className={cn("normal-case tracking-normal", getStatusTone(status))}>
+      {copy[status]}
+    </Badge>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+      <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{label}</p>
+      <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
+    </div>
+  );
 }
 
 export function LeadsTable({
@@ -373,43 +531,56 @@ export function LeadsTable({
 }) {
   const copy = leadCopy[locale];
   const [localLeads, setLocalLeads] = useState(leads);
-  const [selectedLead, setSelectedLead] = useState<ClientSubmission | null>(null);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
   const [range, setRange] = useState<FilterRange>("7d");
-  const [view, setView] = useState<LeadView>("weekly");
+  const [withReference, setWithReference] = useState(false);
+  const [withNotes, setWithNotes] = useState(false);
+  const [sort, setSort] = useState<LeadSort>("newest");
   const [granularity, setGranularity] = useState<ChartGranularity>("weekly");
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  async function updateLead(
-    id: string,
-    payload: { contacted?: boolean; convertedToSale?: boolean },
-    optimistic: Partial<ClientSubmission>,
-  ) {
+  async function updateLeadStatus(id: string, status: LeadStatus) {
     const response = await fetch(`/api/dashboard/leads/${id}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
     });
 
     if (!response.ok) {
       return;
     }
 
+    const optimistic: Partial<ClientSubmission> = {
+      status,
+      contacted: status === "contacted" || status === "sold",
+      convertedToSale: status === "sold",
+      soldAt: status === "sold" ? new Date().toISOString() : null,
+    };
+
     setLocalLeads((existing) =>
       existing.map((lead) => (lead.id === id ? { ...lead, ...optimistic } : lead)),
     );
-    setSelectedLead((existing) =>
-      existing && existing.id === id ? { ...existing, ...optimistic } : existing,
-    );
   }
 
-  const filteredLeads = useMemo(() => {
-    const base = view === "weekly" ? filterLeads(localLeads, range) : filterLeadsByView(localLeads, view);
-    return base;
-  }, [localLeads, range, view]);
-  const soldCount = filteredLeads.filter((lead) => lead.convertedToSale).length;
+  const filteredLeads = useMemo(
+    () =>
+      sortLeads(
+        filterLeads(localLeads, {
+          status: statusFilter,
+          range,
+          withReference,
+          withNotes,
+        }),
+        sort,
+      ),
+    [localLeads, range, sort, statusFilter, withNotes, withReference],
+  );
+
+  const totalCount = filteredLeads.length;
+  const newCount = filteredLeads.filter((lead) => lead.status === "new").length;
+  const soldCount = filteredLeads.filter((lead) => lead.status === "sold").length;
   const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
   const paginatedLeads = useMemo(
     () => filteredLeads.slice((page - 1) * pageSize, page * pageSize),
@@ -419,115 +590,15 @@ export function LeadsTable({
     () => buildChartData(filteredLeads, granularity, locale),
     [filteredLeads, granularity, locale],
   );
-  const chartMax = Math.max(...chartData.map((item) => item.total), 1);
+  const chartMax = Math.max(...chartData.flatMap((item) => [item.total, item.sold]), 1);
 
-  function toggleLeadDetails(lead: ClientSubmission) {
-    setSelectedLead((current) => (current?.id === lead.id ? null : lead));
-  }
-
-  function renderLeadDetailPanel(lead: ClientSubmission) {
-    return (
-      <div className="mt-4 grid gap-5 md:grid-cols-2">
-        <div className="space-y-3 rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
-          <p><span className="text-white">{copy.placement}:</span> {formatPlacement(lead.bodyAreaDetail, locale)}</p>
-          <p><span className="text-white">{copy.size}:</span> {formatApproximateSizeLabel(lead) ?? lead.sizeCategory}</p>
-          <p><span className="text-white">{copy.city}:</span> {lead.city || copy.noCity}</p>
-          <p><span className="text-white">{copy.style}:</span> {formatStyle(lead.style, locale)}</p>
-          <p><span className="text-white">{copy.estimate}:</span> {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
-          <p><span className="text-white">{copy.notes}:</span> {lead.notes || copy.noNotes}</p>
-          <p><span className="text-white">{copy.referenceDescription}:</span> {lead.referenceDescription || copy.noReferenceDescription}</p>
-          <p>
-            <span className="text-white">{copy.preferredTiming}:</span>{" "}
-            {lead.preferredStartDate || lead.preferredEndDate
-              ? `${lead.preferredStartDate ?? "?"} - ${lead.preferredEndDate ?? "?"}`
-              : copy.noTiming}
-          </p>
-          <p>
-            <span className="text-white">{copy.selectedDesign}:</span>{" "}
-            {lead.selectedDesignId
-              ? designs.find((design) => design.id === lead.selectedDesignId)?.title ?? "Selected design"
-              : copy.noDesign}
-          </p>
-          <p>
-            <span className="text-white">{copy.soldAt}:</span>{" "}
-            {lead.soldAt ? formatDateLabel(lead.soldAt) : copy.unsoldBadge}
-          </p>
-        </div>
-        <div className="space-y-3">
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-            <p className="text-sm font-medium text-white">{copy.openFullImage === "Open full image" ? "Reference image" : "Referans görsel"}</p>
-            {lead.referenceImageUrl ? (
-              <div className="mt-3 space-y-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={lead.referenceImageUrl}
-                  alt="Reference"
-                  className="h-64 w-full rounded-[18px] object-cover"
-                />
-                <a
-                  href={lead.referenceImageUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-[var(--accent-soft)] underline-offset-4 hover:underline"
-                >
-                  {copy.openFullImage}
-                </a>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-[var(--foreground-muted)]">
-                {copy.noReferenceImage}
-              </p>
-            )}
-          </div>
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-            <p className="text-sm font-medium text-white">{copy.leadStatus}</p>
-            <div className="mt-3 flex flex-wrap gap-3">
-              <Badge variant={lead.contacted ? "accent" : "muted"}>
-                {lead.contacted ? copy.contacted : copy.new}
-              </Badge>
-              <Badge variant={lead.convertedToSale ? "accent" : "muted"}>
-                {lead.convertedToSale ? copy.soldBadge : copy.unsoldBadge}
-              </Badge>
-              <Button
-                size="sm"
-                variant={lead.contacted ? "outline" : "secondary"}
-                onClick={() =>
-                  void updateLead(
-                    lead.id,
-                    { contacted: !lead.contacted },
-                    { contacted: !lead.contacted },
-                  )
-                }
-              >
-                {lead.contacted ? copy.markNotContacted : copy.markContacted}
-              </Button>
-              <Button
-                size="sm"
-                variant={lead.convertedToSale ? "secondary" : "outline"}
-                onClick={() =>
-                  void updateLead(
-                    lead.id,
-                    { convertedToSale: !lead.convertedToSale },
-                    {
-                      convertedToSale: !lead.convertedToSale,
-                      soldAt: !lead.convertedToSale ? new Date().toISOString() : null,
-                    },
-                  )
-                }
-              >
-                <TrendingUp className="size-4" />
-                {lead.convertedToSale ? copy.markUnsold : copy.markSold}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    setLocalLeads(leads);
+  }, [leads]);
 
   useEffect(() => {
     setPage(1);
-  }, [range, view]);
+  }, [statusFilter, range, withReference, withNotes, sort]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -546,6 +617,119 @@ export function LeadsTable({
     );
   }
 
+  function toggleLeadDetails(leadId: string) {
+    setSelectedLeadId((current) => (current === leadId ? null : leadId));
+  }
+
+  function renderLeadDetailPanel(lead: ClientSubmission) {
+    const selectedDesign = lead.selectedDesignId
+      ? designs.find((design) => design.id === lead.selectedDesignId)?.title ?? copy.table.noDesign
+      : copy.table.noDesign;
+
+    return (
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+        <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.intent}</p>
+              <p className="text-sm text-white">{formatIntent(lead.intent, locale)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.placement}</p>
+              <p className="text-sm text-white">{formatPlacement(lead.bodyAreaDetail, locale)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.size}</p>
+              <p className="text-sm text-white">{getSizeLabel(lead, locale)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.style}</p>
+              <p className="text-sm text-white">{formatStyle(lead.style, locale)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.city}</p>
+              <p className="text-sm text-white">{lead.city || copy.table.noCity}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.timing}</p>
+              <p className="text-sm text-white">{getPreferredTimingLabel(lead, locale, copy.table.noTiming)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.shownEstimate}</p>
+              <p className="text-sm text-white">{formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.selectedDesign}</p>
+              <p className="text-sm text-white">{selectedDesign}</p>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.notes}</p>
+              <p className="text-sm text-white">{lead.notes || copy.table.noNotes}</p>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.soldAt}</p>
+              <p className="text-sm text-white">
+                {lead.soldAt ? formatLeadDate(lead.soldAt, locale) : copy.statusLabels[lead.status]}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.reference}</p>
+                <p className="mt-1 text-sm text-white">{lead.referenceDescription || copy.table.noReference}</p>
+              </div>
+              <StatusBadge status={lead.status} locale={locale} />
+            </div>
+            {getReferenceImageUrl(lead) ? (
+              <div className="mt-4 space-y-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getReferenceImageUrl(lead) ?? ""}
+                  alt="Reference"
+                  className="h-56 w-full rounded-[18px] object-cover"
+                />
+                <a
+                  href={getReferenceImageUrl(lead) ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-[var(--accent-soft)] underline-offset-4 hover:underline"
+                >
+                  {copy.table.openImage}
+                </a>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-[var(--foreground-muted)]">{copy.table.noReference}</p>
+            )}
+          </div>
+
+          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.status}</p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <NativeSelect
+                value={lead.status}
+                onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
+                className="h-10 min-w-[220px] rounded-full bg-black/30"
+              >
+                {(["new", "contacted", "sold", "lost"] as const).map((status) => (
+                  <option key={status} value={status}>
+                    {copy.statusLabels[status]}
+                  </option>
+                ))}
+              </NativeSelect>
+              <p className="text-sm text-[var(--foreground-muted)]">
+                {copy.statusLabels[lead.status]}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="surface-border">
@@ -556,61 +740,89 @@ export function LeadsTable({
         <CardContent className="space-y-5">
           {hasPro ? (
             <>
-              <div className="flex flex-wrap gap-2">
-                {(Object.keys(copy.views) as LeadView[]).map((item) => (
-                  <Button
-                    key={item}
-                    type="button"
-                    size="sm"
-                    variant={view === item ? "secondary" : "outline"}
-                    onClick={() => setView(item)}
-                  >
-                    {copy.views[item]}
-                  </Button>
-                ))}
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard label={copy.summary.total} value={totalCount} />
+                <StatCard label={copy.summary.fresh} value={newCount} />
+                <StatCard label={copy.summary.sold} value={soldCount} />
+                <StatCard label={copy.summary.rate} value={formatConversionRate(totalCount, soldCount)} />
               </div>
 
-              {view === "weekly" ? (
-                <div className="flex flex-wrap gap-2">
-                {(["7d", "30d", "90d", "all"] as const).map((item) => (
-                  <Button
-                    key={item}
-                    type="button"
-                    size="sm"
-                    variant={range === item ? "secondary" : "outline"}
-                    onClick={() => setRange(item)}
-                  >
-                    {copy.filters[item]}
-                  </Button>
-                ))}
-                </div>
-              ) : null}
+              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                        {copy.filters.status}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(["all", "new", "contacted", "sold", "lost"] as const).map((item) => (
+                          <Button
+                            key={item}
+                            type="button"
+                            size="sm"
+                            variant={statusFilter === item ? "secondary" : "outline"}
+                            onClick={() => setStatusFilter(item)}
+                          >
+                            {copy.statusLabels[item]}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
-                    {copy.totalRequests}
-                  </p>
-                  <p className="mt-2 text-3xl font-semibold text-white">{filteredLeads.length}</p>
-                </div>
-                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
-                    {copy.soldRequests}
-                  </p>
-                  <p className="mt-2 text-3xl font-semibold text-white">{soldCount}</p>
-                </div>
-                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
-                    {copy.conversionRate}
-                  </p>
-                  <p className="mt-2 text-3xl font-semibold text-white">
-                    {formatConversionRate(filteredLeads.length, soldCount)}
-                  </p>
-                </div>
-              </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                        {copy.filters.time}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(["7d", "30d", "90d", "all"] as const).map((item) => (
+                          <Button
+                            key={item}
+                            type="button"
+                            size="sm"
+                            variant={range === item ? "secondary" : "outline"}
+                            onClick={() => setRange(item)}
+                          >
+                            {item === "all" ? copy.filters.all : copy.filters[item]}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
-                {copy.summary(filteredLeads.length, soldCount)}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={withReference ? "secondary" : "outline"}
+                        onClick={() => setWithReference((current) => !current)}
+                      >
+                        {copy.filters.withReference}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={withNotes ? "secondary" : "outline"}
+                        onClick={() => setWithNotes((current) => !current)}
+                      >
+                        {copy.filters.withNotes}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="w-full max-w-xs">
+                    <p className="mb-2 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                      {copy.filters.sort}
+                    </p>
+                    <NativeSelect
+                      value={sort}
+                      onChange={(event) => setSort(event.target.value as LeadSort)}
+                    >
+                      <option value="newest">{copy.filters.newest}</option>
+                      <option value="oldest">{copy.filters.oldest}</option>
+                      <option value="highest-estimate">{copy.filters.highestEstimate}</option>
+                      <option value="lowest-estimate">{copy.filters.lowestEstimate}</option>
+                    </NativeSelect>
+                  </div>
+                </div>
               </div>
 
               <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
@@ -635,24 +847,24 @@ export function LeadsTable({
                 </div>
 
                 <div className="mt-5 space-y-4">
-                  <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
+                  <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
                     <span className="inline-flex items-center gap-2">
                       <span className="size-2 rounded-full bg-white" />
                       {copy.requests}
                     </span>
                     <span className="inline-flex items-center gap-2">
                       <span className="size-2 rounded-full bg-[var(--accent)]" />
-                      {copy.sold}
+                      {copy.sales}
                     </span>
                   </div>
 
                   {chartData.length === 0 ? (
-                    <p className="text-sm text-[var(--foreground-muted)]">{copy.empty}</p>
+                    <p className="text-sm text-[var(--foreground-muted)]">{copy.emptyFiltered}</p>
                   ) : (
-                    <div className="grid h-56 grid-cols-[repeat(auto-fit,minmax(52px,1fr))] items-end gap-3">
+                    <div className="grid h-52 grid-cols-[repeat(auto-fit,minmax(52px,1fr))] items-end gap-3">
                       {chartData.map((item) => (
                         <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
-                          <div className="flex h-40 w-full items-end justify-center gap-1">
+                          <div className="flex h-36 w-full items-end justify-center gap-1">
                             <div
                               className="w-3 rounded-t-full bg-white/85"
                               style={{ height: `${Math.max((item.total / chartMax) * 100, 8)}%` }}
@@ -661,7 +873,7 @@ export function LeadsTable({
                             <div
                               className="w-3 rounded-t-full bg-[var(--accent)]"
                               style={{ height: `${Math.max((item.sold / chartMax) * 100, item.sold ? 8 : 0)}%` }}
-                              title={`${copy.sold}: ${item.sold}`}
+                              title={`${copy.sales}: ${item.sold}`}
                             />
                           </div>
                           <p className="truncate text-center text-[11px] text-[var(--foreground-muted)]">
@@ -686,166 +898,221 @@ export function LeadsTable({
           <CardDescription>{copy.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-3 lg:hidden">
-            {paginatedLeads.map((lead) => (
-              <div key={lead.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-[var(--foreground-muted)]">
-                      {formatDateLabel(lead.createdAt)}
-                    </p>
-                    <p className="mt-1 font-medium text-white">{formatIntent(lead.intent, locale)}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <Badge variant={lead.contacted ? "accent" : "muted"}>
-                      {lead.contacted ? copy.contacted : copy.new}
-                    </Badge>
-                    <Badge variant={lead.convertedToSale ? "accent" : "muted"}>
-                      {lead.convertedToSale ? copy.soldBadge : copy.unsoldBadge}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="mt-4 space-y-2 text-sm text-[var(--foreground-muted)]">
-                  <p>{copy.placement}: {formatPlacement(lead.bodyAreaDetail, locale)}</p>
-                  <p>{copy.size}: {formatApproximateSizeLabel(lead) ?? lead.sizeCategory}</p>
-                  <p>{copy.city}: {lead.city ?? copy.noCity}</p>
-                  <p>{copy.style}: {formatStyle(lead.style, locale)}</p>
-                  <p>{copy.estimate}: {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
-                  <p>{copy.notes}: {notesPreview(lead.notes, copy.noNotes)}</p>
-                </div>
-                <Button
-                  className="mt-4 w-full"
-                  variant="secondary"
-                  onClick={() => void updateLead(lead.id, { contacted: !lead.contacted }, { contacted: !lead.contacted })}
-                >
-                  {lead.contacted ? copy.markNotContacted : copy.markContacted}
-                </Button>
-                <Button
-                  className="mt-2 w-full"
-                  variant="outline"
-                  onClick={() =>
-                    void updateLead(
-                      lead.id,
-                      { convertedToSale: !lead.convertedToSale },
-                      {
-                        convertedToSale: !lead.convertedToSale,
-                        soldAt: !lead.convertedToSale ? new Date().toISOString() : null,
-                      },
-                    )
-                  }
-                >
-                  <CheckCircle2 className="size-4" />
-                  {lead.convertedToSale ? copy.markUnsold : copy.markSold}
-                </Button>
-                <Button className="mt-2 w-full" variant="outline" onClick={() => toggleLeadDetails(lead)}>
-                  {copy.viewDetails}
-                </Button>
-                {selectedLead?.id === lead.id ? renderLeadDetailPanel(lead) : null}
-              </div>
-            ))}
-          </div>
-
-          <div className="hidden overflow-hidden rounded-[24px] border border-white/8 lg:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{copy.date}</TableHead>
-                  <TableHead>{copy.intent}</TableHead>
-                  <TableHead>{copy.placement}</TableHead>
-                  <TableHead>{copy.style}</TableHead>
-                  <TableHead>{copy.estimate}</TableHead>
-                  <TableHead>{copy.notes}</TableHead>
-                  <TableHead>{copy.status}</TableHead>
-                </TableRow>
-              </TableHeader>
-                <TableBody>
-                {paginatedLeads.map((lead) => (
-                  <Fragment key={lead.id}>
-                    <TableRow key={lead.id}>
-                      <TableCell>{formatDateLabel(lead.createdAt)}</TableCell>
-                      <TableCell>{formatIntent(lead.intent, locale)}</TableCell>
-                      <TableCell>{formatPlacement(lead.bodyAreaDetail, locale)}</TableCell>
-                      <TableCell>{formatStyle(lead.style, locale)}</TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <p>{formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
-                          <p className="text-xs text-[var(--foreground-muted)]">
-                            {copy.size}: {formatApproximateSizeLabel(lead) ?? lead.sizeCategory}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{notesPreview(lead.notes, copy.noNotes)}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            size="sm"
-                            variant={lead.contacted ? "outline" : "secondary"}
-                            onClick={() =>
-                              void updateLead(lead.id, { contacted: !lead.contacted }, { contacted: !lead.contacted })
-                            }
-                          >
-                            {lead.contacted ? copy.contacted : copy.markContacted}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={lead.convertedToSale ? "secondary" : "outline"}
-                            onClick={() =>
-                              void updateLead(
-                                lead.id,
-                                { convertedToSale: !lead.convertedToSale },
-                                {
-                                  convertedToSale: !lead.convertedToSale,
-                                  soldAt: !lead.convertedToSale ? new Date().toISOString() : null,
-                                },
-                              )
-                            }
-                          >
-                            {lead.convertedToSale ? copy.soldBadge : copy.markSold}
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => toggleLeadDetails(lead)}>
-                            {copy.details}
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    {selectedLead?.id === lead.id ? (
-                      <TableRow key={`${lead.id}-details`}>
-                        <TableCell colSpan={7}>
-                          {renderLeadDetailPanel(lead)}
-                        </TableCell>
-                      </TableRow>
-                    ) : null}
-                  </Fragment>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className="flex flex-col gap-3 rounded-[24px] border border-white/8 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-[var(--foreground-muted)]">
-              {copy.pageSummary(page, totalPages)}
-            </p>
-            <div className="flex gap-2">
+          {filteredLeads.length === 0 ? (
+            <div className="rounded-[24px] border border-white/8 bg-black/20 p-6 text-center">
+              <p className="text-lg font-medium text-white">{copy.emptyFiltered}</p>
+              <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+                {copy.description}
+              </p>
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
-                disabled={page === 1}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                className="mt-4"
+                onClick={() => {
+                  setStatusFilter("all");
+                  setRange("7d");
+                  setWithReference(false);
+                  setWithNotes(false);
+                  setSort("newest");
+                }}
               >
-                {copy.previous}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                disabled={page === totalPages}
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-              >
-                {copy.next}
+                {copy.resetFilters}
               </Button>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="space-y-3 lg:hidden">
+                {paginatedLeads.map((lead) => (
+                  <div key={lead.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-2xl font-semibold text-white">
+                          {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}
+                        </p>
+                        <p className="mt-1 text-sm text-white">
+                          {formatPlacement(lead.bodyAreaDetail, locale)} · {getSizeLabel(lead, locale)}
+                        </p>
+                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                          {formatIntent(lead.intent, locale)}
+                        </p>
+                      </div>
+                      <StatusBadge status={lead.status} locale={locale} />
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--foreground-muted)]">
+                      <span>{formatLeadDate(lead.createdAt, locale)}</span>
+                      <span>{copy.table.style}: {formatStyle(lead.style, locale)}</span>
+                      {getReferenceImageUrl(lead) ? (
+                        <span className="inline-flex items-center gap-1">
+                          <ImageIcon className="size-4" />
+                          {copy.table.reference}
+                        </span>
+                      ) : null}
+                      {lead.notes ? (
+                        <span className="inline-flex items-center gap-1">
+                          <StickyNote className="size-4" />
+                          {copy.table.notes}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <p className="mt-3 text-sm text-[var(--foreground-muted)]">
+                      {notesPreview(lead.notes, copy.table.noNotes)}
+                    </p>
+
+                    <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                      <NativeSelect
+                        value={lead.status}
+                        onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
+                        className="h-10 rounded-full bg-black/30"
+                      >
+                        {(["new", "contacted", "sold", "lost"] as const).map((status) => (
+                          <option key={status} value={status}>
+                            {copy.statusLabels[status]}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                      <Button variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
+                        {copy.table.detailButton}
+                      </Button>
+                    </div>
+
+                    {selectedLeadId === lead.id ? (
+                      <div className="mt-4">
+                        {renderLeadDetailPanel(lead)}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-hidden rounded-[24px] border border-white/8 lg:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{copy.table.estimate}</TableHead>
+                      <TableHead>{copy.table.request}</TableHead>
+                      <TableHead>{copy.table.details}</TableHead>
+                      <TableHead>{copy.table.status}</TableHead>
+                      <TableHead>{copy.table.actions}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedLeads.map((lead) => (
+                      <Fragment key={lead.id}>
+                        <TableRow>
+                          <TableCell className="align-top">
+                            <div className="space-y-1">
+                              <p className="text-lg font-semibold text-white">
+                                {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}
+                              </p>
+                              <p className="text-xs text-[var(--foreground-muted)]">
+                                {formatLeadDate(lead.createdAt, locale)}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="space-y-1">
+                              <p className="font-medium text-white">
+                                {formatPlacement(lead.bodyAreaDetail, locale)} · {getSizeLabel(lead, locale)}
+                              </p>
+                              <p className="text-sm text-[var(--foreground-muted)]">
+                                {formatIntent(lead.intent, locale)}
+                              </p>
+                              <p className="text-sm text-[var(--foreground-muted)]">
+                                {copy.table.city}: {lead.city || copy.table.noCity}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="space-y-2">
+                              <p className="text-sm text-[var(--foreground-muted)]">
+                                {copy.table.style}: {formatStyle(lead.style, locale)}
+                              </p>
+                              <p className="text-sm text-[var(--foreground-muted)]">
+                                {notesPreview(lead.notes, copy.table.noNotes)}
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {getReferenceImageUrl(lead) ? (
+                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={getReferenceImageUrl(lead) ?? ""}
+                                      alt="Reference"
+                                      className="size-5 rounded-full object-cover"
+                                    />
+                                    {copy.table.reference}
+                                  </span>
+                                ) : null}
+                                {lead.notes ? (
+                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
+                                    <StickyNote className="size-3.5" />
+                                    {copy.table.notes}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <StatusBadge status={lead.status} locale={locale} />
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="flex min-w-[220px] flex-col gap-2">
+                              <NativeSelect
+                                value={lead.status}
+                                onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
+                                className="h-10 rounded-full bg-black/30"
+                              >
+                                {(["new", "contacted", "sold", "lost"] as const).map((status) => (
+                                  <option key={status} value={status}>
+                                    {copy.statusLabels[status]}
+                                  </option>
+                                ))}
+                              </NativeSelect>
+                              <Button size="sm" variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
+                                {copy.table.detailButton}
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                        {selectedLeadId === lead.id ? (
+                          <TableRow>
+                            <TableCell colSpan={5}>{renderLeadDetailPanel(lead)}</TableCell>
+                          </TableRow>
+                        ) : null}
+                      </Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="flex flex-col gap-3 rounded-[24px] border border-white/8 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-[var(--foreground-muted)]">
+                  {copy.table.pageSummary(page, totalPages)}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={page === 1}
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  >
+                    {copy.table.previous}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={page === totalPages}
+                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                  >
+                    {copy.table.next}
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

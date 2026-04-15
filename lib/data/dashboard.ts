@@ -3,17 +3,43 @@ import type { User } from "@supabase/supabase-js";
 
 import { demoArtistPageData, demoLeads } from "@/lib/demo-data";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
-import type { ArtistProfile, ClientSubmission, DashboardData } from "@/lib/types";
+import type { ArtistProfile, ClientSubmission, DashboardData, LeadStatus } from "@/lib/types";
 import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getArtistPageDataById } from "@/lib/data/artist";
 import { slugify } from "@/lib/utils";
 
+function deriveLeadStatus(row: Record<string, unknown>): LeadStatus {
+  const explicitStatus = typeof row.status === "string" ? String(row.status) : null;
+
+  if (
+    explicitStatus === "new" ||
+    explicitStatus === "contacted" ||
+    explicitStatus === "sold" ||
+    explicitStatus === "lost"
+  ) {
+    return explicitStatus;
+  }
+
+  if (Boolean(row.converted_to_sale)) {
+    return "sold";
+  }
+
+  if (Boolean(row.contacted)) {
+    return "contacted";
+  }
+
+  return "new";
+}
+
 function mapLead(row: Record<string, unknown>): ClientSubmission {
+  const status = deriveLeadStatus(row);
+
   return {
     id: String(row.id),
     artistId: String(row.artist_id),
+    status,
     intent: String(row.intent) as ClientSubmission["intent"],
     selectedDesignId: row.selected_design_id ? String(row.selected_design_id) : null,
     bodyAreaGroup: String(row.body_area_group) as ClientSubmission["bodyAreaGroup"],
@@ -35,9 +61,9 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     estimatedMin: Number(row.estimated_min),
     estimatedMax: Number(row.estimated_max),
     contactMessage: String(row.contact_message ?? ""),
-    contacted: Boolean(row.contacted),
-    convertedToSale: Boolean(row.converted_to_sale ?? false),
-    soldAt: row.sold_at ? String(row.sold_at) : null,
+    contacted: status === "contacted" || status === "sold",
+    convertedToSale: status === "sold",
+    soldAt: status === "sold" && row.sold_at ? String(row.sold_at) : null,
     createdAt: String(row.created_at),
   };
 }

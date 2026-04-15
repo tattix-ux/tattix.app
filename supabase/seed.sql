@@ -250,7 +250,10 @@ insert into public.client_submissions (
   estimated_min,
   estimated_max,
   contact_message,
+  status,
   contacted,
+  converted_to_sale,
+  sold_at,
   created_at
 )
 values
@@ -280,7 +283,10 @@ City: İzmir
 Style: Fine line
 Notes: Botanical flow with soft leaves and a hidden crescent moon.
 Estimated price shown: 3000 - 4500 TRY',
+    'sold',
     false,
+    true,
+    '2026-04-09T11:00:00.000Z',
     '2026-04-08T18:30:00.000Z'
   ),
   (
@@ -309,6 +315,9 @@ City: İstanbul
 Style: Ornamental
 Notes: Looking for a small mirrored ankle motif.
 Estimated price shown: 1600 - 2450 TRY',
+    'contacted',
     true,
+    false,
+    null,
     '2026-04-07T12:10:00.000Z'
   );

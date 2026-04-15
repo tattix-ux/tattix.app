@@ -92,6 +92,7 @@ export async function POST(request: Request) {
       estimated_min: estimate.min,
       estimated_max: estimate.max,
       contact_message: message,
+      status: "new",
     });
   }
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { LeadStatus } from "@/lib/types";
 
 export async function PATCH(
   request: Request,
@@ -10,13 +11,14 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = (await request.json()) as {
-    contacted?: boolean;
-    convertedToSale?: boolean;
+    status?: LeadStatus;
   };
 
   if (
-    typeof body.contacted !== "boolean" &&
-    typeof body.convertedToSale !== "boolean"
+    body.status !== "new" &&
+    body.status !== "contacted" &&
+    body.status !== "sold" &&
+    body.status !== "lost"
   ) {
     return NextResponse.json({ message: "Invalid lead payload." }, { status: 400 });
   }
@@ -34,16 +36,12 @@ export async function PATCH(
   }
 
   const supabase = await createSupabaseServerClient();
-  const updatePayload: Record<string, boolean | string | null> = {};
-
-  if (typeof body.contacted === "boolean") {
-    updatePayload.contacted = body.contacted;
-  }
-
-  if (typeof body.convertedToSale === "boolean") {
-    updatePayload.converted_to_sale = body.convertedToSale;
-    updatePayload.sold_at = body.convertedToSale ? new Date().toISOString() : null;
-  }
+  const updatePayload: Record<string, boolean | string | null> = {
+    status: body.status,
+    contacted: body.status === "contacted" || body.status === "sold",
+    converted_to_sale: body.status === "sold",
+    sold_at: body.status === "sold" ? new Date().toISOString() : null,
+  };
 
   const { error } = await supabase
     .from("client_submissions")

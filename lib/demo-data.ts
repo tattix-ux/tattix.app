@@ -276,6 +276,7 @@ export const demoLeads: ClientSubmission[] = [
   {
     id: "submission-1",
     artistId: demoArtistId,
+    status: "sold",
     intent: "custom-tattoo",
     selectedDesignId: null,
     bodyAreaGroup: "arm",
@@ -305,6 +306,7 @@ export const demoLeads: ClientSubmission[] = [
   {
     id: "submission-2",
     artistId: demoArtistId,
+    status: "contacted",
     intent: "discounted-design",
     selectedDesignId: "design-3",
     bodyAreaGroup: "leg",

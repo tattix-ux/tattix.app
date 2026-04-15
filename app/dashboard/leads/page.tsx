@@ -17,13 +17,13 @@ export default async function DashboardLeadsPage() {
         eyebrow={isTurkish ? "Talepler" : "Requests"}
         title={
           isTurkish
-            ? "Tamamlanan talepleri tek yerde incele ve takip et."
-            : "Review completed requests and follow up with context."
+            ? "Gelen talepleri tek yerde incele."
+            : "Review incoming requests in one place."
         }
         description={
           isTurkish
-            ? "Her tamamlanan talep; intent, yerleşim, stil, notlar ve müşterinin gördüğü tahminle birlikte saklanır."
-            : "Each finished request stores intent, placement, style, notes, and the estimate the client saw."
+            ? "Referans görsel, notlar ve tahmin burada saklanır."
+            : "Reference images, notes, and estimates stay here."
         }
       />
       {hasPro ? (
