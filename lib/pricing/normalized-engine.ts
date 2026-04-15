@@ -10,7 +10,7 @@ import type {
 } from "@/lib/types";
 import { roundToNearestFifty } from "@/lib/utils";
 
-type FactorRange = {
+type SurchargeRange = {
   min: number;
   max: number;
 };
@@ -29,12 +29,17 @@ export type NormalizedQuoteInput = {
 export type NormalizedQuoteConfig = {
   anchorPrice: number;
   minimumCharge: number;
-  globalScale: number;
+  validationAdjustment: number;
+  baselinePrice: number;
   sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>;
-  sizeFactors: Record<SizeValue, FactorRange>;
-  placementFactors: Partial<Record<BodyAreaDetailValue, FactorRange>>;
-  detailLevelFactors: Record<DetailLevelValue, FactorRange>;
-  colorModeFactors: Record<ColorModeValue, FactorRange>;
+  hardPlacementDetails: Set<BodyAreaDetailValue>;
+  detailSurcharges: Record<DetailLevelValue, SurchargeRange>;
+  placementSurcharges: {
+    easy: SurchargeRange;
+    hard: SurchargeRange;
+    "not-sure": SurchargeRange;
+  };
+  colorSurcharges: Record<ColorModeValue, SurchargeRange>;
 };
 
 type QuoteResult = {
@@ -63,17 +68,6 @@ function isFinitePositive(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
-function clampFactorRange(range: FactorRange | undefined, fallback: FactorRange): FactorRange {
-  if (!range || !isFinitePositive(range.min) || !isFinitePositive(range.max)) {
-    return fallback;
-  }
-
-  return {
-    min: Math.max(0.25, range.min),
-    max: Math.max(range.min, range.max),
-  };
-}
-
 function midpoint(range: PriceRange | undefined) {
   if (!range || !Number.isFinite(range.min) || !Number.isFinite(range.max)) {
     return null;
@@ -82,124 +76,72 @@ function midpoint(range: PriceRange | undefined) {
   return (range.min + range.max) / 2;
 }
 
-function deriveBasePrice(rules: ArtistPricingRules) {
+function deriveAnchorPrice(rules: ArtistPricingRules) {
   return (
     rules.anchorPrice ??
     rules.basePrice ??
-    midpoint(rules.sizeBaseRanges.medium) ??
-    midpoint(rules.sizeBaseRanges.small) ??
+    rules.minimumCharge ??
     rules.minimumSessionPrice ??
+    midpoint(rules.sizeBaseRanges.small) ??
     1000
   );
 }
 
-function buildFactorRangeFromCalibratedPrice(
-  examplePrice: number | null | undefined,
-  anchorPrice: number,
-  spread = 0.06,
-  fallback: FactorRange,
-) {
-  if (!isFinitePositive(examplePrice) || !isFinitePositive(anchorPrice)) {
-    return fallback;
-  }
-
-  const safeExamplePrice = Number(examplePrice);
-  const center = safeExamplePrice / anchorPrice;
-
-  if (!Number.isFinite(center) || center <= 0) {
+function clampRange(range: SurchargeRange | undefined, fallback: SurchargeRange): SurchargeRange {
+  if (!range || !Number.isFinite(range.min) || !Number.isFinite(range.max)) {
     return fallback;
   }
 
   return {
-    min: Math.max(0.25, Number((center * (1 - spread)).toFixed(4))),
-    max: Math.max(
-      Math.max(0.25, Number((center * (1 - spread)).toFixed(4))),
-      Number((center * (1 + spread)).toFixed(4)),
-    ),
+    min: Math.min(range.min, range.max),
+    max: Math.max(range.min, range.max),
   };
 }
 
-function buildDetailedFactorRange(
-  detailedPrice: number | null | undefined,
-  ultraPrice: number | null | undefined,
-  anchorPrice: number,
-  fallback: FactorRange,
-) {
-  const base = buildFactorRangeFromCalibratedPrice(detailedPrice, anchorPrice, 0.06, fallback);
-
-  if (!isFinitePositive(ultraPrice) || !isFinitePositive(anchorPrice)) {
-    return base;
-  }
-
-  const ultraCenter = Number(ultraPrice) / anchorPrice;
-
-  if (!Number.isFinite(ultraCenter) || ultraCenter <= 0) {
-    return base;
-  }
+function createCenteredRange(center: number, spread: number, floor?: number): SurchargeRange {
+  const rawMin = center - spread;
+  const min = typeof floor === "number" ? Math.max(floor, rawMin) : rawMin;
+  const max = Math.max(min, center + spread);
 
   return {
-    min: base.min,
-    max: Math.max(base.max, Number((ultraCenter * 1.06).toFixed(4))),
+    min: Number(min.toFixed(2)),
+    max: Number(max.toFixed(2)),
   };
 }
 
-function hasCalibrationExamples(examples: PricingCalibrationExamples | undefined) {
-  return Boolean(
-    examples &&
-      Object.keys(examples.size ?? {}).length &&
-      Object.keys(examples.detailLevel ?? {}).length &&
-      Object.keys(examples.colorMode ?? {}).length,
-  );
+function createFactorFallback(center: number, spread: number, floor = 0.25) {
+  return {
+    min: Math.max(floor, Number((center - spread).toFixed(4))),
+    max: Math.max(Math.max(floor, Number((center - spread).toFixed(4))), Number((center + spread).toFixed(4))),
+  };
 }
 
-function deriveSizeFactors(
-  rules: ArtistPricingRules,
-  basePrice: number,
-): Record<SizeValue, FactorRange> {
-  const fallback: FactorRange = { min: 1, max: 1.12 };
+function deriveSizeFactorFallbacks(rules: ArtistPricingRules, anchorPrice: number) {
+  const derive = (size: SizeValue, fallbackCenter: number, fallbackSpread: number) => {
+    const baseMidpoint = midpoint(rules.sizeBaseRanges[size]);
+
+    if (isFinitePositive(baseMidpoint) && isFinitePositive(anchorPrice)) {
+      const factor = Number(baseMidpoint) / anchorPrice;
+      return createFactorFallback(factor, fallbackSpread);
+    }
+
+    return createFactorFallback(fallbackCenter, fallbackSpread);
+  };
 
   return {
-    tiny: clampFactorRange(
-      rules.sizeBaseRanges.tiny
-        ? {
-            min: rules.sizeBaseRanges.tiny.min / basePrice,
-            max: rules.sizeBaseRanges.tiny.max / basePrice,
-          }
-        : undefined,
-      fallback,
-    ),
-    small: clampFactorRange(
-      rules.sizeBaseRanges.small
-        ? {
-            min: rules.sizeBaseRanges.small.min / basePrice,
-            max: rules.sizeBaseRanges.small.max / basePrice,
-          }
-        : undefined,
-      fallback,
-    ),
-    medium: clampFactorRange(
-      rules.sizeBaseRanges.medium
-        ? {
-            min: rules.sizeBaseRanges.medium.min / basePrice,
-            max: rules.sizeBaseRanges.medium.max / basePrice,
-          }
-        : undefined,
-      fallback,
-    ),
-    large: clampFactorRange(
-      rules.sizeBaseRanges.large
-        ? {
-            min: rules.sizeBaseRanges.large.min / basePrice,
-            max: rules.sizeBaseRanges.large.max / basePrice,
-          }
-        : undefined,
-      fallback,
-    ),
-  };
+    tiny: derive("tiny", 0.72, 0.08),
+    small: derive("small", 1, 0.06),
+    medium: derive("medium", 1.4, 0.08),
+    large: derive("large", 2.1, 0.12),
+  } satisfies Record<SizeValue, { min: number; max: number }>;
 }
 
 function deriveRepresentativeSizeCm(input: SubmissionRequest) {
-  if (typeof input.approximateSizeCm === "number" && Number.isFinite(input.approximateSizeCm) && input.approximateSizeCm > 0) {
+  if (
+    typeof input.approximateSizeCm === "number" &&
+    Number.isFinite(input.approximateSizeCm) &&
+    input.approximateSizeCm > 0
+  ) {
     return input.approximateSizeCm;
   }
 
@@ -224,239 +166,335 @@ function deriveRepresentativeSizeCm(input: SubmissionRequest) {
   return fallbackByCategory[input.sizeCategory] ?? 12;
 }
 
-function deriveSizeCurvePoints(
-  rules: ArtistPricingRules,
-  anchorPrice: number,
-  fallbackSizeFactors: Record<SizeValue, FactorRange>,
-) {
-  const rawCurve = rules.calibrationExamples.sizeCurve;
-
-  if (
-    rawCurve &&
-    SIZE_CURVE_KEYS.every((key) => isFinitePositive(rawCurve[key]))
-  ) {
-    return {
-      "8": rawCurve["8"],
-      "12": rawCurve["12"],
-      "18": rawCurve["18"],
-      "25": rawCurve["25"],
-    } as Record<"8" | "12" | "18" | "25", number>;
-  }
-
-  return {
-    "8": Math.max(
-      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.tiny as PriceRange) ?? 0.7)),
-      1,
-    ),
-    "12": Math.max(
-      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.small as PriceRange) ?? 1)),
-      1,
-    ),
-    "18": Math.max(
-      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.medium as PriceRange) ?? 1.2)),
-      1,
-    ),
-    "25": Math.max(
-      Math.round(anchorPrice * (midpoint(fallbackSizeFactors.large as PriceRange) ?? 1.8)),
-      1,
-    ),
-  };
+function hasCalibrationExamples(examples: PricingCalibrationExamples | undefined) {
+  return Boolean(
+    examples &&
+      examples.sizeCurve &&
+      SIZE_CURVE_KEYS.every((key) => isFinitePositive(examples.sizeCurve?.[key])) &&
+      isFinitePositive(examples.detailLevel.standard) &&
+      isFinitePositive(examples.colorMode["black-only"]),
+  );
 }
 
-function resolveHardPlacementDetails(
-  placementFactors: Partial<Record<BodyAreaDetailValue, FactorRange>>,
-  fallbackPlacementFactors: Partial<Record<BodyAreaDetailValue, FactorRange>>,
-) {
-  const source = Object.keys(placementFactors).length > 0 ? placementFactors : fallbackPlacementFactors;
-  const derived = Object.entries(source)
-    .filter(([, range]) => midpoint(range as PriceRange) !== null)
-    .filter(([, range]) => (midpoint(range as PriceRange) ?? 1) >= 1.12)
+function collectHardPlacementDetails(rules: ArtistPricingRules) {
+  const derived = Object.entries(rules.placementModifiers ?? {})
+    .filter(([, range]) => midpoint(range) !== null)
+    .filter(([, range]) => (midpoint(range) ?? 1) >= 1.12)
     .map(([key]) => key as BodyAreaDetailValue);
 
   if (derived.length > 0) {
-    return new Set<BodyAreaDetailValue>(derived);
+    return new Set(derived);
+  }
+
+  const legacyDerived = Object.entries(rules.placementMultipliers ?? {})
+    .filter(([, multiplier]) => Number.isFinite(multiplier) && multiplier >= 1.12)
+    .map(([key]) => key as BodyAreaDetailValue);
+
+  if (legacyDerived.length > 0) {
+    return new Set(legacyDerived);
   }
 
   return DEFAULT_HARD_PLACEMENTS;
 }
 
-function buildSizeCurveFactorRange(
-  sizeCm: number,
-  points: Record<"8" | "12" | "18" | "25", number>,
-  fallback: FactorRange,
+function deriveSizeCurvePoints(
+  rules: ArtistPricingRules,
+  anchorPrice: number,
 ) {
-  const baselinePrice = points["12"];
-
-  if (!isFinitePositive(sizeCm) || !isFinitePositive(baselinePrice)) {
-    return fallback;
+  const calibrationCurve = rules.calibrationExamples.sizeCurve;
+  if (hasCalibrationExamples(rules.calibrationExamples) && calibrationCurve) {
+    return {
+      "8": calibrationCurve["8"],
+      "12": calibrationCurve["12"],
+      "18": calibrationCurve["18"],
+      "25": calibrationCurve["25"],
+    } as Record<"8" | "12" | "18" | "25", number>;
   }
 
-  const normalizedPoints = [
-    { cm: 8, factor: points["8"] / baselinePrice },
-    { cm: 12, factor: 1 },
-    { cm: 18, factor: points["18"] / baselinePrice },
-    { cm: 25, factor: points["25"] / baselinePrice },
+  const fallbackFactors = deriveSizeFactorFallbacks(rules, anchorPrice);
+
+  return {
+    "8": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.tiny as PriceRange)!), 1),
+    "12": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.small as PriceRange)!), 1),
+    "18": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.medium as PriceRange)!), 1),
+    "25": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.large as PriceRange)!), 1),
+  };
+}
+
+function interpolateBetweenPoints(
+  sizeCm: number,
+  points: Record<"8" | "12" | "18" | "25", number>,
+) {
+  const clampedCm = Math.max(8, Math.min(25, sizeCm));
+  const ordered = [
+    { cm: 8, value: points["8"] },
+    { cm: 12, value: points["12"] },
+    { cm: 18, value: points["18"] },
+    { cm: 25, value: points["25"] },
   ];
 
-  const clampedCm = Math.max(8, Math.min(25, sizeCm));
-  let left = normalizedPoints[0];
-  let right = normalizedPoints[normalizedPoints.length - 1];
+  let left = ordered[0];
+  let right = ordered[ordered.length - 1];
 
-  for (let index = 0; index < normalizedPoints.length - 1; index += 1) {
-    const current = normalizedPoints[index];
-    const next = normalizedPoints[index + 1];
-
-    if (clampedCm >= current.cm && clampedCm <= next.cm) {
-      left = current;
-      right = next;
+  for (let index = 0; index < ordered.length - 1; index += 1) {
+    if (clampedCm >= ordered[index].cm && clampedCm <= ordered[index + 1].cm) {
+      left = ordered[index];
+      right = ordered[index + 1];
       break;
     }
   }
 
   const span = Math.max(right.cm - left.cm, 1);
   const mix = (clampedCm - left.cm) / span;
-  const center = left.factor + (right.factor - left.factor) * mix;
+  return left.value + (right.value - left.value) * mix;
+}
 
-  if (!Number.isFinite(center) || center <= 0) {
-    return fallback;
+function deriveBaselinePrice(anchorPrice: number, rules: ArtistPricingRules, sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>) {
+  const calibratedBaseline =
+    rules.calibrationExamples.sizeCurve?.["12"] ??
+    rules.calibrationExamples.detailLevel.standard ??
+    rules.calibrationExamples.placementDifficulty?.easy ??
+    rules.calibrationExamples.colorMode["black-only"] ??
+    sizeCurvePoints["12"];
+
+  return Math.max(anchorPrice, calibratedBaseline, 100);
+}
+
+function deriveDetailSurcharges(
+  rules: ArtistPricingRules,
+  baselinePrice: number,
+) {
+  const standardPrice =
+    rules.calibrationExamples.detailLevel.standard ??
+    baselinePrice;
+
+  if (isFinitePositive(standardPrice)) {
+    const simplePrice = rules.calibrationExamples.detailLevel.simple ?? standardPrice;
+    const detailedPrice = rules.calibrationExamples.detailLevel.detailed ?? Math.round(standardPrice * 1.18);
+    const ultraPrice = rules.calibrationExamples.detailLevel.ultra ?? Math.round(detailedPrice * 1.12);
+
+    return {
+      simple: createCenteredRange(simplePrice - standardPrice, Math.max(40, standardPrice * 0.03)),
+      standard: { min: 0, max: 0 },
+      detailed: createCenteredRange(detailedPrice - standardPrice, Math.max(60, standardPrice * 0.04), 0),
+      ultra: createCenteredRange(ultraPrice - standardPrice, Math.max(80, standardPrice * 0.05), 0),
+    };
   }
 
-  const spread = clampedCm >= 25 ? 0.1 : clampedCm >= 18 ? 0.08 : 0.06;
+  const standardFactor = midpoint(rules.detailLevelModifiers.standard) ?? 1;
+  const factorDelta = (factor: number | null, fallback = 1) => ((factor ?? fallback) - standardFactor) * baselinePrice;
 
   return {
-    min: Math.max(0.25, Number((center * (1 - spread)).toFixed(4))),
-    max: Math.max(
-      Math.max(0.25, Number((center * (1 - spread)).toFixed(4))),
-      Number((center * (1 + spread)).toFixed(4)),
+    simple: createCenteredRange(factorDelta(midpoint(rules.detailLevelModifiers.simple), 0.92), Math.max(40, baselinePrice * 0.03)),
+    standard: { min: 0, max: 0 },
+    detailed: createCenteredRange(
+      factorDelta(midpoint(rules.detailLevelModifiers.detailed), 1.22),
+      Math.max(60, baselinePrice * 0.04),
+      0,
+    ),
+    ultra: createCenteredRange(
+      factorDelta((midpoint(rules.detailLevelModifiers.detailed) ?? 1.22) * 1.12, 1.34),
+      Math.max(80, baselinePrice * 0.05),
+      0,
     ),
   };
+}
+
+function derivePlacementSurcharges(
+  rules: ArtistPricingRules,
+  baselinePrice: number,
+  hardPlacementDetails: Set<BodyAreaDetailValue>,
+) {
+  const calibrationEasy = rules.calibrationExamples.placementDifficulty?.easy;
+  const calibrationHard = rules.calibrationExamples.placementDifficulty?.hard;
+
+  if (isFinitePositive(calibrationEasy) && isFinitePositive(calibrationHard)) {
+    const safeEasy = Number(calibrationEasy);
+    const safeHard = Number(calibrationHard);
+    const hardDelta = safeHard - safeEasy;
+    return {
+      easy: { min: 0, max: 0 },
+      hard: createCenteredRange(hardDelta, Math.max(50, safeEasy * 0.03), 0),
+      "not-sure": createCenteredRange(hardDelta * 0.45, Math.max(30, safeEasy * 0.02), 0),
+    };
+  }
+
+  const placementEntries = Object.entries(rules.placementModifiers ?? {}) as Array<[BodyAreaDetailValue, PriceRange]>;
+  const easyFactors = placementEntries
+    .filter(([key]) => !hardPlacementDetails.has(key))
+    .map(([, range]) => midpoint(range))
+    .filter((value): value is number => value !== null);
+  const hardFactors = placementEntries
+    .filter(([key]) => hardPlacementDetails.has(key))
+    .map(([, range]) => midpoint(range))
+    .filter((value): value is number => value !== null);
+
+  const easyMid = easyFactors.length > 0 ? easyFactors.reduce((sum, value) => sum + value, 0) / easyFactors.length : 1;
+  const hardMid =
+    hardFactors.length > 0
+      ? hardFactors.reduce((sum, value) => sum + value, 0) / hardFactors.length
+      : Math.max(easyMid, 1.18);
+  const hardDelta = Math.max(0, (hardMid - easyMid) * baselinePrice);
+
+  return {
+    easy: { min: 0, max: 0 },
+    hard: createCenteredRange(hardDelta, Math.max(50, baselinePrice * 0.03), 0),
+    "not-sure": createCenteredRange(hardDelta * 0.45, Math.max(30, baselinePrice * 0.02), 0),
+  };
+}
+
+function deriveColorSurcharges(
+  rules: ArtistPricingRules,
+  baselinePrice: number,
+) {
+  const blackPrice =
+    rules.calibrationExamples.colorMode["black-only"] ??
+    baselinePrice;
+  const fullColorPrice =
+    rules.calibrationExamples.colorMode["full-color"] ??
+    Math.round(blackPrice * 1.22);
+  const blackGreyPrice =
+    rules.calibrationExamples.colorMode["black-grey"] ??
+    Math.round(blackPrice + (fullColorPrice - blackPrice) * 0.5);
+
+  if (isFinitePositive(blackPrice)) {
+    return {
+      "black-only": { min: 0, max: 0 },
+      "black-grey": createCenteredRange(blackGreyPrice - blackPrice, Math.max(35, blackPrice * 0.025), 0),
+      "full-color": createCenteredRange(fullColorPrice - blackPrice, Math.max(50, blackPrice * 0.03), 0),
+    };
+  }
+
+  const blackMid = midpoint(rules.colorModeModifiers["black-only"]) ?? 1;
+  const blackGreyMid = midpoint(rules.colorModeModifiers["black-grey"]) ?? 1.05;
+  const fullColorMid = midpoint(rules.colorModeModifiers["full-color"]) ?? 1.22;
+
+  return {
+    "black-only": { min: 0, max: 0 },
+    "black-grey": createCenteredRange((blackGreyMid - blackMid) * baselinePrice, Math.max(35, baselinePrice * 0.025), 0),
+    "full-color": createCenteredRange((fullColorMid - blackMid) * baselinePrice, Math.max(50, baselinePrice * 0.03), 0),
+  };
+}
+
+function getDetailSizeWeight(sizeCm: number) {
+  const clampedCm = Math.max(8, Math.min(25, sizeCm));
+
+  if (clampedCm <= 12) {
+    return 0.85 + ((clampedCm - 8) / 4) * 0.15;
+  }
+
+  return 1 + ((clampedCm - 12) / 13) * 0.25;
+}
+
+function getPlacementSizeWeight(sizeCm: number) {
+  const clampedCm = Math.max(8, Math.min(25, sizeCm));
+
+  if (clampedCm <= 12) {
+    return 0.9 + ((clampedCm - 8) / 4) * 0.1;
+  }
+
+  return 1 + ((clampedCm - 12) / 13) * 0.15;
+}
+
+function getColorSizeWeight(sizeCm: number) {
+  const clampedCm = Math.max(8, Math.min(25, sizeCm));
+
+  if (clampedCm <= 12) {
+    return 0.9 + ((clampedCm - 8) / 4) * 0.1;
+  }
+
+  return 1 + ((clampedCm - 12) / 13) * 0.2;
+}
+
+function scaleSurcharge(range: SurchargeRange, weight: number) {
+  return {
+    min: range.min * weight,
+    max: range.max * weight,
+  };
+}
+
+function resolvePlacementBucket(
+  placement: BodyAreaDetailValue,
+  hardPlacementDetails: Set<BodyAreaDetailValue>,
+) {
+  if (placement === "placement-not-sure") {
+    return "not-sure" as const;
+  }
+
+  return hardPlacementDetails.has(placement) ? "hard" : "easy";
+}
+
+function buildUncertaintyBand(
+  input: NormalizedQuoteInput,
+  placementBucket: "easy" | "hard" | "not-sure",
+) {
+  let band = 0.06;
+
+  if ((input.detailLevel ?? DEFAULT_DETAIL_LEVEL) === "simple") {
+    band -= 0.01;
+  }
+
+  if ((input.detailLevel ?? DEFAULT_DETAIL_LEVEL) === "detailed") {
+    band += 0.015;
+  }
+
+  if ((input.colorMode ?? DEFAULT_COLOR_MODE) === "black-grey") {
+    band += 0.01;
+  }
+
+  if ((input.colorMode ?? DEFAULT_COLOR_MODE) === "full-color") {
+    band += 0.02;
+  }
+
+  if (placementBucket === "hard") {
+    band += 0.01;
+  }
+
+  if (placementBucket === "not-sure") {
+    band += 0.005;
+  }
+
+  if (input.sizeCm >= 18) {
+    band += 0.01;
+  }
+
+  if (input.sizeCm >= 25) {
+    band += 0.01;
+  }
+
+  return Math.min(0.12, Math.max(0.05, band));
 }
 
 export function buildNormalizedQuoteConfig(
   rules: ArtistPricingRules,
 ): NormalizedQuoteConfig {
-  const anchorPrice = Math.max(deriveBasePrice(rules), 100);
-  const fallbackPlacementFactors = Object.fromEntries(
-    Object.entries(rules.placementMultipliers ?? {}).map(([key, value]) => [
-      key,
-      clampFactorRange(
-        { min: value, max: value },
-        { min: 1, max: 1 },
-      ),
-    ]),
-  ) as Partial<Record<BodyAreaDetailValue, FactorRange>>;
-  const placementFactors = Object.fromEntries(
-    Object.entries(rules.placementModifiers ?? {}).map(([key, value]) => [
-      key,
-      clampFactorRange(value, { min: 1, max: 1 }),
-      ]),
-  ) as Partial<Record<BodyAreaDetailValue, FactorRange>>;
-  const useCalibration = hasCalibrationExamples(rules.calibrationExamples);
-  const hardPlacementDetails = resolveHardPlacementDetails(placementFactors, fallbackPlacementFactors);
-  const fallbackSizeFactors = rules.sizeModifiers
-    ? {
-        tiny: clampFactorRange(rules.sizeModifiers.tiny, { min: 0.35, max: 0.6 }),
-        small: clampFactorRange(rules.sizeModifiers.small, { min: 0.55, max: 0.85 }),
-        medium: clampFactorRange(rules.sizeModifiers.medium, { min: 0.95, max: 1.2 }),
-        large: clampFactorRange(rules.sizeModifiers.large, { min: 1.8, max: 2.4 }),
-      }
-    : deriveSizeFactors(rules, anchorPrice);
-  const sizeCurvePoints = deriveSizeCurvePoints(rules, anchorPrice, fallbackSizeFactors);
+  const anchorPrice = Math.max(deriveAnchorPrice(rules), 100);
+  const sizeCurvePoints = deriveSizeCurvePoints(rules, anchorPrice);
+  const baselinePrice = deriveBaselinePrice(anchorPrice, rules, sizeCurvePoints);
+  const hardPlacementDetails = collectHardPlacementDetails(rules);
 
   return {
     anchorPrice,
-    minimumCharge: Math.max(0, rules.minimumCharge ?? rules.minimumSessionPrice ?? Math.round(anchorPrice * 0.9)),
-    globalScale:
+    minimumCharge: Math.max(
+      0,
+      rules.minimumCharge ?? rules.minimumSessionPrice ?? Math.round(anchorPrice * 0.9),
+    ),
+    validationAdjustment:
       typeof rules.calibrationExamples.globalScale === "number" &&
       Number.isFinite(rules.calibrationExamples.globalScale) &&
       rules.calibrationExamples.globalScale > 0
         ? rules.calibrationExamples.globalScale
         : 1,
+    baselinePrice,
     sizeCurvePoints,
-    sizeFactors: useCalibration
-      ? {
-          tiny: buildSizeCurveFactorRange(8, sizeCurvePoints, fallbackSizeFactors.tiny),
-          small: buildSizeCurveFactorRange(12, sizeCurvePoints, fallbackSizeFactors.small),
-          medium: buildSizeCurveFactorRange(18, sizeCurvePoints, fallbackSizeFactors.medium),
-          large: buildSizeCurveFactorRange(25, sizeCurvePoints, fallbackSizeFactors.large),
-        }
-      : fallbackSizeFactors,
-    placementFactors:
-      useCalibration && rules.calibrationExamples.placementDifficulty
-        ? Object.fromEntries(
-            Object.keys(
-              Object.keys(placementFactors).length > 0 ? placementFactors : fallbackPlacementFactors,
-            ).map((key) => [
-              key,
-              hardPlacementDetails.has(key as BodyAreaDetailValue)
-                ? buildFactorRangeFromCalibratedPrice(
-                    rules.calibrationExamples.placementDifficulty?.hard,
-                    rules.calibrationExamples.placementDifficulty?.easy || anchorPrice,
-                    0.05,
-                    { min: 1.14, max: 1.3 },
-                  )
-                : { min: 1, max: 1 },
-            ]),
-          ) as Partial<Record<BodyAreaDetailValue, FactorRange>>
-        : useCalibration && Object.keys(rules.calibrationExamples.placement ?? {}).length > 0
-        ? Object.fromEntries(
-            Object.entries(rules.calibrationExamples.placement).map(([key, value]) => [
-              key,
-              buildFactorRangeFromCalibratedPrice(
-                value,
-                anchorPrice,
-                0.06,
-                placementFactors[key as BodyAreaDetailValue] ??
-                  fallbackPlacementFactors[key as BodyAreaDetailValue] ??
-                  { min: 1, max: 1.08 },
-              ),
-            ]),
-          ) as Partial<Record<BodyAreaDetailValue, FactorRange>>
-        : Object.keys(placementFactors).length > 0
-          ? placementFactors
-          : fallbackPlacementFactors,
-    detailLevelFactors: useCalibration
-      ? {
-          simple: buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.detailLevel.simple,
-            rules.calibrationExamples.detailLevel.standard || anchorPrice,
-            0.05,
-            clampFactorRange(rules.detailLevelModifiers?.simple, { min: 0.92, max: 1 }),
-          ),
-          standard: { min: 1, max: 1 },
-          detailed: buildDetailedFactorRange(
-            rules.calibrationExamples.detailLevel.detailed,
-            rules.calibrationExamples.detailLevel.ultra,
-            rules.calibrationExamples.detailLevel.standard || anchorPrice,
-            clampFactorRange(rules.detailLevelModifiers?.detailed, { min: 1.12, max: 1.28 }),
-          ),
-        }
-      : {
-          simple: clampFactorRange(rules.detailLevelModifiers?.simple, { min: 0.92, max: 1 }),
-          standard: clampFactorRange(rules.detailLevelModifiers?.standard, { min: 1, max: 1.12 }),
-          detailed: clampFactorRange(rules.detailLevelModifiers?.detailed, { min: 1.12, max: 1.28 }),
-        },
-    colorModeFactors: useCalibration
-      ? {
-          "black-only": { min: 1, max: 1 },
-          "black-grey": buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.colorMode["black-grey"],
-            rules.calibrationExamples.colorMode["black-only"] || anchorPrice,
-            0.05,
-            clampFactorRange(rules.colorModeModifiers?.["black-grey"], { min: 1, max: 1.08 }),
-          ),
-          "full-color": buildFactorRangeFromCalibratedPrice(
-            rules.calibrationExamples.colorMode["full-color"],
-            rules.calibrationExamples.colorMode["black-only"] || anchorPrice,
-            0.06,
-            clampFactorRange(rules.colorModeModifiers?.["full-color"], { min: 1.18, max: 1.35 }),
-          ),
-        }
-      : {
-          "black-only": clampFactorRange(rules.colorModeModifiers?.["black-only"], { min: 0.94, max: 1 }),
-          "black-grey": clampFactorRange(rules.colorModeModifiers?.["black-grey"], { min: 1, max: 1.08 }),
-          "full-color": clampFactorRange(rules.colorModeModifiers?.["full-color"], { min: 1.18, max: 1.35 }),
-        },
+    hardPlacementDetails,
+    detailSurcharges: {
+      simple: clampRange(deriveDetailSurcharges(rules, baselinePrice).simple, { min: -120, max: -40 }),
+      standard: { min: 0, max: 0 },
+      detailed: clampRange(deriveDetailSurcharges(rules, baselinePrice).detailed, { min: 180, max: 320 }),
+    },
+    placementSurcharges: derivePlacementSurcharges(rules, baselinePrice, hardPlacementDetails),
+    colorSurcharges: deriveColorSurcharges(rules, baselinePrice),
   };
 }
 
@@ -483,40 +521,44 @@ export function estimateNormalizedQuote(
   input: NormalizedQuoteInput,
   config: NormalizedQuoteConfig,
 ): QuoteResult {
-  const sizeRange = buildSizeCurveFactorRange(
-    input.sizeCm,
-    config.sizeCurvePoints,
-    clampFactorRange(config.sizeFactors[input.size], { min: 1, max: 1.12 }),
+  const baseSizePrice = interpolateBetweenPoints(input.sizeCm, config.sizeCurvePoints);
+  const detailWeight = getDetailSizeWeight(input.sizeCm);
+  const placementWeight = getPlacementSizeWeight(input.sizeCm);
+  const colorWeight = getColorSizeWeight(input.sizeCm);
+  const detailRange = scaleSurcharge(
+    config.detailSurcharges[input.detailLevel ?? DEFAULT_DETAIL_LEVEL] ??
+      config.detailSurcharges[DEFAULT_DETAIL_LEVEL],
+    detailWeight,
   );
-  const defaultPlacementRange =
-    config.placementFactors[input.placement] ??
-    (input.placement === "placement-not-sure" ? { min: 1, max: 1.04 } : { min: 1, max: 1 });
-  const placementRange = clampFactorRange(defaultPlacementRange, { min: 1, max: 1 });
-  const detailRange = clampFactorRange(
-    config.detailLevelFactors[input.detailLevel ?? DEFAULT_DETAIL_LEVEL],
-    config.detailLevelFactors[DEFAULT_DETAIL_LEVEL],
+  const placementBucket = resolvePlacementBucket(input.placement, config.hardPlacementDetails);
+  const placementRange = scaleSurcharge(
+    config.placementSurcharges[placementBucket],
+    placementWeight,
   );
-  const colorRange = clampFactorRange(
-    config.colorModeFactors[input.colorMode ?? DEFAULT_COLOR_MODE],
-    config.colorModeFactors[DEFAULT_COLOR_MODE],
+  const colorRange = scaleSurcharge(
+    config.colorSurcharges[input.colorMode ?? DEFAULT_COLOR_MODE] ??
+      config.colorSurcharges[DEFAULT_COLOR_MODE],
+    colorWeight,
   );
 
-  const rawMin =
-    config.anchorPrice *
-      sizeRange.min *
-      placementRange.min *
-      detailRange.min *
-      colorRange.min *
-      config.globalScale;
-  const rawMax =
-    config.anchorPrice *
-      sizeRange.max *
-      placementRange.max *
-      detailRange.max *
-      colorRange.max *
-      config.globalScale;
+  const centralEstimate =
+    (baseSizePrice +
+      (detailRange.min + detailRange.max) / 2 +
+      (placementRange.min + placementRange.max) / 2 +
+      (colorRange.min + colorRange.max) / 2) *
+    config.validationAdjustment;
+  const uncertaintyBand = buildUncertaintyBand(input, placementBucket);
+  const rangeMin =
+    (baseSizePrice + detailRange.min + placementRange.min + colorRange.min) *
+    config.validationAdjustment;
+  const rangeMax =
+    (baseSizePrice + detailRange.max + placementRange.max + colorRange.max) *
+    config.validationAdjustment;
 
-  const roundedMin = Math.max(roundToNearestFifty(rawMin), config.minimumCharge);
+  const rawMin = Math.min(rangeMin, centralEstimate * (1 - uncertaintyBand));
+  const rawMax = Math.max(rangeMax, centralEstimate * (1 + uncertaintyBand));
+
+  const roundedMin = Math.max(roundToNearestFifty(rawMin), config.minimumCharge, config.anchorPrice);
   const roundedMax = Math.max(roundToNearestFifty(rawMax), roundedMin);
 
   return {

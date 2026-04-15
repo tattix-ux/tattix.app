@@ -139,10 +139,10 @@ export const VALIDATION_SCENARIOS: ValidationScenario[] = [
   },
 ];
 
-export const VALIDATION_UPWARD_ADJUSTMENT = 1.12;
-export const VALIDATION_DOWNWARD_ADJUSTMENT = 0.88;
-const VALIDATION_AXIS_NUDGE_UP = 1.05;
-const VALIDATION_AXIS_NUDGE_DOWN = 0.95;
+export const VALIDATION_UPWARD_ADJUSTMENT = 1.06;
+export const VALIDATION_DOWNWARD_ADJUSTMENT = 0.94;
+const VALIDATION_AXIS_NUDGE_UP = 1.03;
+const VALIDATION_AXIS_NUDGE_DOWN = 0.97;
 
 const DEFAULT_NEUTRAL_RANGE: PriceRange = { min: 1, max: 1.08 };
 const DEFAULT_HARD_RANGE: PriceRange = { min: 1.14, max: 1.3 };
@@ -535,6 +535,10 @@ export function applyValidationFeedbackAdjustments(
       size12: scaleDraftRange(current.size.size12, axisMultiplier),
       size18: scaleDraftRange(current.size.size18, axisMultiplier),
     },
+    detail: {
+      ...current.detail,
+      high: scaleDraftRange(current.detail.high, axisMultiplier),
+    },
   }));
 
   applyScenarioAdjustment("realistic-eye", (current, axisMultiplier) => ({
@@ -551,10 +555,6 @@ export function applyValidationFeedbackAdjustments(
     placement: {
       ...current.placement,
       hard: scaleDraftRange(current.placement.hard, axisMultiplier),
-    },
-    color: {
-      ...current.color,
-      color: scaleDraftRange(current.color.color, axisMultiplier),
     },
   }));
 
