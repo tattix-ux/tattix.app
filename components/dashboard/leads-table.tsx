@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getPlacementDetailLabel } from "@/lib/constants/body-placement";
+import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/body-placement";
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import { intentOptions, styleOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
@@ -24,6 +24,7 @@ import { formatCompactCurrencyRange, formatDateLabel, notesPreview } from "@/lib
 
 type FilterRange = "7d" | "30d" | "90d" | "all";
 type ChartGranularity = "daily" | "weekly" | "monthly";
+type LeadView = "weekly" | "contacted" | "sold" | "not-contacted";
 
 const leadCopy = {
   en: {
@@ -82,6 +83,15 @@ const leadCopy = {
     previous: "Previous",
     next: "Next",
     pageSummary: (current: number, total: number) => `Page ${current} of ${total}`,
+    views: {
+      weekly: "This week",
+      contacted: "Contacted",
+      sold: "Sold",
+      "not-contacted": "Not contacted",
+    },
+    referenceDescription: "Reference description",
+    preferredTiming: "Preferred timing",
+    selectedDesign: "Selected design",
   },
   tr: {
     title: "Talepler",
@@ -139,15 +149,101 @@ const leadCopy = {
     previous: "Önceki",
     next: "Sonraki",
     pageSummary: (current: number, total: number) => `${current} / ${total}. sayfa`,
+    views: {
+      weekly: "Bu hafta",
+      contacted: "İletişime geçilen",
+      sold: "Satışa dönen",
+      "not-contacted": "İletişime geçilmeyen",
+    },
+    referenceDescription: "Referans açıklaması",
+    preferredTiming: "Tercih edilen tarih",
+    selectedDesign: "Seçilen tasarım",
   },
 } as const;
 
-function formatIntent(intent: ClientSubmission["intent"]) {
+const intentLabelsTr: Record<ClientSubmission["intent"], string> = {
+  "custom-tattoo": "Özel dövme",
+  "design-in-mind": "Aklımda bir tasarım var",
+  "flash-design": "Flash tasarım",
+  "discounted-design": "İndirimli tasarım",
+  "not-sure": "Henüz emin değilim",
+};
+
+const styleLabelsTr: Record<string, string> = {
+  "fine-line": "Fine line",
+  minimal: "Minimal",
+  traditional: "Traditional",
+  "neo-traditional": "Neo traditional",
+  blackwork: "Blackwork",
+  realism: "Realism",
+  "micro-realism": "Micro realism",
+  ornamental: "Ornamental",
+  lettering: "Lettering",
+  "not-sure-style": "Emin değilim",
+  custom: "Özel",
+};
+
+const placementLabelsTr = Object.fromEntries(
+  bodyPlacementGroups.flatMap((group) =>
+    group.details.map((detail) => [
+      detail.value,
+      ({
+        "upper-arm-outer": "Üst kol",
+        "forearm-outer": "Ön kol",
+        wrist: "Bilek",
+        hand: "El",
+        "arm-other": "Diğer",
+        "thigh-front": "Üst bacak",
+        calf: "Alt bacak",
+        ankle: "Ayak bileği",
+        foot: "Ayak",
+        "leg-other": "Diğer",
+        "chest-center": "Göğüs",
+        ribs: "Kaburga",
+        stomach: "Karın",
+        "torso-other": "Diğer",
+        "upper-back": "Sırt üst",
+        "lower-back": "Sırt alt",
+        "spine-area": "Omurga",
+        "back-other": "Diğer",
+        "neck-side": "Boyun yanı",
+        "neck-front": "Boyun önü",
+        "neck-back": "Boyun arkası",
+        "neck-other": "Diğer",
+        head: "Baş",
+        "head-other": "Diğer",
+        fingers: "Parmaklar",
+        "hand-other": "Diğer",
+        toes: "Ayak parmakları",
+        "foot-other": "Diğer",
+        "placement-not-sure": "Emin değilim",
+      } as Record<string, string>)[detail.value] ?? detail.label,
+    ]),
+  ),
+);
+
+function formatIntent(intent: ClientSubmission["intent"], locale: PublicLocale) {
+  if (locale === "tr") {
+    return intentLabelsTr[intent] ?? intent;
+  }
+
   return intentOptions.find((item) => item.value === intent)?.label ?? intent;
 }
 
-function formatStyle(style: ClientSubmission["style"]) {
+function formatStyle(style: ClientSubmission["style"], locale: PublicLocale) {
+  if (locale === "tr") {
+    return styleLabelsTr[style] ?? style;
+  }
+
   return styleOptions.find((item) => item.value === style)?.label ?? style;
+}
+
+function formatPlacement(detail: ClientSubmission["bodyAreaDetail"], locale: PublicLocale) {
+  if (locale === "tr") {
+    return placementLabelsTr[detail] ?? getPlacementDetailLabel(detail);
+  }
+
+  return getPlacementDetailLabel(detail);
 }
 
 function startOfDay(date: Date) {
@@ -207,6 +303,20 @@ function filterLeads(leads: ClientSubmission[], range: FilterRange) {
   return leads.filter((lead) => new Date(lead.createdAt) >= start);
 }
 
+function filterLeadsByView(leads: ClientSubmission[], view: LeadView) {
+  switch (view) {
+    case "contacted":
+      return leads.filter((lead) => lead.contacted);
+    case "sold":
+      return leads.filter((lead) => lead.convertedToSale);
+    case "not-contacted":
+      return leads.filter((lead) => !lead.contacted);
+    case "weekly":
+    default:
+      return filterLeads(leads, "7d");
+  }
+}
+
 function buildChartData(
   leads: ClientSubmission[],
   granularity: ChartGranularity,
@@ -264,8 +374,9 @@ export function LeadsTable({
   const copy = leadCopy[locale];
   const [localLeads, setLocalLeads] = useState(leads);
   const [selectedLead, setSelectedLead] = useState<ClientSubmission | null>(null);
-  const [range, setRange] = useState<FilterRange>("30d");
-  const [granularity, setGranularity] = useState<ChartGranularity>("daily");
+  const [range, setRange] = useState<FilterRange>("7d");
+  const [view, setView] = useState<LeadView>("weekly");
+  const [granularity, setGranularity] = useState<ChartGranularity>("weekly");
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -294,7 +405,10 @@ export function LeadsTable({
     );
   }
 
-  const filteredLeads = useMemo(() => filterLeads(localLeads, range), [localLeads, range]);
+  const filteredLeads = useMemo(() => {
+    const base = view === "weekly" ? filterLeads(localLeads, range) : filterLeadsByView(localLeads, view);
+    return base;
+  }, [localLeads, range, view]);
   const soldCount = filteredLeads.filter((lead) => lead.convertedToSale).length;
   const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
   const paginatedLeads = useMemo(
@@ -309,7 +423,7 @@ export function LeadsTable({
 
   useEffect(() => {
     setPage(1);
-  }, [range]);
+  }, [range, view]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -339,6 +453,21 @@ export function LeadsTable({
           {hasPro ? (
             <>
               <div className="flex flex-wrap gap-2">
+                {(Object.keys(copy.views) as LeadView[]).map((item) => (
+                  <Button
+                    key={item}
+                    type="button"
+                    size="sm"
+                    variant={view === item ? "secondary" : "outline"}
+                    onClick={() => setView(item)}
+                  >
+                    {copy.views[item]}
+                  </Button>
+                ))}
+              </div>
+
+              {view === "weekly" ? (
+                <div className="flex flex-wrap gap-2">
                 {(["7d", "30d", "90d", "all"] as const).map((item) => (
                   <Button
                     key={item}
@@ -350,7 +479,8 @@ export function LeadsTable({
                     {copy.filters[item]}
                   </Button>
                 ))}
-              </div>
+                </div>
+              ) : null}
 
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
@@ -460,7 +590,7 @@ export function LeadsTable({
                     <p className="text-sm text-[var(--foreground-muted)]">
                       {formatDateLabel(lead.createdAt)}
                     </p>
-                    <p className="mt-1 font-medium text-white">{formatIntent(lead.intent)}</p>
+                    <p className="mt-1 font-medium text-white">{formatIntent(lead.intent, locale)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <Badge variant={lead.contacted ? "accent" : "muted"}>
@@ -472,10 +602,10 @@ export function LeadsTable({
                   </div>
                 </div>
                 <div className="mt-4 space-y-2 text-sm text-[var(--foreground-muted)]">
-                  <p>{copy.placement}: {getPlacementDetailLabel(lead.bodyAreaDetail)}</p>
+                  <p>{copy.placement}: {formatPlacement(lead.bodyAreaDetail, locale)}</p>
                   <p>{copy.size}: {formatApproximateSizeLabel(lead) ?? lead.sizeCategory}</p>
                   <p>{copy.city}: {lead.city ?? copy.noCity}</p>
-                  <p>{copy.style}: {formatStyle(lead.style)}</p>
+                  <p>{copy.style}: {formatStyle(lead.style, locale)}</p>
                   <p>{copy.estimate}: {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
                   <p>{copy.notes}: {notesPreview(lead.notes, copy.noNotes)}</p>
                 </div>
@@ -527,9 +657,9 @@ export function LeadsTable({
                 {paginatedLeads.map((lead) => (
                   <TableRow key={lead.id}>
                     <TableCell>{formatDateLabel(lead.createdAt)}</TableCell>
-                    <TableCell>{formatIntent(lead.intent)}</TableCell>
-                    <TableCell>{getPlacementDetailLabel(lead.bodyAreaDetail)}</TableCell>
-                    <TableCell>{formatStyle(lead.style)}</TableCell>
+                    <TableCell>{formatIntent(lead.intent, locale)}</TableCell>
+                    <TableCell>{formatPlacement(lead.bodyAreaDetail, locale)}</TableCell>
+                    <TableCell>{formatStyle(lead.style, locale)}</TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         <p>{formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
@@ -612,7 +742,7 @@ export function LeadsTable({
                       {formatDateLabel(selectedLead.createdAt)}
                     </p>
                     <h3 className="mt-1 text-lg font-semibold text-white">
-                      {formatIntent(selectedLead.intent)}
+                      {formatIntent(selectedLead.intent, locale)}
                     </h3>
                   </div>
                   <Button type="button" variant="ghost" size="icon" onClick={() => setSelectedLead(null)}>
@@ -622,21 +752,21 @@ export function LeadsTable({
 
                 <div className="mt-5 grid gap-5 md:grid-cols-2">
                   <div className="space-y-3 rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
-                    <p><span className="text-white">{copy.placement}:</span> {getPlacementDetailLabel(selectedLead.bodyAreaDetail)}</p>
+                    <p><span className="text-white">{copy.placement}:</span> {formatPlacement(selectedLead.bodyAreaDetail, locale)}</p>
                     <p><span className="text-white">{copy.size}:</span> {formatApproximateSizeLabel(selectedLead) ?? selectedLead.sizeCategory}</p>
                     <p><span className="text-white">{copy.city}:</span> {selectedLead.city || copy.noCity}</p>
-                    <p><span className="text-white">{copy.style}:</span> {formatStyle(selectedLead.style)}</p>
+                    <p><span className="text-white">{copy.style}:</span> {formatStyle(selectedLead.style, locale)}</p>
                     <p><span className="text-white">{copy.estimate}:</span> {formatCompactCurrencyRange(selectedLead.estimatedMin, selectedLead.estimatedMax, currency)}</p>
                     <p><span className="text-white">{copy.notes}:</span> {selectedLead.notes || copy.noNotes}</p>
-                    <p><span className="text-white">Reference description:</span> {selectedLead.referenceDescription || copy.noReferenceDescription}</p>
+                    <p><span className="text-white">{copy.referenceDescription}:</span> {selectedLead.referenceDescription || copy.noReferenceDescription}</p>
                     <p>
-                      <span className="text-white">Preferred timing:</span>{" "}
+                      <span className="text-white">{copy.preferredTiming}:</span>{" "}
                       {selectedLead.preferredStartDate || selectedLead.preferredEndDate
                         ? `${selectedLead.preferredStartDate ?? "?"} - ${selectedLead.preferredEndDate ?? "?"}`
                         : copy.noTiming}
                     </p>
                     <p>
-                      <span className="text-white">Selected design:</span>{" "}
+                      <span className="text-white">{copy.selectedDesign}:</span>{" "}
                       {selectedLead.selectedDesignId
                         ? designs.find((design) => design.id === selectedLead.selectedDesignId)?.title ?? "Selected design"
                         : copy.noDesign}
@@ -648,7 +778,7 @@ export function LeadsTable({
                   </div>
                   <div className="space-y-3">
                     <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                      <p className="text-sm font-medium text-white">Reference image</p>
+                      <p className="text-sm font-medium text-white">{copy.openFullImage === "Open full image" ? "Reference image" : "Referans görsel"}</p>
                       {selectedLead.referenceImageUrl ? (
                         <div className="mt-3 space-y-3">
                           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -59,7 +59,7 @@ const profileCopy = {
     description: "Sanatçı sayfanda ve sonuç mesajlarında görünen bilgileri buradan yönet.",
     artistName: "Sanatçı adı",
     slug: "Sayfa bağlantısı",
-    slugHelp: "Sayfan `site-adresin.com/artist-slug` biçiminde yayınlanır.",
+    slugHelp: "Bağlantın `tattix.io/` ile başlar. Sadece sana özel kısa yolu yazman yeterli.",
     profileImage: "Profil görseli",
     profileImageHelp: "Doğrudan yükleyebilir veya bağlantı kullanabilirsin.",
     coverImage: "Kapak görseli",
@@ -270,7 +270,15 @@ export function ProfileForm({
               description={copy.slugHelp}
               error={form.formState.errors.slug?.message}
             >
-              <Input {...form.register("slug")} />
+              <div className="flex overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
+                <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
+                  tattix.io/
+                </div>
+                <Input
+                  {...form.register("slug")}
+                  className="border-0 bg-transparent focus-visible:ring-0"
+                />
+              </div>
             </Field>
           </div>
           <div className="grid gap-5 lg:grid-cols-2">

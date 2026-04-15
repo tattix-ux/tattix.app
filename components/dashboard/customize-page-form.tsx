@@ -83,7 +83,7 @@ export function CustomizePageForm({
           fonts: "Fontlar",
           fontsDescription: "Sayfanın premium ve okunaklı kalması için font seçimleri sınırlı tutulur.",
           colors: "Renkler",
-          colorsDescription: "Marka renklerini ayarla; okunabilirlik güvenli tarafta otomatik korunur.",
+          colorsDescription: "Marka renklerini ayarla.",
           backgrounds: "Arka planlar",
           backgroundsDescription: "Düz renk, degrade veya arka plan görseli kullanabilirsin.",
           backgroundColor: "Arka plan rengi",
@@ -134,7 +134,7 @@ export function CustomizePageForm({
           fonts: "Fonts",
           fontsDescription: "Keep font choices curated so the page stays readable and premium.",
           colors: "Colors",
-          colorsDescription: "Set brand accents while contrast is kept on the safe side automatically.",
+          colorsDescription: "Set your brand colors.",
           backgrounds: "Backgrounds",
           backgroundsDescription: "Choose between solid, gradient, or background image styling.",
           backgroundColor: "Background color",
@@ -285,6 +285,13 @@ export function CustomizePageForm({
       watchedValues.radiusStyle,
       watchedValues.themeMode,
     ],
+  );
+  const previewArtist = useMemo(
+    () => ({
+      ...artist,
+      pageTheme: previewTheme,
+    }),
+    [artist, previewTheme],
   );
 
   useEffect(() => {
@@ -567,7 +574,7 @@ export function CustomizePageForm({
       className={cn(
         "grid gap-4",
         editorTab === "custom"
-          ? "xl:grid-cols-[300px_minmax(0,1fr)]"
+          ? "xl:grid-cols-[280px_minmax(0,1fr)] xl:items-start"
           : "2xl:grid-cols-[minmax(0,1fr)_400px]",
       )}
     >
@@ -575,7 +582,7 @@ export function CustomizePageForm({
         className={cn(
           "order-first min-w-0 space-y-3",
           editorTab === "custom"
-            ? "xl:sticky xl:top-6 xl:self-start"
+            ? "xl:sticky xl:top-4 xl:self-start"
             : "2xl:order-2 2xl:sticky 2xl:top-6 2xl:self-start",
         )}
       >
@@ -616,13 +623,13 @@ export function CustomizePageForm({
             <div
               className={
                 editorTab === "custom" || device === "mobile"
-                  ? "mx-auto w-full max-w-[248px]"
+                  ? "mx-auto w-full max-w-[252px]"
                   : "mx-auto w-full max-w-[760px] overflow-x-auto"
               }
             >
               <div className="origin-top">
                 <ArtistPagePreview
-                  artist={{ ...artist, pageTheme: previewTheme }}
+                  artist={previewArtist}
                   theme={previewTheme}
                   device={editorTab === "custom" ? "mobile" : device}
                 />

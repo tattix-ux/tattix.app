@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { Check, LoaderCircle, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -77,7 +77,7 @@ export function FunnelSettingsForm({
           introTitle: "Giriş başlığı",
           introDescription: "Giriş açıklaması",
           showFeatured: "Hazır tasarım kartlarını sanatçı sayfasında göster",
-          activeStyles: "Görünür stiller",
+          activeStyles: "Çalıştığın stiller",
           activeCount: "aktif",
           customStyles: "Özel stiller",
           addStyle: "Stil ekle",
@@ -102,7 +102,6 @@ export function FunnelSettingsForm({
           addDate: "Tarih seç",
           removeDate: "Tarihi kaldır",
           noDates: "Henüz tarih eklenmedi.",
-          autosave: "Değişiklikler otomatik kaydedilir.",
         }
       : {
           title: "Funnel settings",
@@ -111,7 +110,7 @@ export function FunnelSettingsForm({
           introTitle: "Intro title",
           introDescription: "Intro description",
           showFeatured: "Show featured designs on the public page",
-          activeStyles: "Visible styles",
+          activeStyles: "Working styles",
           activeCount: "active",
           customStyles: "Custom styles",
           addStyle: "Add style",
@@ -136,7 +135,6 @@ export function FunnelSettingsForm({
           addDate: "Select dates",
           removeDate: "Remove date",
           noDates: "No dates added yet.",
-          autosave: "Changes save automatically.",
         };
   const form = useForm<FunnelFormInput, unknown, FunnelValues>({
     resolver: zodResolver(funnelSettingsSchema),
@@ -221,7 +219,7 @@ export function FunnelSettingsForm({
     }
 
     form.reset(values);
-    setStatusMessage(payload.message ?? copy.saved);
+      setStatusMessage(null);
   }
 
   function resetStylesToDefault() {
@@ -343,10 +341,6 @@ export function FunnelSettingsForm({
         <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-[var(--foreground-muted)]">
-          {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
-          <span>{isSaving ? copy.saving : copy.autosave}</span>
-        </div>
         <form className="space-y-5">
           <Field label={copy.introEyebrow} error={form.formState.errors.introEyebrow?.message}>
             <Input {...form.register("introEyebrow")} />
@@ -358,7 +352,14 @@ export function FunnelSettingsForm({
             label={copy.introDescription}
             error={form.formState.errors.introDescription?.message}
           >
-            <Textarea {...form.register("introDescription")} />
+            <Textarea
+              {...form.register("introDescription")}
+              placeholder={
+                locale === "tr"
+                  ? "Bölgeyi, boyutu ve aklındaki fikri birkaç adımda paylaş."
+                  : "Share the placement, size, and your idea in a few quick steps."
+              }
+            />
           </Field>
           <label className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
             <input
@@ -476,38 +477,38 @@ export function FunnelSettingsForm({
                 </Button>
               </div>
             </div>
-            <div className="grid gap-2 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid gap-2 lg:grid-cols-6 xl:grid-cols-7">
               {builtInStyles.map((style) => {
                 const active = selectedStyles.includes(style.styleKey);
 
                 return (
                   <div
                     key={style.id}
-                    className={`rounded-[14px] border px-2 py-1.5 text-left transition ${
+                    className={`rounded-[12px] border px-2 py-1.5 text-left transition ${
                       active
                         ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
                         : "border-white/8 bg-black/20"
                     }`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const nextStyles = active
-                          ? selectedStyles.filter((item) => item !== style.styleKey)
-                          : [...selectedStyles, style.styleKey];
-                        form.setValue("enabledStyles", nextStyles, { shouldValidate: true });
-                      }}
-                      className="w-full text-left"
-                    >
-                      <p className="text-xs font-medium leading-4 text-white">{style.label}</p>
-                    </button>
-                    <div className="mt-1.5 flex justify-end">
+                    <div className="flex items-start justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextStyles = active
+                            ? selectedStyles.filter((item) => item !== style.styleKey)
+                            : [...selectedStyles, style.styleKey];
+                          form.setValue("enabledStyles", nextStyles, { shouldValidate: true });
+                        }}
+                        className="min-w-0 flex-1 text-left"
+                      >
+                        <p className="truncate text-xs font-medium leading-4 text-white">{style.label}</p>
+                      </button>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         aria-label={copy.remove}
-                        className="h-7 w-7 px-0"
+                        className="h-6 w-6 px-0"
                         onClick={() => {
                           form.setValue(
                             "enabledStyles",
@@ -521,7 +522,7 @@ export function FunnelSettingsForm({
                           );
                         }}
                       >
-                        <Trash2 className="size-4" />
+                        <Trash2 className="size-3.5" />
                       </Button>
                     </div>
                   </div>
@@ -530,13 +531,32 @@ export function FunnelSettingsForm({
               {customStyleCards.map((style) => (
                 <div
                   key={style.id ?? style.styleKey}
-                    className={`rounded-[14px] border px-2 py-1.5 text-left transition ${
+                    className={`rounded-[12px] border px-2 py-1.5 text-left transition ${
                     style.enabled
                       ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
                       : "border-white/8 bg-black/20"
                   }`}
                 >
-                  <p className="text-xs font-medium leading-4 text-white">{style.label || copy.styleLabel}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="truncate text-xs font-medium leading-4 text-white">{style.label || copy.styleLabel}</p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={copy.remove}
+                      className="h-6 w-6 px-0"
+                      onClick={() => {
+                        const styleIndex = customStyleCards.findIndex(
+                          (item) => (item.id ?? item.styleKey) === (style.id ?? style.styleKey),
+                        );
+                        if (styleIndex !== -1) {
+                          customStylesFieldArray.remove(styleIndex);
+                        }
+                      }}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
                   {style.description ? (
                     <p className="mt-1 text-[10px] leading-4 text-[var(--foreground-muted)]">
                       {style.description}
@@ -622,7 +642,7 @@ export function FunnelSettingsForm({
               ))}
             </div>
           </div>
-          {statusMessage ? (
+          {statusMessage && !isSaving ? (
             <p className="text-sm text-[var(--accent-soft)]">
               {statusMessage}
             </p>
