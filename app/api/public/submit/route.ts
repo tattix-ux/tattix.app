@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
   if (isSupabaseConfigured()) {
     const supabase = await createSupabaseServerClient();
-    await supabase.from("client_submissions").insert({
+    const insertPayload = {
       artist_id: artist.profile.id,
       intent: submission.intent,
       selected_design_id: submission.selectedDesignId ?? null,
@@ -93,7 +93,14 @@ export async function POST(request: Request) {
       estimated_max: estimate.max,
       contact_message: message,
       status: "new",
-    });
+    };
+
+    const { error } = await supabase.from("client_submissions").insert(insertPayload);
+
+    if (error && error.message.toLowerCase().includes("status")) {
+      const { status: _status, ...legacyPayload } = insertPayload;
+      await supabase.from("client_submissions").insert(legacyPayload);
+    }
   }
 
   return NextResponse.json({

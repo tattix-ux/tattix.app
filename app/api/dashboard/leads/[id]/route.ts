@@ -36,18 +36,32 @@ export async function PATCH(
   }
 
   const supabase = await createSupabaseServerClient();
-  const updatePayload: Record<string, boolean | string | null> = {
+  const derivedPayload: Record<string, boolean | string | null> = {
     status: body.status,
     contacted: body.status === "contacted" || body.status === "sold",
     converted_to_sale: body.status === "sold",
     sold_at: body.status === "sold" ? new Date().toISOString() : null,
   };
 
-  const { error } = await supabase
+  let { error } = await supabase
     .from("client_submissions")
-    .update(updatePayload)
+    .update(derivedPayload)
     .eq("id", id)
     .eq("artist_id", artist.id);
+
+  if (error && error.message.toLowerCase().includes("status")) {
+    const fallbackPayload = {
+      contacted: derivedPayload.contacted,
+      converted_to_sale: derivedPayload.converted_to_sale,
+      sold_at: derivedPayload.sold_at,
+    };
+
+    ({ error } = await supabase
+      .from("client_submissions")
+      .update(fallbackPayload)
+      .eq("id", id)
+      .eq("artist_id", artist.id));
+  }
 
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
