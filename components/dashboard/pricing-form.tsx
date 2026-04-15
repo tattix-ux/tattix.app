@@ -576,9 +576,11 @@ export function PricingForm({
               >
                 {ready ? copy.edit : copy.start}
               </Button>
-              <Button type="button" variant="ghost" onClick={resetDraft}>
-                {copy.reset}
-              </Button>
+              {ready ? (
+                <Button type="button" variant="ghost" onClick={resetDraft}>
+                  {copy.reset}
+                </Button>
+              ) : null}
               {showCalibration ? (
                 <Button type="button" variant="ghost" onClick={() => setShowCalibration(false)}>
                   {copy.close}
@@ -589,7 +591,7 @@ export function PricingForm({
 
           {showCalibration ? (
             <>
-              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:p-5">
+              <div className="rounded-[24px] border border-white/8 bg-black/20 p-3 sm:p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
@@ -606,19 +608,19 @@ export function PricingForm({
                   </p>
                 </div>
 
-                <div className="mt-4 overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
-                  <div className="relative aspect-[4/5] w-full bg-black/10">
+                <div className="mt-3 overflow-hidden rounded-[18px] border border-white/8 bg-black/20">
+                  <div className="relative aspect-[5/4] w-full bg-black/10">
                     <Image
                       src={currentImage}
                       alt={currentMeta.title}
                       fill
                       className="object-contain"
-                      sizes="(max-width: 768px) 100vw, 560px"
+                      sizes="(max-width: 768px) 100vw, 460px"
                     />
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[20px] border border-white/8 bg-black/20 p-4">
+                <div className="mt-3 rounded-[18px] border border-white/8 bg-black/20 p-3">
                   {currentQuestion.step === 1 ? (
                     <div className="space-y-4">
                       {sizeQuestions.map((question) => {

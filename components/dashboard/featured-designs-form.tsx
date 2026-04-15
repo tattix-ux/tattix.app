@@ -39,11 +39,10 @@ const copy = {
     titleLabel: "Title",
     shortDescription: "Short description",
     image: "Design image",
-    imageDescription: "Upload an image or keep using a URL for backwards compatibility.",
+    imageDescription: "Upload an image for this design.",
     noImage: "No image selected yet",
     uploadImage: "Upload image",
     removeImage: "Remove image",
-    imageUrlFallback: "Image URL fallback",
     showPublicly: "Show this design publicly",
     priceNote: "Optional price note",
     priceMin: "Reference price min",
@@ -71,11 +70,10 @@ const copy = {
     titleLabel: "Başlık",
     shortDescription: "Kısa açıklama",
     image: "Tasarım görseli",
-    imageDescription: "Görsel yükleyebilir veya geriye dönük uyumluluk için URL kullanabilirsin.",
+    imageDescription: "Bu tasarım için görsel yükle.",
     noImage: "Henüz görsel seçilmedi",
     uploadImage: "Görsel yükle",
     removeImage: "Görseli kaldır",
-    imageUrlFallback: "Yedek görsel URL'si",
     showPublicly: "Bu tasarımı herkese açık sayfada göster",
     priceNote: "Opsiyonel fiyat notu",
     priceMin: "Referans min fiyat",
@@ -251,7 +249,7 @@ export function FeaturedDesignsForm({
                     <Textarea {...form.register(`designs.${index}.shortDescription`)} />
                   </Field>
 
-                  <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_1fr]">
+                  <div className="mt-5 space-y-5">
                     <Field label={labels.image} description={labels.imageDescription}>
                       <div className="space-y-3">
                         <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
@@ -271,6 +269,7 @@ export function FeaturedDesignsForm({
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
+                          <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
                           <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
                             <Upload className="size-4" />
                             {labels.uploadImage}
@@ -302,20 +301,14 @@ export function FeaturedDesignsForm({
                         </div>
                       </div>
                     </Field>
-
-                    <div className="space-y-5">
-                      <Field label={labels.imageUrlFallback}>
-                        <Input placeholder="https://..." {...form.register(`designs.${index}.imageUrl`)} />
-                      </Field>
-                      <label className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
-                        <input
-                          type="checkbox"
-                          className="size-4 accent-[var(--accent)]"
-                          {...form.register(`designs.${index}.active`)}
-                        />
-                        <span className="text-sm text-white">{labels.showPublicly}</span>
-                      </label>
-                    </div>
+                    <label className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+                      <input
+                        type="checkbox"
+                        className="size-4 accent-[var(--accent)]"
+                        {...form.register(`designs.${index}.active`)}
+                      />
+                      <span className="text-sm text-white">{labels.showPublicly}</span>
+                    </label>
                   </div>
 
                   <div className="mt-5 grid gap-5 lg:grid-cols-3">
