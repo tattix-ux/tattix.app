@@ -193,44 +193,64 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setResult(null);
     setStep(resultStep);
 
-    const requestPromise = fetch("/api/public/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        artistSlug: artist.profile.slug,
-        locale,
-        ...draft,
-        customDesign:
-          !draft.selectedDesignId &&
-          draft.intent !== "flash-design" &&
-          draft.intent !== "discounted-design",
-        designType: draft.intent || null,
-      }),
-    });
+    const payload = {
+      artistSlug: artist.profile.slug,
+      locale,
+      ...draft,
+      selectedDesignId: draft.selectedDesignId || null,
+      referenceImage: draft.referenceImage || null,
+      referenceImagePath: draft.referenceImagePath || null,
+      referenceDescription: draft.referenceDescription || undefined,
+      city: draft.city || undefined,
+      preferredStartDate: draft.preferredStartDate || undefined,
+      preferredEndDate: draft.preferredEndDate || undefined,
+      detailLevel: draft.detailLevel || undefined,
+      colorMode: draft.colorMode || undefined,
+      coverUp: draft.coverUp === null ? undefined : draft.coverUp,
+      notes: draft.notes || undefined,
+      customDesign:
+        !draft.selectedDesignId &&
+        draft.intent !== "flash-design" &&
+        draft.intent !== "discounted-design",
+      designType: draft.intent || null,
+    };
 
-    const [response] = await Promise.all([
-      requestPromise,
-      new Promise((resolve) => window.setTimeout(resolve, getDelayMs())),
-    ]);
+    try {
+      const requestPromise = fetch("/api/public/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const payload = (await response.json()) as SubmissionResponse;
-    setSubmitting(false);
+      const [response] = await Promise.all([
+        requestPromise,
+        new Promise((resolve) => window.setTimeout(resolve, getDelayMs())),
+      ]);
 
-    if (!response.ok || !payload) {
+      const responsePayload = (await response.json()) as SubmissionResponse;
+      setSubmitting(false);
+
+      if (!response.ok || !responsePayload) {
+        setBookingError(copy.calculatingBody);
+        setStep(5);
+        return;
+      }
+
+      setResult({
+        estimatedMin: responsePayload.estimatedMin,
+        estimatedMax: responsePayload.estimatedMax,
+        summary: responsePayload.summary,
+        disclaimer: responsePayload.disclaimer,
+        whatsappLink: responsePayload.whatsappLink,
+        message: responsePayload.message,
+      });
+    } catch {
+      setSubmitting(false);
+      setBookingError(copy.calculatingBody);
       setStep(5);
-      return;
     }
-
-    setResult({
-      estimatedMin: payload.estimatedMin,
-      estimatedMax: payload.estimatedMax,
-      summary: payload.summary,
-      disclaimer: payload.disclaimer,
-      whatsappLink: payload.whatsappLink,
-      message: payload.message,
-    });
   }
 
   async function copyMessage() {
@@ -818,16 +838,18 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       ) : null}
                     </div>
                   ) : null}
-                  <div
-                    className="rounded-[24px] border p-4 text-sm"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                      color: "var(--artist-card-muted)",
-                    }}
-                  >
-                    {copy.notesHelper}
-                  </div>
+                  {copy.notesHelper ? (
+                    <div
+                      className="rounded-[24px] border p-4 text-sm"
+                      style={{
+                        borderColor: "var(--artist-border)",
+                        backgroundColor: "rgba(0,0,0,0.12)",
+                        color: "var(--artist-card-muted)",
+                      }}
+                    >
+                      {copy.notesHelper}
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
