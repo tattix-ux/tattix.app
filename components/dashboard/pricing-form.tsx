@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -24,7 +24,6 @@ import {
   buildInitialCalibrationDraft,
   buildPricingPayloadFromCalibrationDraft,
   CALIBRATION_QUESTIONS,
-  isCalibrationReady,
   summarizeFinalValidationReview,
   updateCalibrationDraftRange,
   updateCalibrationValidationDraft,
@@ -65,8 +64,6 @@ function getText(locale: PublicLocale) {
       openingPrice: "Başlangıç fiyatın",
       openingPriceHelp: "Küçük ve standart bir dövmeyi genelde kaçtan başlatıyorsun?",
       openingPriceNote: "Bu değer modelin taban fiyatı olur.",
-      ready: "Kalibrasyon hazır.",
-      notReady: "Kalibrasyon henüz tamamlanmadı.",
       start: "Fiyatlandırma analizimi başlat",
       edit: "Kalibrasyonu düzenle",
       reset: "Sıfırla",
@@ -111,6 +108,7 @@ function getText(locale: PublicLocale) {
       validationAdjusted: "Tahminleri biraz güncelledim. Aynı örnekleri bir kez daha kontrol edelim.",
       validationSaved: "Final kontrol kaydedildi.",
       validationNeedsReview: "Model hâlâ biraz ayar istiyor. Bu haliyle kaydettim.",
+      saveAfterValidation: "Kalibrasyonu kaydet",
       scenarioSize: "Yaklaşık boyut",
       scenarioPlacement: "Bölge",
       scenario1: "Minimal linework · siyah",
@@ -135,8 +133,6 @@ function getText(locale: PublicLocale) {
     openingPrice: "Opening price",
     openingPriceHelp: "What do you usually start a small, standard tattoo at?",
     openingPriceNote: "This becomes the anchor of the pricing model.",
-    ready: "Calibration is ready.",
-    notReady: "Calibration is not complete yet.",
     start: "Start pricing analysis",
     edit: "Edit calibration",
     reset: "Reset",
@@ -181,6 +177,7 @@ function getText(locale: PublicLocale) {
     validationAdjusted: "I updated the estimate slightly. Let's review the same examples once more.",
     validationSaved: "Final check saved.",
     validationNeedsReview: "The model still needs a quick manual review. This state was saved.",
+    saveAfterValidation: "Save calibration",
     scenarioSize: "Approximate size",
     scenarioPlacement: "Placement",
     scenario1: "Minimal linework · black",
@@ -373,10 +370,11 @@ export function PricingForm({
   const [validationFeedback, setValidationFeedback] = useState<
     Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>
   >({});
+  const [awaitingFinalSave, setAwaitingFinalSave] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const ready = isCalibrationReady(pricingRules);
+  const ready = draft.validation.finalValidation.validationStatus !== "pending";
   const currentQuestion = CALIBRATION_QUESTIONS[screenIndex];
   const currentMeta = getQuestionMeta(currentQuestion.id, locale);
   const currentRange = getQuestionRange(draft, currentQuestion.id);
@@ -390,25 +388,51 @@ export function PricingForm({
   const currentValidationImage = validationImages[currentValidationScenario.image];
   const currentImage = calibrationImages[currentQuestion.image];
 
-  function resetDraft() {
-    const nextDraft = buildInitialCalibrationDraft({
-      ...pricingRules,
-      calibrationExamples: {
-        ...pricingRules.calibrationExamples,
+  function buildEmptyDraft() {
+    const base = buildInitialCalibrationDraft(pricingRules);
+
+    return {
+      ...base,
+      validation: {
+        globalScale: "1",
         finalValidation: {
-          validationRound: 1,
+          validationRound: 1 as const,
           perExampleFeedback: {},
           appliedGlobalValidationAdjustment: 1,
-          validationStatus: "pending",
+          validationStatus: "pending" as const,
           calibratedAndValidated: false,
         },
       },
-    });
+      size: {
+        size8: { min: "", max: "" },
+        size12: { min: "", max: "" },
+        size18: { min: "", max: "" },
+        size25: { min: "", max: "" },
+      },
+      detail: {
+        low: { min: "", max: "" },
+        medium: { min: "", max: "" },
+        high: { min: "", max: "" },
+      },
+      placement: {
+        easy: { min: "", max: "" },
+        hard: { min: "", max: "" },
+      },
+      color: {
+        black: { min: "", max: "" },
+        color: { min: "", max: "" },
+      },
+    };
+  }
+
+  function resetDraft() {
+    const nextDraft = buildEmptyDraft();
 
     setDraft(nextDraft);
     setScreenIndex(0);
     setShowCalibration(false);
     setShowFinalValidation(false);
+    setAwaitingFinalSave(false);
     resetValidationFlow();
     setStatusMessage(null);
   }
@@ -443,6 +467,7 @@ export function PricingForm({
       setStatusMessage(successMessage);
       setShowCalibration(false);
       setShowFinalValidation(false);
+      setAwaitingFinalSave(false);
       router.refresh();
     } finally {
       setIsSaving(false);
@@ -531,9 +556,10 @@ export function PricingForm({
     }
 
     const nextDraft = updateFinalValidationDraft(draft, review);
-    await handleSave(
-      nextDraft,
-      review.calibratedAndValidated ? copy.validationSaved : copy.validationNeedsReview,
+    setDraft(nextDraft);
+    setAwaitingFinalSave(true);
+    setStatusMessage(
+      review.calibratedAndValidated ? copy.finalCheckReady : copy.validationNeedsReview,
     );
   }
 
@@ -569,6 +595,7 @@ export function PricingForm({
                 onClick={() => {
                   setShowCalibration((current) => !current);
                   setShowFinalValidation(false);
+                  setAwaitingFinalSave(false);
                   setScreenIndex(0);
                   setStatusMessage(null);
                 }}
@@ -821,6 +848,7 @@ export function PricingForm({
                   type="button"
                   variant="ghost"
                   onClick={() => {
+                    setAwaitingFinalSave(false);
                     setShowFinalValidation(false);
                     setShowCalibration(true);
                     setScreenIndex(CALIBRATION_QUESTIONS.length - 1);
@@ -829,6 +857,32 @@ export function PricingForm({
                 >
                   {copy.edit}
                 </Button>
+                {awaitingFinalSave ? (
+                  <Button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={() =>
+                      handleSave(
+                        draft,
+                        draft.validation.finalValidation.calibratedAndValidated
+                          ? copy.validationSaved
+                          : copy.validationNeedsReview,
+                      )
+                    }
+                  >
+                    {isSaving ? (
+                      <>
+                        <LoaderCircle className="size-4 animate-spin" />
+                        {copy.saving}
+                      </>
+                    ) : (
+                      <>
+                        <Check className="size-4" />
+                        {copy.saveAfterValidation}
+                      </>
+                    )}
+                  </Button>
+                ) : null}
               </div>
             </>
           ) : null}

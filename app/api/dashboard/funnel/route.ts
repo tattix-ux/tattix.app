@@ -6,6 +6,25 @@ import { funnelSettingsSchema } from "@/lib/forms/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+function buildStyleKey(label: string, usedKeys: Set<string>) {
+  const base =
+    label
+      .trim()
+      .toLocaleLowerCase("tr-TR")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "custom-style";
+
+  let candidate = base;
+  let suffix = 2;
+  while (usedKeys.has(candidate)) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  usedKeys.add(candidate);
+  return candidate;
+}
+
 export async function POST(request: Request) {
   const body = await request.json();
   const parsed = funnelSettingsSchema.safeParse(body);
@@ -27,7 +46,12 @@ export async function POST(request: Request) {
   }
 
   const builtInKeys = new Set<string>(baseStyleOptions.map((style) => style.value));
-  const customKeys = parsed.data.customStyles.map((style) => style.styleKey);
+  const usedCustomKeys = new Set<string>(builtInKeys);
+  const normalizedCustomStyles = parsed.data.customStyles.map((style) => ({
+    ...style,
+    styleKey: buildStyleKey(style.label, usedCustomKeys),
+  }));
+  const customKeys = normalizedCustomStyles.map((style) => style.styleKey);
   const removedBuiltInKeys = new Set(parsed.data.removedBuiltInStyles);
   const hasDuplicateCustomKeys = new Set(customKeys).size !== customKeys.length;
   const conflictsWithBuiltIns = customKeys.some((key) => builtInKeys.has(key));
@@ -89,7 +113,7 @@ export async function POST(request: Request) {
     deleted: removedBuiltInKeys.has(style.value),
   }));
 
-  const customRows = parsed.data.customStyles.map((style) => ({
+  const customRows = normalizedCustomStyles.map((style) => ({
     artist_id: artist.id,
     style_key: style.styleKey,
     label: style.label,

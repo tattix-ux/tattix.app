@@ -77,10 +77,7 @@ export const profileSchema = z.object({
 
 const customStyleSchema = z.object({
   id: z.string().optional(),
-  styleKey: z
-    .string()
-    .min(2)
-    .regex(/^[a-z0-9-]+$/),
+  styleKey: z.string().default(""),
   label: z.string().min(2).max(40),
   description: z.string().max(140).optional().default(""),
   enabled: z.boolean().default(true),

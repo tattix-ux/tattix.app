@@ -93,7 +93,7 @@ export function DashboardNav({
             href={item.href}
             prefetch
             className={cn(
-              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-2.5 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2 lg:px-3 lg:py-2.5 lg:text-sm lg:text-left",
+              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-2.5 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2 lg:px-2.5 lg:py-2.5 lg:text-sm lg:text-left",
               active
                 ? "border-[var(--accent)]/30 bg-[var(--accent)]/14 text-white"
                 : "border-white/8 bg-white/3 text-[var(--foreground-muted)] hover:border-white/12 hover:bg-white/6 hover:text-white",

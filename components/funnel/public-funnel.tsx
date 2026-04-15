@@ -11,6 +11,7 @@ import { AvatarTile } from "@/components/shared/avatar-tile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateCalendarPopover } from "@/components/ui/date-calendar-popover";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
@@ -460,7 +461,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 <SizeEstimationSelector
                   selectedPlacement={draft.bodyAreaDetail}
                   approximateSizeCm={draft.approximateSizeCm}
-                  selectedStyle={styleStepActive ? draft.style : "custom"}
                   sizeTimeRanges={artist.pricingRules.sizeTimeRanges}
                   locale={locale}
                   onApproximateSizeChange={(cm) => {
@@ -476,19 +476,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               {step === 4 ? (
                 <div className="space-y-3">
                   <div
-                    className="rounded-[20px] border px-4 py-3 text-sm"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                      color: "var(--artist-card-muted)",
-                    }}
-                  >
-                    {locale === "tr"
-                      ? "Fiyatı en çok etkileyen seçimleri burada netleştir. Stil ise sanatçı için ek bağlam olarak kalır."
-                      : "Set the choices that affect the quote most here. Style stays as extra context for the artist."}
-                  </div>
-
-                  <div
                     className="rounded-[24px] border p-4"
                     style={{
                       borderColor: "var(--artist-border)",
@@ -498,9 +485,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
                       {copy.detailLevelTitle}
                     </p>
-                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.detailLevelHelp}
-                    </p>
+                    {copy.detailLevelHelp ? (
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.detailLevelHelp}
+                      </p>
+                    ) : null}
                     <div className="mt-4 grid gap-2.5 sm:gap-3">
                       {detailLevelOptions.map((level) => {
                         const active = draft.detailLevel === level;
@@ -538,9 +527,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
                       {copy.colorModeTitle}
                     </p>
-                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.colorModeHelp}
-                    </p>
+                    {copy.colorModeHelp ? (
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.colorModeHelp}
+                      </p>
+                    ) : null}
                     <div className="mt-4 grid gap-2.5 sm:gap-3">
                       {colorModeOptions.map((mode) => {
                         const active = draft.colorMode === mode;
@@ -579,9 +570,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
                         {copy.optionalStyleTitle}
                       </p>
-                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                        {copy.optionalStyleHelp}
-                      </p>
+                      {copy.optionalStyleHelp ? (
+                        <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                          {copy.optionalStyleHelp}
+                        </p>
+                      ) : null}
                       <div className="mt-4 grid gap-2.5 sm:gap-3">
                         {enabledStyles.map((style) => {
                           const active = draft.style === style.styleKey;
@@ -786,31 +779,25 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         {copy.preferredTimingHelp}
                       </p>
                       <div className="mt-4">
-                        <label className="space-y-2">
+                        <div className="space-y-2">
                           <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
                             {copy.preferredStartDate}
                           </span>
-                          <NativeSelect
+                          <DateCalendarPopover
+                            locale={locale}
+                            mode="single"
                             disabled={!draft.city || availableDatesForSelectedCity.length === 0}
-                            value={draft.preferredStartDate}
-                            onChange={(event) => {
-                              setField("preferredStartDate", event.target.value);
+                            triggerLabel={copy.preferredTimingLabel}
+                            emptyLabel={copy.preferredStartDate}
+                            selectedDate={draft.preferredStartDate}
+                            availableDates={availableDatesForSelectedCity}
+                            onSelectDate={(date) => {
+                              setField("preferredStartDate", date);
                               setField("preferredEndDate", "");
                               setBookingError(null);
                             }}
-                            style={{
-                              borderColor: "var(--artist-border)",
-                              color: "var(--artist-card-text)",
-                            }}
-                          >
-                            <option value="">{copy.preferredStartDate}</option>
-                            {availableDatesForSelectedCity.map((date) => (
-                              <option key={date} value={date}>
-                                {date}
-                              </option>
-                            ))}
-                          </NativeSelect>
-                        </label>
+                          />
+                        </div>
                       </div>
                       {draft.city && availableDatesForSelectedCity.length === 0 ? (
                         <p className="mt-3 text-sm" style={{ color: "var(--artist-card-muted)" }}>

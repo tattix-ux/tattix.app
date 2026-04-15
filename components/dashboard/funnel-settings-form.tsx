@@ -1,15 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { LoaderCircle, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Check, LoaderCircle, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateCalendarPopover } from "@/components/ui/date-calendar-popover";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,10 +21,6 @@ import type { ArtistFunnelSettings, ArtistStyleOption } from "@/lib/types";
 
 type FunnelValues = z.infer<typeof funnelSettingsSchema>;
 type FunnelFormInput = z.input<typeof funnelSettingsSchema>;
-type PendingDateRange = {
-  start: string;
-  end: string;
-};
 
 export function FunnelSettingsForm({
   settings,
@@ -35,7 +31,43 @@ export function FunnelSettingsForm({
   styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
-  const router = useRouter();
+  function buildStyleKey(label: string, usedKeys: Set<string>) {
+    const base =
+      label
+        .trim()
+        .toLocaleLowerCase("tr-TR")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "custom-style";
+
+    let candidate = base;
+    let suffix = 2;
+    while (usedKeys.has(candidate)) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+    }
+
+    usedKeys.add(candidate);
+    return candidate;
+  }
+
+  function normalizeValues(values: FunnelValues) {
+    const usedKeys = new Set(styles.filter((style) => !style.isCustom).map((style) => style.styleKey));
+
+    return {
+      ...values,
+      customStyles: values.customStyles.map((style) => ({
+        ...style,
+        styleKey: buildStyleKey(style.label, usedKeys),
+        description: style.description?.trim() ?? "",
+      })),
+      bookingCities: values.bookingCities.map((city) => ({
+        ...city,
+        cityName: city.cityName.trim(),
+        availableDates: Array.from(new Set(city.availableDates)).sort(),
+      })),
+    } satisfies FunnelValues;
+  }
+
   const copy =
     locale === "tr"
       ? {
@@ -54,12 +86,9 @@ export function FunnelSettingsForm({
           customStyleDescriptionHelp: "Public bilgi butonunda kısa açıklama olarak görünür.",
           emptyStyles: "Henüz özel stil eklenmedi.",
           styleLabel: "Stil adı",
-          styleKey: "Stil anahtarı",
-          styleKeyHelp: "Sadece küçük harf ve tire kullan.",
           enabled: "Aktif",
           remove: "Kaldır",
           resetDefaults: "Varsayılan stillere dön",
-          save: "Ayarları kaydet",
           saving: "Kaydediliyor",
           saveFailed: "Akış ayarları kaydedilemedi.",
           saved: "Akış ayarları kaydedildi.",
@@ -70,11 +99,10 @@ export function FunnelSettingsForm({
           cityPlaceholder: "Şehir seç",
           noCities: "Henüz şehir eklenmedi.",
           availabilityTitle: "Bu şehir için müsait olduğun tarihleri seç",
-          addDate: "Tarih aralığı ekle",
-          startDate: "Başlangıç tarihi",
-          endDate: "Bitiş tarihi",
+          addDate: "Tarih seç",
           removeDate: "Tarihi kaldır",
           noDates: "Henüz tarih eklenmedi.",
+          autosave: "Değişiklikler otomatik kaydedilir.",
         }
       : {
           title: "Funnel settings",
@@ -92,12 +120,9 @@ export function FunnelSettingsForm({
           customStyleDescriptionHelp: "Shown inside the public style info modal.",
           emptyStyles: "No custom styles yet.",
           styleLabel: "Style label",
-          styleKey: "Style key",
-          styleKeyHelp: "Lowercase letters and hyphens only.",
           enabled: "Enabled",
           remove: "Remove",
           resetDefaults: "Reset styles",
-          save: "Save settings",
           saving: "Saving",
           saveFailed: "Unable to save funnel settings.",
           saved: "Funnel settings saved.",
@@ -108,11 +133,10 @@ export function FunnelSettingsForm({
           cityPlaceholder: "Select city",
           noCities: "No cities added yet.",
           availabilityTitle: "Select the dates you are available in this city",
-          addDate: "Add date range",
-          startDate: "Start date",
-          endDate: "End date",
+          addDate: "Select dates",
           removeDate: "Remove date",
           noDates: "No dates added yet.",
+          autosave: "Changes save automatically.",
         };
   const form = useForm<FunnelFormInput, unknown, FunnelValues>({
     resolver: zodResolver(funnelSettingsSchema),
@@ -153,7 +177,10 @@ export function FunnelSettingsForm({
     name: "bookingCities",
   });
   const [pendingCity, setPendingCity] = useState("");
-  const [pendingDateRanges, setPendingDateRanges] = useState<Record<number, PendingDateRange>>({});
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const initialSyncRef = useRef(true);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedStyles = useWatch({
     control: form.control,
@@ -167,8 +194,18 @@ export function FunnelSettingsForm({
     name: "removedBuiltInStyles",
     defaultValue: styles.filter((style) => !style.isCustom && style.deleted).map((style) => style.styleKey),
   }) ?? [];
+  const watchedValues = useWatch({ control: form.control });
 
-  async function onSubmit(values: FunnelValues) {
+  const normalizedWatchedValues = useMemo(() => {
+    const parsed = funnelSettingsSchema.safeParse(watchedValues);
+    if (!parsed.success) {
+      return null;
+    }
+
+    return normalizeValues(parsed.data);
+  }, [watchedValues]);
+
+  async function persistValues(values: FunnelValues) {
     const response = await fetch("/api/dashboard/funnel", {
       method: "POST",
       headers: {
@@ -179,12 +216,12 @@ export function FunnelSettingsForm({
     const payload = (await response.json()) as { message?: string };
 
     if (!response.ok) {
-      form.setError("root", { message: payload.message ?? copy.saveFailed });
+      setStatusMessage(payload.message ?? copy.saveFailed);
       return;
     }
 
-    form.setError("root", { message: payload.message ?? copy.saved });
-    router.refresh();
+    form.reset(values);
+    setStatusMessage(payload.message ?? copy.saved);
   }
 
   function resetStylesToDefault() {
@@ -247,32 +284,17 @@ export function FunnelSettingsForm({
     setPendingCity("");
   }
 
-  function addBookingDateRange(index: number) {
-    const nextRange = pendingDateRanges[index];
-    if (!nextRange?.start || !nextRange?.end) {
-      return;
-    }
-
-    const start = new Date(`${nextRange.start}T00:00:00`);
-    const end = new Date(`${nextRange.end}T00:00:00`);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
-      return;
-    }
-
+  function toggleBookingDate(index: number, date: string) {
     const currentDates = form.getValues(`bookingCities.${index}.availableDates`) ?? [];
-    const nextDates: string[] = [];
-    const cursor = new Date(start);
-    while (cursor <= end) {
-      nextDates.push(cursor.toISOString().slice(0, 10));
-      cursor.setDate(cursor.getDate() + 1);
-    }
+    const nextDates = currentDates.includes(date)
+      ? currentDates.filter((item) => item !== date)
+      : [...currentDates, date];
 
     form.setValue(
       `bookingCities.${index}.availableDates`,
-      Array.from(new Set([...currentDates, ...nextDates])).sort(),
+      Array.from(new Set(nextDates)).sort(),
       { shouldDirty: true, shouldValidate: true },
     );
-    setPendingDateRanges((current) => ({ ...current, [index]: { start: "", end: "" } }));
   }
 
   function removeBookingDate(index: number, date: string) {
@@ -284,6 +306,36 @@ export function FunnelSettingsForm({
     );
   }
 
+  useEffect(() => {
+    if (initialSyncRef.current) {
+      initialSyncRef.current = false;
+      return;
+    }
+
+    if (!normalizedWatchedValues || !form.formState.isDirty) {
+      return;
+    }
+
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+    }
+
+    autosaveTimerRef.current = setTimeout(async () => {
+      setIsSaving(true);
+      try {
+        await persistValues(normalizedWatchedValues);
+      } finally {
+        setIsSaving(false);
+      }
+    }, 800);
+
+    return () => {
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+      }
+    };
+  }, [form.formState.isDirty, normalizedWatchedValues]);
+
   return (
     <Card className="surface-border">
       <CardHeader>
@@ -291,7 +343,11 @@ export function FunnelSettingsForm({
         <CardDescription>{copy.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-[var(--foreground-muted)]">
+          {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
+          <span>{isSaving ? copy.saving : copy.autosave}</span>
+        </div>
+        <form className="space-y-5">
           <Field label={copy.introEyebrow} error={form.formState.errors.introEyebrow?.message}>
             <Input {...form.register("introEyebrow")} />
           </Field>
@@ -381,46 +437,14 @@ export function FunnelSettingsForm({
 
                       <div className="mt-4 space-y-3">
                         <p className="text-sm font-medium text-white">{copy.availabilityTitle}</p>
-                        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-                          <Field label={copy.startDate}>
-                            <Input
-                              type="date"
-                              min={new Date().toISOString().slice(0, 10)}
-                              value={pendingDateRanges[index]?.start ?? ""}
-                              onChange={(event) =>
-                                setPendingDateRanges((current) => ({
-                                  ...current,
-                                  [index]: {
-                                    start: event.target.value,
-                                    end: current[index]?.end ?? "",
-                                  },
-                                }))
-                              }
-                            />
-                          </Field>
-                          <Field label={copy.endDate}>
-                            <Input
-                              type="date"
-                              min={pendingDateRanges[index]?.start || new Date().toISOString().slice(0, 10)}
-                              value={pendingDateRanges[index]?.end ?? ""}
-                              onChange={(event) =>
-                                setPendingDateRanges((current) => ({
-                                  ...current,
-                                  [index]: {
-                                    start: current[index]?.start ?? "",
-                                    end: event.target.value,
-                                  },
-                                }))
-                              }
-                            />
-                          </Field>
-                          <div className="flex items-end">
-                            <Button type="button" onClick={() => addBookingDateRange(index)}>
-                              <Plus className="size-4" />
-                              {copy.addDate}
-                            </Button>
-                          </div>
-                        </div>
+                        <DateCalendarPopover
+                          locale={locale}
+                          mode="multiple"
+                          triggerLabel={copy.availabilityTitle}
+                          emptyLabel={copy.addDate}
+                          selectedDates={availableDates}
+                          onToggleDate={(date) => toggleBookingDate(index, date)}
+                        />
 
                         {availableDates.length === 0 ? (
                           <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
@@ -460,14 +484,14 @@ export function FunnelSettingsForm({
                 </Button>
               </div>
             </div>
-            <div className="grid gap-2 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid gap-2 lg:grid-cols-5 xl:grid-cols-6">
               {builtInStyles.map((style) => {
                 const active = selectedStyles.includes(style.styleKey);
 
                 return (
                   <div
                     key={style.id}
-                    className={`rounded-[16px] border px-2 py-2 text-left transition ${
+                    className={`rounded-[14px] border px-2 py-1.5 text-left transition ${
                       active
                         ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
                         : "border-white/8 bg-black/20"
@@ -483,7 +507,7 @@ export function FunnelSettingsForm({
                       }}
                       className="w-full text-left"
                     >
-                      <p className="text-[13px] font-medium leading-5 text-white">{style.label}</p>
+                      <p className="text-xs font-medium leading-4 text-white">{style.label}</p>
                     </button>
                     <div className="mt-1.5 flex justify-end">
                       <Button
@@ -514,15 +538,15 @@ export function FunnelSettingsForm({
               {customStyleCards.map((style) => (
                 <div
                   key={style.id ?? style.styleKey}
-                  className={`rounded-[16px] border px-2 py-2 text-left transition ${
+                    className={`rounded-[14px] border px-2 py-1.5 text-left transition ${
                     style.enabled
                       ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
                       : "border-white/8 bg-black/20"
                   }`}
                 >
-                  <p className="text-[13px] font-medium leading-5 text-white">{style.label || copy.styleLabel}</p>
+                  <p className="text-xs font-medium leading-4 text-white">{style.label || copy.styleLabel}</p>
                   {style.description ? (
-                    <p className="mt-1 text-[11px] leading-4 text-[var(--foreground-muted)]">
+                    <p className="mt-1 text-[10px] leading-4 text-[var(--foreground-muted)]">
                       {style.description}
                     </p>
                   ) : null}
@@ -569,20 +593,14 @@ export function FunnelSettingsForm({
                   key={field.id}
                   className="rounded-[24px] border border-white/8 bg-black/20 p-4"
                 >
-                  <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto]">
+                  <div className="grid gap-4 md:grid-cols-[1fr_auto]">
                     <Field
                       label={copy.styleLabel}
                       error={form.formState.errors.customStyles?.[index]?.label?.message}
                     >
                       <Input {...form.register(`customStyles.${index}.label`)} placeholder="Etching" />
                     </Field>
-                    <Field
-                      label={copy.styleKey}
-                      description={copy.styleKeyHelp}
-                      error={form.formState.errors.customStyles?.[index]?.styleKey?.message}
-                    >
-                      <Input {...form.register(`customStyles.${index}.styleKey`)} placeholder="etching" />
-                    </Field>
+                    <input type="hidden" {...form.register(`customStyles.${index}.styleKey`)} />
                     <div className="flex items-end gap-3">
                       <label className="flex h-10 items-center gap-2 rounded-full border border-white/8 bg-black/20 px-4">
                         <input
@@ -592,14 +610,8 @@ export function FunnelSettingsForm({
                         />
                         <span className="text-sm text-white">{copy.enabled}</span>
                       </label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => customStylesFieldArray.remove(index)}
-                      >
+                      <Button type="button" variant="ghost" size="sm" onClick={() => customStylesFieldArray.remove(index)}>
                         <Trash2 className="size-4" />
-                        {copy.remove}
                       </Button>
                     </div>
                   </div>
@@ -618,24 +630,11 @@ export function FunnelSettingsForm({
               ))}
             </div>
           </div>
-          {form.formState.errors.root?.message ? (
+          {statusMessage ? (
             <p className="text-sm text-[var(--accent-soft)]">
-              {form.formState.errors.root.message}
+              {statusMessage}
             </p>
           ) : null}
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" />
-                {copy.saving}
-              </>
-            ) : (
-              <>
-                <Save className="size-4" />
-                {copy.save}
-              </>
-            )}
-          </Button>
         </form>
       </CardContent>
     </Card>

@@ -5,25 +5,21 @@ import { Sparkles } from "lucide-react";
 import {
   clampCm,
   deriveSizeCategoryFromCm,
-  getPlacementSizingGuidance,
   getPlacementSizeConstraint,
 } from "@/lib/constants/size-estimation";
 import { getPlacementDetailLocaleLabel, getPublicCopy, type PublicLocale } from "@/lib/i18n/public";
-import type { StyleValue } from "@/lib/constants/options";
 import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
 import type { ArtistPricingRules } from "@/lib/types";
 
 export function SizeEstimationSelector({
   selectedPlacement,
   approximateSizeCm,
-  selectedStyle,
   sizeTimeRanges,
   locale,
   onApproximateSizeChange,
 }: {
   selectedPlacement: BodyAreaDetailValue | "";
   approximateSizeCm: number | null;
-  selectedStyle?: StyleValue | "" | null;
   sizeTimeRanges?: ArtistPricingRules["sizeTimeRanges"];
   locale: PublicLocale;
   onApproximateSizeChange: (cm: number) => void;
@@ -51,14 +47,46 @@ export function SizeEstimationSelector({
 
   const constraint = getPlacementSizeConstraint(selectedPlacement);
   const safeCm = clampCm(approximateSizeCm ?? constraint.defaultCm, constraint);
-  const guidance = getPlacementSizingGuidance(selectedPlacement, safeCm, selectedStyle, locale);
-  const showExceptionalTone = guidance.tone === "caution" && safeCm >= constraint.maxCm;
-  const toneAccent =
-    showExceptionalTone
-      ? "color-mix(in srgb, #f59e0b 70%, var(--artist-primary) 30%)"
-      : guidance.tone === "soft"
-        ? "color-mix(in srgb, var(--artist-secondary) 65%, white 35%)"
-        : "var(--artist-primary)";
+  const sizeCategory = deriveSizeCategoryFromCm(safeCm);
+  const toneAccent = "var(--artist-primary)";
+  const simpleGuidance =
+    locale === "tr"
+      ? {
+          tiny: {
+            headline: "Bu boyut küçük ve sade dövmeler için uygundur.",
+            supporting: "Daha minimal fikirler, semboller veya kısa yazılar için iyi çalışır.",
+          },
+          small: {
+            headline: "Bu boyut çoğu küçük dövme fikri için dengeli bir seçimdir.",
+            supporting: "Hem temiz görünür hem de günlük kullanımda çok baskın durmaz.",
+          },
+          medium: {
+            headline: "Bu boyut detay ve görünürlük arasında iyi bir denge sunar.",
+            supporting: "Biraz daha belirgin duran ve rahat okunabilen dövmeler için uygundur.",
+          },
+          large: {
+            headline: "Bu boyut daha belirgin ve yaygın bir alan kaplayan dövmeler içindir.",
+            supporting: "Daha fazla detay veya daha güçlü görünürlük isteyen fikirlerde daha uygundur.",
+          },
+        }
+      : {
+          tiny: {
+            headline: "This size works best for small and simple tattoos.",
+            supporting: "It suits minimal ideas, symbols, or short lettering.",
+          },
+          small: {
+            headline: "This is a balanced choice for most small tattoo ideas.",
+            supporting: "It stays clear without feeling too dominant on the body.",
+          },
+          medium: {
+            headline: "This size gives a good balance between detail and visibility.",
+            supporting: "It works well for tattoos that should read more clearly.",
+          },
+          large: {
+            headline: "This size suits tattoos that take up more space and stand out more.",
+            supporting: "It is better when the idea needs stronger presence or more detail.",
+          },
+        };
 
   return (
     <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
@@ -125,16 +153,11 @@ export function SizeEstimationSelector({
           <div className="space-y-3">
             <div>
               <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
-                {guidance.headline}
+                {simpleGuidance[sizeCategory].headline}
               </p>
               <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                {guidance.supporting}
+                {simpleGuidance[sizeCategory].supporting}
               </p>
-              {guidance.helperNote ? (
-                <p className="mt-2 text-xs leading-5" style={{ color: "var(--artist-muted)" }}>
-                  {guidance.helperNote}
-                </p>
-              ) : null}
             </div>
           </div>
         </div>

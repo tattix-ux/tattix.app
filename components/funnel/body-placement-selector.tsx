@@ -165,23 +165,6 @@ export function BodyPlacementSelector({
           </div>
         </motion.div>
       ) : null}
-
-      <div
-        className="rounded-[22px] border p-4 sm:rounded-[24px]"
-        style={{
-          borderColor: "var(--artist-border)",
-          backgroundColor: "rgba(0,0,0,0.12)",
-        }}
-      >
-        <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-          {copy.placementSummaryLabel}
-        </p>
-        <p className="mt-2 text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
-          {activeCategory
-            ? getPlacementCategoryLocaleLabel(activeCategory, locale)
-            : copy.placementSummaryEmpty}
-        </p>
-      </div>
     </div>
   );
 }
