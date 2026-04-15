@@ -57,7 +57,7 @@ export default async function DashboardLayout({
                 </div>
                 {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
               </div>
-              <div className="w-full max-w-[356px] xl:w-auto xl:min-w-[420px] xl:max-w-[420px]">
+              <div className="w-full max-w-[356px] xl:w-full xl:max-w-none">
                 <PublicRouteCard
                   slug={dashboardData.profile.slug}
                   locale={isTurkish ? "tr" : "en"}
@@ -65,7 +65,7 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[400px_minmax(0,1fr)] xl:gap-6">
+            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[400px_minmax(0,1fr)] xl:gap-8">
               <aside className="max-w-[356px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
@@ -97,12 +97,12 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[356px] xl:max-w-[960px] 2xl:max-w-[1120px]">
+              <main className="min-w-0 w-full max-w-[356px] xl:max-w-none">
                 {children}
               </main>
             </div>
 
-            <div className="mt-6 max-w-[356px] xl:max-w-[960px] 2xl:max-w-[1120px]">
+            <div className="mt-6 max-w-[356px] xl:max-w-none">
               <DashboardSupportCard
                 locale={isTurkish ? "tr" : "en"}
                 artistName={dashboardData.profile.artistName}
