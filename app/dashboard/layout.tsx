@@ -40,10 +40,10 @@ export default async function DashboardLayout({
 
   return (
     <AppShell>
-      <Container className="py-4 sm:py-8 xl:max-w-[1440px] 2xl:max-w-[1520px]">
+      <Container className="py-4 sm:py-8 lg:max-w-[1440px] 2xl:max-w-[1520px]">
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
-            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <Logo className="min-w-0" />
@@ -57,7 +57,7 @@ export default async function DashboardLayout({
                 </div>
                 {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
               </div>
-              <div className="w-full max-w-[356px] xl:w-full xl:max-w-none">
+              <div className="w-full max-w-[356px] lg:w-full lg:max-w-none">
                 <PublicRouteCard
                   slug={dashboardData.profile.slug}
                   locale={isTurkish ? "tr" : "en"}
@@ -65,8 +65,8 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-4 xl:grid-cols-[420px_minmax(0,1fr)] xl:gap-8">
-              <aside className="max-w-[356px] space-y-4 xl:sticky xl:top-6 xl:max-w-none">
+            <div className="mt-6 grid items-start gap-4 lg:grid-cols-[420px_minmax(0,1fr)] lg:gap-8">
+              <aside className="max-w-[356px] space-y-4 lg:sticky lg:top-6 lg:max-w-none">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
@@ -97,12 +97,12 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[356px] xl:w-full xl:max-w-none xl:justify-self-stretch">
+              <main className="min-w-0 w-full max-w-[356px] lg:w-full lg:max-w-none lg:justify-self-stretch">
                 {children}
               </main>
             </div>
 
-            <div className="mt-6 max-w-[356px] xl:max-w-none">
+            <div className="mt-6 max-w-[356px] lg:max-w-none">
               <DashboardSupportCard
                 locale={isTurkish ? "tr" : "en"}
                 artistName={dashboardData.profile.artistName}
