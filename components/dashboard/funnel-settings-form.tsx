@@ -460,14 +460,14 @@ export function FunnelSettingsForm({
                 </Button>
               </div>
             </div>
-            <div className="grid gap-3 xl:grid-cols-3">
+            <div className="grid gap-2 lg:grid-cols-3 xl:grid-cols-4">
               {builtInStyles.map((style) => {
                 const active = selectedStyles.includes(style.styleKey);
 
                 return (
                   <div
                     key={style.id}
-                    className={`rounded-[20px] border px-3 py-3 text-left transition ${
+                    className={`rounded-[18px] border px-2.5 py-2.5 text-left transition ${
                       active
                         ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
                         : "border-white/8 bg-black/20"
@@ -483,13 +483,15 @@ export function FunnelSettingsForm({
                       }}
                       className="w-full text-left"
                     >
-                      <p className="font-medium text-white">{style.label}</p>
+                      <p className="text-sm font-medium text-white">{style.label}</p>
                     </button>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-2 flex justify-end">
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
+                        aria-label={copy.remove}
+                        className="h-8 w-8 px-0"
                         onClick={() => {
                           form.setValue(
                             "enabledStyles",
@@ -504,7 +506,6 @@ export function FunnelSettingsForm({
                         }}
                       >
                         <Trash2 className="size-4" />
-                        {copy.remove}
                       </Button>
                     </div>
                   </div>
@@ -513,15 +514,15 @@ export function FunnelSettingsForm({
               {customStyleCards.map((style) => (
                 <div
                   key={style.id ?? style.styleKey}
-                  className={`rounded-[20px] border px-3 py-3 text-left transition ${
+                  className={`rounded-[18px] border px-2.5 py-2.5 text-left transition ${
                     style.enabled
                       ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
                       : "border-white/8 bg-black/20"
                   }`}
                 >
-                  <p className="font-medium text-white">{style.label || copy.styleLabel}</p>
+                  <p className="text-sm font-medium text-white">{style.label || copy.styleLabel}</p>
                   {style.description ? (
-                    <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
+                    <p className="mt-1.5 text-xs leading-5 text-[var(--foreground-muted)]">
                       {style.description}
                     </p>
                   ) : null}
