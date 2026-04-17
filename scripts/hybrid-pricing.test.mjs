@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildNormalizedQuoteConfig, estimateNormalizedQuote } from "../lib/pricing/normalized-engine.ts";
+import {
+  applyFinalControlFeedbackToPricingProfile,
+  derivePricingProfile,
+} from "../lib/pricing/pricing-profile.ts";
 
 const baseRules = {
   artistId: "test-artist",
@@ -179,4 +183,153 @@ test("validation adjustment remains safely clamped", () => {
   });
 
   assert.equal(config.validationAdjustment, 1.08);
+});
+
+test("final control low-boundary feedback nudges small simple quotes without spiking the rest", () => {
+  const { sanitizedInputs, pricingProfile } = derivePricingProfile({
+    minimumPrice: 2500,
+    roseMedium8cm: 1700,
+    roseMedium18cm: 3200,
+    roseMedium25cm: 5900,
+    roseLow18cm: 2700,
+    roseHigh18cm: 4300,
+    roseColor18cm: 3900,
+    daggerAnchor18cm: 4700,
+  });
+
+  const adjustedProfile = applyFinalControlFeedbackToPricingProfile(
+    pricingProfile,
+    { "text-low-boundary": "slightly-low" },
+    { "text-low-boundary": "detail" },
+  ).pricingProfile;
+
+  const beforeConfig = buildNormalizedQuoteConfig({
+    ...baseRules,
+    calibrationExamples: {
+      ...baseRules.calibrationExamples,
+      pricingRawInputs: sanitizedInputs,
+      pricingProfile,
+    },
+  });
+  const afterConfig = buildNormalizedQuoteConfig({
+    ...baseRules,
+    calibrationExamples: {
+      ...baseRules.calibrationExamples,
+      pricingRawInputs: sanitizedInputs,
+      pricingProfile: adjustedProfile,
+    },
+  });
+
+  const before = estimateNormalizedQuote(
+    {
+      size: "tiny",
+      sizeCm: 9,
+      placement: "forearm-outer",
+      detailLevel: "simple",
+      colorMode: "black-only",
+    },
+    beforeConfig,
+  );
+  const after = estimateNormalizedQuote(
+    {
+      size: "tiny",
+      sizeCm: 9,
+      placement: "forearm-outer",
+      detailLevel: "simple",
+      colorMode: "black-only",
+    },
+    afterConfig,
+  );
+
+  assert.ok(after.max >= before.max);
+  assert.ok(after.debug);
+  assert.ok(before.debug);
+  assert.ok(after.debug.detailSurcharge.min > before.debug.detailSurcharge.min);
+  assert.ok(after.debug.detailSurcharge.max > before.debug.detailSurcharge.max);
+});
+
+test("style and color feedback adjust only their relevant probe outputs", () => {
+  const { sanitizedInputs, pricingProfile } = derivePricingProfile({
+    minimumPrice: 2500,
+    roseMedium8cm: 1700,
+    roseMedium18cm: 3200,
+    roseMedium25cm: 5900,
+    roseLow18cm: 2700,
+    roseHigh18cm: 4300,
+    roseColor18cm: 3900,
+    daggerAnchor18cm: 4700,
+  });
+
+  const adjustedProfile = applyFinalControlFeedbackToPricingProfile(
+    pricingProfile,
+    {
+      "colored-butterfly": "slightly-high",
+      "realistic-eye": "slightly-low",
+    },
+    {
+      "colored-butterfly": "color",
+      "realistic-eye": "detail",
+    },
+  ).pricingProfile;
+
+  const beforeConfig = buildNormalizedQuoteConfig({
+    ...baseRules,
+    calibrationExamples: {
+      ...baseRules.calibrationExamples,
+      pricingRawInputs: sanitizedInputs,
+      pricingProfile,
+    },
+  });
+  const afterConfig = buildNormalizedQuoteConfig({
+    ...baseRules,
+    calibrationExamples: {
+      ...baseRules.calibrationExamples,
+      pricingRawInputs: sanitizedInputs,
+      pricingProfile: adjustedProfile,
+    },
+  });
+
+  const butterflyBefore = estimateNormalizedQuote(
+    {
+      size: "medium",
+      sizeCm: 18,
+      placement: "forearm-outer",
+      detailLevel: "standard",
+      colorMode: "full-color",
+    },
+    beforeConfig,
+  );
+  const butterflyAfter = estimateNormalizedQuote(
+    {
+      size: "medium",
+      sizeCm: 18,
+      placement: "forearm-outer",
+      detailLevel: "standard",
+      colorMode: "full-color",
+    },
+    afterConfig,
+  );
+  const styleBefore = estimateNormalizedQuote(
+    {
+      size: "medium",
+      sizeCm: 18,
+      placement: "forearm-outer",
+      detailLevel: "ultra",
+      colorMode: "black-only",
+    },
+    beforeConfig,
+  );
+  const styleAfter = estimateNormalizedQuote(
+    {
+      size: "medium",
+      sizeCm: 18,
+      placement: "forearm-outer",
+      detailLevel: "ultra",
+      colorMode: "black-only",
+    },
+    afterConfig,
+  );
+
+  assert.ok(butterflyAfter.min < butterflyBefore.min);
+  assert.ok(styleAfter.min > styleBefore.min);
 });

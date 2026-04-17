@@ -629,6 +629,13 @@ export function PricingForm({
           roseHigh18cm: Number(draft.values.detailHigh),
           roseColor18cm: Number(draft.values.detailColor),
           daggerAnchor18cm: Number(draft.values.anchor18),
+          finalControl: allReviewAnswered
+            ? {
+                validationRound: 1,
+                feedback: draft.reviewFeedback,
+                reasons: draft.reviewReasons,
+              }
+            : undefined,
         }),
       });
 

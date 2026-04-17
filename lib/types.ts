@@ -141,6 +141,8 @@ export type PricingProfile = {
   anchor: {
     ratio: number;
   };
+  adjustments: PricingProfileAdjustments;
+  finalControl: PricingFinalControlState | null;
 };
 export type FinalControlProbeType =
   | "low_boundary"
@@ -149,6 +151,7 @@ export type FinalControlProbeType =
   | "high_detail"
   | "style";
 export type FinalControlPlacementType = "easy_flat";
+export type PricingValidationReason = "size" | "detail" | "color" | "general";
 export type PricingValidationFeedback = "looks-right" | "slightly-low" | "slightly-high";
 export type PricingValidationExampleId =
   | "text-low-boundary"
@@ -156,6 +159,41 @@ export type PricingValidationExampleId =
   | "feather-high-detail"
   | "realistic-eye"
   | "colored-butterfly";
+export type PricingProfileAdjustmentKey =
+  | "baseline"
+  | "sizeSmall"
+  | "detailLow"
+  | "detailHigh"
+  | "color"
+  | "style";
+export type PricingProfileAdjustments = Record<PricingProfileAdjustmentKey, number>;
+export type PricingProfileUpdateChange = {
+  key: PricingProfileAdjustmentKey;
+  delta: number;
+  before: number;
+  after: number;
+};
+export type PricingProfileUpdateLog = {
+  probeId: PricingValidationExampleId;
+  probeType: FinalControlProbeType;
+  verdict: PricingValidationFeedback;
+  reason: PricingValidationReason | null;
+  changes: PricingProfileUpdateChange[];
+};
+export type PricingFinalControlState = {
+  version: 1;
+  responses: Partial<
+    Record<
+      PricingValidationExampleId,
+      {
+        verdict: PricingValidationFeedback;
+        reason: PricingValidationReason | null;
+      }
+    >
+  >;
+  appliedUpdates: PricingProfileUpdateLog[];
+  updatedAt: string;
+};
 export type PricingValidationStatus =
   | "pending"
   | "confirmed"
@@ -165,9 +203,11 @@ export type PricingValidationStatus =
 export type PricingFinalValidation = {
   validationRound: 1 | 2;
   perExampleFeedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
+  perExampleReason?: Partial<Record<PricingValidationExampleId, PricingValidationReason>>;
   appliedGlobalValidationAdjustment: number;
   validationStatus: PricingValidationStatus;
   calibratedAndValidated: boolean;
+  appliedUpdates?: PricingProfileUpdateLog[];
 };
 
 export type PricingCalibrationExamples = {

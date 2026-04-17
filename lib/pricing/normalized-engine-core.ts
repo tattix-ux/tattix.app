@@ -19,8 +19,10 @@ import {
 import {
   getArtistPricingProfile,
   getArtistPricingRawInputs,
+  resolveBaselineAdjustment,
   resolveColorFactor,
   resolveDetailFactor,
+  resolveStyleFactor,
 } from "./pricing-profile.ts";
 import { roundToNearestFifty } from "../utils.ts";
 
@@ -72,6 +74,7 @@ type QuoteResult = {
     detailSurcharge: { min: number; max: number };
     placementSurcharge: { min: number; max: number };
     colorSurcharge: { min: number; max: number };
+    styleAdjustment: number;
     validationAdjustment: number;
   };
 };
@@ -232,6 +235,27 @@ function deriveSizeCurvePoints(
   rules: ArtistPricingRules,
   anchorPrice: number,
 ) {
+  const pricingProfile = getArtistPricingProfile(rules);
+  const baselineAdjustment = resolveBaselineAdjustment(pricingProfile);
+  const sizeSmallAdjustment = pricingProfile?.adjustments?.sizeSmall ?? 1;
+
+  const applyAdjustments = (points: Record<"8" | "12" | "18" | "25", number>) => {
+    const adjusted8 = Math.max(Math.round(points["8"] * baselineAdjustment * sizeSmallAdjustment), 1);
+    const adjusted12 = Math.max(
+      Math.round(points["12"] * baselineAdjustment * (1 + (sizeSmallAdjustment - 1) * 0.35)),
+      adjusted8,
+    );
+    const adjusted18 = Math.max(Math.round(points["18"] * baselineAdjustment), adjusted12);
+    const adjusted25 = Math.max(Math.round(points["25"] * baselineAdjustment), adjusted18);
+
+    return {
+      "8": adjusted8,
+      "12": adjusted12,
+      "18": adjusted18,
+      "25": adjusted25,
+    } as Record<"8" | "12" | "18" | "25", number>;
+  };
+
   const pricingRawInputs = getArtistPricingRawInputs(rules);
   if (
     pricingRawInputs &&
@@ -244,32 +268,32 @@ function deriveSizeCurvePoints(
     const point25 = Number(pricingRawInputs.roseMedium25cm);
     const point12 = Math.round(point8 + (point18 - point8) * 0.4);
 
-    return {
+    return applyAdjustments({
       "8": point8,
       "12": Math.max(point8, point12),
       "18": point18,
       "25": Math.max(point18, point25),
-    } as Record<"8" | "12" | "18" | "25", number>;
+    } as Record<"8" | "12" | "18" | "25", number>);
   }
 
   const calibrationCurve = rules.calibrationExamples.sizeCurve;
   if (hasCalibrationExamples(rules.calibrationExamples) && calibrationCurve) {
-    return {
+    return applyAdjustments({
       "8": calibrationCurve["8"],
       "12": calibrationCurve["12"],
       "18": calibrationCurve["18"],
       "25": calibrationCurve["25"],
-    } as Record<"8" | "12" | "18" | "25", number>;
+    } as Record<"8" | "12" | "18" | "25", number>);
   }
 
   const fallbackFactors = deriveSizeFactorFallbacks(rules, anchorPrice);
 
-  return {
+  return applyAdjustments({
     "8": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.tiny as PriceRange)!), 1),
     "12": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.small as PriceRange)!), 1),
     "18": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.medium as PriceRange)!), 1),
     "25": Math.max(Math.round(anchorPrice * midpoint(fallbackFactors.large as PriceRange)!), 1),
-  };
+  });
 }
 
 function interpolateBetweenPoints(
@@ -311,15 +335,18 @@ function deriveBaselinePrice(anchorPrice: number, rules: ArtistPricingRules, siz
 function deriveDetailSurcharges(
   rules: ArtistPricingRules,
   baselinePrice: number,
+  sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>,
 ) {
   const pricingProfile = getArtistPricingProfile(rules);
   const pricingRawInputs = getArtistPricingRawInputs(rules);
 
   if (pricingProfile && pricingRawInputs) {
-    const standardPrice = Number(pricingRawInputs.roseMedium18cm);
-    const simplePrice = Number(pricingRawInputs.roseLow18cm);
+    const standardPrice = Number(sizeCurvePoints["18"] ?? pricingRawInputs.roseMedium18cm);
+    const simplePrice = Math.round(standardPrice * resolveDetailFactor(pricingProfile, "simple"));
     const detailedPrice = Math.round(standardPrice * resolveDetailFactor(pricingProfile, "detailed"));
-    const ultraPrice = Math.round(standardPrice * resolveDetailFactor(pricingProfile, "ultra"));
+    const ultraPrice = Math.round(
+      standardPrice * resolveDetailFactor(pricingProfile, "ultra") * resolveStyleFactor(pricingProfile),
+    );
 
     return {
       simple: createCenteredRange(simplePrice - standardPrice, Math.max(30, standardPrice * 0.025)),
@@ -420,13 +447,14 @@ function derivePlacementSurcharges(
 function deriveColorSurcharges(
   rules: ArtistPricingRules,
   baselinePrice: number,
+  sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>,
 ) {
   const pricingProfile = getArtistPricingProfile(rules);
   const pricingRawInputs = getArtistPricingRawInputs(rules);
 
   if (pricingProfile && pricingRawInputs) {
-    const blackPrice = Number(pricingRawInputs.roseMedium18cm);
-    const fullColorPrice = Number(pricingRawInputs.roseColor18cm);
+    const blackPrice = Number(sizeCurvePoints["18"] ?? pricingRawInputs.roseMedium18cm);
+    const fullColorPrice = Math.round(blackPrice * resolveColorFactor(pricingProfile, "full-color"));
     const blackGreyPrice = Math.round(blackPrice * resolveColorFactor(pricingProfile, "black-grey"));
 
     return {
@@ -610,13 +638,13 @@ export function buildNormalizedQuoteConfig(
     pricingProfile,
     pricingRawInputs,
     detailSurcharges: {
-      simple: clampRange(deriveDetailSurcharges(rules, baselinePrice).simple, { min: -120, max: -40 }),
+      simple: clampRange(deriveDetailSurcharges(rules, baselinePrice, sizeCurvePoints).simple, { min: -120, max: -40 }),
       standard: { min: 0, max: 0 },
-      detailed: clampRange(deriveDetailSurcharges(rules, baselinePrice).detailed, { min: 180, max: 320 }),
-      ultra: clampRange(deriveDetailSurcharges(rules, baselinePrice).ultra, { min: 320, max: 520 }),
+      detailed: clampRange(deriveDetailSurcharges(rules, baselinePrice, sizeCurvePoints).detailed, { min: 180, max: 320 }),
+      ultra: clampRange(deriveDetailSurcharges(rules, baselinePrice, sizeCurvePoints).ultra, { min: 320, max: 520 }),
     },
     placementSurcharges: derivePlacementSurcharges(rules, baselinePrice, hardPlacementDetails),
-    colorSurcharges: deriveColorSurcharges(rules, baselinePrice),
+    colorSurcharges: deriveColorSurcharges(rules, baselinePrice, sizeCurvePoints),
   };
 }
 
@@ -708,6 +736,7 @@ export function estimateNormalizedQuote(
               min: Number(colorRange.min.toFixed(2)),
               max: Number(colorRange.max.toFixed(2)),
             },
+            styleAdjustment: Number(resolveStyleFactor(config.pricingProfile).toFixed(3)),
             validationAdjustment: config.validationAdjustment,
           },
         }

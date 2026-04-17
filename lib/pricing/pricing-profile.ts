@@ -3,9 +3,17 @@ import type {
   ColorModeValue,
   DetailLevelValue,
   PricingCalibrationRawInputs,
+  PricingFinalValidation,
   PricingProfile,
+  PricingProfileAdjustmentKey,
+  PricingProfileAdjustments,
+  PricingProfileUpdateLog,
+  PricingValidationExampleId,
+  PricingValidationFeedback,
+  PricingValidationReason,
 } from "../types.ts";
 import type { SizeValue } from "../constants/options.ts";
+import { FINAL_CONTROL_PROBES } from "./final-control.ts";
 
 export const PRICING_PROFILE_VERSION = 1 as const;
 
@@ -21,11 +29,41 @@ const DETAIL_SMOOTHING = 0.7;
 const COLOR_SMOOTHING = 0.7;
 const ANCHOR_SMOOTHING = 0.75;
 
+const ADJUSTMENT_LIMITS: Record<PricingProfileAdjustmentKey, { min: number; max: number }> = {
+  baseline: { min: 0.92, max: 1.08 },
+  sizeSmall: { min: 0.9, max: 1.1 },
+  detailLow: { min: 0.9, max: 1.12 },
+  detailHigh: { min: 0.9, max: 1.14 },
+  color: { min: 0.92, max: 1.14 },
+  style: { min: 0.9, max: 1.16 },
+};
+
+const RESOLVED_FACTOR_LIMITS = {
+  sizeSmall: { min: 0.55, max: 1.1 },
+  detailLow: { min: 0.68, max: 1.05 },
+  detailHigh: { min: 1, max: 1.95 },
+  color: { min: 1, max: 1.75 },
+  style: { min: 0.9, max: 1.16 },
+} as const;
+
+const MAIN_STEP = 0.04;
+const SECONDARY_STEP = 0.015;
+const BASE_NUDGE = 0.01;
+const STYLE_MAIN_STEP = 0.045;
+const STYLE_DETAIL_STEP = 0.03;
+const STYLE_SECONDARY_STEP = 0.015;
+
 type PriceInputValue = number | string | null | undefined;
 
 export type PricingCalibrationRawInputLike = Partial<
   Record<keyof PricingCalibrationRawInputs, PriceInputValue>
 >;
+
+export type PricingProfileUpdateResult = {
+  pricingProfile: PricingProfile;
+  appliedUpdates: PricingProfileUpdateLog[];
+  finalValidation: PricingFinalValidation;
+};
 
 export type DerivedPricingProfile = {
   sanitizedInputs: PricingCalibrationRawInputs;
@@ -35,6 +73,20 @@ export type DerivedPricingProfile = {
 export type PricingProfileDebugSnapshot = {
   rawInputs: PricingCalibrationRawInputs;
   derived: PricingProfile;
+};
+
+export type FinalControlUpdateDebugSnapshot = {
+  feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
+  reasons: Partial<Record<PricingValidationExampleId, PricingValidationReason>>;
+  appliedUpdates: PricingProfileUpdateLog[];
+  before: PricingProfileAdjustments;
+  after: PricingProfileAdjustments;
+  validation: PricingFinalValidation;
+};
+
+type TargetDelta = {
+  key: PricingProfileAdjustmentKey;
+  step: number;
 };
 
 function roundPrice(value: number) {
@@ -65,11 +117,7 @@ export function clamp(value: number, min: number, max: number) {
 }
 
 export function safeDivide(numerator: number, denominator: number, fallback = 1) {
-  if (
-    !Number.isFinite(numerator) ||
-    !Number.isFinite(denominator) ||
-    denominator <= 0
-  ) {
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) {
     return fallback;
   }
 
@@ -110,6 +158,181 @@ export function enforceMonotonic(values: number[]) {
   }
 
   return nextValues.map(roundRatio);
+}
+
+export function buildNeutralPricingProfileAdjustments(): PricingProfileAdjustments {
+  return {
+    baseline: 1,
+    sizeSmall: 1,
+    detailLow: 1,
+    detailHigh: 1,
+    color: 1,
+    style: 1,
+  };
+}
+
+export function getPricingProfileAdjustments(profile: PricingProfile | null | undefined) {
+  return {
+    ...buildNeutralPricingProfileAdjustments(),
+    ...(profile?.adjustments ?? {}),
+  } satisfies PricingProfileAdjustments;
+}
+
+function clampAdjustment(key: PricingProfileAdjustmentKey, value: number) {
+  const limits = ADJUSTMENT_LIMITS[key];
+  return roundRatio(clamp(value, limits.min, limits.max));
+}
+
+function applyAdjustmentDelta(
+  current: PricingProfileAdjustments,
+  key: PricingProfileAdjustmentKey,
+  signedStep: number,
+) {
+  const before = current[key];
+  const after = clampAdjustment(key, before + signedStep);
+
+  current[key] = after;
+
+  return {
+    key,
+    delta: roundRatio(after - before),
+    before,
+    after,
+  };
+}
+
+function countValidationFeedback(
+  feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
+) {
+  const values = Object.values(feedback);
+  return {
+    correct: values.filter((value) => value === "looks-right").length,
+    low: values.filter((value) => value === "slightly-low").length,
+    high: values.filter((value) => value === "slightly-high").length,
+    answered: values.length,
+  };
+}
+
+function summarizeValidationStatus(
+  counts: ReturnType<typeof countValidationFeedback>,
+  total: number,
+  hasUpdates: boolean,
+): Pick<
+  PricingFinalValidation,
+  "validationStatus" | "calibratedAndValidated" | "appliedGlobalValidationAdjustment"
+> {
+  if (!counts.answered) {
+    return {
+      validationStatus: "pending",
+      calibratedAndValidated: false,
+      appliedGlobalValidationAdjustment: 1,
+    };
+  }
+
+  if (counts.correct === counts.answered && counts.answered === total) {
+    return {
+      validationStatus: "confirmed",
+      calibratedAndValidated: true,
+      appliedGlobalValidationAdjustment: 1,
+    };
+  }
+
+  if (counts.answered < total) {
+    return {
+      validationStatus: hasUpdates ? "adjusted" : "pending",
+      calibratedAndValidated: false,
+      appliedGlobalValidationAdjustment: 1,
+    };
+  }
+
+  if (hasUpdates) {
+    return {
+      validationStatus: "adjusted",
+      calibratedAndValidated: true,
+      appliedGlobalValidationAdjustment: 1,
+    };
+  }
+
+  return {
+    validationStatus: "completed-no-majority",
+    calibratedAndValidated: true,
+    appliedGlobalValidationAdjustment: 1,
+  };
+}
+
+function getSignedDirection(verdict: PricingValidationFeedback) {
+  if (verdict === "slightly-low") {
+    return 1;
+  }
+
+  if (verdict === "slightly-high") {
+    return -1;
+  }
+
+  return 0;
+}
+
+function buildTargetDeltas(
+  probeType: typeof FINAL_CONTROL_PROBES[number]["probeType"],
+  reason: PricingValidationReason | null,
+): TargetDelta[] {
+  const resolvedReason = reason ?? "general";
+
+  switch (probeType) {
+    case "low_boundary":
+      if (resolvedReason === "size") {
+        return [
+          { key: "sizeSmall", step: MAIN_STEP },
+          { key: "detailLow", step: SECONDARY_STEP },
+        ];
+      }
+
+      if (resolvedReason === "detail") {
+        return [
+          { key: "detailLow", step: MAIN_STEP },
+          { key: "sizeSmall", step: SECONDARY_STEP },
+        ];
+      }
+
+      return [
+        { key: "detailLow", step: 0.03 },
+        { key: "sizeSmall", step: 0.02 },
+        { key: "baseline", step: BASE_NUDGE },
+      ];
+
+    case "color":
+      if (resolvedReason === "color") {
+        return [{ key: "color", step: MAIN_STEP }];
+      }
+
+      return [
+        { key: "color", step: MAIN_STEP },
+        { key: "baseline", step: BASE_NUDGE },
+      ];
+
+    case "baseline":
+      return [{ key: "baseline", step: 0.035 }];
+
+    case "high_detail":
+      if (resolvedReason === "detail") {
+        return [{ key: "detailHigh", step: MAIN_STEP }];
+      }
+
+      return [
+        { key: "detailHigh", step: MAIN_STEP },
+        { key: "baseline", step: BASE_NUDGE },
+      ];
+
+    case "style":
+      if (resolvedReason === "detail") {
+        return [
+          { key: "style", step: STYLE_DETAIL_STEP },
+          { key: "detailHigh", step: STYLE_SECONDARY_STEP },
+        ];
+      }
+
+      return [{ key: "style", step: STYLE_MAIN_STEP }];
+  }
 }
 
 export function sanitizePricingCalibrationInputs(
@@ -210,6 +433,8 @@ export function derivePricingProfile(
       anchor: {
         ratio: anchorRatio,
       },
+      adjustments: buildNeutralPricingProfileAdjustments(),
+      finalControl: null,
     },
   };
 }
@@ -222,16 +447,28 @@ export function getArtistPricingRawInputs(rules: ArtistPricingRules) {
   return rules.calibrationExamples.pricingRawInputs ?? null;
 }
 
+export function resolveBaselineAdjustment(profile: PricingProfile | null) {
+  return getPricingProfileAdjustments(profile).baseline;
+}
+
 export function resolveSizeFactor(profile: PricingProfile | null, size: SizeValue) {
   if (!profile) {
     return 1;
   }
 
+  const adjustments = getPricingProfileAdjustments(profile);
+  const tinyFactor = clamp(
+    profile.size.small * adjustments.sizeSmall,
+    RESOLVED_FACTOR_LIMITS.sizeSmall.min,
+    RESOLVED_FACTOR_LIMITS.sizeSmall.max,
+  );
+  const smallFactor = roundRatio(tinyFactor + (profile.size.medium - tinyFactor) * 0.4);
+
   switch (size) {
     case "tiny":
-      return profile.size.small;
+      return tinyFactor;
     case "small":
-      return roundRatio(profile.size.small + (profile.size.medium - profile.size.small) * 0.4);
+      return smallFactor;
     case "medium":
       return profile.size.medium;
     case "large":
@@ -247,42 +484,141 @@ export function resolveDetailFactor(
     return 1;
   }
 
+  const adjustments = getPricingProfileAdjustments(profile);
+  const lowFactor = clamp(
+    profile.detail.low * adjustments.detailLow,
+    RESOLVED_FACTOR_LIMITS.detailLow.min,
+    RESOLVED_FACTOR_LIMITS.detailLow.max,
+  );
+  const highFactor = clamp(
+    profile.detail.high * adjustments.detailHigh,
+    RESOLVED_FACTOR_LIMITS.detailHigh.min,
+    RESOLVED_FACTOR_LIMITS.detailHigh.max,
+  );
+
   switch (detailLevel) {
     case "simple":
-      return profile.detail.low;
+      return roundRatio(lowFactor);
     case "standard":
       return profile.detail.medium;
     case "ultra":
       return Math.max(
-        profile.detail.high,
-        smoothRatio(profile.detail.high * 1.08, {
+        roundRatio(highFactor),
+        smoothRatio(highFactor * 1.08, {
           center: 1,
           strength: 0.6,
           min: 1,
-          max: 1.95,
+          max: RESOLVED_FACTOR_LIMITS.detailHigh.max,
         }),
       );
     case "detailed":
-      return profile.detail.high;
+      return roundRatio(highFactor);
   }
 }
 
-export function resolveColorFactor(
-  profile: PricingProfile | null,
-  colorMode: ColorModeValue,
-) {
+export function resolveColorFactor(profile: PricingProfile | null, colorMode: ColorModeValue) {
   if (!profile) {
     return 1;
   }
+
+  const adjustments = getPricingProfileAdjustments(profile);
+  const fullColorFactor = clamp(
+    profile.color.factor * adjustments.color,
+    RESOLVED_FACTOR_LIMITS.color.min,
+    RESOLVED_FACTOR_LIMITS.color.max,
+  );
 
   switch (colorMode) {
     case "black-only":
       return 1;
     case "black-grey":
-      return roundRatio(1 + (profile.color.factor - 1) * 0.5);
+      return roundRatio(1 + (fullColorFactor - 1) * 0.5);
     case "full-color":
-      return profile.color.factor;
+      return roundRatio(fullColorFactor);
   }
+}
+
+export function resolveStyleFactor(profile: PricingProfile | null) {
+  return clamp(
+    getPricingProfileAdjustments(profile).style,
+    RESOLVED_FACTOR_LIMITS.style.min,
+    RESOLVED_FACTOR_LIMITS.style.max,
+  );
+}
+
+export function applyFinalControlFeedbackToPricingProfile(
+  pricingProfile: PricingProfile,
+  feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
+  reasons: Partial<Record<PricingValidationExampleId, PricingValidationReason>>,
+  options?: {
+    validationRound?: 1 | 2;
+    updatedAt?: string;
+  },
+): PricingProfileUpdateResult {
+  const nextAdjustments = getPricingProfileAdjustments(pricingProfile);
+  const beforeAdjustments = { ...nextAdjustments };
+  const appliedUpdates: PricingProfileUpdateLog[] = [];
+  const responses: NonNullable<PricingProfile["finalControl"]>["responses"] = {};
+
+  for (const probe of FINAL_CONTROL_PROBES) {
+    const verdict = feedback[probe.id];
+
+    if (!verdict) {
+      continue;
+    }
+
+    const reason = verdict === "looks-right" ? null : (reasons[probe.id] ?? "general");
+    const direction = getSignedDirection(verdict);
+    const changes =
+      direction === 0
+        ? []
+        : buildTargetDeltas(probe.probeType, reason).map((target) =>
+            applyAdjustmentDelta(nextAdjustments, target.key, target.step * direction),
+          );
+
+    responses[probe.id] = {
+      verdict,
+      reason,
+    };
+    appliedUpdates.push({
+      probeId: probe.id,
+      probeType: probe.probeType,
+      verdict,
+      reason,
+      changes: changes.filter((change) => change.delta !== 0),
+    });
+  }
+
+  const counts = countValidationFeedback(feedback);
+  const hasUpdates = appliedUpdates.some((update) => update.changes.length > 0);
+  const validationSummary = summarizeValidationStatus(counts, FINAL_CONTROL_PROBES.length, hasUpdates);
+  const validationRound = options?.validationRound ?? 1;
+  const updatedAt = options?.updatedAt ?? new Date().toISOString();
+
+  const finalValidation: PricingFinalValidation = {
+    validationRound,
+    perExampleFeedback: feedback,
+    perExampleReason: reasons,
+    appliedGlobalValidationAdjustment: validationSummary.appliedGlobalValidationAdjustment,
+    validationStatus: validationSummary.validationStatus,
+    calibratedAndValidated: validationSummary.calibratedAndValidated,
+    appliedUpdates,
+  };
+
+  return {
+    pricingProfile: {
+      ...pricingProfile,
+      adjustments: nextAdjustments,
+      finalControl: {
+        version: 1,
+        responses,
+        appliedUpdates,
+        updatedAt,
+      },
+    },
+    appliedUpdates,
+    finalValidation,
+  };
 }
 
 export function buildPricingProfileDebugSnapshot(
@@ -292,5 +628,21 @@ export function buildPricingProfileDebugSnapshot(
   return {
     rawInputs,
     derived: pricingProfile,
+  };
+}
+
+export function buildFinalControlUpdateDebugSnapshot(
+  feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
+  reasons: Partial<Record<PricingValidationExampleId, PricingValidationReason>>,
+  before: PricingProfile,
+  result: PricingProfileUpdateResult,
+): FinalControlUpdateDebugSnapshot {
+  return {
+    feedback,
+    reasons,
+    appliedUpdates: result.appliedUpdates,
+    before: getPricingProfileAdjustments(before),
+    after: getPricingProfileAdjustments(result.pricingProfile),
+    validation: result.finalValidation,
   };
 }

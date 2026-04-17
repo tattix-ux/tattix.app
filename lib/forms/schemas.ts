@@ -90,6 +90,15 @@ const bookingCitySchema = z.object({
 });
 
 const detailCalibrationLevels = ["low", "medium", "high"] as const;
+const pricingValidationExampleIds = [
+  "text-low-boundary",
+  "current-dagger",
+  "feather-high-detail",
+  "realistic-eye",
+  "colored-butterfly",
+] as const;
+const pricingValidationFeedbackValues = ["looks-right", "slightly-low", "slightly-high"] as const;
+const pricingValidationReasonValues = ["size", "detail", "color", "general"] as const;
 
 export const funnelSettingsSchema = z.object({
   introEyebrow: z.string().max(48),
@@ -194,6 +203,19 @@ export const pricingOnboardingSchema = z.object({
   roseHigh18cm: z.coerce.number().gt(0),
   roseColor18cm: z.coerce.number().gt(0),
   daggerAnchor18cm: z.coerce.number().gt(0),
+  finalControl: z
+    .object({
+      validationRound: z.union([z.literal(1), z.literal(2)]).default(1),
+      feedback: z.record(
+        z.enum(pricingValidationExampleIds),
+        z.enum(pricingValidationFeedbackValues),
+      ),
+      reasons: z
+        .record(z.string(), z.enum(pricingValidationReasonValues))
+        .optional()
+        .default({}),
+    })
+    .optional(),
 });
 
 export const pricingSchema = z.object({

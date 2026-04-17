@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { pricingOnboardingSchema } from "@/lib/forms/schemas";
 import {
+  applyFinalControlFeedbackToPricingProfile,
+  buildFinalControlUpdateDebugSnapshot,
   buildPricingProfileDebugSnapshot,
   derivePricingProfile,
 } from "@/lib/pricing/pricing-profile";
@@ -31,12 +33,32 @@ export async function POST(request: Request) {
   }
 
   const { sanitizedInputs, pricingProfile } = derivePricingProfile(parsed.data);
+  const nextPricingProfile = parsed.data.finalControl
+    ? applyFinalControlFeedbackToPricingProfile(
+        pricingProfile,
+        parsed.data.finalControl.feedback,
+        parsed.data.finalControl.reasons ?? {},
+        {
+          validationRound: parsed.data.finalControl.validationRound,
+        },
+      )
+    : null;
+  const effectivePricingProfile = nextPricingProfile?.pricingProfile ?? pricingProfile;
 
   if (process.env.NODE_ENV !== "production") {
-    console.debug(
-      "[pricing-onboarding]",
-      buildPricingProfileDebugSnapshot(sanitizedInputs, pricingProfile),
-    );
+    console.debug("[pricing-onboarding]", buildPricingProfileDebugSnapshot(sanitizedInputs, effectivePricingProfile));
+
+    if (nextPricingProfile) {
+      console.debug(
+        "[pricing-onboarding:final-control]",
+        buildFinalControlUpdateDebugSnapshot(
+          parsed.data.finalControl?.feedback ?? {},
+          parsed.data.finalControl?.reasons ?? {},
+          pricingProfile,
+          nextPricingProfile,
+        ),
+      );
+    }
   }
 
   const supabase = await createSupabaseServerClient();
@@ -53,7 +75,13 @@ export async function POST(request: Request) {
   const nextCalibrationExamples = {
     ...(existingCalibrationExamples ?? {}),
     pricingRawInputs: sanitizedInputs,
-    pricingProfile,
+    pricingProfile: effectivePricingProfile,
+    ...(nextPricingProfile?.finalValidation || existingCalibrationExamples?.finalValidation
+      ? {
+          finalValidation:
+            nextPricingProfile?.finalValidation ?? existingCalibrationExamples?.finalValidation,
+        }
+      : {}),
   };
 
   const { error } = await supabase.from("artist_pricing_rules").upsert({
@@ -72,6 +100,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     message: "Pricing onboarding saved.",
     rawInputs: sanitizedInputs,
-    pricingProfile,
+    pricingProfile: effectivePricingProfile,
+    finalValidation: nextPricingProfile?.finalValidation ?? null,
   });
 }

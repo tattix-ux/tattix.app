@@ -2,13 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  applyFinalControlFeedbackToPricingProfile,
   clamp,
   buildPricingProfileDebugSnapshot,
+  buildNeutralPricingProfileAdjustments,
   derivePricingProfile,
   enforceMonotonic,
   resolveColorFactor,
   resolveDetailFactor,
   resolveSizeFactor,
+  resolveStyleFactor,
   safeDivide,
   sanitizePricingCalibrationInputs,
   smoothRatio,
@@ -105,8 +108,57 @@ test("accessors expose pricing profile factors safely", () => {
   assert.ok(resolveDetailFactor(pricingProfile, "ultra") >= pricingProfile.detail.high);
   assert.equal(resolveColorFactor(pricingProfile, "black-only"), 1);
   assert.ok(resolveColorFactor(pricingProfile, "full-color") >= 1);
+  assert.equal(resolveStyleFactor(pricingProfile), 1);
   assert.deepEqual(buildPricingProfileDebugSnapshot(sanitizedInputs, pricingProfile), {
     rawInputs: sanitizedInputs,
     derived: pricingProfile,
   });
+});
+
+test("final control updates stay bounded and target the intended parameters", () => {
+  const { pricingProfile } = derivePricingProfile({
+    minimumPrice: 2500,
+    roseMedium8cm: 1700,
+    roseMedium18cm: 3200,
+    roseMedium25cm: 5900,
+    roseLow18cm: 2700,
+    roseHigh18cm: 4300,
+    roseColor18cm: 3900,
+    daggerAnchor18cm: 4700,
+  });
+
+  const result = applyFinalControlFeedbackToPricingProfile(
+    pricingProfile,
+    {
+      "text-low-boundary": "slightly-low",
+      "colored-butterfly": "slightly-high",
+      "current-dagger": "looks-right",
+      "feather-high-detail": "slightly-low",
+      "realistic-eye": "slightly-high",
+    },
+    {
+      "text-low-boundary": "detail",
+      "colored-butterfly": "color",
+      "feather-high-detail": "general",
+      "realistic-eye": "detail",
+    },
+  );
+
+  assert.deepEqual(buildNeutralPricingProfileAdjustments(), {
+    baseline: 1,
+    sizeSmall: 1,
+    detailLow: 1,
+    detailHigh: 1,
+    color: 1,
+    style: 1,
+  });
+
+  assert.ok(result.pricingProfile.adjustments.detailLow > 1);
+  assert.ok(result.pricingProfile.adjustments.color < 1);
+  assert.ok(result.pricingProfile.adjustments.detailHigh > 1);
+  assert.ok(result.pricingProfile.adjustments.style < 1);
+  assert.ok(result.pricingProfile.adjustments.baseline >= 0.92);
+  assert.ok(result.pricingProfile.adjustments.baseline <= 1.08);
+  assert.equal(result.finalValidation.validationStatus, "adjusted");
+  assert.ok(result.appliedUpdates.length >= 4);
 });
