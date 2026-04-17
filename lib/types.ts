@@ -92,6 +92,26 @@ export type ArtistFeaturedDesign = {
 
 export type DetailLevelValue = "simple" | "standard" | "detailed";
 export type ColorModeValue = "black-only" | "black-grey" | "full-color";
+export type DetailCalibrationLevel = "low" | "medium" | "high";
+export type DetailCalibrationFamily = "floral" | "geometric" | "snake";
+export type DetailCalibrationRawResponse = {
+  sampleId: string;
+  family: DetailCalibrationFamily;
+  canonicalDetailLevel: DetailCalibrationLevel;
+  selectedDetailLevel: DetailCalibrationLevel;
+  delta: number;
+};
+export type DetailCalibrationProfile = {
+  version: 1;
+  sampleSetVersion: string;
+  sampleOrder: string[];
+  rawResponses: DetailCalibrationRawResponse[];
+  detailBiasScore: number;
+  familyBiasScores: Record<DetailCalibrationFamily, number>;
+  normalizedDetailMapping: Record<DetailCalibrationLevel, number>;
+  calibrationCompletedAt: string;
+  completed: boolean;
+};
 export type PricingValidationFeedback = "looks-right" | "slightly-low" | "slightly-high";
 export type PricingValidationExampleId =
   | "minimal-linework"
@@ -145,6 +165,7 @@ export type PricingCalibrationExamples = {
   colorMode: Record<ColorModeValue, number>;
   globalScale?: number;
   finalValidation?: PricingFinalValidation;
+  detailCalibration?: DetailCalibrationProfile | null;
 };
 
 export type PricingCalibrationReferenceSlot = {

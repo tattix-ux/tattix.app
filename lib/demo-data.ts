@@ -127,6 +127,7 @@ export const demoPricingRules: ArtistPricingRules = {
       "full-color": 3300,
     },
     globalScale: 1,
+    detailCalibration: null,
     finalValidation: {
       validationRound: 1 as const,
       perExampleFeedback: {},

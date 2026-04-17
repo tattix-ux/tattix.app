@@ -257,6 +257,7 @@ export async function ensureArtistForUser(user: User) {
           "full-color": 3300,
         },
         globalScale: 1,
+        detailCalibration: null,
       },
       calibration_reference_slots: CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot })),
       size_modifiers: {

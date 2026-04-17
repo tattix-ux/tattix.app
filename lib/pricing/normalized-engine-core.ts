@@ -3,11 +3,17 @@ import type { SizeValue } from "../constants/options.ts";
 import type {
   ArtistPricingRules,
   ColorModeValue,
+  DetailCalibrationFamily,
+  DetailCalibrationProfile,
   DetailLevelValue,
   PriceRange,
   PricingCalibrationExamples,
   SubmissionRequest,
 } from "../types.ts";
+import {
+  getArtistDetailCalibration,
+  resolvePersonalizedDetailWeight,
+} from "./detail-calibration.ts";
 import { roundToNearestFifty } from "../utils.ts";
 
 type SurchargeRange = {
@@ -22,6 +28,7 @@ export type NormalizedQuoteInput = {
   sizeCm: number;
   placement: BodyAreaDetailValue;
   detailLevel?: QuoteDetailLevel | null;
+  detailFamily?: DetailCalibrationFamily | null;
   colorMode?: ColorModeValue | null;
   coverUp?: boolean | null;
   customDesign?: boolean | null;
@@ -35,6 +42,7 @@ export type NormalizedQuoteConfig = {
   baselinePrice: number;
   sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>;
   hardPlacementDetails: Set<BodyAreaDetailValue>;
+  detailCalibrationProfile: DetailCalibrationProfile | null;
   detailSurcharges: Record<QuoteDetailLevel, SurchargeRange>;
   placementSurcharges: {
     easy: SurchargeRange;
@@ -50,6 +58,7 @@ type QuoteResult = {
   max: number;
   debug?: {
     baseSizePrice: number;
+    detailCalibrationWeight: number;
     detailSurcharge: { min: number; max: number };
     placementSurcharge: { min: number; max: number };
     colorSurcharge: { min: number; max: number };
@@ -513,6 +522,7 @@ export function buildNormalizedQuoteConfig(
   const sizeCurvePoints = deriveSizeCurvePoints(rules, anchorPrice);
   const baselinePrice = deriveBaselinePrice(anchorPrice, rules, sizeCurvePoints);
   const hardPlacementDetails = collectHardPlacementDetails(rules);
+  const detailCalibrationProfile = getArtistDetailCalibration(rules);
 
   return {
     anchorPrice,
@@ -532,6 +542,7 @@ export function buildNormalizedQuoteConfig(
     baselinePrice,
     sizeCurvePoints,
     hardPlacementDetails,
+    detailCalibrationProfile,
     detailSurcharges: {
       simple: clampRange(deriveDetailSurcharges(rules, baselinePrice).simple, { min: -120, max: -40 }),
       standard: { min: 0, max: 0 },
@@ -570,10 +581,15 @@ export function estimateNormalizedQuote(
   const detailWeight = getDetailSizeWeight(input.sizeCm);
   const placementWeight = getPlacementSizeWeight(input.sizeCm);
   const colorWeight = getColorSizeWeight(input.sizeCm);
+  const detailCalibrationWeight = resolvePersonalizedDetailWeight(
+    config.detailCalibrationProfile,
+    input.detailLevel ?? DEFAULT_DETAIL_LEVEL,
+    input.detailFamily ?? null,
+  );
   const detailRange = scaleSurcharge(
     config.detailSurcharges[input.detailLevel ?? DEFAULT_DETAIL_LEVEL] ??
       config.detailSurcharges[DEFAULT_DETAIL_LEVEL],
-    detailWeight,
+    detailWeight * detailCalibrationWeight,
   );
   const placementBucket = resolvePlacementBucket(input.placement, config.hardPlacementDetails);
   const placementRange = scaleSurcharge(
@@ -613,6 +629,7 @@ export function estimateNormalizedQuote(
       ? {
           debug: {
             baseSizePrice: Number(baseSizePrice.toFixed(2)),
+            detailCalibrationWeight: Number(detailCalibrationWeight.toFixed(3)),
             detailSurcharge: {
               min: Number(detailRange.min.toFixed(2)),
               max: Number(detailRange.max.toFixed(2)),

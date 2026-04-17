@@ -89,6 +89,8 @@ const bookingCitySchema = z.object({
   availableDates: z.array(z.string().max(20)).default([]),
 });
 
+const detailCalibrationLevels = ["low", "medium", "high"] as const;
+
 export const funnelSettingsSchema = z.object({
   introEyebrow: z.string().max(48),
   introTitle: z.string().max(120),
@@ -139,6 +141,48 @@ export const funnelSettingsSchema = z.object({
       }
     });
   });
+});
+
+export const detailCalibrationSubmissionSchema = z.object({
+  sampleOrder: z.array(z.string().min(1)).length(9),
+  responses: z
+    .array(
+      z.object({
+        sampleId: z.string().min(1),
+        selectedDetailLevel: z.enum(detailCalibrationLevels),
+      }),
+    )
+    .length(9),
+}).superRefine((values, ctx) => {
+  const orderSet = new Set(values.sampleOrder);
+  if (orderSet.size !== values.sampleOrder.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["sampleOrder"],
+      message: "Sample order must be unique.",
+    });
+  }
+
+  const responseIds = values.responses.map((response) => response.sampleId);
+  const responseSet = new Set(responseIds);
+  if (responseSet.size !== responseIds.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["responses"],
+      message: "Responses must contain unique samples.",
+    });
+  }
+
+  for (const sampleId of values.sampleOrder) {
+    if (!responseSet.has(sampleId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["responses"],
+        message: "Every sample needs a response.",
+      });
+      break;
+    }
+  }
 });
 
 export const pricingSchema = z.object({

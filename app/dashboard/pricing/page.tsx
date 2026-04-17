@@ -1,3 +1,4 @@
+import { DetailCalibrationForm } from "@/components/dashboard/detail-calibration-form";
 import { PricingForm } from "@/components/dashboard/pricing-form";
 import { SectionHeading } from "@/components/shared/shell";
 import { getDashboardData } from "@/lib/data/dashboard";
@@ -36,6 +37,10 @@ export default async function DashboardPricingPage() {
           </>
         )}
       </div>
+      <DetailCalibrationForm
+        pricingRules={data.pricingRules}
+        locale={isTurkish ? "tr" : "en"}
+      />
       <PricingForm
         pricingRules={data.pricingRules}
         styles={data.styleOptions}

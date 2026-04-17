@@ -8,7 +8,7 @@ import {
 } from "@/lib/pricing/calibration-flow";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { PriceRange } from "@/lib/types";
+import type { ArtistPricingRules, PriceRange } from "@/lib/types";
 
 function midpoint(range: PriceRange) {
   return (range.min + range.max) / 2;
@@ -53,9 +53,12 @@ export async function POST(request: Request) {
     .eq("artist_id", artist.id);
   const existingPricing = await supabase
     .from("artist_pricing_rules")
-    .select("size_time_ranges,intent_multipliers,calibration_reference_slots")
+    .select("size_time_ranges,intent_multipliers,calibration_reference_slots,calibration_examples")
     .eq("artist_id", artist.id)
     .maybeSingle();
+  const existingCalibrationExamples =
+    (existingPricing.data?.calibration_examples as ArtistPricingRules["calibrationExamples"] | undefined) ??
+    undefined;
 
   const legacySizeBaseRanges = Object.fromEntries(
     Object.entries(parsed.data.sizeModifiers).map(([key, range]) => [
@@ -157,6 +160,7 @@ export async function POST(request: Request) {
     },
     globalScale: calibrationAnswers?.validation?.globalScale ?? 1,
     finalValidation: normalizedFinalValidation,
+    detailCalibration: existingCalibrationExamples?.detailCalibration ?? null,
   };
   const existingReferenceSlots =
     (existingPricing.data?.calibration_reference_slots as
