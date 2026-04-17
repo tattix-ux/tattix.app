@@ -5,7 +5,11 @@ import { ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import daggerImage from "@/sample-tattoos/dagger.png";
+import currentDaggerImage from "@/sample-tattoos/final-control/dagger.png";
+import featherImage from "@/sample-tattoos/final-control/feather.png";
+import realisticEyeImage from "@/sample-tattoos/final-control/realistic eye.png";
+import textVisualImage from "@/sample-tattoos/final-control/text.png";
+import butterflyImage from "@/sample-tattoos/final-control/butterfly.png";
 import highDetailImage from "@/sample-tattoos/high.png";
 import lowDetailImage from "@/sample-tattoos/low.png";
 import mediumDetailImage from "@/sample-tattoos/medium.png";
@@ -16,7 +20,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
+import { VALIDATION_SCENARIOS } from "@/lib/pricing/calibration-flow";
+import { FINAL_CONTROL_PROBES } from "@/lib/pricing/final-control";
+import {
+  derivePricingProfile,
+  type PricingCalibrationRawInputLike,
+} from "@/lib/pricing/pricing-profile";
+import {
+  buildNormalizedQuoteConfig,
+  estimateNormalizedQuote,
+  type NormalizedQuoteInput,
+} from "@/lib/pricing/normalized-engine";
+import type {
+  ArtistPricingRules,
+  ArtistStyleOption,
+  PricingValidationExampleId,
+  PricingValidationFeedback,
+} from "@/lib/types";
 
 type PricingCalibrationFieldKey =
   | "openingPrice"
@@ -28,12 +48,18 @@ type PricingCalibrationFieldKey =
   | "detailColor"
   | "anchor18";
 
+type ReviewReason = "size" | "detail" | "color" | "general";
+
 type PricingCalibrationValues = Record<PricingCalibrationFieldKey, string>;
 
 type PricingCalibrationDraft = {
   values: PricingCalibrationValues;
   currentIndex: number;
   isOpen: boolean;
+  isFinalControlOpen: boolean;
+  reviewIndex: number;
+  reviewFeedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
+  reviewReasons: Partial<Record<PricingValidationExampleId, ReviewReason>>;
 };
 
 type PricingCalibrationStep = {
@@ -44,6 +70,14 @@ type PricingCalibrationStep = {
   image?: StaticImageData;
   imageAlt?: string;
   imageLabel?: string;
+};
+
+const finalControlImages: Record<PricingValidationExampleId, StaticImageData> = {
+  "text-low-boundary": textVisualImage,
+  "colored-butterfly": butterflyImage,
+  "current-dagger": currentDaggerImage,
+  "feather-high-detail": featherImage,
+  "realistic-eye": realisticEyeImage,
 };
 
 function getText(locale: PublicLocale) {
@@ -77,11 +111,33 @@ function getText(locale: PublicLocale) {
       currency: "TL",
       back: "Geri",
       next: "Devam",
-      finish: "Tamamla",
+      finish: "Son kontrole geç",
       progress: "İlerleme",
       saving: "Kaydediliyor",
       saved: "Fiyat ayarı kaydedildi.",
       saveFailed: "Fiyat ayarı kaydedilemedi.",
+      finalControlTitle: "Son kontrol",
+      finalControlIntro: "Bu görseller için çıkan fiyatı hızlıca kontrol et.",
+      finalControlPrompt: "Sence bu fiyat nasıl?",
+      finalControlHint: "Yaklaşık boyutu ve düz bir bölgeyi düşün.",
+      finalControlSave: "Ayarları kaydet",
+      finalControlComplete: "Son kontrol tamamlandı.",
+      low: "Düşük",
+      okay: "Uygun",
+      high: "Yüksek",
+      reasonTitle: "Fark en çok nerede?",
+      reasonSize: "Boyut",
+      reasonDetail: "Detay",
+      reasonColor: "Renk",
+      reasonGeneral: "Genel",
+      finalProgress: "Son kontrol",
+      imageText: "Text",
+      imageButterfly: "Colored butterfly",
+      imageDagger: "Current dagger",
+      imageFeather: "Feather",
+      imageEye: "Realistic eye",
+      assumedPlacement: "Düz bölge",
+      estimatedPrice: "Tahmini fiyat",
     };
   }
 
@@ -113,11 +169,33 @@ function getText(locale: PublicLocale) {
     currency: "TRY",
     back: "Back",
     next: "Next",
-    finish: "Finish",
+    finish: "Go to final check",
     progress: "Progress",
     saving: "Saving",
     saved: "Pricing setup saved.",
     saveFailed: "Pricing setup could not be saved.",
+    finalControlTitle: "Final check",
+    finalControlIntro: "Quickly review the price shown for these examples.",
+    finalControlPrompt: "How does this price feel?",
+    finalControlHint: "Think of the approximate size and a flat standard placement.",
+    finalControlSave: "Save settings",
+    finalControlComplete: "Final check completed.",
+    low: "Low",
+    okay: "Okay",
+    high: "High",
+    reasonTitle: "What feels most off?",
+    reasonSize: "Size",
+    reasonDetail: "Detail",
+    reasonColor: "Color",
+    reasonGeneral: "General",
+    finalProgress: "Final check",
+    imageText: "Text",
+    imageButterfly: "Colored butterfly",
+    imageDagger: "Current dagger",
+    imageFeather: "Feather",
+    imageEye: "Realistic eye",
+    assumedPlacement: "Flat placement",
+    estimatedPrice: "Estimated price",
   };
 }
 
@@ -139,6 +217,18 @@ function buildInitialValues(pricingRules: ArtistPricingRules): PricingCalibratio
     detailHigh: rawInputs?.roseHigh18cm ? String(Math.round(rawInputs.roseHigh18cm)) : "",
     detailColor: rawInputs?.roseColor18cm ? String(Math.round(rawInputs.roseColor18cm)) : "",
     anchor18: rawInputs?.daggerAnchor18cm ? String(Math.round(rawInputs.daggerAnchor18cm)) : "",
+  };
+}
+
+function createEmptyDraft(pricingRules: ArtistPricingRules): PricingCalibrationDraft {
+  return {
+    values: buildInitialValues(pricingRules),
+    currentIndex: 0,
+    isOpen: false,
+    isFinalControlOpen: false,
+    reviewIndex: 0,
+    reviewFeedback: {},
+    reviewReasons: {},
   };
 }
 
@@ -212,7 +302,7 @@ function buildSteps(locale: PublicLocale): PricingCalibrationStep[] {
       key: "anchor18",
       title: copy.anchorLabel,
       prompt: copy.anchorPrompt,
-      image: daggerImage,
+      image: currentDaggerImage,
       imageAlt: copy.anchorLabel,
     },
   ];
@@ -248,6 +338,23 @@ function CurrencyInput({
   );
 }
 
+function getScenarioLabel(id: PricingValidationExampleId, locale: PublicLocale) {
+  const copy = getText(locale);
+
+  switch (id) {
+    case "text-low-boundary":
+      return copy.imageText;
+    case "colored-butterfly":
+      return copy.imageButterfly;
+    case "current-dagger":
+      return copy.imageDagger;
+    case "feather-high-detail":
+      return copy.imageFeather;
+    case "realistic-eye":
+      return copy.imageEye;
+  }
+}
+
 export function PricingForm({
   pricingRules,
   styles: _styles,
@@ -261,13 +368,10 @@ export function PricingForm({
   const copy = getText(locale);
   const steps = useMemo(() => buildSteps(locale), [locale]);
   const storageKey = `tattix:pricing-onboarding-ui:${pricingRules.artistId}`;
-  const [draft, setDraft] = useState<PricingCalibrationDraft>({
-    values: buildInitialValues(pricingRules),
-    currentIndex: 0,
-    isOpen: false,
-  });
+  const [draft, setDraft] = useState<PricingCalibrationDraft>(() => createEmptyDraft(pricingRules));
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingReviewFeedback, setPendingReviewFeedback] = useState<PricingValidationFeedback | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -299,6 +403,13 @@ export function PricingForm({
         values: nextValues,
         currentIndex: nextIndex,
         isOpen: Boolean(parsed.isOpen) || Object.values(nextValues).some((value) => value.trim().length > 0),
+        isFinalControlOpen: Boolean(parsed.isFinalControlOpen),
+        reviewIndex:
+          typeof parsed.reviewIndex === "number" && Number.isFinite(parsed.reviewIndex)
+            ? Math.max(0, Math.min(parsed.reviewIndex, VALIDATION_SCENARIOS.length - 1))
+            : 0,
+        reviewFeedback: parsed.reviewFeedback ?? {},
+        reviewReasons: parsed.reviewReasons ?? {},
       });
     } catch {
       window.localStorage.removeItem(storageKey);
@@ -318,6 +429,60 @@ export function PricingForm({
   const currentStep = steps[draft.currentIndex] ?? steps[0];
   const canContinue = draft.values[currentStep.key].trim().length > 0;
   const progressWidth = `${(completedCount / steps.length) * 100}%`;
+  const currentScenario = VALIDATION_SCENARIOS[draft.reviewIndex] ?? VALIDATION_SCENARIOS[0];
+  const currentProbe = FINAL_CONTROL_PROBES.find((probe) => probe.id === currentScenario.id) ?? FINAL_CONTROL_PROBES[0];
+
+  const previewRanges = useMemo(() => {
+    const rawInputs: PricingCalibrationRawInputLike = {
+      minimumPrice: Number(draft.values.openingPrice),
+      roseMedium8cm: Number(draft.values.size8),
+      roseMedium18cm: Number(draft.values.size18),
+      roseMedium25cm: Number(draft.values.size25),
+      roseLow18cm: Number(draft.values.detailLow),
+      roseHigh18cm: Number(draft.values.detailHigh),
+      roseColor18cm: Number(draft.values.detailColor),
+      daggerAnchor18cm: Number(draft.values.anchor18),
+    };
+
+    const { sanitizedInputs, pricingProfile } = derivePricingProfile(rawInputs);
+    const nextRules: ArtistPricingRules = {
+      ...pricingRules,
+      calibrationExamples: {
+        ...pricingRules.calibrationExamples,
+        pricingRawInputs: sanitizedInputs,
+        pricingProfile,
+      },
+    };
+    const config = buildNormalizedQuoteConfig(nextRules);
+
+    return VALIDATION_SCENARIOS.map((scenario) => {
+      const input: NormalizedQuoteInput = {
+        size:
+          scenario.sizeCm <= 8
+            ? "tiny"
+            : scenario.sizeCm <= 12
+              ? "small"
+              : scenario.sizeCm <= 18
+                ? "medium"
+                : "large",
+        sizeCm: scenario.sizeCm,
+        placement: scenario.placement,
+        detailLevel: scenario.detailLevel,
+        colorMode: scenario.colorMode,
+        coverUp: false,
+        customDesign: false,
+        designType: null,
+      };
+
+      return {
+        id: scenario.id,
+        range: estimateNormalizedQuote(input, config),
+      };
+    });
+  }, [draft.values, pricingRules]);
+
+  const currentRange = previewRanges.find((item) => item.id === currentScenario.id)?.range ?? previewRanges[0]?.range;
+  const allReviewAnswered = VALIDATION_SCENARIOS.every((scenario) => draft.reviewFeedback[scenario.id]);
 
   function updateValue(key: PricingCalibrationFieldKey, value: string) {
     setDraft((current) => ({
@@ -334,23 +499,26 @@ export function PricingForm({
     setDraft((current) => ({
       ...current,
       isOpen: true,
+      isFinalControlOpen: false,
       currentIndex: findFirstIncompleteIndex(current.values, steps),
     }));
   }
 
   function handleClose() {
     setStatusMessage(null);
+    setPendingReviewFeedback(null);
     setDraft((current) => ({
       ...current,
       isOpen: false,
+      isFinalControlOpen: false,
     }));
   }
 
   function handleReset() {
     setStatusMessage(null);
+    setPendingReviewFeedback(null);
     setDraft({
-      values: buildInitialValues(pricingRules),
-      currentIndex: 0,
+      ...createEmptyDraft(pricingRules),
       isOpen: true,
     });
   }
@@ -363,7 +531,13 @@ export function PricingForm({
     setStatusMessage(null);
 
     if (draft.currentIndex >= steps.length - 1) {
-      void handleSave();
+      setPendingReviewFeedback(null);
+      setDraft((current) => ({
+        ...current,
+        isOpen: false,
+        isFinalControlOpen: true,
+        reviewIndex: 0,
+      }));
       return;
     }
 
@@ -379,6 +553,63 @@ export function PricingForm({
       ...current,
       currentIndex: Math.max(0, current.currentIndex - 1),
     }));
+  }
+
+  function advanceReview(nextDraft: PricingCalibrationDraft) {
+    const atLastScenario = nextDraft.reviewIndex >= VALIDATION_SCENARIOS.length - 1;
+
+    if (atLastScenario) {
+      return {
+        ...nextDraft,
+        isFinalControlOpen: true,
+      };
+    }
+
+    return {
+      ...nextDraft,
+      reviewIndex: nextDraft.reviewIndex + 1,
+    };
+  }
+
+  function handleReviewFeedback(feedback: PricingValidationFeedback) {
+    setStatusMessage(null);
+
+    if (feedback === "looks-right") {
+      setPendingReviewFeedback(null);
+      setDraft((current) =>
+        advanceReview({
+          ...current,
+          reviewFeedback: {
+            ...current.reviewFeedback,
+            [currentScenario.id]: feedback,
+          },
+        }),
+      );
+      return;
+    }
+
+    setPendingReviewFeedback(feedback);
+  }
+
+  function handleReviewReason(reason: ReviewReason) {
+    if (!pendingReviewFeedback) {
+      return;
+    }
+
+    setPendingReviewFeedback(null);
+    setDraft((current) =>
+      advanceReview({
+        ...current,
+        reviewFeedback: {
+          ...current.reviewFeedback,
+          [currentScenario.id]: pendingReviewFeedback,
+        },
+        reviewReasons: {
+          ...current.reviewReasons,
+          [currentScenario.id]: reason,
+        },
+      }),
+    );
   }
 
   async function handleSave() {
@@ -412,6 +643,7 @@ export function PricingForm({
       setDraft((current) => ({
         ...current,
         isOpen: false,
+        isFinalControlOpen: false,
       }));
       router.refresh();
     } finally {
@@ -432,13 +664,13 @@ export function PricingForm({
               <Button type="button" onClick={handleStart} disabled={isSaving}>
                 {completedCount > 0 ? copy.edit : copy.start}
               </Button>
-              {(completedCount > 0 || draft.isOpen) ? (
+              {(completedCount > 0 || draft.isOpen || draft.isFinalControlOpen) ? (
                 <Button type="button" variant="ghost" onClick={handleReset} disabled={isSaving}>
                   <RotateCcw className="size-4" />
                   {copy.reset}
                 </Button>
               ) : null}
-              {draft.isOpen ? (
+              {(draft.isOpen || draft.isFinalControlOpen) ? (
                 <Button type="button" variant="ghost" onClick={handleClose} disabled={isSaving}>
                   {copy.close}
                 </Button>
@@ -521,12 +753,134 @@ export function PricingForm({
                 ) : null}
 
                 <Button type="button" onClick={handleNext} disabled={!canContinue || isSaving}>
-                  {draft.currentIndex === steps.length - 1
-                    ? isSaving
-                      ? copy.saving
-                      : copy.finish
-                    : copy.next}
+                  {draft.currentIndex === steps.length - 1 ? copy.finish : copy.next}
                   {draft.currentIndex === steps.length - 1 ? null : <ArrowRight className="size-4" />}
+                </Button>
+              </div>
+            </>
+          ) : null}
+
+          {draft.isFinalControlOpen ? (
+            <>
+              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
+                    {copy.finalProgress}
+                  </p>
+                  <p className="text-sm text-[var(--foreground-muted)]">
+                    {draft.reviewIndex + 1} / {VALIDATION_SCENARIOS.length}
+                  </p>
+                </div>
+
+                <div className="mt-4 space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-white">{copy.finalControlTitle}</h3>
+                    <p className="text-sm text-[var(--foreground-muted)]">{copy.finalControlIntro}</p>
+                  </div>
+
+                  <div className="overflow-hidden rounded-[20px] border border-white/8 bg-black/20 p-3">
+                    <div className="mx-auto max-w-[360px] overflow-hidden rounded-[18px] border border-white/8 bg-black/10">
+                      <div className="relative aspect-[4/3] w-full">
+                        <Image
+                          src={finalControlImages[currentScenario.id]}
+                          alt={getScenarioLabel(currentScenario.id, locale)}
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 768px) 100vw, 360px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                    <p className="text-sm font-medium text-white">
+                      {getScenarioLabel(currentScenario.id, locale)}
+                    </p>
+                    <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+                      {currentProbe.assumedSizeCm} cm · {copy.assumedPlacement}
+                    </p>
+                    <p className="mt-4 text-base font-medium text-white">
+                      {copy.estimatedPrice}: {currentRange?.min} - {currentRange?.max}
+                    </p>
+                    <p className="mt-2 text-sm text-[var(--foreground-muted)]">{copy.finalControlHint}</p>
+                  </div>
+
+                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                    <p className="text-sm font-medium text-white">{copy.finalControlPrompt}</p>
+                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                      {[
+                        { key: "slightly-low", label: copy.low },
+                        { key: "looks-right", label: copy.okay },
+                        { key: "slightly-high", label: copy.high },
+                      ].map((option) => (
+                        <button
+                          key={option.key}
+                          type="button"
+                          onClick={() => handleReviewFeedback(option.key as PricingValidationFeedback)}
+                          className="rounded-[18px] border px-4 py-3 text-sm text-white transition"
+                          style={{
+                            borderColor:
+                              draft.reviewFeedback[currentScenario.id] === option.key || pendingReviewFeedback === option.key
+                                ? "var(--primary)"
+                                : "rgba(255,255,255,0.08)",
+                            backgroundColor:
+                              draft.reviewFeedback[currentScenario.id] === option.key || pendingReviewFeedback === option.key
+                                ? "color-mix(in srgb, var(--primary) 18%, transparent)"
+                                : "rgba(255,255,255,0.02)",
+                          }}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {pendingReviewFeedback && pendingReviewFeedback !== "looks-right" ? (
+                      <div className="mt-4 rounded-[18px] border border-white/8 bg-black/20 p-4">
+                        <p className="text-sm font-medium text-white">{copy.reasonTitle}</p>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                          {[
+                            { key: "size", label: copy.reasonSize },
+                            { key: "detail", label: copy.reasonDetail },
+                            { key: "color", label: copy.reasonColor },
+                            { key: "general", label: copy.reasonGeneral },
+                          ].map((option) => (
+                            <button
+                              key={option.key}
+                              type="button"
+                              onClick={() => handleReviewReason(option.key as ReviewReason)}
+                              className="rounded-[16px] border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-white transition hover:bg-white/[0.08]"
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {draft.reviewIndex > 0 ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setPendingReviewFeedback(null);
+                      setDraft((current) => ({
+                        ...current,
+                        reviewIndex: Math.max(0, current.reviewIndex - 1),
+                      }));
+                    }}
+                    disabled={isSaving}
+                  >
+                    <ArrowLeft className="size-4" />
+                    {copy.back}
+                  </Button>
+                ) : null}
+
+                <Button type="button" onClick={handleSave} disabled={!allReviewAnswered || isSaving}>
+                  {isSaving ? copy.saving : copy.finalControlSave}
                 </Button>
               </div>
             </>

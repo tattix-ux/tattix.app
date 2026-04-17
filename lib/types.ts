@@ -142,10 +142,18 @@ export type PricingProfile = {
     ratio: number;
   };
 };
+export type FinalControlProbeType =
+  | "low_boundary"
+  | "color"
+  | "baseline"
+  | "high_detail"
+  | "style";
+export type FinalControlPlacementType = "easy_flat";
 export type PricingValidationFeedback = "looks-right" | "slightly-low" | "slightly-high";
 export type PricingValidationExampleId =
-  | "minimal-linework"
-  | "ornamental-dagger"
+  | "text-low-boundary"
+  | "current-dagger"
+  | "feather-high-detail"
   | "realistic-eye"
   | "colored-butterfly";
 export type PricingValidationStatus =

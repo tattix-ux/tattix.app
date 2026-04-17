@@ -3,6 +3,7 @@ import type { z } from "zod";
 import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
 import { pricingSchema } from "@/lib/forms/schemas";
+import { FINAL_CONTROL_PROBES } from "@/lib/pricing/final-control";
 import {
   buildNormalizedQuoteConfig,
   estimateNormalizedQuote,
@@ -65,11 +66,14 @@ export type CalibrationPreview = {
 
 export type ValidationScenario = {
   id: PricingValidationExampleId;
-  image: "minimal-linework" | "ornamental-dagger" | "realistic-eye" | "colored-butterfly";
+  image: PricingValidationExampleId;
   sizeCm: number;
   placement: BodyAreaDetailValue;
   detailLevel: DetailLevelValue | "ultra";
   colorMode: ColorModeValue;
+  probeType: typeof FINAL_CONTROL_PROBES[number]["probeType"];
+  assumedPlacementType: typeof FINAL_CONTROL_PROBES[number]["assumedPlacementType"];
+  notes: string;
 };
 
 export const CALIBRATION_STEPS = ["size", "detail", "placement", "color"] as const;
@@ -91,40 +95,24 @@ export const CALIBRATION_SLOT_LABELS = [
   { slotId: "color-color", axis: "colorMode", key: "color", label: "Renkli referans slotu", assetRef: null },
 ] as const;
 
-export const VALIDATION_SCENARIOS: ValidationScenario[] = [
-  {
-    id: "minimal-linework",
-    image: "minimal-linework",
-    sizeCm: 6,
-    placement: "forearm-outer",
-    detailLevel: "simple",
-    colorMode: "black-only",
-  },
-  {
-    id: "ornamental-dagger",
-    image: "ornamental-dagger",
-    sizeCm: 14,
-    placement: "forearm-outer",
-    detailLevel: "standard",
-    colorMode: "black-only",
-  },
-  {
-    id: "realistic-eye",
-    image: "realistic-eye",
-    sizeCm: 18,
-    placement: "ribs",
-    detailLevel: "ultra",
-    colorMode: "black-only",
-  },
-  {
-    id: "colored-butterfly",
-    image: "colored-butterfly",
-    sizeCm: 12,
-    placement: "forearm-outer",
-    detailLevel: "standard",
-    colorMode: "full-color",
-  },
-];
+export const VALIDATION_SCENARIOS: ValidationScenario[] = FINAL_CONTROL_PROBES.map((probe) => ({
+  id: probe.id,
+  image: probe.id,
+  sizeCm: probe.assumedSizeCm,
+  placement: "forearm-outer",
+  detailLevel:
+    probe.probeType === "low_boundary"
+      ? "simple"
+      : probe.probeType === "high_detail"
+        ? "detailed"
+        : probe.probeType === "style"
+          ? "ultra"
+          : "standard",
+  colorMode: probe.probeType === "color" ? "full-color" : "black-only",
+  probeType: probe.probeType,
+  assumedPlacementType: probe.assumedPlacementType,
+  notes: probe.notes,
+}));
 
 export const VALIDATION_UPWARD_ADJUSTMENT = 1.06;
 export const VALIDATION_DOWNWARD_ADJUSTMENT = 0.94;
