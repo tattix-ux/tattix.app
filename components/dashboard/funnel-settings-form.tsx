@@ -11,10 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DateCalendarPopover } from "@/components/ui/date-calendar-popover";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/shared/field";
-import { turkeyCities } from "@/lib/constants/cities";
 import { funnelSettingsSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistFunnelSettings, ArtistStyleOption } from "@/lib/types";
@@ -111,7 +109,7 @@ export function FunnelSettingsForm({
           bookingDescription: "Müşteri yalnızca burada tanımladığın şehirleri ve tarihleri görür.",
           addCity: "Şehir ekle",
           cityName: "Şehir",
-          cityPlaceholder: "Şehir seç",
+          cityPlaceholder: "Örn. Adana",
           noCities: "Henüz şehir eklenmedi.",
           availabilityTitle: "Bu şehir için müsait olduğun tarihleri seç",
           addDate: "Tarih seç",
@@ -144,7 +142,7 @@ export function FunnelSettingsForm({
           bookingDescription: "Customers only see the cities and dates you define here.",
           addCity: "Add city",
           cityName: "City",
-          cityPlaceholder: "Select city",
+          cityPlaceholder: "e.g. Adana",
           noCities: "No cities added yet.",
           availabilityTitle: "Select the dates you are available in this city",
           addDate: "Select dates",
@@ -443,14 +441,11 @@ export function FunnelSettingsForm({
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <NativeSelect value={pendingCity} onChange={(event) => setPendingCity(event.target.value)}>
-                <option value="">{copy.cityPlaceholder}</option>
-                {turkeyCities.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </NativeSelect>
+              <Input
+                value={pendingCity}
+                onChange={(event) => setPendingCity(event.target.value)}
+                placeholder={copy.cityPlaceholder}
+              />
               <Button type="button" onClick={addBookingCity}>
                 <Plus className="size-4" />
                 {copy.addCity}
@@ -473,7 +468,7 @@ export function FunnelSettingsForm({
                             label={copy.cityName}
                             error={form.formState.errors.bookingCities?.[index]?.cityName?.message}
                           >
-                            <NativeSelect
+                            <Input
                               value={city?.cityName ?? ""}
                               onChange={(event) =>
                                 form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
@@ -481,14 +476,8 @@ export function FunnelSettingsForm({
                                   shouldValidate: true,
                                 })
                               }
-                            >
-                              <option value="">{copy.cityPlaceholder}</option>
-                              {turkeyCities.map((cityOption) => (
-                                <option key={cityOption} value={cityOption}>
-                                  {cityOption}
-                                </option>
-                              ))}
-                            </NativeSelect>
+                              placeholder={copy.cityPlaceholder}
+                            />
                           </Field>
                         </div>
                         <Button
@@ -552,7 +541,7 @@ export function FunnelSettingsForm({
                     type="button"
                     key={style.id}
                     onClick={() => toggleBuiltInStyle(style.styleKey)}
-                    className={`rounded-[12px] border px-2 py-1.5 text-left transition ${
+                    className={`flex items-center gap-2 rounded-[12px] border px-2 py-1.5 text-left transition ${
                       active
                         ? "border-[var(--accent)]/30 bg-[var(--accent)]/12"
                         : "border-white/8 bg-black/20 text-[var(--foreground-muted)]"
@@ -561,6 +550,31 @@ export function FunnelSettingsForm({
                     <span className={`text-xs font-medium leading-4 ${active ? "text-white" : "text-[var(--foreground-muted)]"}`}>
                       {style.styleKey === "realism" ? "Realistic" : style.label}
                     </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={copy.remove}
+                      className="h-6 w-6 px-0"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (!window.confirm(copy.deleteConfirm)) {
+                          return;
+                        }
+                        form.setValue(
+                          "removedBuiltInStyles",
+                          Array.from(new Set([...removedBuiltInStyles, style.styleKey])),
+                          { shouldValidate: true, shouldDirty: true },
+                        );
+                        form.setValue(
+                          "enabledStyles",
+                          selectedStyles.filter((item) => item !== style.styleKey),
+                          { shouldValidate: true, shouldDirty: true },
+                        );
+                      }}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
                   </button>
                 );
               })}

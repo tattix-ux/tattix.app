@@ -57,7 +57,7 @@ export default async function DashboardLayout({
                 </div>
                 {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
               </div>
-              <div className="w-full max-w-[356px] lg:w-full lg:max-w-none">
+              <div className="w-full max-w-none lg:w-full lg:max-w-none">
                 <PublicRouteCard
                   slug={dashboardData.profile.slug}
                   locale={isTurkish ? "tr" : "en"}
@@ -66,7 +66,7 @@ export default async function DashboardLayout({
             </div>
 
             <div className="mt-6 grid items-start gap-4 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-8">
-              <aside className="max-w-[230px] space-y-4 lg:sticky lg:top-6 lg:max-w-none">
+              <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[230px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
@@ -97,12 +97,12 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-[356px] lg:w-full lg:max-w-none lg:justify-self-stretch">
+              <main className="min-w-0 w-full max-w-none lg:w-full lg:max-w-none lg:justify-self-stretch">
                 {children}
               </main>
             </div>
 
-            <div className="mt-6 max-w-[356px] lg:max-w-none">
+            <div className="mt-6 w-full max-w-none lg:max-w-none">
               <DashboardSupportCard
                 locale={isTurkish ? "tr" : "en"}
                 artistName={dashboardData.profile.artistName}

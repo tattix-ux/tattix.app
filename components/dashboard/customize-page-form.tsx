@@ -321,12 +321,14 @@ export function CustomizePageForm({
       ? {
           "dark-minimal": "Sade ve temiz görünüm",
           "gothic-black": "Daha sert ve karanlık",
+          "soft-neutral": "Açık, yumuşak ve ferah",
           "luxury-serif": "Daha premium ve klasik",
           "neon-accent": "Daha dikkat çekici",
         }
       : {
           "dark-minimal": "Clean and minimal",
           "gothic-black": "Sharper and darker",
+          "soft-neutral": "Light, soft, and airy",
           "luxury-serif": "More premium and classic",
           "neon-accent": "More attention-grabbing",
         };

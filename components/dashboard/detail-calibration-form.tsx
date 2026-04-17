@@ -132,6 +132,16 @@ function buildDraftFromProfile(profile: DetailCalibrationProfile | null | undefi
   };
 }
 
+function buildSubmissionPayload(draft: DraftState): DetailCalibrationSubmission {
+  return {
+    sampleOrder: draft.sampleOrder,
+    responses: draft.sampleOrder.map((sampleId) => ({
+      sampleId,
+      selectedDetailLevel: draft.responses[sampleId]!,
+    })),
+  };
+}
+
 function normalizeStoredDraft(value: string | null) {
   if (!value) {
     return null;
@@ -244,6 +254,7 @@ export function DetailCalibrationForm({
     () => (savedProfile ? buildDetailCalibrationDebugSnapshot(savedProfile) : null),
     [savedProfile],
   );
+  const isCurrentStepAnswered = Boolean(draft.responses[currentSample.id]);
 
   function handleStart() {
     setStatusMessage(null);
@@ -272,41 +283,15 @@ export function DetailCalibrationForm({
     }
   }
 
-  function handleSelection(level: DetailCalibrationLevel) {
-    setDraft((current) => {
-      const currentSampleId = current.sampleOrder[current.currentIndex];
-      const nextResponses = {
-        ...current.responses,
-        [currentSampleId]: level,
-      };
-      const nextIndex =
-        current.currentIndex < current.sampleOrder.length - 1
-          ? current.currentIndex + 1
-          : current.currentIndex;
+  async function persistDraft(nextDraft: DraftState) {
+    const isDraftComplete = nextDraft.sampleOrder.every((sampleId) => Boolean(nextDraft.responses[sampleId]));
 
-      return {
-        ...current,
-        responses: nextResponses,
-        currentIndex: nextIndex,
-      };
-    });
-    setStatusMessage(null);
-  }
-
-  async function handleSave() {
-    if (!isComplete) {
+    if (!isDraftComplete) {
       setStatusMessage(copy.incomplete);
       return;
     }
 
-    const payload: DetailCalibrationSubmission = {
-      sampleOrder: draft.sampleOrder,
-      responses: draft.sampleOrder.map((sampleId) => ({
-        sampleId,
-        selectedDetailLevel: draft.responses[sampleId]!,
-      })),
-    };
-
+    const payload = buildSubmissionPayload(nextDraft);
     setIsSaving(true);
     setStatusMessage(null);
 
@@ -336,6 +321,38 @@ export function DetailCalibrationForm({
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function handleSelection(level: DetailCalibrationLevel) {
+    setStatusMessage(null);
+    const currentSampleId = draft.sampleOrder[draft.currentIndex];
+    const nextResponses = {
+      ...draft.responses,
+      [currentSampleId]: level,
+    };
+    const nextIndex =
+      draft.currentIndex < draft.sampleOrder.length - 1 ? draft.currentIndex + 1 : draft.currentIndex;
+    const nextDraft = {
+      ...draft,
+      responses: nextResponses,
+      currentIndex: nextIndex,
+    };
+
+    setDraft(nextDraft);
+
+    const isCompleteNow = nextDraft.sampleOrder.every((sampleId) => Boolean(nextDraft.responses[sampleId]));
+    if (isCompleteNow) {
+      void persistDraft(nextDraft);
+    }
+  }
+
+  async function handleSave() {
+    if (!isComplete) {
+      setStatusMessage(copy.incomplete);
+      return;
+    }
+
+    await persistDraft(draft);
   }
 
   return (
@@ -432,6 +449,14 @@ export function DetailCalibrationForm({
             {isComplete ? (
               <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
                 <p className="text-sm text-[var(--foreground-muted)]">{copy.completed}</p>
+              </div>
+            ) : null}
+
+            {isCurrentStepAnswered && !isSaving ? (
+              <div className="rounded-[20px] border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-4 py-3">
+                <p className="text-sm text-white">
+                  {locale === "tr" ? "Bu görsel tamamlandı." : "This sample is done."}
+                </p>
               </div>
             ) : null}
 

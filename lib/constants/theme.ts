@@ -1,6 +1,7 @@
 export const themePresetOptions = [
   "dark-minimal",
   "gothic-black",
+  "soft-neutral",
   "luxury-serif",
   "neon-accent",
 ] as const;

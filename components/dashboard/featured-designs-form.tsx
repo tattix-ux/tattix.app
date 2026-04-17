@@ -78,8 +78,6 @@ const copy = {
     discounted: "Discounted designs",
     customOption: "Custom category",
     dragHint: "Drag to reorder",
-    preview: "Client preview",
-    previewEmptyTitle: "Title will appear here",
     currencyPrefix: "TRY",
   },
   tr: {
@@ -128,8 +126,6 @@ const copy = {
     discounted: "İndirimli tasarımlar",
     customOption: "Özel kategori",
     dragHint: "Sıralamak için sürükle",
-    preview: "Müşteri önizlemesi",
-    previewEmptyTitle: "Başlık burada görünür",
     currencyPrefix: "₺",
   },
 } as const;
@@ -378,7 +374,7 @@ export function FeaturedDesignsForm({
 
                   {isExpanded ? (
                     <>
-                      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
+                      <div className="mt-5">
                         <div className="space-y-5">
                           <Field label={labels.image} description={labels.imageDescription}>
                             <div className="space-y-3">
@@ -538,42 +534,6 @@ export function FeaturedDesignsForm({
                           </div>
                         </div>
 
-                        <div className="space-y-4">
-                          <div className="rounded-[22px] border border-white/8 bg-black/20 p-4 xl:sticky xl:top-24">
-                            <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                              {labels.preview}
-                            </p>
-                            <div className="mt-4 overflow-hidden rounded-[20px] border border-white/10 bg-white/5">
-                              <div className="relative flex aspect-[4/5] items-end overflow-hidden bg-black/10 p-4">
-                                {currentDesign?.imageUrl ? (
-                                  <div
-                                    className="absolute inset-0 bg-cover bg-center"
-                                    style={{ backgroundImage: `url(${currentDesign.imageUrl})` }}
-                                  />
-                                ) : (
-                                  <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
-                                    <ImagePlus className="size-5" />
-                                    <span>{labels.noImage}</span>
-                                  </div>
-                                )}
-                                {currentDesign?.imageUrl ? (
-                                  <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/55" />
-                                ) : null}
-                                <span className="relative z-10 inline-flex rounded-full border border-white/10 bg-black/40 px-2.5 py-1 text-[11px] text-white">
-                                  {getCategoryLabel(currentDesign?.category || "flash-designs")}
-                                </span>
-                              </div>
-                              <div className="space-y-2 p-4">
-                                <p className="min-w-0 truncate text-base font-medium text-white">
-                                  {currentDesign?.title?.trim() || labels.previewEmptyTitle}
-                                </p>
-                                <p className="text-sm text-[var(--foreground-muted)]">
-                                  {currentDesign?.shortDescription?.trim() || " "}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </>
                   ) : null}
