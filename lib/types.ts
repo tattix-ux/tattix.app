@@ -112,6 +112,36 @@ export type DetailCalibrationProfile = {
   calibrationCompletedAt: string;
   completed: boolean;
 };
+export type PricingCalibrationRawInputs = {
+  minimumPrice: number;
+  roseMedium8cm: number;
+  roseMedium18cm: number;
+  roseMedium25cm: number;
+  roseLow18cm: number;
+  roseHigh18cm: number;
+  roseColor18cm: number;
+  daggerAnchor18cm: number;
+};
+export type PricingProfile = {
+  version: 1;
+  basePrice: number;
+  size: {
+    small: number;
+    medium: 1;
+    large: number;
+  };
+  detail: {
+    low: number;
+    medium: 1;
+    high: number;
+  };
+  color: {
+    factor: number;
+  };
+  anchor: {
+    ratio: number;
+  };
+};
 export type PricingValidationFeedback = "looks-right" | "slightly-low" | "slightly-high";
 export type PricingValidationExampleId =
   | "minimal-linework"
@@ -166,6 +196,8 @@ export type PricingCalibrationExamples = {
   globalScale?: number;
   finalValidation?: PricingFinalValidation;
   detailCalibration?: DetailCalibrationProfile | null;
+  pricingRawInputs?: PricingCalibrationRawInputs | null;
+  pricingProfile?: PricingProfile | null;
 };
 
 export type PricingCalibrationReferenceSlot = {
