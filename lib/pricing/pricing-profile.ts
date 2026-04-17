@@ -1,8 +1,11 @@
 import type {
   ArtistPricingRules,
+  ColorModeValue,
+  DetailLevelValue,
   PricingCalibrationRawInputs,
   PricingProfile,
 } from "../types.ts";
+import type { SizeValue } from "../constants/options.ts";
 
 export const PRICING_PROFILE_VERSION = 1 as const;
 
@@ -27,6 +30,11 @@ export type PricingCalibrationRawInputLike = Partial<
 export type DerivedPricingProfile = {
   sanitizedInputs: PricingCalibrationRawInputs;
   pricingProfile: PricingProfile;
+};
+
+export type PricingProfileDebugSnapshot = {
+  rawInputs: PricingCalibrationRawInputs;
+  derived: PricingProfile;
 };
 
 function roundPrice(value: number) {
@@ -208,4 +216,81 @@ export function derivePricingProfile(
 
 export function getArtistPricingProfile(rules: ArtistPricingRules) {
   return rules.calibrationExamples.pricingProfile ?? null;
+}
+
+export function getArtistPricingRawInputs(rules: ArtistPricingRules) {
+  return rules.calibrationExamples.pricingRawInputs ?? null;
+}
+
+export function resolveSizeFactor(profile: PricingProfile | null, size: SizeValue) {
+  if (!profile) {
+    return 1;
+  }
+
+  switch (size) {
+    case "tiny":
+      return profile.size.small;
+    case "small":
+      return roundRatio(profile.size.small + (profile.size.medium - profile.size.small) * 0.4);
+    case "medium":
+      return profile.size.medium;
+    case "large":
+      return profile.size.large;
+  }
+}
+
+export function resolveDetailFactor(
+  profile: PricingProfile | null,
+  detailLevel: DetailLevelValue | "ultra",
+) {
+  if (!profile) {
+    return 1;
+  }
+
+  switch (detailLevel) {
+    case "simple":
+      return profile.detail.low;
+    case "standard":
+      return profile.detail.medium;
+    case "ultra":
+      return Math.max(
+        profile.detail.high,
+        smoothRatio(profile.detail.high * 1.08, {
+          center: 1,
+          strength: 0.6,
+          min: 1,
+          max: 1.95,
+        }),
+      );
+    case "detailed":
+      return profile.detail.high;
+  }
+}
+
+export function resolveColorFactor(
+  profile: PricingProfile | null,
+  colorMode: ColorModeValue,
+) {
+  if (!profile) {
+    return 1;
+  }
+
+  switch (colorMode) {
+    case "black-only":
+      return 1;
+    case "black-grey":
+      return roundRatio(1 + (profile.color.factor - 1) * 0.5);
+    case "full-color":
+      return profile.color.factor;
+  }
+}
+
+export function buildPricingProfileDebugSnapshot(
+  rawInputs: PricingCalibrationRawInputs,
+  pricingProfile: PricingProfile,
+): PricingProfileDebugSnapshot {
+  return {
+    rawInputs,
+    derived: pricingProfile,
+  };
 }

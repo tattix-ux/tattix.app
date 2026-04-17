@@ -258,6 +258,8 @@ export async function ensureArtistForUser(user: User) {
         },
         globalScale: 1,
         detailCalibration: null,
+        pricingRawInputs: null,
+        pricingProfile: null,
       },
       calibration_reference_slots: CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot })),
       size_modifiers: {

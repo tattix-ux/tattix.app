@@ -8,12 +8,20 @@ import type {
   DetailLevelValue,
   PriceRange,
   PricingCalibrationExamples,
+  PricingCalibrationRawInputs,
+  PricingProfile,
   SubmissionRequest,
 } from "../types.ts";
 import {
   getArtistDetailCalibration,
   resolvePersonalizedDetailWeight,
 } from "./detail-calibration.ts";
+import {
+  getArtistPricingProfile,
+  getArtistPricingRawInputs,
+  resolveColorFactor,
+  resolveDetailFactor,
+} from "./pricing-profile.ts";
 import { roundToNearestFifty } from "../utils.ts";
 
 type SurchargeRange = {
@@ -43,6 +51,8 @@ export type NormalizedQuoteConfig = {
   sizeCurvePoints: Record<"8" | "12" | "18" | "25", number>;
   hardPlacementDetails: Set<BodyAreaDetailValue>;
   detailCalibrationProfile: DetailCalibrationProfile | null;
+  pricingProfile: PricingProfile | null;
+  pricingRawInputs: PricingCalibrationRawInputs | null;
   detailSurcharges: Record<QuoteDetailLevel, SurchargeRange>;
   placementSurcharges: {
     easy: SurchargeRange;
@@ -222,6 +232,26 @@ function deriveSizeCurvePoints(
   rules: ArtistPricingRules,
   anchorPrice: number,
 ) {
+  const pricingRawInputs = getArtistPricingRawInputs(rules);
+  if (
+    pricingRawInputs &&
+    isFinitePositive(pricingRawInputs.roseMedium8cm) &&
+    isFinitePositive(pricingRawInputs.roseMedium18cm) &&
+    isFinitePositive(pricingRawInputs.roseMedium25cm)
+  ) {
+    const point8 = Number(pricingRawInputs.roseMedium8cm);
+    const point18 = Number(pricingRawInputs.roseMedium18cm);
+    const point25 = Number(pricingRawInputs.roseMedium25cm);
+    const point12 = Math.round(point8 + (point18 - point8) * 0.4);
+
+    return {
+      "8": point8,
+      "12": Math.max(point8, point12),
+      "18": point18,
+      "25": Math.max(point18, point25),
+    } as Record<"8" | "12" | "18" | "25", number>;
+  }
+
   const calibrationCurve = rules.calibrationExamples.sizeCurve;
   if (hasCalibrationExamples(rules.calibrationExamples) && calibrationCurve) {
     return {
@@ -282,6 +312,23 @@ function deriveDetailSurcharges(
   rules: ArtistPricingRules,
   baselinePrice: number,
 ) {
+  const pricingProfile = getArtistPricingProfile(rules);
+  const pricingRawInputs = getArtistPricingRawInputs(rules);
+
+  if (pricingProfile && pricingRawInputs) {
+    const standardPrice = Number(pricingRawInputs.roseMedium18cm);
+    const simplePrice = Number(pricingRawInputs.roseLow18cm);
+    const detailedPrice = Math.round(standardPrice * resolveDetailFactor(pricingProfile, "detailed"));
+    const ultraPrice = Math.round(standardPrice * resolveDetailFactor(pricingProfile, "ultra"));
+
+    return {
+      simple: createCenteredRange(simplePrice - standardPrice, Math.max(30, standardPrice * 0.025)),
+      standard: { min: 0, max: 0 },
+      detailed: createCenteredRange(detailedPrice - standardPrice, Math.max(50, standardPrice * 0.03), 0),
+      ultra: createCenteredRange(ultraPrice - standardPrice, Math.max(65, standardPrice * 0.04), 0),
+    };
+  }
+
   const standardPrice =
     rules.calibrationExamples.detailLevel.standard ??
     baselinePrice;
@@ -374,6 +421,21 @@ function deriveColorSurcharges(
   rules: ArtistPricingRules,
   baselinePrice: number,
 ) {
+  const pricingProfile = getArtistPricingProfile(rules);
+  const pricingRawInputs = getArtistPricingRawInputs(rules);
+
+  if (pricingProfile && pricingRawInputs) {
+    const blackPrice = Number(pricingRawInputs.roseMedium18cm);
+    const fullColorPrice = Number(pricingRawInputs.roseColor18cm);
+    const blackGreyPrice = Math.round(blackPrice * resolveColorFactor(pricingProfile, "black-grey"));
+
+    return {
+      "black-only": { min: 0, max: 0 },
+      "black-grey": createCenteredRange(blackGreyPrice - blackPrice, Math.max(28, blackPrice * 0.02), 0),
+      "full-color": createCenteredRange(fullColorPrice - blackPrice, Math.max(40, blackPrice * 0.025), 0),
+    };
+  }
+
   const blackPrice =
     rules.calibrationExamples.colorMode["black-only"] ??
     baselinePrice;
@@ -523,6 +585,8 @@ export function buildNormalizedQuoteConfig(
   const baselinePrice = deriveBaselinePrice(anchorPrice, rules, sizeCurvePoints);
   const hardPlacementDetails = collectHardPlacementDetails(rules);
   const detailCalibrationProfile = getArtistDetailCalibration(rules);
+  const pricingProfile = getArtistPricingProfile(rules);
+  const pricingRawInputs = getArtistPricingRawInputs(rules);
 
   return {
     anchorPrice,
@@ -543,6 +607,8 @@ export function buildNormalizedQuoteConfig(
     sizeCurvePoints,
     hardPlacementDetails,
     detailCalibrationProfile,
+    pricingProfile,
+    pricingRawInputs,
     detailSurcharges: {
       simple: clampRange(deriveDetailSurcharges(rules, baselinePrice).simple, { min: -120, max: -40 }),
       standard: { min: 0, max: 0 },

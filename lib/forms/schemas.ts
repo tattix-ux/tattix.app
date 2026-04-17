@@ -185,6 +185,17 @@ export const detailCalibrationSubmissionSchema = z.object({
   }
 });
 
+export const pricingOnboardingSchema = z.object({
+  minimumPrice: z.coerce.number().gt(0),
+  roseMedium8cm: z.coerce.number().gt(0),
+  roseMedium18cm: z.coerce.number().gt(0),
+  roseMedium25cm: z.coerce.number().gt(0),
+  roseLow18cm: z.coerce.number().gt(0),
+  roseHigh18cm: z.coerce.number().gt(0),
+  roseColor18cm: z.coerce.number().gt(0),
+  daggerAnchor18cm: z.coerce.number().gt(0),
+});
+
 export const pricingSchema = z.object({
   basePrice: z.coerce.number().gt(0),
   minimumCharge: z.coerce.number().min(0),

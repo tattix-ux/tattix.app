@@ -3,6 +3,7 @@
 import Image, { type StaticImageData } from "next/image";
 import { ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import daggerImage from "@/sample-tattoos/dagger.png";
 import highDetailImage from "@/sample-tattoos/high.png";
@@ -78,6 +79,9 @@ function getText(locale: PublicLocale) {
       next: "Devam",
       finish: "Tamamla",
       progress: "İlerleme",
+      saving: "Kaydediliyor",
+      saved: "Fiyat ayarı kaydedildi.",
+      saveFailed: "Fiyat ayarı kaydedilemedi.",
     };
   }
 
@@ -111,24 +115,30 @@ function getText(locale: PublicLocale) {
     next: "Next",
     finish: "Finish",
     progress: "Progress",
+    saving: "Saving",
+    saved: "Pricing setup saved.",
+    saveFailed: "Pricing setup could not be saved.",
   };
 }
 
 function buildInitialValues(pricingRules: ArtistPricingRules): PricingCalibrationValues {
+  const rawInputs = pricingRules.calibrationExamples.pricingRawInputs;
+
   return {
-    openingPrice:
-      pricingRules.anchorPrice > 0
+    openingPrice: rawInputs?.minimumPrice
+      ? String(Math.round(rawInputs.minimumPrice))
+      : pricingRules.anchorPrice > 0
         ? String(Math.round(pricingRules.anchorPrice))
         : pricingRules.basePrice > 0
           ? String(Math.round(pricingRules.basePrice))
           : "",
-    size8: "",
-    size18: "",
-    size25: "",
-    detailLow: "",
-    detailHigh: "",
-    detailColor: "",
-    anchor18: "",
+    size8: rawInputs?.roseMedium8cm ? String(Math.round(rawInputs.roseMedium8cm)) : "",
+    size18: rawInputs?.roseMedium18cm ? String(Math.round(rawInputs.roseMedium18cm)) : "",
+    size25: rawInputs?.roseMedium25cm ? String(Math.round(rawInputs.roseMedium25cm)) : "",
+    detailLow: rawInputs?.roseLow18cm ? String(Math.round(rawInputs.roseLow18cm)) : "",
+    detailHigh: rawInputs?.roseHigh18cm ? String(Math.round(rawInputs.roseHigh18cm)) : "",
+    detailColor: rawInputs?.roseColor18cm ? String(Math.round(rawInputs.roseColor18cm)) : "",
+    anchor18: rawInputs?.daggerAnchor18cm ? String(Math.round(rawInputs.daggerAnchor18cm)) : "",
   };
 }
 
@@ -247,6 +257,7 @@ export function PricingForm({
   styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
+  const router = useRouter();
   const copy = getText(locale);
   const steps = useMemo(() => buildSteps(locale), [locale]);
   const storageKey = `tattix:pricing-onboarding-ui:${pricingRules.artistId}`;
@@ -255,6 +266,8 @@ export function PricingForm({
     currentIndex: 0,
     isOpen: false,
   });
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -317,6 +330,7 @@ export function PricingForm({
   }
 
   function handleStart() {
+    setStatusMessage(null);
     setDraft((current) => ({
       ...current,
       isOpen: true,
@@ -325,6 +339,7 @@ export function PricingForm({
   }
 
   function handleClose() {
+    setStatusMessage(null);
     setDraft((current) => ({
       ...current,
       isOpen: false,
@@ -332,6 +347,7 @@ export function PricingForm({
   }
 
   function handleReset() {
+    setStatusMessage(null);
     setDraft({
       values: buildInitialValues(pricingRules),
       currentIndex: 0,
@@ -344,27 +360,63 @@ export function PricingForm({
       return;
     }
 
-    setDraft((current) => {
-      if (current.currentIndex >= steps.length - 1) {
-        return {
-          ...current,
-          isOpen: false,
-          currentIndex: steps.length - 1,
-        };
-      }
+    setStatusMessage(null);
 
-      return {
-        ...current,
-        currentIndex: current.currentIndex + 1,
-      };
-    });
+    if (draft.currentIndex >= steps.length - 1) {
+      void handleSave();
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      currentIndex: current.currentIndex + 1,
+    }));
   }
 
   function handleBack() {
+    setStatusMessage(null);
     setDraft((current) => ({
       ...current,
       currentIndex: Math.max(0, current.currentIndex - 1),
     }));
+  }
+
+  async function handleSave() {
+    setStatusMessage(null);
+    setIsSaving(true);
+
+    try {
+      const response = await fetch("/api/dashboard/pricing/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          minimumPrice: Number(draft.values.openingPrice),
+          roseMedium8cm: Number(draft.values.size8),
+          roseMedium18cm: Number(draft.values.size18),
+          roseMedium25cm: Number(draft.values.size25),
+          roseLow18cm: Number(draft.values.detailLow),
+          roseHigh18cm: Number(draft.values.detailHigh),
+          roseColor18cm: Number(draft.values.detailColor),
+          daggerAnchor18cm: Number(draft.values.anchor18),
+        }),
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        setStatusMessage(payload?.message ?? copy.saveFailed);
+        return;
+      }
+
+      setStatusMessage(copy.saved);
+      setDraft((current) => ({
+        ...current,
+        isOpen: false,
+      }));
+      router.refresh();
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -377,17 +429,17 @@ export function PricingForm({
         <div className="space-y-6">
           <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
             <div className="flex flex-wrap gap-3">
-              <Button type="button" onClick={handleStart}>
+              <Button type="button" onClick={handleStart} disabled={isSaving}>
                 {completedCount > 0 ? copy.edit : copy.start}
               </Button>
               {(completedCount > 0 || draft.isOpen) ? (
-                <Button type="button" variant="ghost" onClick={handleReset}>
+                <Button type="button" variant="ghost" onClick={handleReset} disabled={isSaving}>
                   <RotateCcw className="size-4" />
                   {copy.reset}
                 </Button>
               ) : null}
               {draft.isOpen ? (
-                <Button type="button" variant="ghost" onClick={handleClose}>
+                <Button type="button" variant="ghost" onClick={handleClose} disabled={isSaving}>
                   {copy.close}
                 </Button>
               ) : null}
@@ -407,6 +459,8 @@ export function PricingForm({
               />
             </div>
           </div>
+
+          {statusMessage ? <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p> : null}
 
           {draft.isOpen ? (
             <>
@@ -460,14 +514,18 @@ export function PricingForm({
 
               <div className="flex flex-wrap items-center gap-3">
                 {draft.currentIndex > 0 ? (
-                  <Button type="button" variant="ghost" onClick={handleBack}>
+                  <Button type="button" variant="ghost" onClick={handleBack} disabled={isSaving}>
                     <ArrowLeft className="size-4" />
                     {copy.back}
                   </Button>
                 ) : null}
 
-                <Button type="button" onClick={handleNext} disabled={!canContinue}>
-                  {draft.currentIndex === steps.length - 1 ? copy.finish : copy.next}
+                <Button type="button" onClick={handleNext} disabled={!canContinue || isSaving}>
+                  {draft.currentIndex === steps.length - 1
+                    ? isSaving
+                      ? copy.saving
+                      : copy.finish
+                    : copy.next}
                   {draft.currentIndex === steps.length - 1 ? null : <ArrowRight className="size-4" />}
                 </Button>
               </div>

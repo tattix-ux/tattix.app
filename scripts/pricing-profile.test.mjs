@@ -3,8 +3,12 @@ import test from "node:test";
 
 import {
   clamp,
+  buildPricingProfileDebugSnapshot,
   derivePricingProfile,
   enforceMonotonic,
+  resolveColorFactor,
+  resolveDetailFactor,
+  resolveSizeFactor,
   safeDivide,
   sanitizePricingCalibrationInputs,
   smoothRatio,
@@ -81,4 +85,28 @@ test("helper functions stay deterministic", () => {
   assert.equal(safeDivide(10, 0, 1), 1);
   assert.equal(smoothRatio(2, { center: 1, strength: 0.5 }), 1.5);
   assert.deepEqual(enforceMonotonic([0.8, 1, 0.9, 1.4]), [0.8, 1, 1, 1.4]);
+});
+
+test("accessors expose pricing profile factors safely", () => {
+  const { sanitizedInputs, pricingProfile } = derivePricingProfile({
+    minimumPrice: 2500,
+    roseMedium8cm: 1700,
+    roseMedium18cm: 3200,
+    roseMedium25cm: 5900,
+    roseLow18cm: 2700,
+    roseHigh18cm: 4300,
+    roseColor18cm: 3900,
+    daggerAnchor18cm: 4700,
+  });
+
+  assert.equal(resolveSizeFactor(pricingProfile, "tiny"), pricingProfile.size.small);
+  assert.equal(resolveSizeFactor(pricingProfile, "medium"), 1);
+  assert.equal(resolveDetailFactor(pricingProfile, "standard"), 1);
+  assert.ok(resolveDetailFactor(pricingProfile, "ultra") >= pricingProfile.detail.high);
+  assert.equal(resolveColorFactor(pricingProfile, "black-only"), 1);
+  assert.ok(resolveColorFactor(pricingProfile, "full-color") >= 1);
+  assert.deepEqual(buildPricingProfileDebugSnapshot(sanitizedInputs, pricingProfile), {
+    rawInputs: sanitizedInputs,
+    derived: pricingProfile,
+  });
 });

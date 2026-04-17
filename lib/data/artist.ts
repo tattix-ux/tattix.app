@@ -278,6 +278,8 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
       },
       globalScale: 1,
       detailCalibration: null,
+      pricingRawInputs: null,
+      pricingProfile: null,
       finalValidation: {
         validationRound: 1 as const,
         perExampleFeedback: {},
@@ -316,6 +318,8 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
         ? storedCalibrationExamples.globalScale
         : defaultCalibrationExamples.globalScale,
     detailCalibration: storedCalibrationExamples?.detailCalibration ?? defaultCalibrationExamples.detailCalibration,
+    pricingRawInputs: storedCalibrationExamples?.pricingRawInputs ?? defaultCalibrationExamples.pricingRawInputs,
+    pricingProfile: storedCalibrationExamples?.pricingProfile ?? defaultCalibrationExamples.pricingProfile,
     finalValidation:
       storedCalibrationExamples?.finalValidation ?? defaultCalibrationExamples.finalValidation,
   };

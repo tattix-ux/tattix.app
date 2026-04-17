@@ -128,6 +128,8 @@ export const demoPricingRules: ArtistPricingRules = {
     },
     globalScale: 1,
     detailCalibration: null,
+    pricingRawInputs: null,
+    pricingProfile: null,
     finalValidation: {
       validationRound: 1 as const,
       perExampleFeedback: {},

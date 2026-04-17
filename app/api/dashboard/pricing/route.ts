@@ -161,6 +161,8 @@ export async function POST(request: Request) {
     globalScale: calibrationAnswers?.validation?.globalScale ?? 1,
     finalValidation: normalizedFinalValidation,
     detailCalibration: existingCalibrationExamples?.detailCalibration ?? null,
+    pricingRawInputs: existingCalibrationExamples?.pricingRawInputs ?? null,
+    pricingProfile: existingCalibrationExamples?.pricingProfile ?? null,
   };
   const existingReferenceSlots =
     (existingPricing.data?.calibration_reference_slots as
