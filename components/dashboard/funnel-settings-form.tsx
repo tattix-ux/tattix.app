@@ -85,14 +85,21 @@ export function FunnelSettingsForm({
     locale === "tr"
       ? {
           title: "Akış ayarları",
-          description: "Bu alanlar müşterinin ilk soruya nasıl cevap vereceğini belirler.",
+          description: "Müşteri sana yazmadan önce ilk yönlendirmeyi burada görür.",
           introEyebrow: "Üst kısa etiket",
-          introEyebrowHelp: "Sayfanın üstünde görünen kısa tanım.",
+          introEyebrowHelp: "Müşterinin ilk gördüğü kısa açıklama.",
+          introEyebrowPlaceholder: "Örn: Minimal ve fine line dövmeler",
+          introTitleHelp: "Müşterinin ilk göreceği soru.",
           introTitle: "Giriş başlığı",
-          introTitlePlaceholder: "Ne yaptırmak istiyorsun?",
+          introTitlePlaceholder: "Nasıl bir dövme yaptırmak istiyorsun?",
+          introTitleWarning: "Müşteriye ilk soruyu yazmalısın.",
           introDescription: "Giriş açıklaması",
-          introDescriptionWarning: "Müşteriye ne yazacağını söylemezsen yanlış talepler gelir.",
-          activeStyles: "Hangi tarzlarda çalışıyorsun?",
+          introDescriptionHelp:
+            "Müşteriye ne yazması gerektiğini söylersen daha doğru talepler alırsın.",
+          introDescriptionWarning: "Müşteriye ne yazması gerektiğini söylemelisin.",
+          introDescriptionPlaceholder: "Örn: Minimal ince çizgi bir çiçek, 10 cm, bilek içi",
+          introDescriptionTip: "Kısa ve net yazılan akışlar daha fazla doğru müşteri getirir.",
+          activeStyles: "Hangi tarzlarda dövme yapıyorsun?",
           activeStylesHelp: "Müşteri sadece bu tarzlarda sana yazabilir.",
           activeStylesTip: "Az ve net seçim yapmak daha doğru müşteri getirir.",
           activeCount: "seçili",
@@ -118,9 +125,9 @@ export function FunnelSettingsForm({
           cityPlaceholder: "Örn. Adana",
           noCities: "Henüz şehir eklenmedi.",
           availabilityTitle: "Bu şehir için müsait olduğun tarihleri seç",
-          availabilityHint: "Boş bırakırsan o şehir için uygunluk görünmez.",
-          availabilityWarning: "Bu şehir için tarih seçmezsen müşteri randevu alamaz.",
-          dateEmptyWarning: "Müşterilerin randevu alabilmesi için tarih seç.",
+          availabilityHint: "Tarih seçmezsen müşteriler bu şehir için uygunluk göremez.",
+          availabilityWarning: "Bu şehir için tarih seçmelisin.",
+          dateEmptyWarning: "Bu şehir için tarih seçmelisin.",
           addDate: "Tarih seç",
           removeDate: "Tarihi kaldır",
           noDates: "Henüz tarih eklenmedi.",
@@ -128,14 +135,20 @@ export function FunnelSettingsForm({
         }
       : {
           title: "Funnel settings",
-          description: "These fields shape how clients answer the first question.",
+          description: "Clients see this guidance before they decide to message you.",
           introEyebrow: "Intro eyebrow",
-          introEyebrowHelp: "Short line shown at the top of the page.",
+          introEyebrowHelp: "The short line clients see first.",
+          introEyebrowPlaceholder: "e.g. Minimal and fine line tattoos",
+          introTitleHelp: "The first question your client sees.",
           introTitle: "Intro title",
-          introTitlePlaceholder: "What do you want done?",
+          introTitlePlaceholder: "What kind of tattoo do you want?",
+          introTitleWarning: "Add the first question clients should answer.",
           introDescription: "Intro description",
-          introDescriptionWarning: "If you do not guide the client here, you will get worse requests.",
-          activeStyles: "Which styles do you work in?",
+          introDescriptionHelp: "Clear guidance here brings better requests.",
+          introDescriptionWarning: "Tell clients what they should write.",
+          introDescriptionPlaceholder: "e.g. Fine line flower, around 10 cm, inner wrist",
+          introDescriptionTip: "Short and clear flows bring better-fit clients.",
+          activeStyles: "Which tattoo styles do you work in?",
           activeStylesHelp: "Clients can only message you in these styles.",
           activeStylesTip: "Fewer, clearer choices bring better-fit clients.",
           activeCount: "selected",
@@ -161,9 +174,9 @@ export function FunnelSettingsForm({
           cityPlaceholder: "e.g. Adana",
           noCities: "No cities added yet.",
           availabilityTitle: "Select the dates you are available in this city",
-          availabilityHint: "If you leave this empty, availability will not show for this city.",
-          availabilityWarning: "If this city has no date, clients cannot book here.",
-          dateEmptyWarning: "Pick dates so clients can request an appointment.",
+          availabilityHint: "If you do not pick dates, clients will not see availability for this city.",
+          availabilityWarning: "Pick dates for this city.",
+          dateEmptyWarning: "Pick dates for this city.",
           addDate: "Select dates",
           removeDate: "Remove date",
           noDates: "No dates added yet.",
@@ -442,9 +455,18 @@ export function FunnelSettingsForm({
             description={copy.introEyebrowHelp}
             error={form.formState.errors.introEyebrow?.message}
           >
-            <Input {...form.register("introEyebrow")} />
+            <Input
+              {...form.register("introEyebrow")}
+              placeholder={copy.introEyebrowPlaceholder}
+            />
           </Field>
-          <Field label={copy.introTitle} error={form.formState.errors.introTitle?.message}>
+          <Field
+            label={copy.introTitle}
+            description={
+              form.watch("introTitle")?.trim().length ? copy.introTitleHelp : copy.introTitleWarning
+            }
+            error={form.formState.errors.introTitle?.message}
+          >
             <Input
               {...form.register("introTitle")}
               placeholder={copy.introTitlePlaceholder}
@@ -453,19 +475,18 @@ export function FunnelSettingsForm({
           <Field
             label={copy.introDescription}
             description={
-              form.watch("introDescription")?.trim().length ? undefined : copy.introDescriptionWarning
+              form.watch("introDescription")?.trim().length
+                ? copy.introDescriptionHelp
+                : copy.introDescriptionWarning
             }
             error={form.formState.errors.introDescription?.message}
           >
             <Textarea
               {...form.register("introDescription")}
-              placeholder={
-                locale === "tr"
-                  ? "Bölgeyi, boyutu ve aklındaki fikri kısa ve net şekilde yaz."
-                  : "Write the placement, size, and tattoo idea in a short and clear way."
-              }
+              placeholder={copy.introDescriptionPlaceholder}
             />
           </Field>
+          <p className="text-sm text-[var(--accent-soft)]">{copy.introDescriptionTip}</p>
           <input type="hidden" {...form.register("defaultLanguage")} value="tr" />
           <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/20 p-4">
             <div className="space-y-1">
@@ -708,7 +729,11 @@ export function FunnelSettingsForm({
                   <Input
                     value={newStyleLabel}
                     onChange={(event) => setNewStyleLabel(event.target.value)}
-                    placeholder={locale === "tr" ? "Örn. Etching" : "e.g. Etching"}
+                    placeholder={
+                      locale === "tr"
+                        ? "Özel bir tarzın varsa ekleyebilirsin."
+                        : "Add a custom style if you need one."
+                    }
                   />
                 </Field>
                 <div className="flex justify-end gap-2">
