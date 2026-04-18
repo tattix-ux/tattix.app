@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildNormalizedQuoteConfig, estimateNormalizedQuote } from "../lib/pricing/normalized-engine.ts";
+import { estimateFeaturedDesignPrice } from "../lib/pricing/featured-design-pricing.ts";
 import {
   applyFinalControlFeedbackToPricingProfile,
   derivePricingProfile,
@@ -332,4 +333,107 @@ test("style and color feedback adjust only their relevant probe outputs", () => 
 
   assert.ok(butterflyAfter.min < butterflyBefore.min);
   assert.ok(styleAfter.min > styleBefore.min);
+});
+
+test("featured design keeps the artist-entered reference range at its reference size and easy placement", () => {
+  const quote = estimateFeaturedDesignPrice(
+    {
+      artistSlug: "test-artist",
+      intent: "flash-design",
+      selectedDesignId: "design-standard",
+      bodyAreaGroup: "arms",
+      bodyAreaDetail: "forearm-outer",
+      sizeMode: "approximate",
+      approximateSizeCm: 10,
+      sizeCategory: "tiny",
+      style: "blackwork",
+    },
+    baseRules,
+    {
+      id: "design-standard",
+      artistId: "test-artist",
+      category: "flash-designs",
+      title: "Minimal Dagger",
+      shortDescription: "",
+      imageUrl: null,
+      imagePath: null,
+      priceNote: "10 cm",
+      referenceDetailLevel: "standard",
+      referencePriceMin: 4000,
+      referencePriceMax: 5000,
+      active: true,
+      sortOrder: 1,
+    },
+  );
+
+  assert.deepEqual(quote, { min: 4000, max: 5000 });
+});
+
+test("featured design uses its reference detail level to scale size changes consistently with the core engine", () => {
+  const featuredDesigns = [
+    {
+      id: "design-simple",
+      artistId: "test-artist",
+      category: "flash-designs",
+      title: "Simple design",
+      shortDescription: "",
+      imageUrl: null,
+      imagePath: null,
+      priceNote: "10 cm",
+      referenceDetailLevel: "simple",
+      referencePriceMin: 4000,
+      referencePriceMax: 5000,
+      active: true,
+      sortOrder: 1,
+    },
+    {
+      id: "design-detailed",
+      artistId: "test-artist",
+      category: "flash-designs",
+      title: "Detailed design",
+      shortDescription: "",
+      imageUrl: null,
+      imagePath: null,
+      priceNote: "10 cm",
+      referenceDetailLevel: "detailed",
+      referencePriceMin: 4000,
+      referencePriceMax: 5000,
+      active: true,
+      sortOrder: 2,
+    },
+  ];
+
+  const simpleQuote = estimateFeaturedDesignPrice(
+    {
+      artistSlug: "test-artist",
+      intent: "flash-design",
+      selectedDesignId: "design-simple",
+      bodyAreaGroup: "arms",
+      bodyAreaDetail: "forearm-outer",
+      sizeMode: "approximate",
+      approximateSizeCm: 18,
+      sizeCategory: "medium",
+      style: "blackwork",
+    },
+    baseRules,
+    featuredDesigns[0],
+  );
+  const detailedQuote = estimateFeaturedDesignPrice(
+    {
+      artistSlug: "test-artist",
+      intent: "flash-design",
+      selectedDesignId: "design-detailed",
+      bodyAreaGroup: "arms",
+      bodyAreaDetail: "forearm-outer",
+      sizeMode: "approximate",
+      approximateSizeCm: 18,
+      sizeCategory: "medium",
+      style: "blackwork",
+    },
+    baseRules,
+    featuredDesigns[1],
+  );
+
+  assert.ok(detailedQuote.min > simpleQuote.min);
+  assert.ok(detailedQuote.max > simpleQuote.max);
 });
