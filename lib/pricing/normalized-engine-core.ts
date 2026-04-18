@@ -84,6 +84,9 @@ const DEFAULT_COLOR_MODE: ColorModeValue = "black-grey";
 const SIZE_CURVE_KEYS = ["8", "12", "18", "25"] as const;
 const MIN_VALIDATION_ADJUSTMENT = 0.94;
 const MAX_VALIDATION_ADJUSTMENT = 1.08;
+const BASE_UNCERTAINTY_BAND = 0.075;
+const MIN_UNCERTAINTY_BAND = 0.06;
+const MAX_UNCERTAINTY_BAND = 0.12;
 const DEFAULT_HARD_PLACEMENTS = new Set<BodyAreaDetailValue>([
   "ribs",
   "spine-area",
@@ -564,7 +567,7 @@ function buildUncertaintyBand(
   input: NormalizedQuoteInput,
   placementBucket: "easy" | "hard" | "not-sure",
 ) {
-  let band = 0.06;
+  let band = BASE_UNCERTAINTY_BAND;
 
   if ((input.detailLevel ?? DEFAULT_DETAIL_LEVEL) === "simple") {
     band -= 0.01;
@@ -602,7 +605,7 @@ function buildUncertaintyBand(
     band += 0.007;
   }
 
-  return Math.min(0.1, Math.max(0.05, band));
+  return Math.min(MAX_UNCERTAINTY_BAND, Math.max(MIN_UNCERTAINTY_BAND, band));
 }
 
 export function buildNormalizedQuoteConfig(

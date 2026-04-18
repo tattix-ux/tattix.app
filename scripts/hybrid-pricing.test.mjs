@@ -118,9 +118,9 @@ test("hybrid pricing keeps baseline scenario centered around 12 cm medium black 
 
   const center = (result.min + result.max) / 2;
 
-  assert.ok(result.min >= 2800);
-  assert.ok(result.max <= 3200);
-  assert.equal(center, 3000);
+  assert.ok(result.min >= 2750);
+  assert.ok(result.max <= 3250);
+  assert.ok(Math.abs(center - 3000) <= 50);
   assert.ok(result.debug);
   assert.equal(result.debug.baseSizePrice, 3000);
   assert.deepEqual(result.debug.detailSurcharge, { min: 0, max: 0 });
@@ -172,6 +172,7 @@ test("hybrid pricing grows smoothly from simple small to larger hard scenarios",
 
   assert.ok(mediumCenter / baselineCenter < 1.9);
   assert.ok(largeCenter / mediumCenter < 1.6);
+  assert.ok((largeColorHard.max - largeColorHard.min) > (baseline.max - baseline.min));
 });
 
 test("validation adjustment remains safely clamped", () => {
