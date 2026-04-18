@@ -23,6 +23,7 @@ import type { PublicLocale } from "@/lib/i18n/public";
 import { VALIDATION_SCENARIOS } from "@/lib/pricing/calibration-flow";
 import { FINAL_CONTROL_PROBES } from "@/lib/pricing/final-control";
 import {
+  applyFinalControlRoundsToPricingProfile,
   derivePricingProfile,
   type PricingCalibrationRawInputLike,
 } from "@/lib/pricing/pricing-profile";
@@ -58,8 +59,14 @@ type PricingCalibrationDraft = {
   isOpen: boolean;
   isFinalControlOpen: boolean;
   reviewIndex: number;
+  reviewRound: number;
+  reviewScenarioIds: PricingValidationExampleId[];
   reviewFeedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
   reviewReasons: Partial<Record<PricingValidationExampleId, ReviewReason>>;
+  reviewRounds: Array<{
+    feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
+    reasons: Partial<Record<PricingValidationExampleId, ReviewReason>>;
+  }>;
 };
 
 type PricingCalibrationStep = {
@@ -227,8 +234,11 @@ function createEmptyDraft(pricingRules: ArtistPricingRules): PricingCalibrationD
     isOpen: false,
     isFinalControlOpen: false,
     reviewIndex: 0,
+    reviewRound: 1,
+    reviewScenarioIds: VALIDATION_SCENARIOS.map((scenario) => scenario.id),
     reviewFeedback: {},
     reviewReasons: {},
+    reviewRounds: [],
   };
 }
 
@@ -418,12 +428,34 @@ export function PricingForm({
         currentIndex: nextIndex,
         isOpen: Boolean(parsed.isOpen) || Object.values(nextValues).some((value) => value.trim().length > 0),
         isFinalControlOpen: Boolean(parsed.isFinalControlOpen),
+        reviewRound:
+          typeof parsed.reviewRound === "number" && Number.isFinite(parsed.reviewRound)
+            ? Math.max(1, parsed.reviewRound)
+            : 1,
+        reviewScenarioIds:
+          Array.isArray(parsed.reviewScenarioIds) && parsed.reviewScenarioIds.length > 0
+            ? parsed.reviewScenarioIds.filter((id): id is PricingValidationExampleId =>
+                VALIDATION_SCENARIOS.some((scenario) => scenario.id === id),
+              )
+            : VALIDATION_SCENARIOS.map((scenario) => scenario.id),
         reviewIndex:
           typeof parsed.reviewIndex === "number" && Number.isFinite(parsed.reviewIndex)
-            ? Math.max(0, Math.min(parsed.reviewIndex, VALIDATION_SCENARIOS.length - 1))
+            ? Math.max(
+                0,
+                Math.min(
+                  parsed.reviewIndex,
+                  Math.max(
+                    0,
+                    (Array.isArray(parsed.reviewScenarioIds) && parsed.reviewScenarioIds.length > 0
+                      ? parsed.reviewScenarioIds.length
+                      : VALIDATION_SCENARIOS.length) - 1,
+                  ),
+                ),
+              )
             : 0,
         reviewFeedback: parsed.reviewFeedback ?? {},
         reviewReasons: parsed.reviewReasons ?? {},
+        reviewRounds: Array.isArray(parsed.reviewRounds) ? parsed.reviewRounds : [],
       });
     } catch {
       window.localStorage.removeItem(storageKey);
@@ -445,7 +477,9 @@ export function PricingForm({
     ? SIZE_GROUP_KEYS.every((key) => draft.values[key].trim().length > 0)
     : draft.values[currentStep.key].trim().length > 0;
   const progressWidth = `${(completedCount / steps.length) * 100}%`;
-  const currentScenario = VALIDATION_SCENARIOS[draft.reviewIndex] ?? VALIDATION_SCENARIOS[0];
+  const currentScenarioId = draft.reviewScenarioIds[draft.reviewIndex] ?? draft.reviewScenarioIds[0];
+  const currentScenario =
+    VALIDATION_SCENARIOS.find((scenario) => scenario.id === currentScenarioId) ?? VALIDATION_SCENARIOS[0];
   const currentProbe = FINAL_CONTROL_PROBES.find((probe) => probe.id === currentScenario.id) ?? FINAL_CONTROL_PROBES[0];
 
   const previewRanges = useMemo(() => {
@@ -461,12 +495,16 @@ export function PricingForm({
     };
 
     const { sanitizedInputs, pricingProfile } = derivePricingProfile(rawInputs);
+    const adjustedPricingProfile =
+      draft.reviewRounds.length > 0
+        ? applyFinalControlRoundsToPricingProfile(pricingProfile, draft.reviewRounds).pricingProfile
+        : pricingProfile;
     const nextRules: ArtistPricingRules = {
       ...pricingRules,
       calibrationExamples: {
         ...pricingRules.calibrationExamples,
         pricingRawInputs: sanitizedInputs,
-        pricingProfile,
+        pricingProfile: adjustedPricingProfile,
       },
     };
     const config = buildNormalizedQuoteConfig(nextRules);
@@ -495,10 +533,10 @@ export function PricingForm({
         range: estimateNormalizedQuote(input, config),
       };
     });
-  }, [draft.values, pricingRules]);
+  }, [draft.reviewRounds, draft.values, pricingRules]);
 
   const currentRange = previewRanges.find((item) => item.id === currentScenario.id)?.range ?? previewRanges[0]?.range;
-  const allReviewAnswered = VALIDATION_SCENARIOS.every((scenario) => draft.reviewFeedback[scenario.id]);
+  const allReviewAnswered = draft.reviewScenarioIds.length === 0;
 
   function updateValue(key: PricingCalibrationFieldKey, value: string) {
     setDraft((current) => ({
@@ -517,6 +555,12 @@ export function PricingForm({
       isOpen: true,
       isFinalControlOpen: false,
       currentIndex: normalizeStepIndex(findFirstIncompleteIndex(current.values, steps)),
+      reviewIndex: 0,
+      reviewRound: 1,
+      reviewScenarioIds: VALIDATION_SCENARIOS.map((scenario) => scenario.id),
+      reviewFeedback: {},
+      reviewReasons: {},
+      reviewRounds: [],
     }));
   }
 
@@ -553,6 +597,11 @@ export function PricingForm({
         isOpen: false,
         isFinalControlOpen: true,
         reviewIndex: 0,
+        reviewRound: 1,
+        reviewScenarioIds: VALIDATION_SCENARIOS.map((scenario) => scenario.id),
+        reviewFeedback: {},
+        reviewReasons: {},
+        reviewRounds: [],
       }));
       return;
     }
@@ -573,18 +622,54 @@ export function PricingForm({
   }
 
   function advanceReview(nextDraft: PricingCalibrationDraft) {
-    const atLastScenario = nextDraft.reviewIndex >= VALIDATION_SCENARIOS.length - 1;
+    const atLastScenario = nextDraft.reviewIndex >= nextDraft.reviewScenarioIds.length - 1;
 
-    if (atLastScenario) {
+    if (!atLastScenario) {
       return {
         ...nextDraft,
+        reviewIndex: nextDraft.reviewIndex + 1,
+      };
+    }
+
+    const completedRound = {
+      feedback: nextDraft.reviewFeedback,
+      reasons: nextDraft.reviewReasons,
+    };
+    const reviewRounds = [...nextDraft.reviewRounds, completedRound];
+    const remainingScenarioIds = nextDraft.reviewScenarioIds.filter(
+      (scenarioId) => nextDraft.reviewFeedback[scenarioId] !== "looks-right",
+    );
+
+    if (!remainingScenarioIds.length) {
+      setStatusMessage(copy.finalControlComplete);
+
+      return {
+        ...nextDraft,
+        reviewIndex: 0,
+        reviewRound: reviewRounds.length + 1,
+        reviewScenarioIds: [],
+        reviewFeedback: {},
+        reviewReasons: {},
+        reviewRounds,
         isFinalControlOpen: true,
       };
     }
 
+    setStatusMessage(
+      locale === "tr"
+        ? "Fiyatları güncelledik. Uymayan görselleri tekrar kontrol et."
+        : "We updated the prices. Review the examples that still feel off.",
+    );
+
     return {
       ...nextDraft,
-      reviewIndex: nextDraft.reviewIndex + 1,
+      reviewIndex: 0,
+      reviewRound: reviewRounds.length + 1,
+      reviewScenarioIds: remainingScenarioIds,
+      reviewFeedback: {},
+      reviewReasons: {},
+      reviewRounds,
+      isFinalControlOpen: true,
     };
   }
 
@@ -646,11 +731,10 @@ export function PricingForm({
           roseHigh18cm: Number(draft.values.detailHigh),
           roseColor18cm: Number(draft.values.detailColor),
           daggerAnchor18cm: Number(draft.values.anchor18),
-          finalControl: allReviewAnswered
+          finalControl: draft.reviewRounds.length > 0
             ? {
-                validationRound: 1,
-                feedback: draft.reviewFeedback,
-                reasons: draft.reviewReasons,
+                validationRound: draft.reviewRounds.length,
+                rounds: draft.reviewRounds,
               }
             : undefined,
         }),
@@ -823,100 +907,118 @@ export function PricingForm({
                     {copy.finalProgress}
                   </p>
                   <p className="text-sm text-[var(--foreground-muted)]">
-                    {draft.reviewIndex + 1} / {VALIDATION_SCENARIOS.length}
+                    {allReviewAnswered
+                      ? copy.finalControlComplete
+                      : `${draft.reviewIndex + 1} / ${draft.reviewScenarioIds.length}`}
                   </p>
                 </div>
 
                 <div className="mt-4 space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-white">{copy.finalControlTitle}</h3>
-                    <p className="text-sm text-[var(--foreground-muted)]">{copy.finalControlIntro}</p>
+                    <p className="text-sm text-[var(--foreground-muted)]">
+                      {allReviewAnswered
+                        ? copy.finalControlComplete
+                        : `${copy.finalControlIntro} ${locale === "tr" ? `${draft.reviewRound}. tur` : `Round ${draft.reviewRound}`}`}
+                    </p>
                   </div>
 
-                  <div className="overflow-hidden rounded-[20px] border border-white/8 bg-black/20 p-3">
-                    <div className="mx-auto max-w-[360px] overflow-hidden rounded-[18px] border border-white/8 bg-black/10">
-                      <div className="relative aspect-[4/3] w-full">
-                        <Image
-                          src={finalControlImages[currentScenario.id]}
-                          alt={getScenarioLabel(currentScenario.id, locale)}
-                          fill
-                          className="object-contain"
-                          sizes="(max-width: 768px) 100vw, 360px"
-                        />
+                  {!allReviewAnswered ? (
+                    <>
+                      <div className="overflow-hidden rounded-[20px] border border-white/8 bg-black/20 p-3">
+                        <div className="mx-auto max-w-[360px] overflow-hidden rounded-[18px] border border-white/8 bg-black/10">
+                          <div className="relative aspect-[4/3] w-full">
+                            <Image
+                              src={finalControlImages[currentScenario.id]}
+                              alt={getScenarioLabel(currentScenario.id, locale)}
+                              fill
+                              className="object-contain"
+                              sizes="(max-width: 768px) 100vw, 360px"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
-                    <p className="text-sm font-medium text-white">
-                      {getScenarioLabel(currentScenario.id, locale)}
-                    </p>
-                    <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-                      {currentProbe.assumedSizeCm} cm · {copy.assumedPlacement}
-                    </p>
-                    <p className="mt-4 text-base font-medium text-white">
-                      {copy.estimatedPrice}: {currentRange?.min} - {currentRange?.max}
-                    </p>
-                    <p className="mt-2 text-sm text-[var(--foreground-muted)]">{copy.finalControlHint}</p>
-                  </div>
+                      <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                        <p className="text-sm font-medium text-white">
+                          {getScenarioLabel(currentScenario.id, locale)}
+                        </p>
+                        <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+                          {currentProbe.assumedSizeCm} cm · {copy.assumedPlacement}
+                        </p>
+                        <p className="mt-4 text-base font-medium text-white">
+                          {copy.estimatedPrice}: {currentRange?.min} - {currentRange?.max}
+                        </p>
+                        <p className="mt-2 text-sm text-[var(--foreground-muted)]">{copy.finalControlHint}</p>
+                      </div>
 
-                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
-                    <p className="text-sm font-medium text-white">{copy.finalControlPrompt}</p>
-                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                      {[
-                        { key: "slightly-low", label: copy.low },
-                        { key: "looks-right", label: copy.okay },
-                        { key: "slightly-high", label: copy.high },
-                      ].map((option) => (
-                        <button
-                          key={option.key}
-                          type="button"
-                          onClick={() => handleReviewFeedback(option.key as PricingValidationFeedback)}
-                          className="rounded-[18px] border px-4 py-3 text-sm text-white transition"
-                          style={{
-                            borderColor:
-                              draft.reviewFeedback[currentScenario.id] === option.key || pendingReviewFeedback === option.key
-                                ? "var(--primary)"
-                                : "rgba(255,255,255,0.08)",
-                            backgroundColor:
-                              draft.reviewFeedback[currentScenario.id] === option.key || pendingReviewFeedback === option.key
-                                ? "color-mix(in srgb, var(--primary) 18%, transparent)"
-                                : "rgba(255,255,255,0.02)",
-                          }}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {pendingReviewFeedback && pendingReviewFeedback !== "looks-right" ? (
-                      <div className="mt-4 rounded-[18px] border border-white/8 bg-black/20 p-4">
-                        <p className="text-sm font-medium text-white">{copy.reasonTitle}</p>
-                        <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                      <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                        <p className="text-sm font-medium text-white">{copy.finalControlPrompt}</p>
+                        <div className="mt-4 grid gap-2 sm:grid-cols-3">
                           {[
-                            { key: "size", label: copy.reasonSize },
-                            { key: "detail", label: copy.reasonDetail },
-                            { key: "color", label: copy.reasonColor },
-                            { key: "general", label: copy.reasonGeneral },
+                            { key: "slightly-low", label: copy.low },
+                            { key: "looks-right", label: copy.okay },
+                            { key: "slightly-high", label: copy.high },
                           ].map((option) => (
                             <button
                               key={option.key}
                               type="button"
-                              onClick={() => handleReviewReason(option.key as ReviewReason)}
-                              className="rounded-[16px] border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-white transition hover:bg-white/[0.08]"
+                              onClick={() => handleReviewFeedback(option.key as PricingValidationFeedback)}
+                              className="rounded-[18px] border px-4 py-3 text-sm text-white transition"
+                              style={{
+                                borderColor:
+                                  draft.reviewFeedback[currentScenario.id] === option.key || pendingReviewFeedback === option.key
+                                    ? "var(--primary)"
+                                    : "rgba(255,255,255,0.08)",
+                                backgroundColor:
+                                  draft.reviewFeedback[currentScenario.id] === option.key || pendingReviewFeedback === option.key
+                                    ? "color-mix(in srgb, var(--primary) 18%, transparent)"
+                                    : "rgba(255,255,255,0.02)",
+                              }}
                             >
                               {option.label}
                             </button>
                           ))}
                         </div>
+
+                        {pendingReviewFeedback && pendingReviewFeedback !== "looks-right" ? (
+                          <div className="mt-4 rounded-[18px] border border-white/8 bg-black/20 p-4">
+                            <p className="text-sm font-medium text-white">{copy.reasonTitle}</p>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                              {[
+                                { key: "size", label: copy.reasonSize },
+                                { key: "detail", label: copy.reasonDetail },
+                                { key: "color", label: copy.reasonColor },
+                                { key: "general", label: copy.reasonGeneral },
+                              ].map((option) => (
+                                <button
+                                  key={option.key}
+                                  type="button"
+                                  onClick={() => handleReviewReason(option.key as ReviewReason)}
+                                  className="rounded-[16px] border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-white transition hover:bg-white/[0.08]"
+                                >
+                                  {option.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
-                    ) : null}
-                  </div>
+                    </>
+                  ) : (
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <p className="text-sm text-[var(--foreground-muted)]">
+                        {locale === "tr"
+                          ? "Tüm görseller uygun görünüyor. Ayarları şimdi kaydedebilirsin."
+                          : "Everything looks right now. You can save these settings."}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                {draft.reviewIndex > 0 ? (
+                {!allReviewAnswered && draft.reviewIndex > 0 ? (
                   <Button
                     type="button"
                     variant="ghost"

@@ -205,15 +205,32 @@ export const pricingOnboardingSchema = z.object({
   daggerAnchor18cm: z.coerce.number().gt(0),
   finalControl: z
     .object({
-      validationRound: z.union([z.literal(1), z.literal(2)]).default(1),
-      feedback: z.record(
-        z.enum(pricingValidationExampleIds),
-        z.enum(pricingValidationFeedbackValues),
-      ),
+      validationRound: z.coerce.number().int().min(1).default(1),
+      feedback: z
+        .record(
+          z.enum(pricingValidationExampleIds),
+          z.enum(pricingValidationFeedbackValues),
+        )
+        .optional(),
       reasons: z
         .record(z.string(), z.enum(pricingValidationReasonValues))
         .optional()
         .default({}),
+      rounds: z
+        .array(
+          z.object({
+            feedback: z.record(
+              z.enum(pricingValidationExampleIds),
+              z.enum(pricingValidationFeedbackValues),
+            ),
+            reasons: z
+              .record(z.string(), z.enum(pricingValidationReasonValues))
+              .optional()
+              .default({}),
+          }),
+        )
+        .optional()
+        .default([]),
     })
     .optional(),
 });
@@ -277,7 +294,7 @@ export const pricingSchema = z.object({
         .optional(),
       finalValidation: z
         .object({
-          validationRound: z.union([z.literal(1), z.literal(2)]),
+          validationRound: z.coerce.number().int().min(0),
           perExampleFeedback: z.record(
             z.string(),
             z.enum(["looks-right", "slightly-low", "slightly-high"]),

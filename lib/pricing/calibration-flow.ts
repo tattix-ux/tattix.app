@@ -728,7 +728,7 @@ function countFeedback(feedback: Partial<Record<PricingValidationExampleId, Pric
 }
 
 function resolveValidationStatus(
-  round: 1 | 2,
+  round: number,
   counts: ReturnType<typeof countFeedback>,
 ): {
   status: PricingValidationStatus;
@@ -789,7 +789,7 @@ function resolveValidationStatus(
 
 export function summarizeFinalValidationReview(
   feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
-  round: 1 | 2,
+  round: number,
 ): {
   review: PricingFinalValidation;
   nextScaleMultiplier: number;

@@ -65,6 +65,11 @@ export type PricingProfileUpdateResult = {
   finalValidation: PricingFinalValidation;
 };
 
+export type FinalControlRoundInput = {
+  feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
+  reasons?: Partial<Record<PricingValidationExampleId, PricingValidationReason>>;
+};
+
 export type DerivedPricingProfile = {
   sanitizedInputs: PricingCalibrationRawInputs;
   pricingProfile: PricingProfile;
@@ -551,7 +556,7 @@ export function applyFinalControlFeedbackToPricingProfile(
   feedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>,
   reasons: Partial<Record<PricingValidationExampleId, PricingValidationReason>>,
   options?: {
-    validationRound?: 1 | 2;
+    validationRound?: number;
     updatedAt?: string;
   },
 ): PricingProfileUpdateResult {
@@ -617,6 +622,92 @@ export function applyFinalControlFeedbackToPricingProfile(
       },
     },
     appliedUpdates,
+    finalValidation,
+  };
+}
+
+export function applyFinalControlRoundsToPricingProfile(
+  pricingProfile: PricingProfile,
+  rounds: FinalControlRoundInput[],
+  options?: {
+    updatedAt?: string;
+  },
+): PricingProfileUpdateResult {
+  if (!rounds.length) {
+    return {
+      pricingProfile,
+      appliedUpdates: [],
+      finalValidation: {
+        validationRound: 0,
+        perExampleFeedback: {},
+        perExampleReason: {},
+        appliedGlobalValidationAdjustment: 1,
+        validationStatus: "pending",
+        calibratedAndValidated: false,
+        appliedUpdates: [],
+      },
+    };
+  }
+
+  let nextProfile = pricingProfile;
+  let latestFeedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>> = {};
+  let latestReasons: Partial<Record<PricingValidationExampleId, PricingValidationReason>> = {};
+  const allAppliedUpdates: PricingProfileUpdateLog[] = [];
+
+  rounds.forEach((round, index) => {
+    const roundResult = applyFinalControlFeedbackToPricingProfile(
+      nextProfile,
+      round.feedback,
+      round.reasons ?? {},
+      {
+        validationRound: index + 1,
+        updatedAt: options?.updatedAt,
+      },
+    );
+
+    nextProfile = roundResult.pricingProfile;
+    latestFeedback = {
+      ...latestFeedback,
+      ...round.feedback,
+    };
+    latestReasons = {
+      ...latestReasons,
+      ...(round.reasons ?? {}),
+    };
+    allAppliedUpdates.push(...roundResult.appliedUpdates);
+  });
+
+  const finalValidation: PricingFinalValidation = {
+    validationRound: rounds.length,
+    perExampleFeedback: latestFeedback,
+    perExampleReason: latestReasons,
+    appliedGlobalValidationAdjustment: 1,
+    validationStatus: FINAL_CONTROL_PROBES.every((probe) => latestFeedback[probe.id] === "looks-right")
+      ? "confirmed"
+      : "adjusted",
+    calibratedAndValidated: FINAL_CONTROL_PROBES.every((probe) => latestFeedback[probe.id] === "looks-right"),
+    appliedUpdates: allAppliedUpdates,
+  };
+
+  return {
+    pricingProfile: {
+      ...nextProfile,
+      finalControl: {
+        version: 1,
+        responses: Object.fromEntries(
+          Object.entries(latestFeedback).map(([probeId, verdict]) => [
+            probeId,
+            {
+              verdict,
+              reason: verdict === "looks-right" ? null : (latestReasons[probeId as PricingValidationExampleId] ?? "general"),
+            },
+          ]),
+        ) as NonNullable<PricingProfile["finalControl"]>["responses"],
+        appliedUpdates: allAppliedUpdates,
+        updatedAt: options?.updatedAt ?? new Date().toISOString(),
+      },
+    },
+    appliedUpdates: allAppliedUpdates,
     finalValidation,
   };
 }

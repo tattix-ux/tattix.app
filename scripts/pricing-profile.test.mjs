@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  applyFinalControlRoundsToPricingProfile,
   applyFinalControlFeedbackToPricingProfile,
   clamp,
   buildPricingProfileDebugSnapshot,
@@ -161,4 +162,51 @@ test("final control updates stay bounded and target the intended parameters", ()
   assert.ok(result.pricingProfile.adjustments.baseline <= 1.08);
   assert.equal(result.finalValidation.validationStatus, "adjusted");
   assert.ok(result.appliedUpdates.length >= 4);
+});
+
+test("final control rounds keep rechecking only unresolved probes", () => {
+  const { pricingProfile } = derivePricingProfile({
+    minimumPrice: 2500,
+    roseMedium8cm: 1700,
+    roseMedium18cm: 3200,
+    roseMedium25cm: 5900,
+    roseLow18cm: 2700,
+    roseHigh18cm: 4300,
+    roseColor18cm: 3900,
+    daggerAnchor18cm: 4700,
+  });
+
+  const result = applyFinalControlRoundsToPricingProfile(pricingProfile, [
+    {
+      feedback: {
+        "text-low-boundary": "looks-right",
+        "colored-butterfly": "slightly-high",
+        "current-dagger": "looks-right",
+        "feather-high-detail": "slightly-low",
+        "realistic-eye": "slightly-high",
+      },
+      reasons: {
+        "colored-butterfly": "color",
+        "feather-high-detail": "detail",
+        "realistic-eye": "general",
+      },
+    },
+    {
+      feedback: {
+        "colored-butterfly": "looks-right",
+        "feather-high-detail": "looks-right",
+        "realistic-eye": "looks-right",
+      },
+      reasons: {},
+    },
+  ]);
+
+  assert.equal(result.finalValidation.validationRound, 2);
+  assert.equal(result.finalValidation.validationStatus, "confirmed");
+  assert.equal(result.finalValidation.calibratedAndValidated, true);
+  assert.equal(result.finalValidation.perExampleFeedback["text-low-boundary"], "looks-right");
+  assert.equal(result.finalValidation.perExampleFeedback["colored-butterfly"], "looks-right");
+  assert.equal(result.finalValidation.perExampleFeedback["feather-high-detail"], "looks-right");
+  assert.equal(result.finalValidation.perExampleFeedback["realistic-eye"], "looks-right");
+  assert.ok(result.appliedUpdates.length >= 5);
 });

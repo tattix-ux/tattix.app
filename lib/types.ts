@@ -201,7 +201,7 @@ export type PricingValidationStatus =
   | "completed-no-majority"
   | "needs-review";
 export type PricingFinalValidation = {
-  validationRound: 1 | 2;
+  validationRound: number;
   perExampleFeedback: Partial<Record<PricingValidationExampleId, PricingValidationFeedback>>;
   perExampleReason?: Partial<Record<PricingValidationExampleId, PricingValidationReason>>;
   appliedGlobalValidationAdjustment: number;

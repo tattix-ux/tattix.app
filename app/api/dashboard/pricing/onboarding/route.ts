@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { pricingOnboardingSchema } from "@/lib/forms/schemas";
 import {
-  applyFinalControlFeedbackToPricingProfile,
+  applyFinalControlRoundsToPricingProfile,
   buildFinalControlUpdateDebugSnapshot,
   buildPricingProfileDebugSnapshot,
   derivePricingProfile,
@@ -33,16 +33,21 @@ export async function POST(request: Request) {
   }
 
   const { sanitizedInputs, pricingProfile } = derivePricingProfile(parsed.data);
-  const nextPricingProfile = parsed.data.finalControl
-    ? applyFinalControlFeedbackToPricingProfile(
-        pricingProfile,
-        parsed.data.finalControl.feedback,
-        parsed.data.finalControl.reasons ?? {},
-        {
-          validationRound: parsed.data.finalControl.validationRound,
-        },
-      )
-    : null;
+  const finalControlRounds =
+    parsed.data.finalControl?.rounds?.length
+      ? parsed.data.finalControl.rounds
+      : parsed.data.finalControl?.feedback
+        ? [
+            {
+              feedback: parsed.data.finalControl.feedback,
+              reasons: parsed.data.finalControl.reasons ?? {},
+            },
+          ]
+        : [];
+  const nextPricingProfile =
+    finalControlRounds.length > 0
+      ? applyFinalControlRoundsToPricingProfile(pricingProfile, finalControlRounds)
+      : null;
   const effectivePricingProfile = nextPricingProfile?.pricingProfile ?? pricingProfile;
 
   if (process.env.NODE_ENV !== "production") {
@@ -52,8 +57,8 @@ export async function POST(request: Request) {
       console.debug(
         "[pricing-onboarding:final-control]",
         buildFinalControlUpdateDebugSnapshot(
-          parsed.data.finalControl?.feedback ?? {},
-          parsed.data.finalControl?.reasons ?? {},
+          nextPricingProfile.finalValidation.perExampleFeedback,
+          nextPricingProfile.finalValidation.perExampleReason ?? {},
           pricingProfile,
           nextPricingProfile,
         ),
