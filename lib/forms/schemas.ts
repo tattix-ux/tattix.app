@@ -376,6 +376,7 @@ export const pageThemeSchema = z.object({
   gradientStart: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   gradientEnd: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   backgroundImageUrl: z.string().url().nullable().or(z.literal("")),
+  textColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   primaryColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   secondaryColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   cardColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),

@@ -28,6 +28,7 @@ type ThemeValues = z.output<typeof pageThemeSchema>;
 type Mode = "presets" | "custom";
 
 const colorSwatches = ["#f7b15d", "#ffffff", "#54f0dd", "#dc5c5c", "#b899ff", "#88cfa5"] as const;
+const textSwatches = ["#f5efe6", "#edf1f7", "#3f2f25", "#241b16", "#d7dde7", "#f0d8bf"] as const;
 const cardSwatches = ["#131316", "#171a1f", "#1b1620", "#101316", "#1e1714", "#19191c"] as const;
 const backgroundSolidSwatches = ["#09090b", "#0e131a", "#131116", "#16100e"] as const;
 const backgroundGradientPresets = [
@@ -131,9 +132,9 @@ function ThemeCardPreview({
                 <div className="min-w-0">
                   <div
                     className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
-                    style={{
+                  style={{
                       backgroundColor: theme.secondaryColor,
-                      color: "#0b0b0c",
+                      color: theme.textColor,
                     }}
                   >
                     {artist.profile.artistName.toUpperCase()}
@@ -146,12 +147,15 @@ function ThemeCardPreview({
                   className="text-lg leading-tight"
                   style={{
                     fontFamily: "var(--artist-heading-font)",
-                    color: "white",
+                    color: theme.textColor,
                   }}
                 >
                   {title}
                 </p>
-                <p className="text-xs leading-5 text-white/70">
+                <p
+                  className="text-xs leading-5"
+                  style={{ color: `color-mix(in srgb, ${theme.textColor} 80%, transparent)` }}
+                >
                   {intro}
                 </p>
               </div>
@@ -176,21 +180,31 @@ function ThemeCardPreview({
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-white">Aklında ne var?</p>
-                    <p className="mt-1 text-[11px] text-white/60">Talep türünü seç.</p>
+                    <p
+                      className="mt-1 text-[11px]"
+                      style={{ color: `color-mix(in srgb, ${theme.textColor} 60%, transparent)` }}
+                    >
+                      Talep türünü seç.
+                    </p>
                   </div>
                   <span
                     className="rounded-full px-2.5 py-1 text-[10px] font-medium"
                     style={{
                       backgroundColor: theme.secondaryColor,
-                      color: "#0b0b0c",
+                      color: theme.textColor,
                     }}
                   >
                     STEP 1
                   </span>
                 </div>
                 <div className="mt-3 space-y-2">
-                  <div className="rounded-[16px] border border-white/10 bg-black/15 px-3 py-2 text-xs text-white">Özel tasarım dövme</div>
-                  <div className="rounded-[16px] border border-white/10 bg-black/10 px-3 py-2 text-xs text-white/75">Flash tasarım</div>
+                  <div className="rounded-[16px] border border-white/10 bg-black/15 px-3 py-2 text-xs" style={{ color: theme.textColor }}>Özel tasarım dövme</div>
+                  <div
+                    className="rounded-[16px] border border-white/10 bg-black/10 px-3 py-2 text-xs"
+                    style={{ color: `color-mix(in srgb, ${theme.textColor} 76%, transparent)` }}
+                  >
+                    Flash tasarım
+                  </div>
                 </div>
               </div>
             </div>
@@ -229,6 +243,7 @@ export function CustomizePageForm({
           customDescription: "Renk, arka plan ve fontu kontrollü şekilde ayarla.",
           colors: "Renkler",
           colorsDescription: "Sayfanın ana renklerini seç.",
+          textColor: "Yazı rengi",
           primaryColor: "Ana renk",
           secondaryColor: "İkincil renk",
           cardColor: "Kart rengi",
@@ -278,6 +293,7 @@ export function CustomizePageForm({
           customDescription: "Adjust colors, background, and type in a controlled way.",
           colors: "Colors",
           colorsDescription: "Choose the main page colors.",
+          textColor: "Text color",
           primaryColor: "Primary color",
           secondaryColor: "Secondary color",
           cardColor: "Card color",
@@ -361,6 +377,7 @@ export function CustomizePageForm({
       gradientStart: theme.gradientStart,
       gradientEnd: theme.gradientEnd,
       backgroundImageUrl: theme.backgroundImageUrl ?? "",
+      textColor: theme.textColor,
       primaryColor: theme.primaryColor,
       secondaryColor: theme.secondaryColor,
       cardColor: theme.cardColor,
@@ -381,6 +398,7 @@ export function CustomizePageForm({
   const watchedValues = useWatch({ control: form.control });
   const currentPreset = watchedValues.presetTheme ?? theme.presetTheme;
   const currentBackgroundColor = watchedValues.backgroundColor ?? theme.backgroundColor;
+  const currentTextColor = watchedValues.textColor ?? theme.textColor;
   const currentPrimaryColor = watchedValues.primaryColor ?? theme.primaryColor;
   const currentSecondaryColor = watchedValues.secondaryColor ?? theme.secondaryColor;
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
@@ -401,6 +419,7 @@ export function CustomizePageForm({
         gradientStart: currentGradientStart,
         gradientEnd: currentGradientEnd,
         backgroundImageUrl: watchedValues.backgroundImageUrl || null,
+        textColor: currentTextColor,
         primaryColor: currentPrimaryColor,
         secondaryColor: currentSecondaryColor,
         cardColor: currentCardColor,
@@ -425,6 +444,7 @@ export function CustomizePageForm({
       currentGradientEnd,
       currentGradientStart,
       currentPreset,
+      currentTextColor,
       currentPrimaryColor,
       currentSecondaryColor,
       theme.bodyFont,
@@ -470,6 +490,7 @@ export function CustomizePageForm({
       gradientStart: storedTheme.gradientStart,
       gradientEnd: storedTheme.gradientEnd,
       backgroundImageUrl: storedTheme.backgroundImageUrl ?? "",
+      textColor: storedTheme.textColor,
       primaryColor: storedTheme.primaryColor,
       secondaryColor: storedTheme.secondaryColor,
       cardColor: storedTheme.cardColor,
@@ -569,6 +590,7 @@ export function CustomizePageForm({
       gradientStart: resolved.gradientStart,
       gradientEnd: resolved.gradientEnd,
       backgroundImageUrl: resolved.backgroundImageUrl,
+      textColor: resolved.textColor,
       primaryColor: resolved.primaryColor,
       secondaryColor: resolved.secondaryColor,
       cardColor: resolved.cardColor,
@@ -648,6 +670,7 @@ export function CustomizePageForm({
     form.setValue("gradientStart", preset.gradientStart, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientEnd", preset.gradientEnd, { shouldDirty: true, shouldValidate: true });
     form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
+    form.setValue("textColor", preset.textColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("primaryColor", preset.primaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("cardColor", preset.cardColor, { shouldDirty: true, shouldValidate: true });
@@ -681,6 +704,7 @@ export function CustomizePageForm({
     form.setValue("gradientStart", values.gradientStart, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientEnd", values.gradientEnd, { shouldDirty: true, shouldValidate: true });
     form.setValue("backgroundImageUrl", values.backgroundImageUrl ?? "", { shouldDirty: true, shouldValidate: true });
+    form.setValue("textColor", values.textColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("primaryColor", values.primaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("secondaryColor", values.secondaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("cardColor", values.cardColor, { shouldDirty: true, shouldValidate: true });
@@ -863,6 +887,13 @@ export function CustomizePageForm({
                       <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.colorsDescription}</p>
                     </div>
                     <div className="grid gap-4 lg:grid-cols-3">
+                      <ColorField
+                        label={copy.textColor}
+                        value={currentTextColor}
+                        onChange={(value) => form.setValue("textColor", value, { shouldDirty: true, shouldValidate: true })}
+                        swatches={textSwatches}
+                        customLabel={copy.customColor}
+                      />
                       <ColorField
                         label={copy.primaryColor}
                         value={currentPrimaryColor}
@@ -1133,6 +1164,7 @@ export function CustomizePageForm({
         <input type="hidden" {...form.register("bodyFont")} />
         <input type="hidden" {...form.register("fontPairingPreset")} />
         <input type="hidden" {...form.register("backgroundImageUrl")} />
+        <input type="hidden" {...form.register("textColor")} />
         <input type="hidden" {...form.register("cardOpacity")} value={String(currentCardOpacity)} />
         <input type="hidden" {...form.register("radiusStyle")} />
         <input type="hidden" {...form.register("themeMode")} value="dark" />

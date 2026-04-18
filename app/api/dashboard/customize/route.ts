@@ -46,6 +46,7 @@ export async function POST(request: Request) {
     gradient_start: values.gradientStart,
     gradient_end: values.gradientEnd,
     background_image_url: values.backgroundImageUrl || null,
+    text_color: values.textColor,
     primary_color: values.primaryColor,
     secondary_color: values.secondaryColor,
     card_color: values.cardColor,

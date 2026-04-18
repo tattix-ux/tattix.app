@@ -286,6 +286,7 @@ export type ArtistPageTheme = {
   gradientStart: string;
   gradientEnd: string;
   backgroundImageUrl: string | null;
+  textColor: string;
   primaryColor: string;
   secondaryColor: string;
   cardColor: string;

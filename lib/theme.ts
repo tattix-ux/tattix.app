@@ -53,6 +53,20 @@ function normalizeHex(color: string | null | undefined, fallback: string) {
   return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed) ? trimmed : fallback;
 }
 
+function mixHex(colorA: string, colorB: string, weightA = 0.68) {
+  const a = hexToRgb(colorA);
+  const b = hexToRgb(colorB);
+  const ratioA = Math.min(Math.max(weightA, 0), 1);
+  const ratioB = 1 - ratioA;
+
+  const toHex = (value: number) => value.toString(16).padStart(2, "0");
+  const r = Math.round(a.r * ratioA + b.r * ratioB);
+  const g = Math.round(a.g * ratioA + b.g * ratioB);
+  const bValue = Math.round(a.b * ratioA + b.b * ratioB);
+
+  return `#${toHex(r)}${toHex(g)}${toHex(bValue)}`;
+}
+
 function hexToRgb(hex: string) {
   const raw = hex.replace("#", "");
   const normalized =
@@ -122,6 +136,7 @@ export function buildDefaultArtistTheme(): ArtistPageTheme {
     gradientStart: preset.gradientStart,
     gradientEnd: preset.gradientEnd,
     backgroundImageUrl: null,
+    textColor: preset.textColor,
     primaryColor: preset.primaryColor,
     secondaryColor: preset.secondaryColor,
     cardColor: preset.cardColor,
@@ -156,6 +171,7 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
     backgroundColor: normalizeHex(theme?.backgroundColor, preset.backgroundColor),
     gradientStart: normalizeHex(theme?.gradientStart, preset.gradientStart),
     gradientEnd: normalizeHex(theme?.gradientEnd, preset.gradientEnd),
+    textColor: normalizeHex(theme?.textColor, preset.textColor),
     primaryColor: normalizeHex(theme?.primaryColor, preset.primaryColor),
     secondaryColor: normalizeHex(theme?.secondaryColor, preset.secondaryColor),
     cardColor: normalizeHex(theme?.cardColor, preset.cardColor),
@@ -186,16 +202,35 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
 
 export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
   const theme = resolveArtistTheme(themeInput);
-  const text = enforceReadableForeground(theme.backgroundColor, "#111111", "#f8f5ef");
-  const muted = enforceReadableForeground(theme.backgroundColor, "#4f4a44", "#c8c0b5", 4.5);
+  const text = enforceReadableForeground(
+    theme.backgroundColor,
+    normalizeHex(theme.textColor, theme.themeMode === "light" ? "#1f1814" : "#f8f5ef"),
+    theme.themeMode === "light" ? "#111111" : "#f8f5ef",
+  );
+  const muted = enforceReadableForeground(
+    theme.backgroundColor,
+    mixHex(text, theme.backgroundColor, 0.58),
+    theme.themeMode === "light" ? "#5b5147" : "#c8c0b5",
+    4.5,
+  );
   const primaryForeground = enforceReadableForeground(theme.primaryColor, "#111111", "#ffffff");
   const secondaryForeground = enforceReadableForeground(
     theme.secondaryColor,
     "#111111",
     "#ffffff",
   );
-  const cardText = enforceReadableForeground(theme.cardColor, "#111111", "#ffffff", 7);
-  const cardMuted = enforceReadableForeground(theme.cardColor, "#4f4a44", "#d4ccc2", 4.5);
+  const cardText = enforceReadableForeground(
+    theme.cardColor,
+    text,
+    theme.themeMode === "light" ? "#111111" : "#ffffff",
+    7,
+  );
+  const cardMuted = enforceReadableForeground(
+    theme.cardColor,
+    mixHex(cardText, theme.cardColor, 0.58),
+    theme.themeMode === "light" ? "#5b5147" : "#d4ccc2",
+    4.5,
+  );
   const borderColor =
     theme.themeMode === "light" ? "rgba(17,17,17,0.12)" : "rgba(255,255,255,0.10)";
 
