@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Expand, ImagePlus, LoaderCircle, X } from "lucide-react";
+import { Check, Expand, ImagePlus, LoaderCircle, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,15 @@ export function IntentSelectionStep({
                 color: "var(--artist-card-text)",
               }}
             >
-              <p className="break-words font-medium">{getIntentLabel(option.value, locale)}</p>
+              <div className="flex items-start justify-between gap-3">
+                <p className="break-words font-medium">{getIntentLabel(option.value, locale)}</p>
+                {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+              </div>
+              {option.value === "not-sure" ? (
+                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                  {copy.notSureIntentHint}
+                </p>
+              ) : null}
             </button>
           );
         })}
@@ -135,11 +143,11 @@ export function IntentSelectionStep({
                 return (
                   <div
                     key={design.id}
-                    onClick={() => setPreviewDesign(design)}
+                    onClick={() => onDesignSelect(selectedDesignId === design.id ? "" : design.id)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        setPreviewDesign(design);
+                        onDesignSelect(selectedDesignId === design.id ? "" : design.id);
                       }
                     }}
                     role="button"
@@ -208,11 +216,15 @@ export function IntentSelectionStep({
                         <Expand className="size-4" />
                         {copy.viewDesignDetails}
                       </Button>
-                      {active ? (
-                        <span className="text-xs font-medium" style={{ color: "var(--artist-primary)" }}>
-                          {locale === "tr" ? "Seçili tasarım" : "Selected design"}
-                        </span>
-                      ) : null}
+                      <span className="text-xs font-medium" style={{ color: active ? "var(--artist-primary)" : "var(--artist-card-muted)" }}>
+                        {active
+                          ? locale === "tr"
+                            ? "Seçili tasarım"
+                            : "Selected design"
+                          : locale === "tr"
+                            ? "Kartın tamamına dokunarak seçebilirsin"
+                            : "Tap the card to select it"}
+                      </span>
                     </div>
                   </div>
                 );

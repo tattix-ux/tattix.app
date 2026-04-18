@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Check } from "lucide-react";
 
 import {
   getPlacementCategoryByDetail,
@@ -106,7 +107,10 @@ export function BodyPlacementSelector({
                   color: "var(--artist-card-text)",
                 }}
               >
-                <p className="break-words font-medium">{getPlacementCategoryLocaleLabel(category.value, locale)}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="break-words font-medium">{getPlacementCategoryLocaleLabel(category.value, locale)}</p>
+                  {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                </div>
                 <p className="mt-1 text-xs leading-5" style={{ color: "var(--artist-card-muted)" }}>
                   {getPlacementCategoryDescription(category.value, locale)}
                 </p>
@@ -116,25 +120,29 @@ export function BodyPlacementSelector({
         </div>
       </div>
 
-      {detailOptions ? (
-        <motion.div
-          ref={detailSectionRef}
-          key={detailOptions.value}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="rounded-[22px] border p-4 sm:rounded-[24px]"
-          style={{
-            borderColor: "var(--artist-border)",
-            backgroundColor: "rgba(0,0,0,0.12)",
-          }}
-        >
-          <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-            {copy.placementDetailLabel}
-          </p>
-          <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-            {copy.placementDetailHelpPrefix} {getPlacementCategoryLocaleLabel(detailOptions.value, locale).toLowerCase()}.
-          </p>
+      <motion.div
+        ref={detailSectionRef}
+        key={detailOptions?.value ?? "empty"}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="rounded-[22px] border p-4 sm:rounded-[24px]"
+        style={{
+          borderColor: "var(--artist-border)",
+          backgroundColor: "rgba(0,0,0,0.12)",
+        }}
+      >
+        <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+          {copy.placementDetailLabel}
+        </p>
+        <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+          {detailOptions
+            ? locale === "tr"
+              ? `Seçtiğin bölge: ${getPlacementCategoryLocaleLabel(detailOptions.value, locale)}. Şimdi tam yeri seç.`
+              : `Selected area: ${getPlacementCategoryLocaleLabel(detailOptions.value, locale)}. Now choose the exact spot.`
+            : copy.selectPlacementHelp}
+        </p>
+        {detailOptions ? (
           <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2">
             {detailOptions.details.map((detail) => {
               const active = selectedDetail === detail;
@@ -158,13 +166,20 @@ export function BodyPlacementSelector({
                     color: "var(--artist-card-text)",
                   }}
                 >
-                  <span className="break-words">{getPlacementDetailLocaleLabel(detail, locale)}</span>
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="break-words">{getPlacementDetailLocaleLabel(detail, locale)}</span>
+                    {active ? <Check className="size-4 shrink-0" /> : null}
+                  </span>
                 </button>
               );
             })}
           </div>
-        </motion.div>
-      ) : null}
+        ) : (
+          <div className="mt-4 rounded-[18px] border border-dashed border-white/10 bg-black/10 px-4 py-5 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+            {copy.selectPlacementHelp}
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

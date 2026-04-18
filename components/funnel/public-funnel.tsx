@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Copy, Info, LoaderCircle, MessageCircle, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, LoaderCircle, MessageCircle, Sparkles } from "lucide-react";
 
 import { IntentSelectionStep } from "@/components/funnel/intent-selection-step";
 import { BodyPlacementSelector } from "@/components/funnel/body-placement-selector";
@@ -16,8 +16,9 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import {
+  getIntentLabel,
+  getPlacementDetailLocaleLabel,
   getPublicCopy,
-  getStyleDescription,
   getStyleLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
@@ -74,12 +75,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     reset,
   } = useFunnelStore();
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
-  const [styleInfoKey, setStyleInfoKey] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingMode, setBookingMode] = useState<"single" | "range">("single");
   const flowCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     reset();
+    setBookingMode("single");
   }, [reset, artist.profile.slug]);
 
   useEffect(() => {
@@ -98,9 +100,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const hasDiscountedDesigns = activeDesigns.some(
     (design) => design.category === "discounted-designs",
   );
-  const activeStyleOption = styleInfoKey
-    ? artist.styleOptions.find((style) => style.styleKey === styleInfoKey)
-    : null;
   const selectedDesign = useMemo(
     () => findSelectedDesign(activeDesigns, draft.selectedDesignId),
     [activeDesigns, draft.selectedDesignId],
@@ -129,13 +128,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     [hasDiscountedDesigns, hasFlashDesigns, isProArtist],
   );
   const copy = getPublicCopy(locale);
-  const activeStyleInfoDescription = styleInfoKey
-    ? activeStyleOption?.description ??
-      getStyleDescription(styleInfoKey, locale) ??
-      (locale === "tr"
-        ? "Bu stilin son yorumu sanatçıyla görüşme sırasında netleştirilebilir."
-        : "The artist can refine the final interpretation of this style during consultation.")
-    : null;
   const stepMeta = copy.stepTitles.map((title, index) => ({
     step: index + 1,
     title,
@@ -174,6 +166,41 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const displayMeta =
     visibleStepMeta[Math.max(0, Math.min(displayStep, visibleStepMeta.length) - 1)];
   const displayProgress = (displayStep / visibleStepMeta.length) * 100;
+  const isRangeBooking = bookingMode === "range";
+  const selectedStyleLabel =
+    enabledStyles.find((style) => style.styleKey === draft.style)?.label ??
+    getStyleLabel(draft.style as never, locale);
+
+  const resultSummaryItems = useMemo(() => {
+    const items: Array<{ label: string; value: string }> = [
+      { label: copy.summaryLabels.intent, value: getIntentLabel(draft.intent || "not-sure", locale) },
+    ];
+
+    if (selectedDesign) {
+      items.push({ label: copy.summaryLabels.selectedDesign, value: selectedDesign.title });
+    }
+
+    if (draft.bodyAreaDetail) {
+      const placementValue = `${getPlacementDetailLocaleLabel(draft.bodyAreaDetail, locale)}${
+        draft.approximateSizeCm ? ` · ${draft.approximateSizeCm} cm` : ""
+      }`;
+      items.push({ label: copy.summaryLabels.placement, value: placementValue });
+    }
+
+    if (!selectedDesign && draft.detailLevel) {
+      items.push({ label: copy.summaryLabels.detail, value: copy.detailLevels[draft.detailLevel] });
+    }
+
+    if (!selectedDesign && draft.colorMode) {
+      items.push({ label: copy.summaryLabels.color, value: copy.colorModes[draft.colorMode] });
+    }
+
+    if (!selectedDesign && draft.style) {
+      items.push({ label: copy.summaryLabels.style, value: selectedStyleLabel });
+    }
+
+    return items;
+  }, [copy.colorModes, copy.detailLevels, copy.summaryLabels.color, copy.summaryLabels.detail, copy.summaryLabels.intent, copy.summaryLabels.placement, copy.summaryLabels.selectedDesign, copy.summaryLabels.style, draft.approximateSizeCm, draft.bodyAreaDetail, draft.colorMode, draft.detailLevel, draft.intent, draft.style, locale, selectedDesign, selectedStyleLabel]);
 
   async function handleFinalSubmit() {
     if (requiresBookingSelection) {
@@ -186,6 +213,23 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         setBookingError(copy.noAvailableDates);
         return;
       }
+
+      if (isRangeBooking) {
+        if (!draft.preferredEndDate || !availableDatesForSelectedCity.includes(draft.preferredEndDate)) {
+          setBookingError(copy.noAvailableDates);
+          return;
+        }
+
+        if (draft.preferredEndDate < draft.preferredStartDate) {
+          setBookingError(copy.preferredRangeHelp);
+          return;
+        }
+      }
+    }
+
+    if (draft.coverUp === null) {
+      setBookingError(locale === "tr" ? "Önce ek bağlam seçimini tamamla." : "Choose the extra context first.");
+      return;
     }
 
     setBookingError(null);
@@ -264,6 +308,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   }
 
   function handleIntentChange(intent: typeof draft.intent) {
+    setBookingMode("single");
+    setBookingError(null);
     setField("intent", intent);
     setField("selectedDesignId", "");
     setField("referenceImage", "");
@@ -315,8 +361,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       (isSelectedDesignFlow || (Boolean(draft.detailLevel) && Boolean(draft.colorMode)))) ||
     step === 5;
 
+  useEffect(() => {
+    if (bookingMode === "single" && draft.preferredEndDate) {
+      setField("preferredEndDate", "");
+    }
+  }, [bookingMode, draft.preferredEndDate, setField]);
+
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-clip space-y-3 sm:space-y-6">
+    <div className="w-full min-w-0 max-w-full overflow-x-clip space-y-2 sm:space-y-4">
       <Card
         className={`${compactArtistHeader ? "sticky top-2 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full overflow-x-clip`}
         style={{
@@ -352,7 +404,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         ) : (
           <>
             <div
-              className="h-40 w-full border-b bg-grid"
+              className="h-32 w-full border-b bg-grid sm:h-36"
               style={
                 artist.profile.coverImageUrl
                   ? {
@@ -364,7 +416,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   : { borderColor: "var(--artist-border)" }
               }
             />
-            <CardContent className="-mt-12 min-w-0 space-y-3 p-4 sm:space-y-4 sm:p-6">
+            <CardContent className="-mt-10 min-w-0 space-y-2.5 p-4 sm:space-y-3 sm:p-5">
               <AvatarTile
                 name={artist.profile.artistName}
                 imageUrl={artist.profile.profileImageUrl}
@@ -546,7 +598,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                   color: tokens.cardText,
                                 }}
                               >
-                                <p className="break-words font-medium">{copy.detailLevels[level]}</p>
+                                <div className="flex items-start justify-between gap-3">
+                                  <p className="break-words font-medium">{copy.detailLevels[level]}</p>
+                                  {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                                </div>
                                 <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                                   {copy.detailLevelDescriptions[level]}
                                 </p>
@@ -583,7 +638,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                   color: tokens.cardText,
                                 }}
                               >
-                                <p className="break-words font-medium">{copy.colorModes[mode]}</p>
+                                <div className="flex items-start justify-between gap-3">
+                                  <p className="break-words font-medium">{copy.colorModes[mode]}</p>
+                                  {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                                </div>
                                 <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                                   {copy.colorModeDescriptions[mode]}
                                 </p>
@@ -613,75 +671,52 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                             {enabledStyles.map((style) => {
                               const active = draft.style === style.styleKey;
                               return (
-                                <div
+                                <button
                                   key={style.id}
-                                  className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]"
+                                  type="button"
+                                  onClick={() => {
+                                    setField("style", style.styleKey);
+                                  }}
+                                  className="min-w-0 w-full whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                                  style={{
+                                    borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                                    backgroundColor: active
+                                      ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                      : "rgba(0,0,0,0.12)",
+                                    color: tokens.cardText,
+                                  }}
                                 >
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setField("style", style.styleKey);
-                                    }}
-                                    className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
-                                    style={{
-                                      borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                                      backgroundColor: active
-                                        ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                                        : "rgba(0,0,0,0.12)",
-                                      color: tokens.cardText,
-                                    }}
-                                  >
+                                  <div className="flex items-start justify-between gap-3">
                                     <p className="break-words font-medium">
                                       {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
                                     </p>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    aria-label={copy.styleInfoButton}
-                                    onClick={() => setStyleInfoKey(style.styleKey)}
-                                    className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
-                                    style={{
-                                      borderColor: "var(--artist-border)",
-                                      backgroundColor: "rgba(0,0,0,0.12)",
-                                      color: "var(--artist-card-text)",
-                                    }}
-                                  >
-                                    <Info className="size-4" />
-                                  </button>
-                                </div>
+                                    {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                                  </div>
+                                </button>
                               );
                             })}
-                            <div className="flex w-full max-w-full items-stretch gap-2 rounded-[24px]">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setField("style", "not-sure-style");
-                                }}
-                                className="min-w-0 flex-1 whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
-                                style={{
-                                  borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
-                                  backgroundColor: draft.style === "not-sure-style"
-                                    ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                                    : "rgba(0,0,0,0.12)",
-                                  color: tokens.cardText,
-                                }}
-                              >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setField("style", "not-sure-style");
+                              }}
+                              className="min-w-0 w-full whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                              style={{
+                                borderColor: draft.style === "not-sure-style" ? "var(--artist-primary)" : "var(--artist-border)",
+                                backgroundColor: draft.style === "not-sure-style"
+                                  ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                  : "rgba(0,0,0,0.12)",
+                                color: tokens.cardText,
+                              }}
+                            >
+                              <div className="flex items-start justify-between gap-3">
                                 <p className="break-words font-medium">{locale === "tr" ? "Emin değilim" : "I'm not sure"}</p>
-                              </button>
-                              <button
-                                type="button"
-                                aria-label={copy.styleInfoButton}
-                                onClick={() => setStyleInfoKey("not-sure-style")}
-                                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition sm:size-12"
-                                style={{
-                                  borderColor: "var(--artist-border)",
-                                  backgroundColor: "rgba(0,0,0,0.12)",
-                                  color: "var(--artist-card-text)",
-                                }}
-                              >
-                                <Info className="size-4" />
-                              </button>
-                            </div>
+                                {draft.style === "not-sure-style" ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                              </div>
+                              <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                {copy.notSureStyleHint}
+                              </p>
+                            </button>
                           </div>
                         </div>
                       ) : null}
@@ -732,7 +767,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           color: tokens.cardText,
                         }}
                       >
-                        <p className="break-words font-medium">{copy.coverUpNo}</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="break-words font-medium">{copy.coverUpNo}</p>
+                          {draft.coverUp === false ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                        </div>
                       </button>
                       <button
                         type="button"
@@ -746,7 +784,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           color: tokens.cardText,
                         }}
                       >
-                        <p className="break-words font-medium">{copy.coverUpYes}</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="break-words font-medium">{copy.coverUpYes}</p>
+                          {draft.coverUp === true ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                        </div>
                       </button>
                     </div>
                   </div>
@@ -812,26 +853,96 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
                         {copy.preferredTimingHelp}
                       </p>
-                      <div className="mt-4">
-                        <div className="space-y-2">
-                          <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
-                            {copy.preferredStartDate}
-                          </span>
-                          <DateCalendarPopover
-                            locale={locale}
-                            mode="single"
-                            disabled={!draft.city || availableDatesForSelectedCity.length === 0}
-                            triggerLabel={copy.preferredTimingLabel}
-                            emptyLabel={copy.preferredStartDate}
-                            selectedDate={draft.preferredStartDate}
-                            availableDates={availableDatesForSelectedCity}
-                            onSelectDate={(date) => {
-                              setField("preferredStartDate", date);
-                              setField("preferredEndDate", "");
-                              setBookingError(null);
-                            }}
-                          />
+                      <div className="mt-4 space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={bookingMode === "single" ? "secondary" : "outline"}
+                            onClick={() => setBookingMode("single")}
+                          >
+                            {copy.timingModeSingle}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={bookingMode === "range" ? "secondary" : "outline"}
+                            onClick={() => setBookingMode("range")}
+                          >
+                            {copy.timingModeRange}
+                          </Button>
                         </div>
+
+                        {bookingMode === "single" ? (
+                          <div className="space-y-2">
+                            <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                              {copy.preferredStartDate}
+                            </span>
+                            <DateCalendarPopover
+                              locale={locale}
+                              mode="single"
+                              disabled={!draft.city || availableDatesForSelectedCity.length === 0}
+                              triggerLabel={copy.preferredTimingLabel}
+                              emptyLabel={copy.preferredStartDate}
+                              selectedDate={draft.preferredStartDate}
+                              availableDates={availableDatesForSelectedCity}
+                              onSelectDate={(date) => {
+                                setField("preferredStartDate", date);
+                                setField("preferredEndDate", "");
+                                setBookingError(null);
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="space-y-2">
+                              <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                                {copy.preferredRangeLabel}
+                              </span>
+                              <DateCalendarPopover
+                                locale={locale}
+                                mode="single"
+                                disabled={!draft.city || availableDatesForSelectedCity.length === 0}
+                                triggerLabel={copy.preferredRangeLabel}
+                                emptyLabel={copy.preferredRangePlaceholder}
+                                selectedDate={draft.preferredStartDate}
+                                availableDates={availableDatesForSelectedCity}
+                                onSelectDate={(date) => {
+                                  setField("preferredStartDate", date);
+                                  if (draft.preferredEndDate && draft.preferredEndDate < date) {
+                                    setField("preferredEndDate", "");
+                                  }
+                                  setBookingError(null);
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                                {copy.preferredEndDate}
+                              </span>
+                              <DateCalendarPopover
+                                locale={locale}
+                                mode="single"
+                                disabled={
+                                  !draft.city ||
+                                  !draft.preferredStartDate ||
+                                  availableDatesForSelectedCity.length === 0
+                                }
+                                triggerLabel={copy.preferredRangeLabel}
+                                emptyLabel={copy.preferredEndDate}
+                                selectedDate={draft.preferredEndDate}
+                                availableDates={availableDatesForSelectedCity.filter((date) => date >= draft.preferredStartDate)}
+                                onSelectDate={(date) => {
+                                  setField("preferredEndDate", date);
+                                  setBookingError(null);
+                                }}
+                              />
+                            </div>
+                            <p className="sm:col-span-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                              {copy.preferredRangeHelp}
+                            </p>
+                          </div>
+                        )}
                       </div>
                       {draft.city && availableDatesForSelectedCity.length === 0 ? (
                         <p className="mt-3 text-sm" style={{ color: "var(--artist-card-muted)" }}>
@@ -922,6 +1033,27 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       backgroundColor: "rgba(0,0,0,0.12)",
                     }}
                   >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.resultSummaryTitle}
+                    </p>
+                    <div className="mt-3 space-y-2">
+                      {resultSummaryItems.map((item) => (
+                        <div key={item.label} className="flex items-start justify-between gap-4 text-sm">
+                          <span style={{ color: "var(--artist-card-muted)" }}>{item.label}</span>
+                          <span className="text-right" style={{ color: "var(--artist-card-text)" }}>
+                            {item.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
                     <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                       {result.disclaimer}
                     </p>
@@ -960,8 +1092,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           <Copy className="size-4" />
                           {copy.copyMessage}
                         </>
-                      )}
+                        )}
                     </Button>
+                    <p className="text-center text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.whatsappHelper}
+                    </p>
                   </div>
                 </div>
               ) : null}
@@ -1006,8 +1141,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 onClick={handleFinalSubmit}
                 disabled={
                   submitting ||
+                  draft.coverUp === null ||
                   (requiresBookingSelection &&
-                    (!draft.city || !draft.preferredStartDate || !selectedBookingCity))
+                    (!draft.city ||
+                      !draft.preferredStartDate ||
+                      !selectedBookingCity ||
+                      (isRangeBooking && !draft.preferredEndDate)))
                 }
                 style={{
                   backgroundColor: "var(--artist-primary)",
@@ -1021,15 +1160,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             {step === resultStep && result ? (
               <Button
                 className={`w-full whitespace-normal sm:ml-auto sm:w-auto ${secondaryButtonClass}`}
-                variant="outline"
+                variant="ghost"
                 onClick={() => {
                   reset();
                   setCopyState("idle");
+                  setBookingMode("single");
                 }}
                 style={{
-                  backgroundColor: "var(--artist-secondary)",
-                  color: "var(--artist-secondary-foreground)",
-                  borderColor: "transparent",
+                  color: "var(--artist-card-muted)",
                 }}
               >
                 {copy.startOver}
@@ -1043,33 +1181,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         </Card>
       </div>
 
-      {styleInfoKey ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-clip bg-black/70 p-0 sm:items-center sm:p-4">
-          <div className="max-h-[92dvh] w-full max-w-[calc(100vw-0.75rem)] overflow-y-auto rounded-t-[28px] border border-white/10 bg-[#0f0f11] p-4 shadow-2xl sm:max-w-md sm:rounded-[28px]">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.2em] text-[var(--accent-soft)]">
-                  {copy.styleInfoTitle}
-                </p>
-                <h3 className="mt-2 break-words text-lg font-semibold text-white">
-                  {activeStyleOption?.isCustom ? activeStyleOption.label : getStyleLabel(styleInfoKey, locale)}
-                </h3>
-              </div>
-              <Button type="button" variant="ghost" size="icon" onClick={() => setStyleInfoKey(null)}>
-                <X className="size-4" />
-              </Button>
-            </div>
-            <p className="mt-4 text-sm leading-6 text-[var(--foreground-muted)]">
-              {activeStyleInfoDescription}
-            </p>
-            <div className="mt-5">
-              <Button type="button" className="w-full" onClick={() => setStyleInfoKey(null)}>
-                {copy.close}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
