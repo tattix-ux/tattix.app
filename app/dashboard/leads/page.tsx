@@ -14,16 +14,16 @@ export default async function DashboardLeadsPage() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        eyebrow={isTurkish ? "Talepler" : "Requests"}
+        eyebrow={isTurkish ? "Talep yönetimi" : "Lead management"}
         title={
           isTurkish
-            ? "Gelen talepleri tek yerde incele."
-            : "Review incoming requests in one place."
+            ? "Kimlerin hâlâ yazmadığını ve satışa dönen talepleri takip et."
+            : "Track who still has not reached out and which requests turn into sales."
         }
         description={
           isTurkish
-            ? "Referans görsel, notlar ve tahmin burada saklanır."
-            : "Reference images, notes, and estimates stay here."
+            ? "Müşteri iletişimi kendisi başlatır. Yazdığında durumu güncelleyebilirsin."
+            : "Clients start the conversation. Update the status after they reach out."
         }
       />
       {hasPro ? (

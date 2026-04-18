@@ -26,31 +26,36 @@ import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 type FilterRange = "7d" | "30d" | "90d" | "all";
 type ChartGranularity = "daily" | "weekly" | "monthly";
 type LeadStatusFilter = "all" | LeadStatus;
-type LeadSort = "newest" | "oldest" | "highest-estimate" | "lowest-estimate";
+type LeadSort = "waiting-first" | "newest" | "oldest" | "highest-estimate" | "lowest-estimate";
 
 const leadCopy = {
   en: {
-    title: "Requests",
+    title: "Lead management",
     description: "Review incoming requests and track their status.",
+    note: "Note: clients start the conversation. Update the status after they reach out.",
     empty: "No requests yet.",
+    emptyDescription: "Share your link to start collecting requests.",
     emptyFiltered: "No requests match these filters.",
     resetFilters: "Clear filters",
     summary: {
+      waiting: "Waiting for contact",
       total: "Total requests",
-      fresh: "New",
+      fresh: "Waiting for contact",
       sold: "Sold",
       rate: "Sale rate",
     },
     filters: {
       status: "Status",
       time: "Date range",
+      waitingOnly: "Only waiting for contact",
       all: "All",
       "7d": "Last 7 days",
       "30d": "Last 30 days",
       "90d": "Last 3 months",
-      contacted: "Client contacted",
+      contacted: "Contacted",
       sold: "Sold",
       lost: "Lost",
+      waitingFirst: "Waiting first",
       newest: "Newest",
       oldest: "Oldest",
       highestEstimate: "Highest estimate",
@@ -59,8 +64,8 @@ const leadCopy = {
     },
     statusLabels: {
       all: "All",
-      new: "New",
-      contacted: "Client contacted",
+      new: "Waiting for contact",
+      contacted: "Contacted",
       sold: "Sold",
       lost: "Lost",
     },
@@ -79,8 +84,11 @@ const leadCopy = {
       request: "Request",
       details: "Details",
       status: "Status",
-      actions: "Actions",
+      actions: "Status tracking",
       detailButton: "Details",
+      markContacted: "Mark as contacted",
+      markSold: "Mark as sold",
+      markLost: "Mark as lost",
       placement: "Placement",
       size: "Size",
       intent: "Request type",
@@ -104,27 +112,32 @@ const leadCopy = {
     },
   },
   tr: {
-    title: "Talepler",
+    title: "Talep yönetimi",
     description: "Gelen talepleri incele ve durumlarını takip et.",
+    note: "Not: Müşteri iletişimi kendisi başlatır. Yazdığında durumu güncelleyebilirsin.",
     empty: "Henüz talep yok.",
+    emptyDescription: "Linkini paylaşarak müşteri toplamaya başla.",
     emptyFiltered: "Bu filtrelerle eşleşen talep bulunamadı.",
     resetFilters: "Filtreleri temizle",
     summary: {
+      waiting: "İletişim bekleniyor",
       total: "Toplam talep",
-      fresh: "Yeni",
+      fresh: "İletişim bekleniyor",
       sold: "Satış yapıldı",
       rate: "Satış oranı",
     },
     filters: {
       status: "Durum",
       time: "Zaman",
+      waitingOnly: "Sadece iletişim bekleyenler",
       all: "Tümü",
       "7d": "Son 7 gün",
       "30d": "Son 30 gün",
       "90d": "Son 3 ay",
-      contacted: "Müşteri iletişime geçti",
+      contacted: "İletişime geçildi",
       sold: "Satış yapıldı",
-      lost: "Satış yapılamadı",
+      lost: "Satış olmadı",
+      waitingFirst: "İletişim bekleyen önce",
       newest: "En yeni",
       oldest: "En eski",
       highestEstimate: "En yüksek tahmin",
@@ -133,10 +146,10 @@ const leadCopy = {
     },
     statusLabels: {
       all: "Tümü",
-      new: "Yeni",
-      contacted: "Müşteri iletişime geçti",
+      new: "İletişim bekleniyor",
+      contacted: "İletişime geçildi",
       sold: "Satış yapıldı",
-      lost: "Satış yapılamadı",
+      lost: "Satış olmadı",
     },
     chartTitle: "Talep görünümü",
     chartDescription: "Grafiği göster",
@@ -153,8 +166,11 @@ const leadCopy = {
       request: "Talep",
       details: "Detaylar",
       status: "Durum",
-      actions: "İşlem",
+      actions: "Durum takibi",
       detailButton: "Detay",
+      markContacted: "İletişime geçildi olarak işaretle",
+      markSold: "Satış yapıldı",
+      markLost: "Satış olmadı",
       placement: "Yerleşim",
       size: "Yaklaşık boyut",
       intent: "Talep tipi",
@@ -370,15 +386,30 @@ function getReferenceImageUrl(lead: ClientSubmission) {
 
 function getStatusTone(status: LeadStatus) {
   switch (status) {
+    case "new":
+      return "border-amber-400/35 bg-amber-400/14 text-amber-100";
     case "contacted":
-      return "border-[var(--accent)]/35 bg-[var(--accent)]/15 text-[var(--accent-soft)]";
+      return "border-sky-400/30 bg-sky-400/12 text-sky-100";
     case "sold":
       return "border-emerald-500/30 bg-emerald-500/12 text-emerald-200";
     case "lost":
-      return "border-rose-500/25 bg-rose-500/10 text-rose-200";
-    case "new":
+      return "border-white/10 bg-white/6 text-[var(--foreground-muted)]";
     default:
       return "border-white/10 bg-white/6 text-[var(--foreground-muted)]";
+  }
+}
+
+function getStatusPriority(status: LeadStatus) {
+  switch (status) {
+    case "new":
+      return 0;
+    case "contacted":
+      return 1;
+    case "sold":
+      return 2;
+    case "lost":
+    default:
+      return 3;
   }
 }
 
@@ -387,14 +418,20 @@ function filterLeads(
   {
     status,
     range,
+    waitingOnly,
   }: {
     status: LeadStatusFilter;
     range: FilterRange;
+    waitingOnly: boolean;
   },
 ) {
   const start = getRangeStart(range);
 
   return leads.filter((lead) => {
+    if (waitingOnly && lead.status !== "new") {
+      return false;
+    }
+
     if (status !== "all" && lead.status !== status) {
       return false;
     }
@@ -411,6 +448,16 @@ function sortLeads(leads: ClientSubmission[], sort: LeadSort) {
   const sorted = [...leads];
 
   sorted.sort((left, right) => {
+    if (sort === "waiting-first") {
+      const priority = getStatusPriority(left.status) - getStatusPriority(right.status);
+
+      if (priority !== 0) {
+        return priority;
+      }
+
+      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    }
+
     if (sort === "oldest") {
       return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
     }
@@ -488,14 +535,32 @@ function StatusBadge({
 function StatCard({
   label,
   value,
+  tone = "default",
 }: {
   label: string;
   value: string | number;
+  tone?: "default" | "accent";
 }) {
   return (
-    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
+    <div
+      className={cn(
+        "rounded-[24px] border p-4",
+        tone === "accent"
+          ? "border-amber-400/20 bg-amber-400/10"
+          : "border-white/8 bg-black/20",
+      )}
+    >
+      <p
+        className={cn(
+          "text-xs uppercase tracking-[0.18em]",
+          tone === "accent" ? "text-amber-100/80" : "text-[var(--foreground-muted)]",
+        )}
+      >
+        {label}
+      </p>
+      <p className={cn("mt-2 text-3xl font-semibold", tone === "accent" ? "text-amber-50" : "text-white")}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -519,8 +584,9 @@ export function LeadsTable({
   const [localLeads, setLocalLeads] = useState(leads);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
-  const [range, setRange] = useState<FilterRange>("7d");
-  const [sort, setSort] = useState<LeadSort>("newest");
+  const [waitingOnly, setWaitingOnly] = useState(true);
+  const [range, setRange] = useState<FilterRange>("all");
+  const [sort, setSort] = useState<LeadSort>("waiting-first");
   const [granularity, setGranularity] = useState<ChartGranularity>("weekly");
   const [chartOpen, setChartOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -576,14 +642,16 @@ export function LeadsTable({
         filterLeads(localLeads, {
           status: statusFilter,
           range,
+          waitingOnly,
         }),
         sort,
       ),
-    [localLeads, range, sort, statusFilter],
+    [localLeads, range, sort, statusFilter, waitingOnly],
   );
 
   const totalCount = filteredLeads.length;
   const newCount = filteredLeads.filter((lead) => lead.status === "new").length;
+  const contactedCount = filteredLeads.filter((lead) => lead.status !== "new").length;
   const soldCount = filteredLeads.filter((lead) => lead.status === "sold").length;
   const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
   const paginatedLeads = useMemo(
@@ -602,7 +670,7 @@ export function LeadsTable({
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, range, sort]);
+  }, [statusFilter, range, sort, waitingOnly]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -615,14 +683,55 @@ export function LeadsTable({
       <Card className="surface-border">
         <CardHeader>
           <CardTitle>{copy.title}</CardTitle>
-          <CardDescription>{copy.empty}</CardDescription>
+          <CardDescription>{copy.emptyDescription}</CardDescription>
         </CardHeader>
+        <CardContent>
+          <p className="text-lg font-medium text-white">{copy.empty}</p>
+        </CardContent>
       </Card>
     );
   }
 
   function toggleLeadDetails(leadId: string) {
     setSelectedLeadId((current) => (current === leadId ? null : leadId));
+  }
+
+  function renderLeadActions(lead: ClientSubmission, compact = false) {
+    if (lead.status === "new") {
+      return (
+        <Button
+          size={compact ? "sm" : "default"}
+          onClick={() => void updateLeadStatus(lead.id, "contacted")}
+          className={cn(compact ? "h-9" : "h-10", "rounded-full")}
+        >
+          {copy.table.markContacted}
+        </Button>
+      );
+    }
+
+    if (lead.status === "contacted") {
+      return (
+        <div className={cn("flex gap-2", compact ? "flex-col" : "flex-wrap")}>
+          <Button
+            size={compact ? "sm" : "default"}
+            onClick={() => void updateLeadStatus(lead.id, "sold")}
+            className={cn(compact ? "h-9" : "h-10", "rounded-full")}
+          >
+            {copy.table.markSold}
+          </Button>
+          <Button
+            size={compact ? "sm" : "default"}
+            variant="outline"
+            onClick={() => void updateLeadStatus(lead.id, "lost")}
+            className={cn(compact ? "h-9" : "h-10", "rounded-full")}
+          >
+            {copy.table.markLost}
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
   }
 
   function renderLeadDetailPanel(lead: ClientSubmission) {
@@ -712,18 +821,9 @@ export function LeadsTable({
 
           <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.status}</p>
-            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <NativeSelect
-                value={lead.status}
-                onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
-                className="h-10 min-w-[220px] rounded-full bg-black/30"
-              >
-                {(["new", "contacted", "sold", "lost"] as const).map((status) => (
-                  <option key={status} value={status}>
-                    {copy.statusLabels[status]}
-                  </option>
-                ))}
-              </NativeSelect>
+            <div className="mt-3 flex flex-col gap-3">
+              <StatusBadge status={lead.status} locale={locale} />
+              {renderLeadActions(lead) ? <div>{renderLeadActions(lead)}</div> : null}
               <p className="text-sm text-[var(--foreground-muted)]">
                 {copy.statusLabels[lead.status]}
               </p>
@@ -747,11 +847,14 @@ export function LeadsTable({
               {statusMessage ? (
                 <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p>
               ) : null}
+              <div className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-3 text-sm text-[var(--foreground-muted)]">
+                {copy.note}
+              </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard label={copy.summary.waiting} value={newCount} tone="accent" />
                 <StatCard label={copy.summary.total} value={totalCount} />
-                <StatCard label={copy.summary.fresh} value={newCount} />
                 <StatCard label={copy.summary.sold} value={soldCount} />
-                <StatCard label={copy.summary.rate} value={formatConversionRate(totalCount, soldCount)} />
+                <StatCard label={copy.summary.rate} value={formatConversionRate(contactedCount, soldCount)} />
               </div>
 
               <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
@@ -850,12 +953,36 @@ export function LeadsTable({
                         type="button"
                         size="sm"
                         variant={statusFilter === item ? "secondary" : "outline"}
-                        onClick={() => setStatusFilter(item)}
+                        onClick={() => {
+                          setStatusFilter(item);
+                          if (item !== "all" && item !== "new") {
+                            setWaitingOnly(false);
+                          }
+                        }}
                       >
                         {copy.statusLabels[item]}
                       </Button>
                     ))}
                   </div>
+                </div>
+
+                <div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={waitingOnly ? "secondary" : "outline"}
+                    onClick={() => {
+                      setWaitingOnly((current) => {
+                        const next = !current;
+                        if (next) {
+                          setStatusFilter("all");
+                        }
+                        return next;
+                      });
+                    }}
+                  >
+                    {copy.filters.waitingOnly}
+                  </Button>
                 </div>
 
                 <div>
@@ -886,6 +1013,7 @@ export function LeadsTable({
                   value={sort}
                   onChange={(event) => setSort(event.target.value as LeadSort)}
                 >
+                  <option value="waiting-first">{copy.filters.waitingFirst}</option>
                   <option value="newest">{copy.filters.newest}</option>
                   <option value="oldest">{copy.filters.oldest}</option>
                   <option value="highest-estimate">{copy.filters.highestEstimate}</option>
@@ -907,8 +1035,9 @@ export function LeadsTable({
                 className="mt-4"
                 onClick={() => {
                   setStatusFilter("all");
-                  setRange("7d");
-                  setSort("newest");
+                  setWaitingOnly(true);
+                  setRange("all");
+                  setSort("waiting-first");
                 }}
               >
                 {copy.resetFilters}
@@ -955,18 +1084,8 @@ export function LeadsTable({
                       {notesPreview(lead.notes, copy.table.noNotes)}
                     </p>
 
-                    <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-                      <NativeSelect
-                        value={lead.status}
-                        onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
-                        className="h-10 rounded-full bg-black/30"
-                      >
-                        {(["new", "contacted", "sold", "lost"] as const).map((status) => (
-                          <option key={status} value={status}>
-                            {copy.statusLabels[status]}
-                          </option>
-                        ))}
-                      </NativeSelect>
+                    <div className="mt-4 space-y-2">
+                      {renderLeadActions(lead, true)}
                       <Button variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
                         {copy.table.detailButton}
                       </Button>
@@ -1014,9 +1133,6 @@ export function LeadsTable({
                               <p className="text-sm text-[var(--foreground-muted)]">
                                 {formatIntent(lead.intent, locale)}
                               </p>
-                              <p className="text-sm text-[var(--foreground-muted)]">
-                                {copy.table.city}: {lead.city || copy.table.noCity}
-                              </p>
                             </div>
                           </TableCell>
                           <TableCell className="align-top">
@@ -1052,18 +1168,8 @@ export function LeadsTable({
                             <StatusBadge status={lead.status} locale={locale} />
                           </TableCell>
                           <TableCell className="align-top">
-                            <div className="flex min-w-[220px] flex-col gap-2">
-                              <NativeSelect
-                                value={lead.status}
-                                onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
-                                className="h-10 rounded-full bg-black/30"
-                              >
-                                {(["new", "contacted", "sold", "lost"] as const).map((status) => (
-                                  <option key={status} value={status}>
-                                    {copy.statusLabels[status]}
-                                  </option>
-                                ))}
-                              </NativeSelect>
+                            <div className="flex min-w-[240px] flex-col gap-2">
+                              {renderLeadActions(lead, true)}
                               <Button size="sm" variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
                                 {copy.table.detailButton}
                               </Button>
