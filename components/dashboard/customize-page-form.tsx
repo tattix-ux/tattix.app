@@ -320,14 +320,14 @@ export function CustomizePageForm({
     locale === "tr"
       ? {
           "dark-minimal": "Sade ve temiz görünüm",
-          "gothic-black": "Daha sert ve karanlık",
+          "gothic-black": "Daha sert, soğuk ve dramatik",
           "soft-neutral": "Açık, yumuşak ve ferah",
           "luxury-serif": "Daha premium ve klasik",
           "neon-accent": "Daha dikkat çekici",
         }
       : {
           "dark-minimal": "Clean and minimal",
-          "gothic-black": "Sharper and darker",
+          "gothic-black": "Sharper, colder, and more dramatic",
           "soft-neutral": "Light, soft, and airy",
           "luxury-serif": "More premium and classic",
           "neon-accent": "More attention-grabbing",
