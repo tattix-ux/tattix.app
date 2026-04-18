@@ -21,18 +21,20 @@ type ProfileValues = z.infer<typeof profileSchema>;
 const profileCopy = {
   en: {
     title: "Artist profile",
-    description: "Control the public-facing details that show up on your bio page and result messages.",
+    description: "Clients see these details before they decide to message you. Keep your profile short, clear, and trustworthy.",
     artistName: "Artist name",
+    artistNameHelp: "It works best when this matches your Instagram name.",
     slug: "Public slug",
-    slugHelp: "Your page will live at /artist-slug.",
+    slugHelp: "This is the link you put in your Instagram bio. Clients arrive from here.",
     profileImage: "Profile image",
-    profileImageHelp: "Upload directly or keep using a URL.",
+    profileImageHelp: "Use a clear face photo or an image that shows your signature style.",
+    profileImageEmptyHint: "Artists with a profile photo usually get more messages.",
     coverImage: "Cover image",
-    coverImageHelp: "Shown in the public page hero.",
+    coverImageHelp: "Use the tattoo photo that shows your style best.",
+    coverImageEmptyHint: "A strong cover image helps clients trust the page faster.",
     noImage: "No image selected yet",
     upload: "Upload image",
     remove: "Remove image",
-    imageUrlFallback: "Image URL fallback",
     shortBio: "Short bio",
     shortBioHelp: "Optional. If empty, the public page falls back to your funnel intro copy.",
     shortBioPlaceholder: "Optional short studio intro",
@@ -40,11 +42,14 @@ const profileCopy = {
     welcomeHeadlineHelp: "Optional. Leave empty if you want funnel copy or theme overrides to lead.",
     welcomeHeadlinePlaceholder: "Optional headline",
     whatsapp: "WhatsApp number",
+    whatsappHelp: "Clients will message you directly here.",
+    whatsappEmptyHint: "Clients cannot reach you if this is empty.",
     instagram: "Instagram handle",
+    instagramHelp: "Clients can check your profile from here.",
     currency: "Currency",
     active: "Artist page is active",
     saving: "Saving",
-    save: "Save profile",
+    save: "Save changes",
     demoSaved: "Demo data refreshed.",
     saved: "Profile saved.",
     uploadUnavailable: "Image upload is unavailable in demo mode.",
@@ -56,18 +61,20 @@ const profileCopy = {
   },
   tr: {
     title: "Sanatçı profili",
-    description: "Sanatçı sayfanda ve sonuç mesajlarında görünen bilgileri buradan yönet.",
+    description: "Müşteriler sana gelmeden önce bu bilgileri görür. Kısa, net ve güven veren bir profil oluştur.",
     artistName: "Sanatçı adı",
+    artistNameHelp: "Instagram’daki adınla aynı olması önerilir.",
     slug: "Sayfa bağlantısı",
-    slugHelp: "Bağlantın `tattix.io/` ile başlar. Sadece sana özel kısa yolu yazman yeterli.",
+    slugHelp: "Instagram bio’na koyacağın link. Müşteriler buradan gelir.",
     profileImage: "Profil görseli",
-    profileImageHelp: "Doğrudan yükleyebilir veya bağlantı kullanabilirsin.",
+    profileImageHelp: "Net bir yüz fotoğrafı veya imza stilini gösteren görsel kullan.",
+    profileImageEmptyHint: "Profil fotoğrafı olan sanatçılar daha fazla mesaj alır.",
     coverImage: "Kapak görseli",
-    coverImageHelp: "Sanatçı sayfanın üst bölümünde görünür.",
+    coverImageHelp: "Tarzını gösteren en iyi dövme fotoğrafını kullan.",
+    coverImageEmptyHint: "Tarzını gösteren bir kapak görseli eklemek güven verir.",
     noImage: "Henüz görsel seçilmedi",
     upload: "Görsel yükle",
     remove: "Görseli kaldır",
-    imageUrlFallback: "Görsel bağlantısı",
     shortBio: "Kısa biyografi",
     shortBioHelp: "İsteğe bağlı. Boş bırakırsan sanatçı sayfası giriş metnini kullanır.",
     shortBioPlaceholder: "İsteğe bağlı kısa stüdyo tanıtımı",
@@ -75,11 +82,14 @@ const profileCopy = {
     welcomeHeadlineHelp: "İsteğe bağlı. Boş bırakırsan akış metni veya tema ayarı öne çıkar.",
     welcomeHeadlinePlaceholder: "İsteğe bağlı başlık",
     whatsapp: "WhatsApp numarası",
+    whatsappHelp: "Müşteriler sana buradan direkt yazacak.",
+    whatsappEmptyHint: "Müşteriler sana ulaşamaz.",
     instagram: "Instagram kullanıcı adı",
+    instagramHelp: "Müşteriler profilini buradan inceleyebilir.",
     currency: "Para birimi",
     active: "Sanatçı sayfası aktif",
     saving: "Kaydediliyor",
-    save: "Profili kaydet",
+    save: "Değişiklikleri kaydet",
     demoSaved: "Demo verisi güncellendi.",
     saved: "Profil kaydedildi.",
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
@@ -100,6 +110,7 @@ function MediaUploadField({
   emptyLabel,
   uploadLabel,
   removeLabel,
+  emptyHint,
 }: {
   label: string;
   description: string;
@@ -109,6 +120,7 @@ function MediaUploadField({
   emptyLabel: string;
   uploadLabel: string;
   removeLabel: string;
+  emptyHint?: string;
 }) {
   return (
     <Field label={label} description={description}>
@@ -121,6 +133,7 @@ function MediaUploadField({
             <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
               <ImagePlus className="size-5" />
               <span>{emptyLabel}</span>
+              {emptyHint ? <span className="text-xs leading-5 text-[var(--accent-soft)]">{emptyHint}</span> : null}
             </div>
           )}
         </div>
@@ -262,7 +275,15 @@ export function ProfileForm({
       <CardContent>
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid gap-5 lg:grid-cols-2">
-            <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
+            <Field
+              label={copy.artistName}
+              description={
+                form.watch("artistName")?.trim().length
+                  ? copy.artistNameHelp
+                  : `${copy.artistNameHelp} ${locale === "tr" ? "Bu alan müşterilerin seni tanıması için gerekli." : "Clients need this to recognize you."}`
+              }
+              error={form.formState.errors.artistName?.message}
+            >
               <Input {...form.register("artistName")} />
             </Field>
             <Field
@@ -291,6 +312,7 @@ export function ProfileForm({
               emptyLabel={copy.noImage}
               uploadLabel={copy.upload}
               removeLabel={copy.remove}
+              emptyHint={!profileImageUrl ? copy.profileImageEmptyHint : undefined}
             />
             <MediaUploadField
               label={copy.coverImage}
@@ -301,17 +323,28 @@ export function ProfileForm({
               emptyLabel={copy.noImage}
               uploadLabel={copy.upload}
               removeLabel={copy.remove}
+              emptyHint={!coverImageUrl ? copy.coverImageEmptyHint : undefined}
             />
           </div>
           <div className="grid gap-5 lg:grid-cols-3">
             <Field
               label={copy.whatsapp}
+              description={
+                form.watch("whatsappNumber")?.trim().length
+                  ? copy.whatsappHelp
+                  : `${copy.whatsappHelp} ${copy.whatsappEmptyHint}`
+              }
               error={form.formState.errors.whatsappNumber?.message}
             >
               <Input {...form.register("whatsappNumber")} />
             </Field>
             <Field
               label={copy.instagram}
+              description={
+                form.watch("instagramHandle")?.trim().length
+                  ? copy.instagramHelp
+                  : `${copy.instagramHelp} ${locale === "tr" ? "Bu alan müşterilerin seni görmesi için gerekli." : "Clients need this to review your work."}`
+              }
               error={form.formState.errors.instagramHandle?.message}
             >
               <Input {...form.register("instagramHandle")} />

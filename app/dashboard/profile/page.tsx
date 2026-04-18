@@ -14,19 +14,26 @@ export default async function DashboardProfilePage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeading
-        eyebrow={isTurkish ? "Profil" : "Profile"}
-        title={
-          isTurkish
-            ? "Müşterilerin ilk gördüğü sanatçı profilini düzenle."
-            : "Craft the public identity clients meet first."
-        }
-        description={
-          isTurkish
-            ? "Bu alanlar sanatçı sayfanı, WhatsApp ön mesajını ve bağlantı yapını doğrudan etkiler."
-            : "These fields power your hero section, WhatsApp handoff, and public artist slug."
-        }
-      />
+      <div className="space-y-3">
+        <SectionHeading
+          eyebrow={isTurkish ? "Profil" : "Profile"}
+          title={
+            isTurkish
+              ? "Müşterilerin seni seçmesini sağlayacak profilini düzenle."
+              : "Shape the profile that helps clients choose you."
+          }
+          description={
+            isTurkish
+              ? "Buradaki bilgiler, müşterinin sana yazmadan önce gördüğü her şeyi belirler."
+              : "These details shape everything a client sees before they message you."
+          }
+        />
+        <p className="text-sm text-[var(--accent-soft)]">
+          {isTurkish
+            ? "İyi bir profil, daha fazla mesaj almanı sağlar."
+            : "A stronger profile helps you get more messages."}
+        </p>
+      </div>
       <ProfileForm
         profile={data.profile}
         demoMode={data.demoMode}
