@@ -524,9 +524,33 @@ export function LeadsTable({
   const [granularity, setGranularity] = useState<ChartGranularity>("weekly");
   const [chartOpen, setChartOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const pageSize = 10;
 
   async function updateLeadStatus(id: string, status: LeadStatus) {
+    const previousLead = localLeads.find((lead) => lead.id === id);
+    if (!previousLead || previousLead.status === status) {
+      return;
+    }
+
+    setStatusMessage(null);
+
+    const optimistic: Partial<ClientSubmission> = {
+      status,
+      contacted: status === "contacted" || status === "sold",
+      convertedToSale: status === "sold",
+      soldAt:
+        status === "sold"
+          ? previousLead.status === "sold" && previousLead.soldAt
+            ? previousLead.soldAt
+            : new Date().toISOString()
+          : null,
+    };
+
+    setLocalLeads((existing) =>
+      existing.map((lead) => (lead.id === id ? { ...lead, ...optimistic } : lead)),
+    );
+
     const response = await fetch(`/api/dashboard/leads/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -534,19 +558,16 @@ export function LeadsTable({
     });
 
     if (!response.ok) {
+      setLocalLeads((existing) =>
+        existing.map((lead) => (lead.id === id ? previousLead : lead)),
+      );
+      setStatusMessage(
+        locale === "tr"
+          ? "Durum güncellenemedi. Tekrar dene."
+          : "Status could not be updated. Please try again.",
+      );
       return;
     }
-
-    const optimistic: Partial<ClientSubmission> = {
-      status,
-      contacted: status === "contacted" || status === "sold",
-      convertedToSale: status === "sold",
-      soldAt: status === "sold" ? new Date().toISOString() : null,
-    };
-
-    setLocalLeads((existing) =>
-      existing.map((lead) => (lead.id === id ? { ...lead, ...optimistic } : lead)),
-    );
   }
 
   const filteredLeads = useMemo(
@@ -723,6 +744,9 @@ export function LeadsTable({
         <CardContent className="space-y-5">
           {hasPro ? (
             <>
+              {statusMessage ? (
+                <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p>
+              ) : null}
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={copy.summary.total} value={totalCount} />
                 <StatCard label={copy.summary.fresh} value={newCount} />
