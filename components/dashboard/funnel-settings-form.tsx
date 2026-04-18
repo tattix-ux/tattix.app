@@ -85,16 +85,21 @@ export function FunnelSettingsForm({
     locale === "tr"
       ? {
           title: "Akış ayarları",
-          description: "",
+          description: "Bu alanlar müşterinin ilk soruya nasıl cevap vereceğini belirler.",
           introEyebrow: "Üst kısa etiket",
+          introEyebrowHelp: "Sayfanın üstünde görünen kısa tanım.",
           introTitle: "Giriş başlığı",
+          introTitlePlaceholder: "Ne yaptırmak istiyorsun?",
           introDescription: "Giriş açıklaması",
-          activeStyles: "Müşteriye hangi tarzları sunmak istiyorsun?",
-          activeStylesHelp: "Müşteri sadece seçtiğin tarzları görür.",
+          introDescriptionWarning: "Müşteriye ne yazacağını söylemezsen yanlış talepler gelir.",
+          activeStyles: "Hangi tarzlarda çalışıyorsun?",
+          activeStylesHelp: "Müşteri sadece bu tarzlarda sana yazabilir.",
+          activeStylesTip: "Az ve net seçim yapmak daha doğru müşteri getirir.",
           activeCount: "seçili",
           customStyles: "Kendi eklediğin tarzlar",
           addStyle: "Kendi stilini ekle",
-          customStylesHelp: "Listede yoksa kendi tarzını ekleyebilirsin.",
+          customStylesHelp: "Listede yoksa kendi tarzını ekle.",
+          customStylesTip: "Kullanmadığın tarzları ekleme.",
           emptyStyles: "Özel bir tarzın varsa ekleyebilirsin.",
           styleLabel: "Stil adı",
           enabled: "Aktif",
@@ -106,28 +111,38 @@ export function FunnelSettingsForm({
           saveFailed: "Akış ayarları kaydedilemedi.",
           saved: "Akış ayarları kaydedildi.",
           bookingTitle: "Çalıştığın şehirler",
-          bookingDescription: "Müşteri yalnızca burada tanımladığın şehirleri ve tarihleri görür.",
+          bookingDescription: "Müşteriler sadece burada seçtiğin şehir ve tarihleri görebilir.",
+          bookingEmptyWarning: "En az bir şehir eklemelisin.",
           addCity: "Şehir ekle",
           cityName: "Şehir",
           cityPlaceholder: "Örn. Adana",
           noCities: "Henüz şehir eklenmedi.",
           availabilityTitle: "Bu şehir için müsait olduğun tarihleri seç",
+          availabilityHint: "Boş bırakırsan o şehir için uygunluk görünmez.",
+          availabilityWarning: "Bu şehir için tarih seçmezsen müşteri randevu alamaz.",
+          dateEmptyWarning: "Müşterilerin randevu alabilmesi için tarih seç.",
           addDate: "Tarih seç",
           removeDate: "Tarihi kaldır",
           noDates: "Henüz tarih eklenmedi.",
+          styleEmptyWarning: "En az bir tarz seçmelisin.",
         }
       : {
           title: "Funnel settings",
-          description: "",
+          description: "These fields shape how clients answer the first question.",
           introEyebrow: "Intro eyebrow",
+          introEyebrowHelp: "Short line shown at the top of the page.",
           introTitle: "Intro title",
+          introTitlePlaceholder: "What do you want done?",
           introDescription: "Intro description",
-          activeStyles: "Which styles do you want to show customers?",
-          activeStylesHelp: "Customers only see the styles you select.",
+          introDescriptionWarning: "If you do not guide the client here, you will get worse requests.",
+          activeStyles: "Which styles do you work in?",
+          activeStylesHelp: "Clients can only message you in these styles.",
+          activeStylesTip: "Fewer, clearer choices bring better-fit clients.",
           activeCount: "selected",
           customStyles: "Custom styles",
           addStyle: "Add your own style",
-          customStylesHelp: "If it is not listed, you can add your own style.",
+          customStylesHelp: "If it is not listed, add your own style.",
+          customStylesTip: "Do not add styles you do not actually take.",
           emptyStyles: "Add a custom style if you have one.",
           styleLabel: "Style label",
           enabled: "Enabled",
@@ -139,15 +154,20 @@ export function FunnelSettingsForm({
           saveFailed: "Unable to save funnel settings.",
           saved: "Funnel settings saved.",
           bookingTitle: "Working cities",
-          bookingDescription: "Customers only see the cities and dates you define here.",
+          bookingDescription: "Clients can only see the cities and dates you pick here.",
+          bookingEmptyWarning: "Add at least one city.",
           addCity: "Add city",
           cityName: "City",
           cityPlaceholder: "e.g. Adana",
           noCities: "No cities added yet.",
           availabilityTitle: "Select the dates you are available in this city",
+          availabilityHint: "If you leave this empty, availability will not show for this city.",
+          availabilityWarning: "If this city has no date, clients cannot book here.",
+          dateEmptyWarning: "Pick dates so clients can request an appointment.",
           addDate: "Select dates",
           removeDate: "Remove date",
           noDates: "No dates added yet.",
+          styleEmptyWarning: "Select at least one style.",
         };
   const form = useForm<FunnelFormInput, unknown, FunnelValues>({
     resolver: zodResolver(funnelSettingsSchema),
@@ -291,6 +311,9 @@ export function FunnelSettingsForm({
       availableDates: city.availableDates,
     })),
   }) ?? [];
+  const activeBuiltInStyleCount = selectedStyles.length;
+  const activeCustomStyleCount = customStyleCards.filter((style) => style.enabled).length;
+  const activeStyleCount = activeBuiltInStyleCount + activeCustomStyleCount;
 
   function addBookingCity() {
     const nextCity = pendingCity.trim();
@@ -414,22 +437,32 @@ export function FunnelSettingsForm({
       </CardHeader>
       <CardContent>
         <form className="space-y-5">
-          <Field label={copy.introEyebrow} error={form.formState.errors.introEyebrow?.message}>
+          <Field
+            label={copy.introEyebrow}
+            description={copy.introEyebrowHelp}
+            error={form.formState.errors.introEyebrow?.message}
+          >
             <Input {...form.register("introEyebrow")} />
           </Field>
           <Field label={copy.introTitle} error={form.formState.errors.introTitle?.message}>
-            <Input {...form.register("introTitle")} />
+            <Input
+              {...form.register("introTitle")}
+              placeholder={copy.introTitlePlaceholder}
+            />
           </Field>
           <Field
             label={copy.introDescription}
+            description={
+              form.watch("introDescription")?.trim().length ? undefined : copy.introDescriptionWarning
+            }
             error={form.formState.errors.introDescription?.message}
           >
             <Textarea
               {...form.register("introDescription")}
               placeholder={
                 locale === "tr"
-                  ? "Bölgeyi, boyutu ve aklındaki fikri birkaç adımda paylaş."
-                  : "Share the placement, size, and your idea in a few quick steps."
+                  ? "Bölgeyi, boyutu ve aklındaki fikri kısa ve net şekilde yaz."
+                  : "Write the placement, size, and tattoo idea in a short and clear way."
               }
             />
           </Field>
@@ -439,6 +472,9 @@ export function FunnelSettingsForm({
               <p className="text-base font-medium text-white">{copy.bookingTitle}</p>
               <p className="text-sm text-[var(--foreground-muted)]">{copy.bookingDescription}</p>
             </div>
+            {bookingCities.length === 0 ? (
+              <p className="text-sm text-[var(--accent-soft)]">{copy.bookingEmptyWarning}</p>
+            ) : null}
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Input
@@ -493,6 +529,7 @@ export function FunnelSettingsForm({
 
                       <div className="mt-4 space-y-3">
                         <p className="text-sm font-medium text-white">{copy.availabilityTitle}</p>
+                        <p className="text-sm text-[var(--foreground-muted)]">{copy.availabilityHint}</p>
                         <DateCalendarPopover
                           locale={locale}
                           mode="multiple"
@@ -503,7 +540,11 @@ export function FunnelSettingsForm({
                         />
 
                         {availableDates.length === 0 ? (
-                          <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
+                          <div className="space-y-2">
+                            <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
+                            <p className="text-sm text-[var(--accent-soft)]">{copy.availabilityWarning}</p>
+                            <p className="text-sm text-[var(--accent-soft)]">{copy.dateEmptyWarning}</p>
+                          </div>
                         ) : (
                           <p className="text-sm text-[var(--foreground-muted)]">
                             {locale === "tr"
@@ -532,6 +573,7 @@ export function FunnelSettingsForm({
                 </Button>
               </div>
             </div>
+            <p className="text-sm text-[var(--foreground-muted)]">{copy.activeStylesTip}</p>
             <div className="flex flex-wrap gap-2">
               {builtInStyles.map((style) => {
                 const active = selectedStyles.includes(style.styleKey);
@@ -582,6 +624,9 @@ export function FunnelSettingsForm({
             {form.formState.errors.enabledStyles?.message ? (
               <p className="text-xs text-red-300">{form.formState.errors.enabledStyles.message}</p>
             ) : null}
+            {activeStyleCount === 0 ? (
+              <p className="text-sm text-[var(--accent-soft)]">{copy.styleEmptyWarning}</p>
+            ) : null}
           </div>
 
           <div className="space-y-4">
@@ -599,6 +644,7 @@ export function FunnelSettingsForm({
                 {copy.addStyle}
               </Button>
             </div>
+            <p className="text-sm text-[var(--foreground-muted)]">{copy.customStylesTip}</p>
             {customStyleCards.length === 0 ? (
               <div className="rounded-[24px] border border-white/8 bg-black/20 px-4 py-4 text-sm text-[var(--foreground-muted)]">
                 {copy.emptyStyles}
@@ -655,6 +701,7 @@ export function FunnelSettingsForm({
               <div className="space-y-1">
                 <p className="text-base font-medium text-white">{copy.addStyleTitle}</p>
                 <p className="text-sm text-[var(--foreground-muted)]">{copy.customStylesHelp}</p>
+                <p className="text-sm text-[var(--accent-soft)]">{copy.customStylesTip}</p>
               </div>
               <div className="mt-4 space-y-4">
                 <Field label={copy.styleLabel}>

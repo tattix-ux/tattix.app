@@ -10,19 +10,26 @@ export default async function DashboardFunnelPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeading
-        eyebrow={isTurkish ? "Akış" : "Funnel"}
-        title={
-          isTurkish
-            ? "Müşteri akışını ve çalıştığın stilleri düzenle."
-            : "Tune the public flow and style availability."
-        }
-        description={
-          isTurkish
-            ? "Akışı hızlı, yönlendirici ve yapmak istediğin işlerle uyumlu tut."
-            : "Keep the intake guided, fast, and aligned with the kind of work you want more of."
-        }
-      />
+      <div className="space-y-3">
+        <SectionHeading
+          eyebrow={isTurkish ? "Akış" : "Funnel"}
+          title={
+            isTurkish
+              ? "Müşterinin sana yazma sürecini düzenle."
+              : "Shape the path that leads clients to message you."
+          }
+          description={
+            isTurkish
+              ? "Müşterinin ne istediğini net anlatmasını sağla ve sadece yapmak istediğin işleri al."
+              : "Help clients explain what they want clearly and attract only the work you want."
+          }
+        />
+        <p className="text-sm text-[var(--accent-soft)]">
+          {isTurkish
+            ? "İyi bir akış, daha doğru ve hızlı müşteri getirir."
+            : "A better flow brings clearer and faster client messages."}
+        </p>
+      </div>
       <FunnelSettingsForm
         settings={data.funnelSettings}
         styles={data.styleOptions}
