@@ -278,7 +278,6 @@ function buildSteps(locale: PublicLocale): PricingCalibrationStep[] {
       hint: copy.detailHint,
       image: lowDetailImage,
       imageAlt: copy.detailLowLabel,
-      imageLabel: copy.detailLowLabel,
     },
     {
       key: "detailHigh",
@@ -287,7 +286,6 @@ function buildSteps(locale: PublicLocale): PricingCalibrationStep[] {
       hint: copy.detailHint,
       image: highDetailImage,
       imageAlt: copy.detailHighLabel,
-      imageLabel: copy.detailHighLabel,
     },
     {
       key: "detailColor",
@@ -296,16 +294,32 @@ function buildSteps(locale: PublicLocale): PricingCalibrationStep[] {
       hint: copy.detailHint,
       image: colorMediumImage,
       imageAlt: copy.detailColorLabel,
-      imageLabel: copy.detailColorLabel,
     },
     {
       key: "anchor18",
       title: copy.anchorLabel,
-      prompt: copy.anchorPrompt,
+      prompt:
+        locale === "tr"
+          ? "Bu dövmeyi kol gibi düz bir bölgede, yaklaşık 18 cm boyutta kaça yaparsın?"
+          : "What would you charge for this tattoo at around 18 cm on a flat placement like an arm?",
       image: currentDaggerImage,
       imageAlt: copy.anchorLabel,
     },
   ];
+}
+
+const SIZE_GROUP_KEYS: PricingCalibrationFieldKey[] = ["size8", "size18", "size25"];
+
+function isSizeGroupStep(key: PricingCalibrationFieldKey) {
+  return SIZE_GROUP_KEYS.includes(key);
+}
+
+function normalizeStepIndex(index: number) {
+  if (index >= 1 && index <= 3) {
+    return 1;
+  }
+
+  return index;
 }
 
 function CurrencyInput({
@@ -396,8 +410,8 @@ export function PricingForm({
 
       const nextIndex =
         typeof parsed.currentIndex === "number" && Number.isFinite(parsed.currentIndex)
-          ? Math.max(0, Math.min(parsed.currentIndex, steps.length - 1))
-          : findFirstIncompleteIndex(nextValues, steps);
+          ? normalizeStepIndex(Math.max(0, Math.min(parsed.currentIndex, steps.length - 1)))
+          : normalizeStepIndex(findFirstIncompleteIndex(nextValues, steps));
 
       setDraft({
         values: nextValues,
@@ -427,7 +441,9 @@ export function PricingForm({
   const completedCount = steps.filter((step) => draft.values[step.key].trim().length > 0).length;
   const isComplete = completedCount === steps.length;
   const currentStep = steps[draft.currentIndex] ?? steps[0];
-  const canContinue = draft.values[currentStep.key].trim().length > 0;
+  const canContinue = isSizeGroupStep(currentStep.key)
+    ? SIZE_GROUP_KEYS.every((key) => draft.values[key].trim().length > 0)
+    : draft.values[currentStep.key].trim().length > 0;
   const progressWidth = `${(completedCount / steps.length) * 100}%`;
   const currentScenario = VALIDATION_SCENARIOS[draft.reviewIndex] ?? VALIDATION_SCENARIOS[0];
   const currentProbe = FINAL_CONTROL_PROBES.find((probe) => probe.id === currentScenario.id) ?? FINAL_CONTROL_PROBES[0];
@@ -500,7 +516,7 @@ export function PricingForm({
       ...current,
       isOpen: true,
       isFinalControlOpen: false,
-      currentIndex: findFirstIncompleteIndex(current.values, steps),
+      currentIndex: normalizeStepIndex(findFirstIncompleteIndex(current.values, steps)),
     }));
   }
 
@@ -543,7 +559,7 @@ export function PricingForm({
 
     setDraft((current) => ({
       ...current,
-      currentIndex: current.currentIndex + 1,
+      currentIndex: current.currentIndex === 1 ? 4 : current.currentIndex + 1,
     }));
   }
 
@@ -551,7 +567,8 @@ export function PricingForm({
     setStatusMessage(null);
     setDraft((current) => ({
       ...current,
-      currentIndex: Math.max(0, current.currentIndex - 1),
+      currentIndex:
+        current.currentIndex === 4 ? 1 : Math.max(0, current.currentIndex - 1),
     }));
   }
 
@@ -715,7 +732,13 @@ export function PricingForm({
 
                 <div className="mt-4 space-y-4">
                   <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-white">{currentStep.prompt}</h3>
+                    <h3 className="text-lg font-semibold text-white">
+                      {isSizeGroupStep(currentStep.key)
+                        ? locale === "tr"
+                          ? "Bu dövmeyi farklı boyutlarda kaça yaparsın?"
+                          : "What would you charge for this tattoo at different sizes?"
+                        : currentStep.prompt}
+                    </h3>
                     {currentStep.hint ? (
                       <p className="text-sm text-[var(--foreground-muted)]">{currentStep.hint}</p>
                     ) : null}
@@ -740,14 +763,39 @@ export function PricingForm({
                     </div>
                   ) : null}
 
-                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
-                    <CurrencyInput
-                      label={copy.priceLabel}
-                      suffix={copy.currency}
-                      value={draft.values[currentStep.key]}
-                      onChange={(value) => updateValue(currentStep.key, value)}
-                    />
-                  </div>
+                  {isSizeGroupStep(currentStep.key) ? (
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <div className="grid gap-4">
+                        <CurrencyInput
+                          label={copy.size8Prompt}
+                          suffix={copy.currency}
+                          value={draft.values.size8}
+                          onChange={(value) => updateValue("size8", value)}
+                        />
+                        <CurrencyInput
+                          label={copy.size18Prompt}
+                          suffix={copy.currency}
+                          value={draft.values.size18}
+                          onChange={(value) => updateValue("size18", value)}
+                        />
+                        <CurrencyInput
+                          label={copy.size25Prompt}
+                          suffix={copy.currency}
+                          value={draft.values.size25}
+                          onChange={(value) => updateValue("size25", value)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <CurrencyInput
+                        label={copy.priceLabel}
+                        suffix={copy.currency}
+                        value={draft.values[currentStep.key]}
+                        onChange={(value) => updateValue(currentStep.key, value)}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
