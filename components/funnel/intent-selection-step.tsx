@@ -6,25 +6,27 @@ import { Check, Expand, ImagePlus, LoaderCircle, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { intentOptions, type IntentValue } from "@/lib/constants/options";
-import {
-  getIntentLabel,
-  getPublicCopy,
-  type PublicLocale,
-} from "@/lib/i18n/public";
+import type { IntentValue } from "@/lib/constants/options";
+import { getPublicCopy, type PublicLocale } from "@/lib/i18n/public";
 import { uploadPublicReferenceImage } from "@/lib/supabase/storage";
 import type { ArtistFeaturedDesign } from "@/lib/types";
 
-function getIntentCategory(intent: IntentValue | "") {
-  if (intent === "flash-design") {
-    return "flash-designs";
+type VisibleIntentChoice = "idea" | "ready-made" | "not-sure";
+
+function resolveVisibleChoice(intent: IntentValue | ""): VisibleIntentChoice | "" {
+  if (intent === "custom-tattoo" || intent === "design-in-mind") {
+    return "idea";
   }
 
-  if (intent === "discounted-design") {
-    return "discounted-designs";
+  if (intent === "flash-design" || intent === "discounted-design") {
+    return "ready-made";
   }
 
-  return null;
+  if (intent === "not-sure") {
+    return "not-sure";
+  }
+
+  return "";
 }
 
 export function IntentSelectionStep({
@@ -49,8 +51,8 @@ export function IntentSelectionStep({
   referenceImage: string;
   referenceDescription: string;
   availableIntents: readonly IntentValue[];
-  onIntentChange: (intent: IntentValue) => void;
-  onDesignSelect: (designId: string | "") => void;
+  onIntentChange: (intent: "design-in-mind" | "flash-design" | "discounted-design" | "not-sure") => void;
+  onDesignSelect: (designId: string | "", nextIntent?: "flash-design" | "discounted-design") => void;
   onReferenceImageSelect: (imageUrl: string, imagePath: string) => void;
   onReferenceDescriptionChange: (value: string) => void;
 }) {
@@ -59,40 +61,89 @@ export function IntentSelectionStep({
   const [uploadingReference, setUploadingReference] = useState(false);
   const designSectionRef = useRef<HTMLDivElement | null>(null);
   const referenceSectionRef = useRef<HTMLDivElement | null>(null);
-  const activeCategory = getIntentCategory(intent);
-  const matchingDesigns = activeCategory
-    ? designs.filter((design) => design.active && design.category === activeCategory)
-    : [];
+  const activeChoice = resolveVisibleChoice(intent);
+  const readyMadeAvailable =
+    availableIntents.includes("flash-design") || availableIntents.includes("discounted-design");
+  const matchingDesigns =
+    activeChoice === "ready-made"
+      ? designs.filter(
+          (design) =>
+            design.active &&
+            (design.category === "flash-designs" || design.category === "discounted-designs"),
+        )
+      : [];
+  const visibleChoices: Array<{
+    key: VisibleIntentChoice;
+    label: string;
+    description: string;
+    onSelect: () => void;
+  }> = [
+    {
+      key: "idea",
+      label: locale === "tr" ? "Bir fikrim var" : "I have an idea",
+      description:
+        locale === "tr"
+          ? "Aklındaki fikir üzerinden ilerleyebilirsin."
+          : "You can move forward based on the idea you already have.",
+      onSelect: () => onIntentChange("design-in-mind"),
+    },
+    ...(readyMadeAvailable
+      ? [
+          {
+            key: "ready-made" as const,
+            label:
+              locale === "tr"
+                ? "Hazır tasarım seçmek istiyorum"
+                : "I want to choose a ready-made design",
+            description:
+              locale === "tr"
+                ? "Yüklenen tasarımlar arasından seçim yapabilirsin."
+                : "You can choose from the uploaded designs.",
+            onSelect: () =>
+              onIntentChange(
+                availableIntents.includes("flash-design") ? "flash-design" : "discounted-design",
+              ),
+          },
+        ]
+      : []),
+    {
+      key: "not-sure",
+      label: locale === "tr" ? "Kararsızım" : "I'm undecided",
+      description:
+        locale === "tr"
+          ? "Net olmasa da devam edebilirsin."
+          : "You can keep going even if it's not fully clear yet.",
+      onSelect: () => onIntentChange("not-sure"),
+    },
+  ];
 
   useEffect(() => {
-    if (activeCategory && designSectionRef.current) {
+    if (activeChoice === "ready-made" && designSectionRef.current) {
       window.setTimeout(() => {
         designSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 120);
     }
-  }, [activeCategory]);
+  }, [activeChoice]);
 
   useEffect(() => {
-    if (intent === "design-in-mind" && referenceSectionRef.current) {
+    if (activeChoice === "idea" && referenceSectionRef.current) {
       window.setTimeout(() => {
         referenceSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 120);
     }
-  }, [intent]);
+  }, [activeChoice]);
 
   return (
     <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
       <div className="grid gap-2.5 sm:gap-3">
-        {intentOptions
-          .filter((option) => availableIntents.includes(option.value))
-          .map((option) => {
-          const active = intent === option.value;
+        {visibleChoices.map((option) => {
+          const active = activeChoice === option.key;
 
           return (
             <button
-              key={option.value}
+              key={option.key}
               type="button"
-              onClick={() => onIntentChange(option.value)}
+              onClick={option.onSelect}
               className="w-full max-w-full rounded-[20px] border px-4 py-3.5 text-left transition sm:rounded-[24px] sm:py-4"
               style={{
                 borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -103,20 +154,18 @@ export function IntentSelectionStep({
               }}
             >
               <div className="flex items-start justify-between gap-3">
-                <p className="break-words font-medium">{getIntentLabel(option.value, locale)}</p>
+                <p className="break-words font-medium">{option.label}</p>
                 {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
               </div>
-              {option.value === "not-sure" ? (
-                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                  {copy.notSureIntentHint}
-                </p>
-              ) : null}
+              <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                {option.description}
+              </p>
             </button>
           );
         })}
       </div>
 
-      {activeCategory ? (
+      {activeChoice === "ready-made" ? (
         <div
           ref={designSectionRef}
           className="rounded-[22px] border p-4 sm:rounded-[24px]"
@@ -139,15 +188,19 @@ export function IntentSelectionStep({
             <div className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-3">
               {matchingDesigns.map((design) => {
                 const active = selectedDesignId === design.id;
+                const nextIntent =
+                  design.category === "discounted-designs" ? "discounted-design" : "flash-design";
 
                 return (
                   <div
                     key={design.id}
-                    onClick={() => onDesignSelect(selectedDesignId === design.id ? "" : design.id)}
+                    onClick={() =>
+                      onDesignSelect(selectedDesignId === design.id ? "" : design.id, nextIntent)
+                    }
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        onDesignSelect(selectedDesignId === design.id ? "" : design.id);
+                        onDesignSelect(selectedDesignId === design.id ? "" : design.id, nextIntent);
                       }
                     }}
                     role="button"
@@ -237,7 +290,7 @@ export function IntentSelectionStep({
         </div>
       ) : null}
 
-      {intent === "design-in-mind" ? (
+      {activeChoice === "idea" ? (
         <div
           ref={referenceSectionRef}
           className="rounded-[22px] border p-4 sm:rounded-[24px]"
@@ -334,7 +387,7 @@ export function IntentSelectionStep({
               <div>
                 <p className="text-sm font-medium text-white">{previewDesign.title}</p>
                 <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                  {activeCategory ? copy.chooseDesignHelp : copy.viewDesignDetails}
+                  {activeChoice === "ready-made" ? copy.chooseDesignHelp : copy.viewDesignDetails}
                 </p>
               </div>
               <Button type="button" variant="ghost" size="icon" onClick={() => setPreviewDesign(null)}>
@@ -366,7 +419,10 @@ export function IntentSelectionStep({
                 type="button"
                 className="w-full flex-1"
                 onClick={() => {
-                  onDesignSelect(selectedDesignId === previewDesign.id ? "" : previewDesign.id);
+                  onDesignSelect(
+                    selectedDesignId === previewDesign.id ? "" : previewDesign.id,
+                    previewDesign.category === "discounted-designs" ? "discounted-design" : "flash-design",
+                  );
                   setPreviewDesign(null);
                 }}
               >

@@ -508,7 +508,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   referenceDescription={draft.referenceDescription}
                   availableIntents={availableIntents}
                   onIntentChange={handleIntentChange}
-                  onDesignSelect={(designId) => {
+                  onDesignSelect={(designId, nextIntent) => {
+                    if (nextIntent) {
+                      setField("intent", nextIntent);
+                    }
                     setField("selectedDesignId", designId);
                     setField("style", designId ? "custom" : draft.style);
                   }}
