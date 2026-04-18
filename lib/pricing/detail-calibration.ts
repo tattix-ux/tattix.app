@@ -119,6 +119,8 @@ const sampleMap = new Map<DetailCalibrationSampleId, DetailCalibrationSample>(
   DETAIL_CALIBRATION_SAMPLES.map((sample) => [sample.id, sample]),
 );
 
+const DETAIL_CALIBRATION_FAMILIES = ["snake", "floral", "geometric"] as const satisfies DetailCalibrationFamily[];
+
 export function isDetailCalibrationSampleId(value: string): value is DetailCalibrationSampleId {
   return sampleMap.has(value as DetailCalibrationSampleId);
 }
@@ -174,11 +176,40 @@ function resolveEffectiveBias(
 }
 
 export function createRandomizedDetailCalibrationOrder(random = Math.random) {
-  const order = [...DETAIL_CALIBRATION_SAMPLE_IDS];
+  const pools = Object.fromEntries(
+    DETAIL_CALIBRATION_FAMILIES.map((family) => [
+      family,
+      DETAIL_CALIBRATION_SAMPLES.filter((sample) => sample.family === family).map((sample) => sample.id),
+    ]),
+  ) as Record<DetailCalibrationFamily, DetailCalibrationSampleId[]>;
 
-  for (let index = order.length - 1; index > 0; index -= 1) {
+  for (const family of DETAIL_CALIBRATION_FAMILIES) {
+    const familyPool = pools[family];
+    for (let index = familyPool.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(random() * (index + 1));
+      [familyPool[index], familyPool[swapIndex]] = [familyPool[swapIndex], familyPool[index]];
+    }
+  }
+
+  const familyOrder = [...DETAIL_CALIBRATION_FAMILIES];
+  for (let index = familyOrder.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(random() * (index + 1));
-    [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
+    [familyOrder[index], familyOrder[swapIndex]] = [familyOrder[swapIndex], familyOrder[index]];
+  }
+
+  const order: DetailCalibrationSampleId[] = [];
+
+  for (let round = 0; round < 3; round += 1) {
+    const rotatedFamilies = familyOrder.map(
+      (_, index) => familyOrder[(index + round) % familyOrder.length],
+    );
+
+    for (const family of rotatedFamilies) {
+      const nextSample = pools[family].shift();
+      if (nextSample) {
+        order.push(nextSample);
+      }
+    }
   }
 
   return order;

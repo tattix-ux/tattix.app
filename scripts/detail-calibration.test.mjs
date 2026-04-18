@@ -5,6 +5,7 @@ import {
   createRandomizedDetailCalibrationOrder,
   deriveDetailCalibrationProfile,
   DETAIL_CALIBRATION_SAMPLE_IDS,
+  DETAIL_CALIBRATION_SAMPLES,
   resolvePersonalizedDetailWeight,
 } from "../lib/pricing/detail-calibration.ts";
 
@@ -68,4 +69,14 @@ test("detail calibration shuffle returns the same ids without duplicates", () =>
   assert.equal(order.length, DETAIL_CALIBRATION_SAMPLE_IDS.length);
   assert.equal(new Set(order).size, DETAIL_CALIBRATION_SAMPLE_IDS.length);
   assert.deepEqual([...order].sort(), [...DETAIL_CALIBRATION_SAMPLE_IDS].sort());
+
+  const sampleMap = new Map(DETAIL_CALIBRATION_SAMPLES.map((sample) => [sample.id, sample]));
+  for (let index = 1; index < order.length; index += 1) {
+    const previous = sampleMap.get(order[index - 1]);
+    const current = sampleMap.get(order[index]);
+
+    assert.ok(previous);
+    assert.ok(current);
+    assert.notEqual(previous.family, current.family);
+  }
 });
