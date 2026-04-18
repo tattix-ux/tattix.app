@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
+import { ChevronDown, ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -25,11 +25,8 @@ import { cn } from "@/lib/utils";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
-type Mode = "presets" | "custom";
 
 const colorSwatches = ["#f7b15d", "#ffffff", "#54f0dd", "#dc5c5c", "#b899ff", "#88cfa5"] as const;
-const textSwatches = ["#f5efe6", "#edf1f7", "#3f2f25", "#241b16", "#d7dde7", "#f0d8bf"] as const;
-const cardSwatches = ["#131316", "#171a1f", "#1b1620", "#101316", "#1e1714", "#19191c"] as const;
 const backgroundSolidSwatches = ["#09090b", "#0e131a", "#131116", "#16100e"] as const;
 const backgroundGradientPresets = [
   { key: "dark-fade", label: "Dark fade", start: "#17181d", end: "#09090b" },
@@ -40,6 +37,13 @@ const fontOptions = [
   { value: "modern", labelTr: "Modern", labelEn: "Modern" },
   { value: "serif", labelTr: "Serif", labelEn: "Serif" },
   { value: "minimal", labelTr: "Minimal", labelEn: "Minimal" },
+] as const;
+
+const quickCustomPresets = [
+  { key: "dark-minimal", labelTr: "Koyu", labelEn: "Dark" },
+  { key: "soft-neutral", labelTr: "Açık", labelEn: "Light" },
+  { key: "luxury-serif", labelTr: "Altın ton", labelEn: "Gold tone" },
+  { key: "neon-accent", labelTr: "Mavi ton", labelEn: "Blue tone" },
 ] as const;
 
 function ColorField({
@@ -93,13 +97,16 @@ function ColorField({
 function ThemeCardPreview({
   artist,
   theme,
+  variant = "card",
 }: {
   artist: ArtistPageData;
   theme: ArtistPageTheme;
+  variant?: "card" | "panel";
 }) {
   const title = theme.customWelcomeTitle || artist.funnelSettings.introTitle || artist.profile.welcomeHeadline || "Aklında ne var?";
   const intro = theme.customIntroText || artist.funnelSettings.introDescription || artist.profile.shortBio || "Dövme fikrini birkaç adımda netleştir.";
   const cta = theme.customCtaLabel || "Fiyat tahmini al";
+  const isPanel = variant === "panel";
   const background =
     theme.backgroundType === "image" && theme.backgroundImageUrl
       ? `linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.48)), url(${theme.backgroundImageUrl})`
@@ -108,10 +115,18 @@ function ThemeCardPreview({
         : theme.backgroundColor;
 
   return (
-    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/20 p-5">
-      <div className="mx-auto w-full max-w-[250px]">
+    <div
+      className={cn(
+        "overflow-hidden rounded-[24px] border border-white/10 bg-black/20",
+        isPanel ? "p-5 sm:p-6" : "p-3.5",
+      )}
+    >
+      <div className={cn("mx-auto w-full", isPanel ? "max-w-[290px]" : "max-w-[190px]")}>
         <div
-          className="overflow-hidden rounded-[28px] border p-2 shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
+          className={cn(
+            "overflow-hidden border shadow-[0_20px_60px_rgba(0,0,0,0.35)]",
+            isPanel ? "rounded-[28px] p-2" : "rounded-[22px] p-1.5",
+          )}
           style={{
             borderColor: "color-mix(in srgb, white 10%, transparent)",
             backgroundColor: "color-mix(in srgb, var(--artist-card, #121316) 14%, transparent)",
@@ -125,10 +140,10 @@ function ThemeCardPreview({
               backgroundPosition: theme.backgroundType === "image" ? "center" : undefined,
             }}
           >
-            <div className="space-y-4 p-4">
-              <div className="h-20 rounded-[18px] border border-white/10 bg-black/15" />
-              <div className="-mt-10 flex items-end gap-3">
-                <div className="size-14 rounded-[18px] border border-white/10 bg-black/30" />
+            <div className={cn("space-y-4", isPanel ? "p-4" : "p-3")}>
+              <div className={cn("rounded-[18px] border border-white/10 bg-black/15", isPanel ? "h-20" : "h-14")} />
+              <div className={cn("flex items-end gap-3", isPanel ? "-mt-10" : "-mt-8")}>
+                <div className={cn("rounded-[18px] border border-white/10 bg-black/30", isPanel ? "size-14" : "size-11")} />
                 <div className="min-w-0">
                   <div
                     className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
@@ -144,7 +159,7 @@ function ThemeCardPreview({
 
               <div className="space-y-2">
                 <p
-                  className="text-lg leading-tight"
+                  className={cn("leading-tight", isPanel ? "text-lg" : "text-base")}
                   style={{
                     fontFamily: "var(--artist-heading-font)",
                     color: theme.textColor,
@@ -161,7 +176,7 @@ function ThemeCardPreview({
               </div>
 
               <div
-                className="inline-flex rounded-full px-4 py-2 text-xs font-medium"
+                className={cn("inline-flex rounded-full font-medium", isPanel ? "px-4 py-2 text-xs" : "px-3 py-1.5 text-[11px]")}
                 style={{
                   backgroundColor: theme.primaryColor,
                   color: "#0b0b0c",
@@ -171,7 +186,7 @@ function ThemeCardPreview({
               </div>
 
               <div
-                className="rounded-[20px] border p-3"
+                className={cn("border", isPanel ? "rounded-[20px] p-3" : "rounded-[16px] p-2.5")}
                 style={{
                   borderColor: "color-mix(in srgb, white 8%, transparent)",
                   backgroundColor: theme.cardColor,
@@ -232,24 +247,21 @@ export function CustomizePageForm({
   const copy =
     locale === "tr"
       ? {
-          modes: {
-            presets: "Hazır tema kullan",
-            custom: "Kendi stilini oluştur",
-          },
           presetTitle: "Hazır temalar",
-          presetDescription: "Hızlı ve güvenli bir görünüm için sadece tema seç.",
-          presetHint: "Tema seçildiğinde renk ve font ayarları otomatik uygulanır.",
-          customTitle: "Kendi stilini oluştur",
-          customDescription: "Renk, arka plan ve fontu kontrollü şekilde ayarla.",
+          presetDescription: "Hazır bir tema seç ve hemen uygula.",
+          presetHint: "En hızlı yol hazır temalardan birini seçmek.",
+          previewTitle: "Canlı önizleme",
+          previewDescription: "Seçtiğin görünüm müşteri sayfanda böyle görünür.",
+          customTitle: "Gelişmiş ayarlar",
+          customDescription: "Renkleri kendine göre düzenle.",
+          quickPresets: "Hızlı seçimler",
+          quickPresetsDescription: "Tek tıkla temel görünümü değiştir.",
           colors: "Renkler",
-          colorsDescription: "Sayfanın ana renklerini seç.",
-          textColor: "Yazı rengi",
+          colorsDescription: "Sadece ana vurgu rengini seç.",
           primaryColor: "Ana renk",
-          secondaryColor: "İkincil renk",
-          cardColor: "Kart rengi",
           customColor: "Detaylı renk seç",
           backgrounds: "Arka plan",
-          backgroundsDescription: "Hazır arka planlardan birini seç ya da kendin ayarla.",
+          backgroundsDescription: "Düz veya degrade bir arka plan seç.",
           solid: "Düz renk",
           gradient: "Degrade",
           image: "Görsel",
@@ -263,10 +275,10 @@ export function CustomizePageForm({
           uploadImage: "Görsel yükle",
           removeImage: "Görseli kaldır",
           fonts: "Font",
-          fontsDescription: "Tüm müşteri ekranında kullanılacak font stilini seç.",
+          fontsDescription: "Sayfanın genel yazı karakterini seç.",
           fontLabel: "Font stili",
-          saveTheme: "Temanı kaydet",
-          saveThemeDescription: "Bu görünümü daha sonra tekrar kullanmak istersen kaydedebilirsin.",
+          saveTheme: "Bu görünümü kaydet",
+          saveThemeDescription: "Bu ayarları tekrar kullanmak için kaydedebilirsin.",
           presetName: "Tema adı",
           presetNamePlaceholder: "Örn. Gece altını",
           savePreset: "Temayı kaydet",
@@ -277,29 +289,29 @@ export function CustomizePageForm({
           deleteTheme: "Sil",
           renamePrompt: "Tema için yeni adı gir",
           resetDefaults: "Varsayılana dön",
-          save: "Değişiklikleri kaydet",
+          save: "Görünümü uygula",
+          saveHelp: "Seçtiğin tema müşteri sayfanda görünür.",
           saving: "Kaydediliyor",
           demo: "Demo modunda yalnızca önizleme",
+          selected: "Seçildi",
+          advancedToggle: "Gelişmiş ayarlar",
         }
       : {
-          modes: {
-            presets: "Use a preset theme",
-            custom: "Build your own style",
-          },
           presetTitle: "Preset themes",
-          presetDescription: "Pick a safe starting point and you are done.",
-          presetHint: "The selected theme applies its own colors and type choices automatically.",
-          customTitle: "Build your own style",
-          customDescription: "Adjust colors, background, and type in a controlled way.",
+          presetDescription: "Pick a theme and apply it right away.",
+          presetHint: "The fastest path is choosing one of the preset themes.",
+          previewTitle: "Live preview",
+          previewDescription: "This is how the selected look appears on the client page.",
+          customTitle: "Advanced settings",
+          customDescription: "Adjust the colors to fit your style.",
+          quickPresets: "Quick presets",
+          quickPresetsDescription: "Change the overall mood in one click.",
           colors: "Colors",
-          colorsDescription: "Choose the main page colors.",
-          textColor: "Text color",
+          colorsDescription: "Pick the main accent color.",
           primaryColor: "Primary color",
-          secondaryColor: "Secondary color",
-          cardColor: "Card color",
           customColor: "Fine tune color",
           backgrounds: "Background",
-          backgroundsDescription: "Choose a ready background or fine tune it.",
+          backgroundsDescription: "Choose a solid or gradient background.",
           solid: "Solid",
           gradient: "Gradient",
           image: "Image",
@@ -313,10 +325,10 @@ export function CustomizePageForm({
           uploadImage: "Upload image",
           removeImage: "Remove image",
           fonts: "Font",
-          fontsDescription: "Pick one font direction for the whole client page.",
+          fontsDescription: "Pick the font feel for the whole page.",
           fontLabel: "Font style",
-          saveTheme: "Save your theme",
-          saveThemeDescription: "Keep this setup if you want to reuse it later.",
+          saveTheme: "Save this look",
+          saveThemeDescription: "Save these settings if you want to reuse them.",
           presetName: "Theme name",
           presetNamePlaceholder: "e.g. Night gold",
           savePreset: "Save theme",
@@ -327,9 +339,12 @@ export function CustomizePageForm({
           deleteTheme: "Delete",
           renamePrompt: "Enter a new name for this theme",
           resetDefaults: "Reset to default",
-          save: "Save changes",
+          save: "Apply look",
+          saveHelp: "The selected look will show on your client page.",
           saving: "Saving",
           demo: "Preview only in demo mode",
+          selected: "Selected",
+          advancedToggle: "Advanced settings",
         };
 
   const presetDescriptions =
@@ -365,8 +380,8 @@ export function CustomizePageForm({
     return "modern";
   };
 
-  const [mode, setMode] = useState<Mode>("presets");
   const [presetName, setPresetName] = useState("");
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
     resolver: zodResolver(pageThemeSchema),
@@ -690,7 +705,6 @@ export function CustomizePageForm({
     form.setValue("customCtaLabel", "", { shouldDirty: true, shouldValidate: true });
     form.setValue("featuredSectionLabel1", "", { shouldDirty: true, shouldValidate: true });
     form.setValue("featuredSectionLabel2", "", { shouldDirty: true, shouldValidate: true });
-    setMode("presets");
   }
 
   function applySavedTheme(savedTheme: ArtistSavedTheme) {
@@ -783,28 +797,7 @@ export function CustomizePageForm({
   return (
     <div className="space-y-6">
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-        <Card className="surface-border">
-          <CardContent className="flex flex-wrap gap-2 p-3 sm:p-4">
-            <Button
-              type="button"
-              size="sm"
-              variant={mode === "presets" ? "secondary" : "outline"}
-              onClick={() => setMode("presets")}
-            >
-              {copy.modes.presets}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={mode === "custom" ? "secondary" : "outline"}
-              onClick={() => setMode("custom")}
-            >
-              {copy.modes.custom}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {mode === "presets" ? (
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
           <Card className="surface-border">
             <CardHeader>
               <CardTitle>{copy.presetTitle}</CardTitle>
@@ -812,7 +805,7 @@ export function CustomizePageForm({
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-[var(--foreground-muted)]">{copy.presetHint}</p>
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="grid gap-3 lg:grid-cols-2">
                 {themePresetOptions.map((presetKey) => {
                   const preset = themePresets[presetKey];
                   const active = currentPreset === presetKey;
@@ -850,21 +843,23 @@ export function CustomizePageForm({
                       type="button"
                       onClick={() => applyPreset(presetKey)}
                       className={cn(
-                        "rounded-[28px] border p-4 text-left transition",
+                        "rounded-[24px] border p-3.5 text-left transition",
                         active
-                          ? "border-[var(--accent)]/40 bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.08)]"
+                          ? "border-[var(--accent)] bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.12),0_0_32px_rgba(247,177,93,0.08)]"
                           : "border-white/8 bg-black/20 hover:border-white/14 hover:bg-white/5",
                       )}
                     >
-                      <ThemeCardPreview artist={presetArtist} theme={presetTheme} />
-                      <div className="mt-4 flex items-start justify-between gap-4">
+                      <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-base font-medium text-white">{preset.label}</p>
                           <p className="mt-1 text-sm text-[var(--foreground-muted)]">
                             {presetDescriptions[presetKey]}
                           </p>
                         </div>
-                        {active ? <Badge variant="accent">{locale === "tr" ? "Seçili" : "Selected"}</Badge> : null}
+                        {active ? <Badge variant="accent">{copy.selected}</Badge> : null}
+                      </div>
+                      <div className="mt-3">
+                        <ThemeCardPreview artist={presetArtist} theme={presetTheme} />
                       </div>
                     </button>
                   );
@@ -872,47 +867,68 @@ export function CustomizePageForm({
               </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
-            <div className="space-y-6">
-              <Card className="surface-border">
-                <CardHeader>
-                  <CardTitle>{copy.customTitle}</CardTitle>
-                  <CardDescription>{copy.customDescription}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+
+          <Card className="surface-border xl:sticky xl:top-6">
+            <CardHeader>
+              <CardTitle>{copy.previewTitle}</CardTitle>
+              <CardDescription>{copy.previewDescription}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ThemeCardPreview artist={previewArtist} theme={previewTheme} variant="panel" />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="surface-border">
+          <CardContent className="p-0">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
+              onClick={() => setIsAdvancedOpen((current) => !current)}
+            >
+              <div>
+                <p className="text-base font-medium text-white">{copy.advancedToggle}</p>
+                <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.customDescription}</p>
+              </div>
+              <ChevronDown
+                className={cn("size-5 text-[var(--foreground-muted)] transition", isAdvancedOpen ? "rotate-180" : "")}
+              />
+            </button>
+
+            {isAdvancedOpen ? (
+              <div className="border-t border-white/8 px-5 py-5">
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-white">{copy.quickPresets}</h3>
+                      <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.quickPresetsDescription}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {quickCustomPresets.map((preset) => (
+                        <Button
+                          key={preset.key}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => applyPreset(preset.key)}
+                        >
+                          {locale === "tr" ? preset.labelTr : preset.labelEn}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-white">{copy.colors}</h3>
                       <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.colorsDescription}</p>
                     </div>
-                    <div className="grid gap-4 lg:grid-cols-3">
-                      <ColorField
-                        label={copy.textColor}
-                        value={currentTextColor}
-                        onChange={(value) => form.setValue("textColor", value, { shouldDirty: true, shouldValidate: true })}
-                        swatches={textSwatches}
-                        customLabel={copy.customColor}
-                      />
+                    <div className="grid gap-4 lg:grid-cols-2">
                       <ColorField
                         label={copy.primaryColor}
                         value={currentPrimaryColor}
                         onChange={(value) => form.setValue("primaryColor", value, { shouldDirty: true, shouldValidate: true })}
                         swatches={colorSwatches}
-                        customLabel={copy.customColor}
-                      />
-                      <ColorField
-                        label={copy.secondaryColor}
-                        value={currentSecondaryColor}
-                        onChange={(value) => form.setValue("secondaryColor", value, { shouldDirty: true, shouldValidate: true })}
-                        swatches={colorSwatches}
-                        customLabel={copy.customColor}
-                      />
-                      <ColorField
-                        label={copy.cardColor}
-                        value={currentCardColor}
-                        onChange={(value) => form.setValue("cardColor", value, { shouldDirty: true, shouldValidate: true })}
-                        swatches={cardSwatches}
                         customLabel={copy.customColor}
                       />
                     </div>
@@ -1031,134 +1047,146 @@ export function CustomizePageForm({
                       <h3 className="text-sm font-medium text-white">{copy.fonts}</h3>
                       <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.fontsDescription}</p>
                     </div>
-                    <Field label={copy.fontLabel}>
-                      <NativeSelect value={currentFontStyle} onChange={(event) => setFontStyle(event.target.value as keyof typeof unifiedFontMap)}>
-                        {fontOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {locale === "tr" ? option.labelTr : option.labelEn}
-                          </option>
-                        ))}
-                      </NativeSelect>
-                    </Field>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card className="surface-border xl:sticky xl:top-6">
-              <CardHeader>
-                <CardTitle>{locale === "tr" ? "Hızlı önizleme" : "Quick preview"}</CardTitle>
-                <CardDescription>
-                  {locale === "tr"
-                    ? "Seçtiğin stilin müşteri kartında nasıl göründüğünü buradan takip et."
-                    : "See how the style reads on the client card."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ThemeCardPreview artist={previewArtist} theme={previewTheme} />
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {mode === "custom" ? (
-          <Card className="surface-border">
-            <CardHeader>
-              <CardTitle>{copy.saveTheme}</CardTitle>
-              <CardDescription>{copy.saveThemeDescription}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div className="min-w-0 flex-1">
-                  <Field label={copy.presetName}>
-                    <Input
-                      value={presetName}
-                      onChange={(event) => setPresetName(event.target.value)}
-                      placeholder={copy.presetNamePlaceholder}
-                    />
-                  </Field>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={form.formState.isSubmitting}
-                  onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
-                >
-                  <Save className="size-4" />
-                  {copy.savePreset}
-                </Button>
-                <Button type="button" variant="ghost" onClick={resetThemeToDefault}>
-                  <RotateCcw className="size-4" />
-                  {copy.resetDefaults}
-                </Button>
-              </div>
-
-              {savedThemes.length ? (
-                <div className="grid gap-3 lg:grid-cols-2">
-                  {savedThemes.map((savedTheme) => (
-                    <div key={savedTheme.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-medium text-white">{savedTheme.name}</p>
-                          <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.savedThemesDescription}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <span
-                            className="size-4 rounded-full border border-white/10"
-                            style={{ backgroundColor: savedTheme.theme.primaryColor }}
-                          />
-                          <span
-                            className="size-4 rounded-full border border-white/10"
-                            style={{ backgroundColor: savedTheme.theme.cardColor }}
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Button type="button" size="sm" variant="secondary" onClick={() => applySavedTheme(savedTheme)}>
-                          {copy.applyTheme}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void renameSavedTheme(savedTheme.id, savedTheme.name)}
-                        >
-                          <Pencil className="size-4" />
-                          {copy.renameTheme}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => void deleteSavedTheme(savedTheme.id)}
-                        >
-                          <Trash2 className="size-4" />
-                          {copy.deleteTheme}
-                        </Button>
-                      </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {fontOptions.map((option) => {
+                        const active = currentFontStyle === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setFontStyle(option.value)}
+                            className={cn(
+                              "rounded-[20px] border px-4 py-4 text-left transition",
+                              active
+                                ? "border-[var(--accent)] bg-[var(--accent)]/10"
+                                : "border-white/8 bg-black/20 hover:border-white/14",
+                            )}
+                          >
+                            <p className="text-sm font-medium text-white">
+                              {locale === "tr" ? option.labelTr : option.labelEn}
+                            </p>
+                            <p
+                              className="mt-2 text-lg"
+                              style={{
+                                fontFamily:
+                                  option.value === "serif"
+                                    ? '"Baskerville", "Times New Roman", serif'
+                                    : option.value === "minimal"
+                                      ? '"SFMono-Regular", "Menlo", monospace'
+                                      : '"Avenir Next", "Helvetica Neue", sans-serif',
+                              }}
+                            >
+                              Aklında ne var?
+                            </p>
+                          </button>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-        ) : null}
+                  </div>
+                  <Card className="surface-border">
+                    <CardHeader>
+                      <CardTitle>{copy.saveTheme}</CardTitle>
+                      <CardDescription>{copy.saveThemeDescription}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <div className="min-w-0 flex-1">
+                          <Field label={copy.presetName}>
+                            <Input
+                              value={presetName}
+                              onChange={(event) => setPresetName(event.target.value)}
+                              placeholder={copy.presetNamePlaceholder}
+                            />
+                          </Field>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={form.formState.isSubmitting}
+                          onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
+                        >
+                          <Save className="size-4" />
+                          {copy.savePreset}
+                        </Button>
+                        <Button type="button" variant="ghost" onClick={resetThemeToDefault}>
+                          <RotateCcw className="size-4" />
+                          {copy.resetDefaults}
+                        </Button>
+                      </div>
 
-        <div className="flex items-center gap-3">
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" />
-                {copy.saving}
-              </>
-            ) : (
-              <>
-                <Save className="size-4" />
-                {copy.save}
-              </>
-            )}
-          </Button>
-          {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
+                      {savedThemes.length ? (
+                        <div className="grid gap-3 lg:grid-cols-2">
+                          {savedThemes.map((savedTheme) => (
+                            <div key={savedTheme.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="font-medium text-white">{savedTheme.name}</p>
+                                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.savedThemesDescription}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <span
+                                    className="size-4 rounded-full border border-white/10"
+                                    style={{ backgroundColor: savedTheme.theme.primaryColor }}
+                                  />
+                                  <span
+                                    className="size-4 rounded-full border border-white/10"
+                                    style={{ backgroundColor: savedTheme.theme.cardColor }}
+                                  />
+                                </div>
+                              </div>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <Button type="button" size="sm" variant="secondary" onClick={() => applySavedTheme(savedTheme)}>
+                                  {copy.applyTheme}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => void renameSavedTheme(savedTheme.id, savedTheme.name)}
+                                >
+                                  <Pencil className="size-4" />
+                                  {copy.renameTheme}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => void deleteSavedTheme(savedTheme.id)}
+                                >
+                                  <Trash2 className="size-4" />
+                                  {copy.deleteTheme}
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" />
+                  {copy.saving}
+                </>
+              ) : (
+                <>
+                  <Save className="size-4" />
+                  {copy.save}
+                </>
+              )}
+            </Button>
+            {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
+          </div>
+          <p className="text-sm text-[var(--foreground-muted)]">{copy.saveHelp}</p>
         </div>
 
         <input type="hidden" {...form.register("bodyFont")} />
