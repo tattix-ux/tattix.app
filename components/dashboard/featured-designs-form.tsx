@@ -40,37 +40,57 @@ const copy = {
     uploadFailed: "Unable to upload image.",
     saveFailed: "Unable to save designs.",
     saved: "Designs saved.",
-    title: "Manage the designs clients will see.",
-    description: "Designs added here appear in the client selection flow.",
+    title: "Design details",
+    description: "Add the image, example price, and short copy clients will see.",
     item: "Design",
     newItem: "New design",
     remove: "Remove",
     removeConfirm: "Remove this design?",
     category: "Category",
+    categoryHelp: "Choose a category to keep designs organized.",
     customCategory: "Custom category",
     customCategoryPlaceholder: "e.g. Floral",
-    titleLabel: "Title",
-    titlePlaceholder: "e.g. Koi fish",
+    titleLabel: "Design name",
+    titleHelp: "Clients see this name in the selection screen.",
+    titlePlaceholder: "e.g. Fine line butterfly",
     shortDescription: "Short description",
-    shortDescriptionPlaceholder: "e.g. Fine line piece that works well in a smaller size.",
-    shortDescriptionHelp: "Optional",
+    shortDescriptionPlaceholder: "e.g. Fine line piece that works well on the forearm or upper arm.",
+    shortDescriptionHelp: "Add a short note clients can read before they choose it.",
+    shortDescriptionHints: "Style · Best placement · Overall look",
     image: "Design image",
     imageDescription: "Clients see this image in the selection screen.",
     noImage: "No image selected yet",
     uploadImage: "Upload image",
     removeImage: "Remove image",
-    liveLabel: "Live",
-    liveHelp: "If off, clients do not see this design.",
+    sectionVisibility: "Visibility",
+    sectionVisibilityHelp: "Decide if clients should see this design.",
+    sectionDetails: "Design details",
+    sectionDetailsHelp: "Add the core information for this design.",
+    sectionPricing: "Example pricing",
+    sectionPricingHelp: "Set the reference size and price range for this design.",
+    sectionClientCopy: "Client-facing copy",
+    sectionClientCopyHelp: "Keep the text short and easy to understand.",
+    liveLabel: "Show to clients",
+    liveHelp: "If this is on, the design appears in the client screen.",
     liveOn: "Live",
     liveOff: "Hidden",
-    priceNote: "Example size (cm)",
-    priceNoteHelp: "How large is this design usually tattooed?",
+    priceNote: "Example size",
+    priceNoteHelp: "The longest reference measurement for this design.",
     detailLevel: "Detail level",
-    detailLevelHelp: "Detail level affects price.",
+    detailLevelHelp: "More workmanship usually means a higher price.",
+    detailLow: "Low detail",
+    detailMedium: "Medium detail",
+    detailHigh: "High detail",
+    detailHintLow: "Simpler and faster to tattoo",
+    detailHintMedium: "Balanced amount of work",
+    detailHintHigh: "Denser work and more time",
     priceRange: "Price range for this design",
-    priceRangeHelp: "Clients see this range for this size.",
+    priceRangeHelp: "Clients see this range for the example size and detail level above.",
+    priceRangeNote: "Final price can still change after placement and final brief.",
+    summaryPrefix: "Example",
     priceMin: "Min price",
     priceMax: "Max price",
+    sizePlaceholder: "e.g. 10",
     addDesign: "Add new design",
     saving: "Saving",
     save: "Save changes",
@@ -88,37 +108,57 @@ const copy = {
     uploadFailed: "Görsel yüklenemedi.",
     saveFailed: "Tasarımlar kaydedilemedi.",
     saved: "Tasarımlar kaydedildi.",
-    title: "Müşteriye göstereceğin tasarımları yönet.",
-    description: "Buraya eklediğin tasarımlar, müşteri seçim ekranında gösterilir ve doğrudan talep oluşturmaya yardımcı olur.",
+    title: "Tasarıma ait bilgiler",
+    description: "Her tasarım için görsel, örnek fiyat ve kısa açıklama gir.",
     item: "Tasarım",
     newItem: "Yeni tasarım",
     remove: "Kaldır",
     removeConfirm: "Bu tasarımı kaldırmak istiyor musun?",
     category: "Kategori",
+    categoryHelp: "Tasarımı düzenli tutmak için kategori seç.",
     customCategory: "Özel kategori",
     customCategoryPlaceholder: "Örn. Floral",
-    titleLabel: "Başlık",
-    titlePlaceholder: "Örn. Koi balığı",
+    titleLabel: "Tasarım adı",
+    titleHelp: "Müşteri bu adı seçim ekranında görür.",
+    titlePlaceholder: "Örn. Minimal gül",
     shortDescription: "Kısa açıklama",
-    shortDescriptionPlaceholder: "Örn. İnce çizgi, küçük boyutta iyi görünür.",
-    shortDescriptionHelp: "İsteğe bağlı",
+    shortDescriptionPlaceholder: "Örn. İnce çizgi çalışılır. Ön kol ve üst kolda iyi durur.",
+    shortDescriptionHelp: "Müşteriye bu tasarım hakkında kısa bir not gösterebilirsin.",
+    shortDescriptionHints: "Stil · Uygun bölgeler · Genel görünüm",
     image: "Tasarım görseli",
     imageDescription: "Müşteri bu görseli seçim ekranında görür.",
     noImage: "Henüz görsel seçilmedi",
     uploadImage: "Görsel yükle",
     removeImage: "Görseli kaldır",
-    liveLabel: "Yayında",
-    liveHelp: "Kapalıysa müşteri bu tasarımı görmez.",
+    sectionVisibility: "Görünürlük",
+    sectionVisibilityHelp: "Bu tasarımın müşteri ekranında görünüp görünmeyeceğini seç.",
+    sectionDetails: "Tasarım bilgileri",
+    sectionDetailsHelp: "Bu tasarımın temel bilgilerini gir.",
+    sectionPricing: "Fiyat örneği",
+    sectionPricingHelp: "Bu tasarım için örnek boyut ve fiyat aralığını belirle.",
+    sectionClientCopy: "Müşteriye gösterilecek açıklama",
+    sectionClientCopyHelp: "Kısa ve anlaşılır bir metin ekle.",
+    liveLabel: "Müşteriye göster",
+    liveHelp: "Açıksa bu tasarım müşteri ekranında görünür.",
     liveOn: "Yayında",
     liveOff: "Yayında değil",
-    priceNote: "Örnek boyut (cm)",
-    priceNoteHelp: "Bu tasarım genelde kaç cm yapılır?",
+    priceNote: "Örnek boyut",
+    priceNoteHelp: "Bu tasarım için referans alınan en uzun ölçü.",
     detailLevel: "Detay seviyesi",
-    detailLevelHelp: "Detay seviyesi fiyatı etkiler.",
+    detailLevelHelp: "İşçilik yoğunluğu arttıkça fiyat da artabilir.",
+    detailLow: "Az detay",
+    detailMedium: "Orta detay",
+    detailHigh: "Çok detay",
+    detailHintLow: "Daha sade ve hızlı uygulanır",
+    detailHintMedium: "Standart yoğunlukta çalışma",
+    detailHintHigh: "Daha yoğun işçilik ve süre gerektirir",
     priceRange: "Bu tasarım için fiyat aralığı",
-    priceRangeHelp: "Müşteriye bu boyut için bu aralık gösterilir.",
+    priceRangeHelp: "Müşteriye, yukarıdaki örnek boyut ve detay seviyesi için bu aralık gösterilir.",
+    priceRangeNote: "Kesin fiyat, yerleşim ve son brief’e göre değişebilir.",
+    summaryPrefix: "Örnek",
     priceMin: "Min fiyat",
     priceMax: "Maks fiyat",
+    sizePlaceholder: "Örn. 10",
     addDesign: "Yeni tasarım ekle",
     saving: "Kaydediliyor",
     save: "Değişiklikleri kaydet",
@@ -281,6 +321,18 @@ export function FeaturedDesignsForm({
     router.refresh();
   }
 
+  function formatPrice(value: number | null | undefined) {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return null;
+    }
+
+    return new Intl.NumberFormat(locale === "tr" ? "tr-TR" : "en-US").format(value);
+  }
+
+  function toNullableNumber(value: unknown) {
+    return typeof value === "number" && Number.isFinite(value) ? value : null;
+  }
+
   return (
     <Card className="surface-border">
       <CardHeader>
@@ -295,6 +347,14 @@ export function FeaturedDesignsForm({
               const isExpanded = expandedId === field.id;
               const cardTitle = currentDesign?.title?.trim() || `${labels.newItem} ${index + 1}`;
               const isCustomCategory = getCategorySelectValue(currentDesign?.category || "") === "__custom__";
+              const detailLabel =
+                currentDesign?.referenceDetailLevel === "simple"
+                  ? labels.detailLow
+                  : currentDesign?.referenceDetailLevel === "detailed"
+                    ? labels.detailHigh
+                    : labels.detailMedium;
+              const formattedMin = formatPrice(toNullableNumber(currentDesign?.referencePriceMin));
+              const formattedMax = formatPrice(toNullableNumber(currentDesign?.referencePriceMax));
 
               return (
                 <div
@@ -339,25 +399,9 @@ export function FeaturedDesignsForm({
                       </div>
                     </div>
                     <div className="flex flex-wrap items-start justify-end gap-2">
-                      <label
-                        className="flex items-center gap-3 rounded-[18px] border border-white/8 bg-black/25 px-3 py-2.5"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-white">{labels.liveLabel}</p>
-                          <p className="text-xs text-[var(--foreground-muted)]">{labels.liveHelp}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-[var(--foreground-muted)]">
-                            {currentDesign?.active ? labels.liveOn : labels.liveOff}
-                          </span>
-                          <input
-                            type="checkbox"
-                            className="size-4 accent-[var(--accent)]"
-                            {...form.register(`designs.${index}.active`)}
-                          />
-                        </div>
-                      </label>
+                      <span className="rounded-full border border-white/8 bg-black/25 px-3 py-2 text-xs text-[var(--foreground-muted)]">
+                        {currentDesign?.active ? labels.liveOn : labels.liveOff}
+                      </span>
                       <Button
                         type="button"
                         variant="ghost"
@@ -376,7 +420,38 @@ export function FeaturedDesignsForm({
                     <>
                       <div className="mt-5">
                         <div className="space-y-5">
-                          <Field label={labels.image} description={labels.imageDescription}>
+                          <div className="space-y-3 rounded-[22px] border border-white/8 bg-black/20 p-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-white">{labels.sectionVisibility}</p>
+                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionVisibilityHelp}</p>
+                            </div>
+                            <label
+                              className="flex items-center justify-between gap-3 rounded-[18px] border border-white/8 bg-black/25 px-3 py-3"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-white">{labels.liveLabel}</p>
+                                <p className="text-xs text-[var(--foreground-muted)]">{labels.liveHelp}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-[var(--foreground-muted)]">
+                                  {currentDesign?.active ? labels.liveOn : labels.liveOff}
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  className="size-4 accent-[var(--accent)]"
+                                  {...form.register(`designs.${index}.active`)}
+                                />
+                              </div>
+                            </label>
+                          </div>
+
+                          <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-white">{labels.sectionDetails}</p>
+                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionDetailsHelp}</p>
+                            </div>
+
+                            <Field label={labels.image} description={labels.imageDescription}>
                             <div className="space-y-3">
                               <div className="relative flex min-h-[240px] items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5 sm:min-h-[280px]">
                                 {currentDesign?.imageUrl ? (
@@ -426,14 +501,18 @@ export function FeaturedDesignsForm({
                                 ) : null}
                               </div>
                             </div>
-                          </Field>
+                            </Field>
 
-                          <div className="grid gap-5 md:grid-cols-2">
-                            <Field label={labels.priceNote} description={labels.priceNoteHelp}>
+                            <div className="grid gap-5 md:grid-cols-2">
+                              <Field
+                                label={labels.priceNote}
+                                description={labels.priceNoteHelp}
+                                error={form.formState.errors.designs?.[index]?.priceNote?.message}
+                              >
                               <div className="relative">
                                 <Input
                                   type="number"
-                                  placeholder="12"
+                                  placeholder={labels.sizePlaceholder}
                                   className="pr-12"
                                   {...form.register(`designs.${index}.priceNote`)}
                                 />
@@ -441,21 +520,43 @@ export function FeaturedDesignsForm({
                                   cm
                                 </span>
                               </div>
-                            </Field>
+                              </Field>
 
-                            <Field label={labels.detailLevel} description={labels.detailLevelHelp}>
+                              <Field label={labels.detailLevel} description={labels.detailLevelHelp}>
                               <NativeSelect {...form.register(`designs.${index}.referenceDetailLevel`)}>
-                                <option value="simple">{locale === "tr" ? "Az detay" : "Low detail"}</option>
-                                <option value="standard">{locale === "tr" ? "Orta detay" : "Medium detail"}</option>
-                                <option value="detailed">{locale === "tr" ? "Çok detay" : "High detail"}</option>
+                                <option value="simple">{labels.detailLow}</option>
+                                <option value="standard">{labels.detailMedium}</option>
+                                <option value="detailed">{labels.detailHigh}</option>
                               </NativeSelect>
-                            </Field>
+                                <div className="mt-2 grid gap-1 text-xs text-[var(--foreground-muted)]">
+                                  <p>{labels.detailLow}: {labels.detailHintLow}</p>
+                                  <p>{labels.detailMedium}: {labels.detailHintMedium}</p>
+                                  <p>{labels.detailHigh}: {labels.detailHintHigh}</p>
+                                </div>
+                              </Field>
+                            </div>
                           </div>
 
-                          <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
+                          <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-white">{labels.sectionPricing}</p>
+                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionPricingHelp}</p>
+                            </div>
+
                             <Field label={labels.priceRange} description={labels.priceRangeHelp}>
+                              <div className="rounded-[18px] border border-white/8 bg-black/25 px-3 py-3 text-sm text-white">
+                                {labels.summaryPrefix}:{" "}
+                                {currentDesign?.priceNote?.trim() || "—"} cm · {detailLabel} ·{" "}
+                                {formattedMin ? `${labels.currencyPrefix}${formattedMin}` : "—"}
+                                {"–"}
+                                {formattedMax ? `${labels.currencyPrefix}${formattedMax}` : "—"}
+                              </div>
                               <div className="grid gap-4 md:grid-cols-2">
-                                <Field label={labels.priceMin} className="gap-2">
+                                <Field
+                                  label={labels.priceMin}
+                                  className="gap-2"
+                                  error={form.formState.errors.designs?.[index]?.referencePriceMin?.message}
+                                >
                                   <div className="relative">
                                     <Input
                                       type="number"
@@ -468,7 +569,11 @@ export function FeaturedDesignsForm({
                                     </span>
                                   </div>
                                 </Field>
-                                <Field label={labels.priceMax} className="gap-2">
+                                <Field
+                                  label={labels.priceMax}
+                                  className="gap-2"
+                                  error={form.formState.errors.designs?.[index]?.referencePriceMax?.message}
+                                >
                                   <div className="relative">
                                     <Input
                                       type="number"
@@ -482,11 +587,22 @@ export function FeaturedDesignsForm({
                                   </div>
                                 </Field>
                               </div>
+                              <p className="text-sm text-[var(--foreground-muted)]">{labels.priceRangeNote}</p>
                             </Field>
                           </div>
 
-                          <div className="grid gap-5">
-                            <Field label={labels.titleLabel}>
+                          <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-white">{labels.sectionClientCopy}</p>
+                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionClientCopyHelp}</p>
+                            </div>
+
+                            <div className="grid gap-5">
+                            <Field
+                              label={labels.titleLabel}
+                              description={labels.titleHelp}
+                              error={form.formState.errors.designs?.[index]?.title?.message}
+                            >
                               <Input
                                 placeholder={labels.titlePlaceholder}
                                 {...form.register(`designs.${index}.title`)}
@@ -498,9 +614,12 @@ export function FeaturedDesignsForm({
                                 placeholder={labels.shortDescriptionPlaceholder}
                                 {...form.register(`designs.${index}.shortDescription`)}
                               />
+                              <p className="mt-2 text-xs text-[var(--foreground-muted)]">
+                                {labels.shortDescriptionHints}
+                              </p>
                             </Field>
 
-                            <Field label={labels.category}>
+                            <Field label={labels.category} description={labels.categoryHelp}>
                               <NativeSelect
                                 value={getCategorySelectValue(currentDesign?.category || "")}
                                 onChange={(event) =>
@@ -532,6 +651,7 @@ export function FeaturedDesignsForm({
                               </Field>
                             ) : null}
                           </div>
+                          </div>
                         </div>
 
                       </div>
@@ -542,7 +662,7 @@ export function FeaturedDesignsForm({
             })}
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <Button
               type="button"
               variant="secondary"

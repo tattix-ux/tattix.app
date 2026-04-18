@@ -340,20 +340,62 @@ export const pricingSchema = z.object({
   }
 });
 
-export const featuredDesignSchema = z.object({
-  id: z.string().optional(),
-  category: z.string().min(2).max(80),
-  title: z.string().min(2),
-  shortDescription: z.string().max(180).optional().default(""),
-  imageUrl: z.string().url().nullable().or(z.literal("")),
-  imagePath: z.string().nullable().or(z.literal("")).optional(),
-  priceNote: z.string().max(48).nullable().or(z.literal("")).optional(),
-  referenceDetailLevel: z.enum(["simple", "standard", "detailed"]).nullable().optional(),
-  referencePriceMin: nullableNumberSchema.optional(),
-  referencePriceMax: nullableNumberSchema.optional(),
-  active: z.boolean().default(true),
-  sortOrder: z.coerce.number().int().min(0),
-});
+export const featuredDesignSchema = z
+  .object({
+    id: z.string().optional(),
+    category: z.string().min(2, "Kategori seç.").max(80),
+    title: z.string().min(2, "Tasarım adı gir."),
+    shortDescription: z.string().max(180).optional().default(""),
+    imageUrl: z.string().url().nullable().or(z.literal("")),
+    imagePath: z.string().nullable().or(z.literal("")).optional(),
+    priceNote: z.string().max(48).nullable().or(z.literal("")).optional(),
+    referenceDetailLevel: z.enum(["simple", "standard", "detailed"]).nullable().optional(),
+    referencePriceMin: nullableNumberSchema.optional(),
+    referencePriceMax: nullableNumberSchema.optional(),
+    active: z.boolean().default(true),
+    sortOrder: z.coerce.number().int().min(0),
+  })
+  .superRefine((values, ctx) => {
+    const normalizedSize = values.priceNote?.trim() ?? "";
+
+    if (!normalizedSize) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["priceNote"],
+        message: "Örnek boyut gir.",
+      });
+    }
+
+    if (values.referencePriceMin === null || values.referencePriceMin === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referencePriceMin"],
+        message: "Min fiyat gir.",
+      });
+    }
+
+    if (values.referencePriceMax === null || values.referencePriceMax === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referencePriceMax"],
+        message: "Maks fiyat gir.",
+      });
+    }
+
+    if (
+      values.referencePriceMin !== null &&
+      values.referencePriceMin !== undefined &&
+      values.referencePriceMax !== null &&
+      values.referencePriceMax !== undefined &&
+      values.referencePriceMax < values.referencePriceMin
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referencePriceMax"],
+        message: "Maks fiyat, min fiyattan düşük olamaz.",
+      });
+    }
+  });
 
 export const featuredDesignsSchema = z.object({
   designs: z.array(featuredDesignSchema).min(1),
