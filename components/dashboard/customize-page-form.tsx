@@ -1,8 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
-import { ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
+import { Check, ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -64,6 +63,22 @@ const previewHeadingFontMap = {
   "editorial-serif": headingPreviewFonts.serif,
   "mono-display": headingPreviewFonts.minimal,
 } as const;
+
+const previewBodyFonts = {
+  "clean-sans": '"Inter", "Helvetica Neue", sans-serif',
+  "neutral-sans": '"Avenir Next", "Helvetica Neue", sans-serif',
+  "editorial-sans": '"Optima", "Avenir Next", sans-serif',
+  "mono-body": '"SFMono-Regular", "Menlo", monospace',
+} as const;
+
+function ThemeSelectionBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-black/25 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-white/85 shadow-[0_10px_30px_rgba(0,0,0,0.18)] backdrop-blur-md">
+      <Check className="size-3" />
+      {label}
+    </span>
+  );
+}
 
 function ColorField({
   label,
@@ -140,133 +155,205 @@ function ThemeCardPreview({
       : theme.backgroundType === "gradient"
         ? `linear-gradient(180deg, ${theme.gradientStart}, ${theme.gradientEnd})`
         : theme.backgroundColor;
+  const outerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.56)" : "rgba(255,255,255,0.06)";
+  const innerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.82)" : "rgba(9,9,12,0.92)";
+  const screenGlow =
+    theme.themeMode === "light"
+      ? `radial-gradient(circle at top, color-mix(in srgb, ${theme.primaryColor} 18%, white), transparent 60%)`
+      : `radial-gradient(circle at top, color-mix(in srgb, ${theme.primaryColor} 24%, transparent), transparent 62%)`;
+  const bodyFont = previewBodyFonts[theme.bodyFont] ?? previewBodyFonts["clean-sans"];
 
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[24px] border border-white/10 bg-black/20",
-        isPanel ? "p-5 sm:p-6" : "p-3.5",
+        "relative overflow-hidden rounded-[28px] border border-white/10",
+        isPanel ? "min-h-[560px] p-6 sm:p-7" : "min-h-[360px] p-5",
       )}
+      style={{
+        background:
+          theme.themeMode === "light"
+            ? `linear-gradient(180deg, color-mix(in srgb, ${theme.cardColor} 92%, white), color-mix(in srgb, ${theme.backgroundColor} 84%, white))`
+            : `linear-gradient(180deg, color-mix(in srgb, ${theme.cardColor} 34%, #0a0a0d), color-mix(in srgb, ${theme.backgroundColor} 88%, #060608))`,
+        boxShadow:
+          theme.themeMode === "light"
+            ? "inset 0 1px 0 rgba(255,255,255,0.7), 0 20px 60px rgba(9,10,14,0.08)"
+            : "inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 90px rgba(0,0,0,0.28)",
+      }}
     >
-      <div className={cn("w-full", isPanel ? "max-w-[290px]" : "max-w-[190px]")}>
+      <div
+        className="absolute inset-x-0 top-0 h-32 opacity-80"
+        style={{
+          background: `radial-gradient(circle at 50% 0%, color-mix(in srgb, ${theme.primaryColor} 20%, transparent), transparent 70%)`,
+        }}
+      />
+      <div
+        className={cn(
+          "relative flex h-full items-center",
+          isPanel ? "justify-center" : "justify-center",
+        )}
+      >
         <div
-          className={cn(
-            "overflow-hidden border shadow-[0_20px_60px_rgba(0,0,0,0.35)]",
-            isPanel ? "rounded-[28px] p-2" : "rounded-[22px] p-1.5",
-          )}
-          style={{
-            borderColor: "color-mix(in srgb, white 10%, transparent)",
-            backgroundColor: "color-mix(in srgb, var(--artist-card, #121316) 14%, transparent)",
-          }}
-        >
+          className="pointer-events-none absolute inset-x-[10%] top-5 h-28 rounded-full blur-3xl"
+          style={{ background: screenGlow, opacity: theme.themeMode === "light" ? 0.7 : 0.85 }}
+        />
+        <div className={cn("relative w-full", isPanel ? "max-w-[310px]" : "max-w-[210px]")}>
           <div
-            className="overflow-hidden rounded-[24px]"
+            className={cn(
+              "relative overflow-hidden border shadow-[0_24px_80px_rgba(0,0,0,0.42)]",
+              isPanel ? "rounded-[36px] p-2.5" : "rounded-[28px] p-2",
+            )}
             style={{
-              background,
-              backgroundSize: theme.backgroundType === "image" ? "cover" : undefined,
-              backgroundPosition: theme.backgroundType === "image" ? "center" : undefined,
+              borderColor: "color-mix(in srgb, white 10%, transparent)",
+              background: `linear-gradient(180deg, ${outerShell}, color-mix(in srgb, ${theme.cardColor} 16%, transparent))`,
             }}
           >
-            <div className={cn("space-y-4", isPanel ? "p-4" : "p-3")}>
+            <div className="pointer-events-none absolute inset-x-6 top-2 h-5 rounded-full bg-white/8 blur-md" />
+            <div
+              className={cn(
+                "overflow-hidden border",
+                isPanel ? "rounded-[30px]" : "rounded-[24px]",
+              )}
+              style={{
+                borderColor: "color-mix(in srgb, white 6%, transparent)",
+                backgroundColor: innerShell,
+              }}
+            >
               <div
-                className={cn("relative overflow-hidden rounded-[18px] border border-white/10 bg-black/15", isPanel ? "h-20" : "h-14")}
+                className="overflow-hidden"
+                style={{
+                  background,
+                  backgroundSize: theme.backgroundType === "image" ? "cover" : undefined,
+                  backgroundPosition: theme.backgroundType === "image" ? "center" : undefined,
+                }}
               >
-                {artist.profile.coverImageUrl ? (
-                  <img
-                    src={artist.profile.coverImageUrl}
-                    alt={artist.profile.artistName}
-                    className="h-full w-full object-cover"
-                  />
-                ) : null}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/45" />
-              </div>
-              <div className={cn("flex items-end gap-3", isPanel ? "-mt-10" : "-mt-8")}>
-                <div
-                  className={cn("relative overflow-hidden rounded-[18px] border border-white/10 bg-black/30", isPanel ? "size-14" : "size-11")}
-                >
-                  {artist.profile.profileImageUrl ? (
-                    <img
-                      src={artist.profile.profileImageUrl}
-                      alt={artist.profile.artistName}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : null}
-                </div>
-                <div className="min-w-0">
+                <div className={cn("space-y-4", isPanel ? "p-5" : "p-3.5")}>
                   <div
-                    className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
-                  style={{
-                      backgroundColor: theme.secondaryColor,
-                      color: theme.textColor,
-                    }}
+                    className={cn(
+                      "relative overflow-hidden rounded-[20px] border border-white/10 bg-black/15",
+                      isPanel ? "h-24" : "h-16",
+                    )}
                   >
-                    {artist.profile.artistName.toUpperCase()}
+                    {artist.profile.coverImageUrl ? (
+                      <img
+                        src={artist.profile.coverImageUrl}
+                        alt={artist.profile.artistName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/20 to-black/45" />
                   </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p
-                  className={cn("leading-tight", isPanel ? "text-lg" : "text-base")}
-                  style={{
-                    fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.modern,
-                    color: headingColor,
-                  }}
-                >
-                  {title}
-                </p>
-                <p
-                  className="text-xs leading-5"
-                  style={{ color: bodyColor }}
-                >
-                  {intro}
-                </p>
-              </div>
-
-              <div
-                className={cn("inline-flex rounded-full font-medium", isPanel ? "px-4 py-2 text-xs" : "px-3 py-1.5 text-[11px]")}
-                style={{
-                  backgroundColor: theme.primaryColor,
-                  color: "#0b0b0c",
-                }}
-              >
-                {cta}
-              </div>
-
-              <div
-                className={cn("border", isPanel ? "rounded-[20px] p-3" : "rounded-[16px] p-2.5")}
-                style={{
-                  borderColor: "color-mix(in srgb, white 8%, transparent)",
-                  backgroundColor: theme.cardColor,
-                }}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: headingColor }}>Aklında ne var?</p>
-                    <p
-                      className="mt-1 text-[11px]"
-                      style={{ color: bodyColor }}
+                  <div className={cn("flex items-end gap-3", isPanel ? "-mt-11" : "-mt-8")}>
+                    <div
+                      className={cn(
+                        "relative overflow-hidden rounded-[18px] border border-white/12 bg-black/30 shadow-[0_10px_25px_rgba(0,0,0,0.28)]",
+                        isPanel ? "size-14" : "size-11",
+                      )}
                     >
-                      Talep türünü seç.
+                      {artist.profile.profileImageUrl ? (
+                        <img
+                          src={artist.profile.profileImageUrl}
+                          alt={artist.profile.artistName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="min-w-0 pb-0.5">
+                      <p
+                        className={cn("truncate font-medium", isPanel ? "text-[15px]" : "text-[13px]")}
+                        style={{ color: headingColor, fontFamily: bodyFont }}
+                      >
+                        {artist.profile.artistName}
+                      </p>
+                      <div
+                        className="mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
+                        style={{
+                          backgroundColor: "color-mix(in srgb, white 10%, transparent)",
+                          color: bodyColor,
+                        }}
+                      >
+                        {artist.profile.instagramHandle ? `@${artist.profile.instagramHandle}` : artist.profile.artistName.toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p
+                      className={cn("leading-tight tracking-[-0.02em]", isPanel ? "text-[1.75rem]" : "text-[1.18rem]")}
+                      style={{
+                        fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.modern,
+                        color: headingColor,
+                      }}
+                    >
+                      {title}
+                    </p>
+                    <p className={cn(isPanel ? "text-[13px] leading-5" : "text-[11px] leading-4")} style={{ color: bodyColor, fontFamily: bodyFont }}>
+                      {intro}
                     </p>
                   </div>
-                  <span
-                    className="rounded-full px-2.5 py-1 text-[10px] font-medium"
+
+                  <div
+                    className={cn(
+                      "inline-flex rounded-full font-medium shadow-[0_10px_30px_rgba(0,0,0,0.2)]",
+                      isPanel ? "px-4 py-2 text-xs" : "px-3 py-1.5 text-[11px]",
+                    )}
                     style={{
-                      backgroundColor: theme.secondaryColor,
-                      color: theme.textColor,
+                      backgroundColor: theme.primaryColor,
+                      color: theme.themeMode === "light" ? "#1b120f" : "#0b0b0c",
                     }}
                   >
-                    STEP 1
-                  </span>
-                </div>
-                <div className="mt-3 space-y-2">
-                  <div className="rounded-[16px] border border-white/10 bg-black/15 px-3 py-2 text-xs" style={{ color: headingColor }}>Özel tasarım dövme</div>
+                    {cta}
+                  </div>
+
                   <div
-                    className="rounded-[16px] border border-white/10 bg-black/10 px-3 py-2 text-xs"
-                    style={{ color: bodyColor }}
+                    className={cn("border", isPanel ? "rounded-[22px] p-3.5" : "rounded-[18px] p-3")}
+                    style={{
+                      borderColor: "color-mix(in srgb, white 8%, transparent)",
+                      backgroundColor:
+                        theme.themeMode === "light"
+                          ? "color-mix(in srgb, white 78%, transparent)"
+                          : "color-mix(in srgb, black 18%, transparent)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+                    }}
                   >
-                    Flash tasarım
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: headingColor, fontFamily: bodyFont }}>
+                          Aklında ne var?
+                        </p>
+                        <p className="mt-1 text-[11px]" style={{ color: bodyColor, fontFamily: bodyFont }}>
+                          Talep türünü seç.
+                        </p>
+                      </div>
+                      <span
+                        className="rounded-full px-2.5 py-1 text-[10px] font-medium"
+                        style={{
+                          backgroundColor: theme.secondaryColor,
+                          color: theme.textColor,
+                        }}
+                      >
+                        STEP 1
+                      </span>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <div
+                        className="rounded-[16px] border border-white/10 px-3 py-2 text-xs"
+                        style={{
+                          color: headingColor,
+                          backgroundColor: theme.themeMode === "light" ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.14)",
+                        }}
+                      >
+                        Özel tasarım dövme
+                      </div>
+                      <div
+                        className="rounded-[16px] border border-white/10 px-3 py-2 text-xs"
+                        style={{
+                          color: bodyColor,
+                          backgroundColor: theme.themeMode === "light" ? "rgba(255,255,255,0.36)" : "rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        Flash tasarım
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -275,6 +362,59 @@ function ThemeCardPreview({
         </div>
       </div>
     </div>
+  );
+}
+
+function ThemePresetCard({
+  title,
+  description,
+  active,
+  onSelect,
+  artist,
+  theme,
+  selectedLabel,
+}: {
+  title: string;
+  description: string;
+  active: boolean;
+  onSelect: () => void;
+  artist: ArtistPageData;
+  theme: ArtistPageTheme;
+  selectedLabel: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "group relative overflow-hidden rounded-[30px] border p-5 text-left transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0",
+        active
+          ? "border-[color:color-mix(in_srgb,var(--accent)_82%,white)] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-[0_0_0_1px_rgba(247,177,93,0.10),0_24px_80px_rgba(0,0,0,0.34),0_0_70px_rgba(247,177,93,0.10)]"
+          : "border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] shadow-[0_24px_70px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 hover:border-white/16 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]",
+      )}
+    >
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-24 opacity-70"
+        style={{
+          background: `radial-gradient(circle at top, color-mix(in srgb, ${theme.primaryColor} 18%, transparent), transparent 72%)`,
+        }}
+      />
+      <div className="pointer-events-none absolute inset-[1px] rounded-[28px] border border-white/5" />
+
+      <div className="relative flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[1.05rem] font-semibold tracking-[-0.02em] text-white">{title}</p>
+          <p className="mt-1.5 max-w-[28ch] text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_6%)]">
+            {description}
+          </p>
+        </div>
+        {active ? <ThemeSelectionBadge label={selectedLabel} /> : null}
+      </div>
+
+      <div className="relative mt-5">
+        <ThemeCardPreview artist={artist} theme={theme} />
+      </div>
+    </button>
   );
 }
 
@@ -459,7 +599,7 @@ export function CustomizePageForm({
       bodyFont: theme.bodyFont,
       fontPairingPreset: theme.fontPairingPreset,
       radiusStyle: theme.radiusStyle,
-      themeMode: "dark",
+      themeMode: theme.themeMode,
       customWelcomeTitle: theme.customWelcomeTitle ?? "",
       customIntroText: theme.customIntroText ?? "",
       customCtaLabel: theme.customCtaLabel ?? "",
@@ -855,11 +995,15 @@ export function CustomizePageForm({
   return (
     <div className="space-y-6">
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="flex flex-wrap gap-2">
+        <div className="inline-flex flex-wrap rounded-full border border-white/10 bg-black/20 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
           <Button
             type="button"
             size="sm"
-            variant={customizeMode === "preset" ? "secondary" : "outline"}
+            variant={customizeMode === "preset" ? "secondary" : "ghost"}
+            className={cn(
+              "rounded-full",
+              customizeMode === "preset" ? "shadow-[0_12px_30px_rgba(0,0,0,0.18)]" : "text-[var(--foreground-muted)]",
+            )}
             onClick={() => setCustomizeMode("preset")}
           >
             {copy.presetMode}
@@ -867,7 +1011,11 @@ export function CustomizePageForm({
           <Button
             type="button"
             size="sm"
-            variant={customizeMode === "custom" ? "secondary" : "outline"}
+            variant={customizeMode === "custom" ? "secondary" : "ghost"}
+            className={cn(
+              "rounded-full",
+              customizeMode === "custom" ? "shadow-[0_12px_30px_rgba(0,0,0,0.18)]" : "text-[var(--foreground-muted)]",
+            )}
             onClick={() => setCustomizeMode("custom")}
           >
             {copy.customMode}
@@ -882,14 +1030,19 @@ export function CustomizePageForm({
         >
           <div className="space-y-6">
             {customizeMode === "preset" ? (
-              <Card className="surface-border">
-                <CardHeader>
-                  <CardTitle>{copy.presetTitle}</CardTitle>
-                  <CardDescription>{copy.presetDescription}</CardDescription>
+              <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] shadow-[0_32px_120px_rgba(0,0,0,0.28)]">
+                <CardHeader className="relative overflow-hidden pb-4">
+                  <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(247,177,93,0.10),transparent_72%)]" />
+                  <CardTitle className="relative text-[1.2rem] tracking-[-0.02em]">{copy.presetTitle}</CardTitle>
+                  <CardDescription className="relative max-w-[56ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
+                    {copy.presetDescription}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-[var(--foreground-muted)]">{copy.presetHint}</p>
-                  <div className="grid gap-3 lg:grid-cols-2">
+                <CardContent className="space-y-5">
+                  <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_3%)]">
+                    {copy.presetHint}
+                  </p>
+                  <div className="grid gap-4 xl:grid-cols-2">
                     {themePresetOptions.map((presetKey) => {
                       const preset = themePresets[presetKey];
                       const active = currentPreset === presetKey;
@@ -922,30 +1075,16 @@ export function CustomizePageForm({
                       };
 
                       return (
-                        <button
+                        <ThemePresetCard
                           key={presetKey}
-                          type="button"
-                          onClick={() => applyPreset(presetKey)}
-                          className={cn(
-                            "rounded-[24px] border p-3.5 text-left transition",
-                            active
-                              ? "border-[var(--accent)] bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.12),0_0_32px_rgba(247,177,93,0.08)]"
-                              : "border-white/8 bg-black/20 hover:border-white/14 hover:bg-white/5",
-                          )}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-base font-medium text-white">{preset.label}</p>
-                              <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                                {presetDescriptions[presetKey]}
-                              </p>
-                            </div>
-                            {active ? <Badge variant="accent">{copy.selected}</Badge> : null}
-                          </div>
-                          <div className="mt-3">
-                            <ThemeCardPreview artist={presetArtist} theme={presetTheme} />
-                          </div>
-                        </button>
+                          title={preset.label}
+                          description={presetDescriptions[presetKey]}
+                          active={active}
+                          onSelect={() => applyPreset(presetKey)}
+                          artist={presetArtist}
+                          theme={presetTheme}
+                          selectedLabel={copy.selected}
+                        />
                       );
                     })}
                   </div>
@@ -954,14 +1093,17 @@ export function CustomizePageForm({
             ) : null}
 
             {customizeMode === "custom" ? (
-              <Card className="surface-border">
-                <CardHeader>
-                  <CardTitle>{copy.customTitle}</CardTitle>
-                  <CardDescription>{copy.customDescription}</CardDescription>
+              <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] shadow-[0_32px_120px_rgba(0,0,0,0.28)]">
+                <CardHeader className="relative overflow-hidden pb-4">
+                  <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(247,177,93,0.10),transparent_72%)]" />
+                  <CardTitle className="relative text-[1.2rem] tracking-[-0.02em]">{copy.customTitle}</CardTitle>
+                  <CardDescription className="relative max-w-[56ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
+                    {copy.customDescription}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                        <div className="space-y-4">
+                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.quickPresets}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.quickPresetsDescription}</p>
@@ -971,8 +1113,12 @@ export function CustomizePageForm({
                               <Button
                                 key={preset.key}
                                 type="button"
-                                variant="outline"
+                                variant={currentPreset === preset.key ? "secondary" : "outline"}
                                 size="sm"
+                                className={cn(
+                                  "rounded-full",
+                                  currentPreset === preset.key && "shadow-[0_14px_30px_rgba(0,0,0,0.18)]",
+                                )}
                                 onClick={() => applyPreset(preset.key)}
                               >
                                 {locale === "tr" ? preset.labelTr : preset.labelEn}
@@ -981,7 +1127,7 @@ export function CustomizePageForm({
                           </div>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.colors}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.colorsDescription}</p>
@@ -997,7 +1143,7 @@ export function CustomizePageForm({
                           </div>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.backgrounds}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.backgroundsDescription}</p>
@@ -1105,7 +1251,7 @@ export function CustomizePageForm({
                           ) : null}
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.fonts}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.fontsDescription}</p>
@@ -1121,8 +1267,8 @@ export function CustomizePageForm({
                                   className={cn(
                                     "rounded-[20px] border px-4 py-4 text-left transition",
                                     active
-                                      ? "border-[var(--accent)] bg-[var(--accent)]/10"
-                                      : "border-white/8 bg-black/20 hover:border-white/14",
+                                      ? "border-[var(--accent)] bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.08),0_18px_40px_rgba(0,0,0,0.16)]"
+                                      : "border-white/8 bg-black/20 hover:-translate-y-0.5 hover:border-white/14",
                                   )}
                                 >
                                   <p className="text-sm font-medium text-white">
@@ -1228,10 +1374,13 @@ export function CustomizePageForm({
           </div>
 
           {customizeMode === "custom" ? (
-            <Card className="surface-border xl:sticky xl:top-6">
-              <CardHeader>
-                <CardTitle>{copy.previewTitle}</CardTitle>
-                <CardDescription>{copy.previewDescription}</CardDescription>
+            <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] shadow-[0_30px_90px_rgba(0,0,0,0.28)] xl:sticky xl:top-6">
+              <CardHeader className="relative overflow-hidden">
+                <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(247,177,93,0.10),transparent_72%)]" />
+                <CardTitle className="relative text-[1.15rem] tracking-[-0.02em]">{copy.previewTitle}</CardTitle>
+                <CardDescription className="relative text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
+                  {copy.previewDescription}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <ThemeCardPreview artist={previewArtist} theme={previewTheme} variant="panel" />
@@ -1266,7 +1415,7 @@ export function CustomizePageForm({
         <input type="hidden" {...form.register("textColor")} />
         <input type="hidden" {...form.register("cardOpacity")} value={String(currentCardOpacity)} />
         <input type="hidden" {...form.register("radiusStyle")} />
-        <input type="hidden" {...form.register("themeMode")} value="dark" />
+        <input type="hidden" {...form.register("themeMode")} value={watchedValues.themeMode ?? theme.themeMode} />
         <input type="hidden" {...form.register("customWelcomeTitle")} />
         <input type="hidden" {...form.register("customIntroText")} />
         <input type="hidden" {...form.register("customCtaLabel")} />
