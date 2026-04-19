@@ -272,6 +272,7 @@ export function DetailCalibrationForm({
     const nextDraft = buildEmptyDraft();
 
     setDraft(nextDraft);
+    setSavedProfile(null);
     setStatusMessage(null);
     setIsOpen(false);
     if (typeof window !== "undefined") {
