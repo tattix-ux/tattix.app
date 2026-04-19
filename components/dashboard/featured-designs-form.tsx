@@ -46,19 +46,19 @@ function DesignSection({
   return (
     <section
       className={cn(
-        "rounded-[24px] border border-white/7 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.014))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] sm:p-6",
+        "rounded-[22px] border border-white/8 bg-white/[0.025] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] sm:p-6",
         className,
       )}
     >
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <h3 className="text-[0.95rem] font-semibold tracking-[-0.01em] text-white">{title}</h3>
         {description ? (
-          <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+          <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_12%)]">
             {description}
           </p>
         ) : null}
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-5">{children}</div>
     </section>
   );
 }
@@ -266,6 +266,22 @@ export function FeaturedDesignsForm({
     }
   }, [designsFieldArray.fields, expandLatestCard]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") {
+      return;
+    }
+
+    watchedDesigns?.forEach((design, index) => {
+      if (design?.imageUrl) {
+        console.log("[featured-design-preview]", {
+          index,
+          title: design.title,
+          imageUrl: design.imageUrl,
+        });
+      }
+    });
+  }, [watchedDesigns]);
+
   function getCategorySelectValue(category: string) {
     return featuredDesignCategories.some((item) => item.value === category) ? category : "__custom__";
   }
@@ -381,7 +397,7 @@ export function FeaturedDesignsForm({
     form.formState.errors.root?.message ?? (form.formState.isDirty ? labels.unsavedChanges : labels.savedState);
 
   return (
-    <Card className="surface-border overflow-hidden border-white/7 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.014))] shadow-[0_24px_72px_rgba(0,0,0,0.22)]">
+    <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_20px_52px_rgba(0,0,0,0.18)]">
       <CardHeader className="pb-3">
         <CardTitle>{labels.title}</CardTitle>
         <CardDescription className="max-w-[62ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
@@ -389,7 +405,7 @@ export function FeaturedDesignsForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
-        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-4">
             {designsFieldArray.fields.map((field, index) => {
               const currentDesign = watchedDesigns?.[index];
@@ -420,7 +436,7 @@ export function FeaturedDesignsForm({
                     designsFieldArray.move(dragIndex, index);
                     setDragIndex(null);
                   }}
-                  className="group rounded-[26px] border border-white/7 bg-[linear-gradient(180deg,rgba(255,255,255,0.026),rgba(255,255,255,0.014))] p-4 shadow-[0_18px_52px_rgba(0,0,0,0.14)] transition sm:p-5"
+                  className="group rounded-[24px] border border-white/8 bg-white/[0.02] p-4 shadow-[0_14px_34px_rgba(0,0,0,0.12)] transition hover:border-white/10 sm:p-5"
                 >
                   <div
                     className="flex cursor-pointer flex-wrap items-start justify-between gap-3.5"
@@ -429,13 +445,13 @@ export function FeaturedDesignsForm({
                     <div className="flex min-w-0 items-start gap-3">
                       <button
                         type="button"
-                        className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/8 bg-black/16 text-white/55 transition hover:border-white/14 hover:text-white/85"
+                        className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/9 bg-white/[0.02] text-white/55 transition hover:border-white/14 hover:bg-white/[0.04] hover:text-white/85"
                         aria-label={labels.dragHint}
                         onClick={(event) => event.stopPropagation()}
                       >
                         <GripVertical className="size-4" />
                       </button>
-                      <div className="relative size-14 shrink-0 overflow-hidden rounded-[18px] border border-white/8 bg-black/20">
+                      <div className="relative size-14 shrink-0 overflow-hidden rounded-[18px] border border-white/8 bg-white/[0.03]">
                         {currentDesign?.imageUrl ? (
                           <img
                             src={currentDesign.imageUrl}
@@ -447,17 +463,16 @@ export function FeaturedDesignsForm({
                             <ImagePlus className="size-5" />
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/35" />
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-[1.02rem] font-semibold tracking-[-0.02em] text-white">
                           {cardTitle}
                         </p>
                         <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                          <span className="rounded-full border border-white/7 bg-black/16 px-2.5 py-1 text-[11px] text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_5%)]">
+                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
                             {getCategoryLabel(currentDesign?.category || "flash-designs")}
                           </span>
-                          <span className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">
+                          <span className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
                             {currentDesign?.priceNote?.trim()
                               ? `${currentDesign.priceNote} cm`
                               : labels.priceNote}
@@ -470,8 +485,8 @@ export function FeaturedDesignsForm({
                         className={cn(
                           "rounded-full border px-3 py-1.5 text-xs font-medium",
                           currentDesign?.active
-                            ? "border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[var(--accent-soft)]"
-                            : "border-white/7 bg-black/18 text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]",
+                            ? "border-[var(--accent)]/22 bg-[var(--accent)]/10 text-[var(--accent-soft)]"
+                            : "border-white/8 bg-white/[0.03] text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_9%)]",
                         )}
                       >
                         {currentDesign?.active ? labels.liveOn : labels.liveOff}
@@ -493,21 +508,23 @@ export function FeaturedDesignsForm({
 
                   {isExpanded ? (
                     <>
-                      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
-                        <div className="space-y-4">
+                      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.04fr)_minmax(340px,0.96fr)]">
+                        <div className="space-y-5">
                           <DesignSection title={labels.sectionImage} description={labels.sectionImageHelp}>
                             <Field label={labels.image} description={labels.imageDescription}>
-                              <div className="space-y-3">
-                                <div className="group/preview relative min-h-[280px] overflow-hidden rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.016))] sm:min-h-[360px]">
+                              <div className="space-y-4">
+                                <div className="group/preview relative overflow-hidden rounded-[22px] border border-white/8 bg-white/[0.02] p-4">
                                   {currentDesign?.imageUrl ? (
-                                    <>
+                                    <div className="relative h-[240px] rounded-[18px] border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_90%,white_4%)] sm:h-[320px]">
+                                      <div className="absolute inset-3 rounded-[14px] border border-white/6 bg-white/[0.02]" />
+                                      <div className="relative z-10 flex h-full w-full items-center justify-center p-5 sm:p-6">
                                       <img
                                         src={currentDesign.imageUrl}
                                         alt={currentDesign.title || `${labels.item} ${index + 1}`}
-                                        className="absolute inset-0 h-full w-full object-contain p-5 transition duration-300 group-hover/preview:scale-[1.01]"
+                                        className="h-full w-full object-contain transition duration-300 group-hover/preview:scale-[1.01]"
                                       />
-                                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03),rgba(0,0,0,0.18))]" />
-                                      <div className="absolute inset-x-4 bottom-4 flex flex-wrap gap-2 opacity-100 sm:opacity-0 sm:transition sm:duration-200 sm:group-hover/preview:opacity-100">
+                                      </div>
+                                      <div className="absolute inset-x-4 bottom-4 z-20 flex flex-wrap gap-2 opacity-100 sm:opacity-0 sm:transition sm:duration-200 sm:group-hover/preview:opacity-100">
                                         <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/12 bg-black/50 px-4 py-2 text-sm text-white backdrop-blur-sm transition hover:bg-black/60">
                                           <Upload className="size-4" />
                                           {labels.replaceImage}
@@ -525,15 +542,15 @@ export function FeaturedDesignsForm({
                                           />
                                         </label>
                                       </div>
-                                    </>
+                                    </div>
                                   ) : (
-                                    <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 px-6 text-center text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_6%)] sm:min-h-[360px]">
-                                      <div className="rounded-full border border-white/8 bg-white/5 p-4">
+                                    <div className="flex h-[240px] flex-col items-center justify-center rounded-[18px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_92%,white_3%)] px-6 text-center text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)] sm:h-[320px]">
+                                      <div className="rounded-full border border-white/9 bg-white/[0.04] p-4">
                                         <ImagePlus className="size-7" />
                                       </div>
-                                      <div className="space-y-1">
+                                      <div className="mt-4 space-y-1.5">
                                         <p className="text-sm font-medium text-white/90">{labels.noImage}</p>
-                                        <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_6%)]">{labels.imageDescription}</p>
+                                        <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{labels.imageDescription}</p>
                                       </div>
                                     </div>
                                   )}
@@ -542,7 +559,7 @@ export function FeaturedDesignsForm({
                                 <div className="flex flex-wrap gap-2">
                                   <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
                                   <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
-                                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/8">
+                                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
                                     <Upload className="size-4" />
                                     {currentDesign?.imageUrl ? labels.replaceImage : labels.uploadImage}
                                     <input
@@ -563,7 +580,7 @@ export function FeaturedDesignsForm({
                                       type="button"
                                       variant="ghost"
                                       size="sm"
-                                      className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)] hover:text-white"
+                                      className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)] hover:text-white"
                                       onClick={() => void handleImageRemove(index)}
                                     >
                                       <X className="size-4" />
@@ -578,27 +595,27 @@ export function FeaturedDesignsForm({
                           <DesignSection title={labels.sectionClientCopy} description={labels.sectionClientCopyHelp}>
                             <Field label={labels.shortDescription} description={labels.shortDescriptionHelp}>
                               <Textarea
-                                className="min-h-[164px] bg-black/18"
+                                className="min-h-[168px] bg-white/[0.03]"
                                 placeholder={labels.shortDescriptionPlaceholder}
                                 {...form.register(`designs.${index}.shortDescription`)}
                               />
-                              <p className="mt-2 text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">
+                              <p className="mt-2.5 text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
                                 {labels.shortDescriptionHints}
                               </p>
                             </Field>
                           </DesignSection>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                           <DesignSection title={labels.sectionGeneral} description={labels.sectionGeneralHelp}>
-                            <div className="space-y-4.5">
+                            <div className="space-y-5">
                               <Field
                                 label={labels.titleLabel}
                                 description={labels.titleHelp}
                                 error={form.formState.errors.designs?.[index]?.title?.message}
                               >
                                 <Input
-                                  className="h-12 rounded-[20px] bg-black/18"
+                                  className="h-12 rounded-[18px] bg-white/[0.03]"
                                   placeholder={labels.titlePlaceholder}
                                   {...form.register(`designs.${index}.title`)}
                                 />
@@ -607,7 +624,7 @@ export function FeaturedDesignsForm({
                               <div className="grid gap-4">
                                 <Field label={labels.category} description={labels.categoryHelp}>
                                   <NativeSelect
-                                    className="h-12 rounded-[20px] bg-black/18"
+                                    className="h-12 rounded-[18px] bg-white/[0.03]"
                                     value={getCategorySelectValue(currentDesign?.category || "")}
                                     onChange={(event) =>
                                       form.setValue(
@@ -626,7 +643,7 @@ export function FeaturedDesignsForm({
                                 {isCustomCategory ? (
                                   <Field label={labels.customCategory}>
                                     <Input
-                                      className="h-12 rounded-[20px] bg-black/18"
+                                      className="h-12 rounded-[18px] bg-white/[0.03]"
                                       placeholder={labels.customCategoryPlaceholder}
                                       value={currentDesign?.category || ""}
                                       onChange={(event) =>
@@ -640,10 +657,10 @@ export function FeaturedDesignsForm({
                                 ) : null}
                               </div>
 
-                              <label className="flex items-center justify-between gap-4 rounded-[20px] border border-white/7 bg-black/18 px-4 py-3.5">
+                              <label className="flex items-center justify-between gap-4 rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-4">
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium text-white">{labels.liveLabel}</p>
-                                  <p className="mt-1 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">{labels.liveHelp}</p>
+                                  <p className="mt-1.5 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{labels.liveHelp}</p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <span
@@ -651,7 +668,7 @@ export function FeaturedDesignsForm({
                                       "rounded-full px-2.5 py-1 text-[11px] font-medium",
                                       currentDesign?.active
                                         ? "bg-[var(--accent)]/12 text-[var(--accent-soft)]"
-                                        : "bg-white/6 text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]",
+                                        : "bg-white/[0.05] text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]",
                                     )}
                                   >
                                     {currentDesign?.active ? labels.liveOn : labels.liveOff}
@@ -671,7 +688,7 @@ export function FeaturedDesignsForm({
                           </DesignSection>
 
                           <DesignSection title={labels.sectionPricing} description={labels.sectionPricingHelp}>
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                               <div className="grid gap-4 md:grid-cols-2">
                                 <Field
                                   label={labels.priceNote}
@@ -682,17 +699,18 @@ export function FeaturedDesignsForm({
                                     <Input
                                       type="number"
                                       placeholder={labels.sizePlaceholder}
-                                      className="h-12 rounded-[20px] bg-black/18 pr-12"
+                                      className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
                                       {...form.register(`designs.${index}.priceNote`)}
                                     />
-                                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">
-                                      cm
-                                    </span>
-                                  </div>
-                                </Field>
+                                      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
+                                        cm
+                                      </span>
+                                    </div>
+                                  </Field>
 
                                 <Field label={labels.detailLevel} description={labels.detailLevelHelp}>
-                                  <div className="grid gap-2">
+                                  <div className="rounded-[20px] border border-white/8 bg-white/[0.02] p-1.5">
+                                    <div className="grid gap-1.5">
                                     {detailOptions.map((option) => {
                                       const active = currentDesign?.referenceDetailLevel === option.value;
                                       return (
@@ -706,23 +724,24 @@ export function FeaturedDesignsForm({
                                             })
                                           }
                                           className={cn(
-                                            "rounded-[18px] border px-4 py-3 text-left transition",
+                                            "rounded-[16px] border px-4 py-3 text-left transition",
                                             active
-                                              ? "border-[var(--accent)]/50 bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.05),0_10px_22px_rgba(0,0,0,0.10)]"
-                                              : "border-white/7 bg-black/18 hover:border-white/12 hover:bg-white/[0.03]",
+                                              ? "border-[var(--accent)]/26 bg-[var(--accent)]/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                                              : "border-transparent bg-transparent hover:border-white/8 hover:bg-white/[0.03]",
                                           )}
                                         >
                                           <p className="text-sm font-medium text-white">{option.label}</p>
-                                          <p className="mt-1 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">{option.hint}</p>
+                                          <p className="mt-1.5 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{option.hint}</p>
                                         </button>
                                       );
                                     })}
+                                    </div>
                                   </div>
                                 </Field>
                               </div>
 
                               <Field label={labels.priceRange} description={labels.priceRangeHelp}>
-                                <div className="rounded-[20px] border border-white/7 bg-black/18 px-4 py-3.5 text-sm text-white">
+                                <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3.5 text-sm text-white">
                                   {labels.summaryPrefix}:{" "}
                                   {currentDesign?.priceNote?.trim() || "—"} cm · {detailLabel} ·{" "}
                                   {formattedMin ? `${labels.currencyPrefix}${formattedMin}` : "—"}
@@ -740,15 +759,15 @@ export function FeaturedDesignsForm({
                                       <Input
                                         type="number"
                                         placeholder="2500"
-                                        className="h-12 rounded-[20px] bg-black/18 pl-10"
+                                        className="h-12 rounded-[18px] bg-white/[0.03] pl-10"
                                         {...form.register(`designs.${index}.referencePriceMin`)}
                                       />
-                                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">
+                                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
                                         {labels.currencyPrefix}
                                       </span>
                                     </div>
                                   </Field>
-                                  <div className="hidden h-12 items-center justify-center text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)] md:flex">
+                                  <div className="hidden h-12 items-center justify-center text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)] md:flex">
                                     —
                                   </div>
                                   <Field
@@ -760,16 +779,16 @@ export function FeaturedDesignsForm({
                                       <Input
                                         type="number"
                                         placeholder="3800"
-                                        className="h-12 rounded-[20px] bg-black/18 pl-10"
+                                        className="h-12 rounded-[18px] bg-white/[0.03] pl-10"
                                         {...form.register(`designs.${index}.referencePriceMax`)}
                                       />
-                                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">
+                                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
                                         {labels.currencyPrefix}
                                       </span>
                                     </div>
                                   </Field>
                                 </div>
-                                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">{labels.priceRangeNote}</p>
+                                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{labels.priceRangeNote}</p>
                               </Field>
                             </div>
                           </DesignSection>
@@ -783,11 +802,11 @@ export function FeaturedDesignsForm({
           </div>
 
           <div className="sticky bottom-4 z-20 pt-3">
-            <div className="rounded-[22px] border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_78%,black)]/90 px-4 py-3.5 shadow-[0_18px_44px_rgba(0,0,0,0.22)] backdrop-blur-lg sm:px-5">
+            <div className="rounded-[18px] border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_88%,black)]/94 px-4 py-3 shadow-[0_10px_24px_rgba(0,0,0,0.16)] backdrop-blur-md sm:px-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-white">{statusMessage}</p>
-                  <p className="mt-1 text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_5%)]">
+                  <p className="mt-1 text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
                     {designsFieldArray.fields.length} {labels.item.toLowerCase()}
                   </p>
                 </div>
