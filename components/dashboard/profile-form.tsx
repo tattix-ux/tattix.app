@@ -10,8 +10,7 @@ import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-import { currencyOptions } from "@/lib/constants/options";
+import { Textarea } from "@/components/ui/textarea";
 import { getAppOrigin } from "@/lib/config/site";
 import { profileSchema } from "@/lib/forms/schemas";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
@@ -30,8 +29,6 @@ const profileCopy = {
     linkSectionHelp: "This is the link for your Instagram bio.",
     contactSection: "Contact",
     contactSectionHelp: "Clients reach you from here.",
-    generalSection: "General settings",
-    generalSectionHelp: "Small details that affect the public page.",
     artistName: "Name shown on your profile",
     artistNameHelp: "It works best when this matches your Instagram name.",
     slug: "Link for your Instagram bio",
@@ -48,8 +45,9 @@ const profileCopy = {
     upload: "Upload image",
     remove: "Remove image",
     shortBio: "Short bio (shown if the welcome text is empty)",
-    shortBioHelp: "Optional. This line appears only when the welcome text is left empty.",
-    shortBioPlaceholder: "Optional short studio intro",
+    shortBioHelp: "This text appears under the heading on your client page.",
+    shortBioPlaceholder:
+      "Describe your style and the kind of tattoos you do in a short, clear way.\nFor example: Minimal fine line tattoos. Small and medium-size pieces.",
     welcomeHeadline: "Optional welcome title",
     welcomeHeadlineHelp: "Optional. A short title clients will see near the top.",
     welcomeHeadlinePlaceholder: "Optional welcome title",
@@ -58,7 +56,6 @@ const profileCopy = {
     whatsappEmptyHint: "Clients cannot reach you if this is empty.",
     instagram: "Clients can check your Instagram here",
     instagramHelp: "Clients can check your profile from here.",
-    currency: "Currency",
     active: "Artist page is active",
     saving: "Saving",
     save: "Update profile",
@@ -81,8 +78,6 @@ const profileCopy = {
     linkSectionHelp: "Instagram bio için kullanacağın link burada.",
     contactSection: "İletişim",
     contactSectionHelp: "Müşteri sana buradan ulaşır.",
-    generalSection: "Genel ayar",
-    generalSectionHelp: "Sayfanın genel davranışını etkileyen küçük ayarlar.",
     artistName: "Profilde görünen isim",
     artistNameHelp: "Instagram’daki adınla aynı olması önerilir.",
     slug: "Instagram bio’ya koyacağın link",
@@ -99,8 +94,9 @@ const profileCopy = {
     upload: "Görsel yükle",
     remove: "Görseli kaldır",
     shortBio: "Kısa bio (karşılama metni boşsa burada yazan gösterilir)",
-    shortBioHelp: "İsteğe bağlı. Karşılama metni boşsa müşteri sayfasında bu satır görünür.",
-    shortBioPlaceholder: "İsteğe bağlı kısa stüdyo tanıtımı",
+    shortBioHelp: "Bu metin, müşterinin profilinde başlığın altında görünür.",
+    shortBioPlaceholder:
+      "Stilini ve ne tür dövmeler yaptığını kısa ve net anlat.\nÖrn: Minimal ince çizgi dövmeler. Küçük ve orta boy çalışmalar.",
     welcomeHeadline: "Opsiyonel karşılama başlığı",
     welcomeHeadlineHelp: "İsteğe bağlı. Profilin üst kısmında kısa bir başlık olarak görünür.",
     welcomeHeadlinePlaceholder: "İsteğe bağlı başlık",
@@ -109,7 +105,6 @@ const profileCopy = {
     whatsappEmptyHint: "Müşteriler sana ulaşamaz.",
     instagram: "Müşteriler profilini buradan inceleyebilir",
     instagramHelp: "Müşteriler profilini buradan inceleyebilir.",
-    currency: "Para birimi",
     active: "Sanatçı sayfası aktif",
     saving: "Kaydediliyor",
     save: "Profili güncelle",
@@ -213,7 +208,6 @@ export function ProfileForm({
       welcomeHeadline: profile.welcomeHeadline,
       whatsappNumber: profile.whatsappNumber,
       instagramHandle: profile.instagramHandle,
-      currency: profile.currency,
       active: profile.active,
     },
   });
@@ -360,7 +354,11 @@ export function ProfileForm({
               description={copy.shortBioHelp}
               error={form.formState.errors.shortBio?.message}
             >
-              <Input {...form.register("shortBio")} placeholder={copy.shortBioPlaceholder} />
+              <Textarea
+                {...form.register("shortBio")}
+                placeholder={copy.shortBioPlaceholder}
+                className="min-h-[116px]"
+              />
             </Field>
           </CardContent>
         </Card>
@@ -421,24 +419,6 @@ export function ProfileForm({
               error={form.formState.errors.instagramHandle?.message}
             >
               <Input {...form.register("instagramHandle")} />
-            </Field>
-          </CardContent>
-        </Card>
-
-        <Card className="surface-border">
-          <CardHeader className="pb-4">
-            <CardTitle>{copy.generalSection}</CardTitle>
-            <CardDescription>{copy.generalSectionHelp}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Field label={copy.currency} error={form.formState.errors.currency?.message}>
-              <NativeSelect {...form.register("currency")}>
-                {currencyOptions.map((currency) => (
-                  <option key={currency.value} value={currency.value}>
-                    {currency.label}
-                  </option>
-                ))}
-              </NativeSelect>
             </Field>
           </CardContent>
         </Card>
@@ -510,11 +490,13 @@ export function ProfileForm({
 
                   <div className="space-y-2">
                     <h3 className="text-2xl font-display text-white">
-                      {welcomeHeadline || artistName || profile.artistName}
+                      {welcomeHeadline || profile.welcomeHeadline || (locale === "tr" ? "Aklında ne var?" : "What do you have in mind?")}
                     </h3>
-                    <p className="text-sm leading-6 text-[var(--foreground-muted)]">
-                      {shortBio || copy.description}
-                    </p>
+                    {shortBio?.trim() ? (
+                      <p className="text-sm leading-6 text-[var(--foreground-muted)]">
+                        {shortBio}
+                      </p>
+                    ) : null}
                     <div className="inline-flex h-10 items-center rounded-full bg-[var(--accent)] px-4 text-sm font-medium text-[var(--accent-foreground)]">
                       {locale === "tr" ? "Fiyat tahmini al" : "Get an estimate"}
                     </div>

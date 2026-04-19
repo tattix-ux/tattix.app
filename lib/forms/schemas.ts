@@ -1,12 +1,7 @@
 import { z } from "zod";
 
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
-import {
-  currencyOptions,
-  featuredDesignCategories,
-  intentOptions,
-  sizeOptions,
-} from "@/lib/constants/options";
+import { featuredDesignCategories, intentOptions, sizeOptions } from "@/lib/constants/options";
 import {
   backgroundTypeOptions,
   bodyFontOptions,
@@ -32,8 +27,6 @@ const detailValues = bodyPlacementGroups.flatMap((group) =>
 const intentValues = intentOptions.map((intent) => intent.value);
 const sizeValues = sizeOptions.map((size) => size.value);
 const categoryValues = featuredDesignCategories.map((item) => item.value);
-const currencyValues = currencyOptions.map((item) => item.value);
-
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
@@ -71,7 +64,6 @@ export const profileSchema = z.object({
   welcomeHeadline: z.string().max(120),
   whatsappNumber: z.string().min(8),
   instagramHandle: z.string().min(2),
-  currency: z.enum(currencyValues as [string, ...string[]]),
   active: z.boolean(),
 });
 

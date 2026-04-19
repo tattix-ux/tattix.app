@@ -82,7 +82,7 @@ function normalizeAuthenticatedArtist(row: Record<string, unknown>): ArtistProfi
     welcomeHeadline: String(row.welcome_headline ?? ""),
     whatsappNumber: String(row.whatsapp_number ?? ""),
     instagramHandle: String(row.instagram_handle ?? ""),
-    currency: String(row.currency ?? "TRY") as ArtistProfile["currency"],
+    currency: "TRY",
     active: Boolean(row.active),
     planType: String(row.plan_type ?? "free") as ArtistProfile["planType"],
     accessStatus: String(row.access_status ?? "active") as ArtistProfile["accessStatus"],

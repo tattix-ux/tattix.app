@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       welcome_headline: parsed.data.welcomeHeadline,
       whatsapp_number: parsed.data.whatsappNumber,
       instagram_handle: parsed.data.instagramHandle,
-      currency: parsed.data.currency,
+      currency: "TRY",
       active: parsed.data.active,
     })
     .eq("id", artist.id);
