@@ -24,8 +24,8 @@ export default async function DashboardProfilePage() {
           }
           description={
             isTurkish
-              ? "Buradaki bilgiler, sana yazmadan önce müşterinin gördüğü ilk şeydir."
-              : "These details are the first things clients see before they message you."
+              ? "Müşterinin gördüğü alanları burada güncellersin."
+              : "Update the parts clients see before they message you."
           }
         />
       </div>

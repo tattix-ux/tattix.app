@@ -22,40 +22,39 @@ type ProfileValues = z.infer<typeof profileSchema>;
 const profileCopy = {
   en: {
     title: "Profile overview",
-    description: "This is the profile clients see before they message you.",
-    profileSection: "Profile appearance",
-    profileSectionHelp: "Clients see this first.",
+    description: "This is what clients see before they message you.",
+    profileSection: "Visible on your profile",
+    profileSectionHelp: "Shown at the top of your client page.",
     linkSection: "Your page link",
-    linkSectionHelp: "This is the link for your Instagram bio.",
+    linkSectionHelp: "You can place this in your Instagram bio.",
     contactSection: "Contact",
-    contactSectionHelp: "Clients reach you from here.",
-    artistName: "Name shown on your profile",
-    artistNameHelp: "It works best when this matches your Instagram name.",
+    contactSectionHelp: "Clients can reach you here.",
+    artistName: "Name shown to clients",
+    artistNameHelp: "Shown on the page.",
     slug: "Link for your Instagram bio",
-    slugHelp: "You put this link in your Instagram bio. Clients arrive from here.",
+    slugHelp: undefined,
     copyLink: "Copy",
     copied: "Copied",
-    profileImage: "The photo clients see first",
-    profileImageHelp: "Show your face so clients trust you faster.",
-    profileImageEmptyHint: "Artists with a visible face photo usually get more messages.",
-    coverImage: "The large image at the top of your profile",
-    coverImageHelp: "Add one of your strongest pieces so clients understand your style quickly.",
-    coverImageEmptyHint: "A strong cover image helps clients understand your style faster.",
+    profileImage: "Profile photo",
+    profileImageHelp: undefined,
+    profileImageEmptyHint: undefined,
+    coverImage: "Cover image",
+    coverImageHelp: undefined,
+    coverImageEmptyHint: undefined,
     noImage: "No image selected yet",
     upload: "Upload image",
     remove: "Remove image",
-    shortBio: "Short bio (shown if the welcome text is empty)",
-    shortBioHelp: "This text appears under the heading on your client page.",
-    shortBioPlaceholder:
-      "Describe your style and the kind of tattoos you do in a short, clear way.\nFor example: Minimal fine line tattoos. Small and medium-size pieces.",
-    welcomeHeadline: "Optional welcome title",
-    welcomeHeadlineHelp: "Optional. A short title clients will see near the top.",
-    welcomeHeadlinePlaceholder: "Optional welcome title",
-    whatsapp: "Clients will message you here",
-    whatsappHelp: "Clients will message you directly here.",
-    whatsappEmptyHint: "Clients cannot reach you if this is empty.",
-    instagram: "Clients can check your Instagram here",
-    instagramHelp: "Clients can check your profile from here.",
+    shortBio: "Short bio",
+    shortBioHelp: "Shown under the heading.",
+    shortBioPlaceholder: "Minimal and fine line tattoos.",
+    welcomeHeadline: "Welcome heading (optional)",
+    welcomeHeadlineHelp: "Shown at the top.",
+    welcomeHeadlinePlaceholder: "Welcome heading",
+    whatsapp: "WhatsApp number",
+    whatsappHelp: "Clients message you here.",
+    whatsappEmptyHint: undefined,
+    instagram: "Instagram username",
+    instagramHelp: "Clients can open your profile here.",
     active: "Artist page is active",
     saving: "Saving",
     save: "Update profile",
@@ -71,44 +70,43 @@ const profileCopy = {
   },
   tr: {
     title: "Profil görünümü",
-    description: "Burası müşterinin seni görmeden önce baktığı profildir.",
-    profileSection: "Profil görünümü",
-    profileSectionHelp: "Müşteri ilk bunu görür.",
+    description: "Müşteri seni görmeden önce bunları görür.",
+    profileSection: "Profilde görünenler",
+    profileSectionHelp: "Sayfanın üst kısmında görünür.",
     linkSection: "Sayfa linkin",
-    linkSectionHelp: "Instagram bio için kullanacağın link burada.",
+    linkSectionHelp: "Instagram bio’ya bunu koyarsın.",
     contactSection: "İletişim",
     contactSectionHelp: "Müşteri sana buradan ulaşır.",
-    artistName: "Profilde görünen isim",
-    artistNameHelp: "Instagram’daki adınla aynı olması önerilir.",
+    artistName: "Müşteri tarafında görünen isim",
+    artistNameHelp: "Sayfada görünür.",
     slug: "Instagram bio’ya koyacağın link",
-    slugHelp: "Instagram bio’na koyacağın link. Müşteriler buradan gelir.",
+    slugHelp: undefined,
     copyLink: "Kopyala",
     copied: "Kopyalandı",
-    profileImage: "Müşterinin ilk gördüğü fotoğrafın",
-    profileImageHelp: "Yüzün görünsün -> müşteriler daha çok güvenir.",
-    profileImageEmptyHint: "Profil fotoğrafı olan sanatçılar daha fazla mesaj alır.",
-    coverImage: "Profilinin üstünde görünen büyük görsel",
-    coverImageHelp: "En iyi işlerinden birini koy -> müşteri tarzını hemen anlasın.",
-    coverImageEmptyHint: "Tarzını gösteren bir kapak görseli eklemek güven verir.",
+    profileImage: "Profil fotoğrafı",
+    profileImageHelp: undefined,
+    profileImageEmptyHint: undefined,
+    coverImage: "Kapak görseli",
+    coverImageHelp: undefined,
+    coverImageEmptyHint: undefined,
     noImage: "Henüz görsel seçilmedi",
     upload: "Görsel yükle",
     remove: "Görseli kaldır",
-    shortBio: "Kısa bio (karşılama metni boşsa burada yazan gösterilir)",
-    shortBioHelp: "Bu metin, müşterinin profilinde başlığın altında görünür.",
-    shortBioPlaceholder:
-      "Stilini ve ne tür dövmeler yaptığını kısa ve net anlat.\nÖrn: Minimal ince çizgi dövmeler. Küçük ve orta boy çalışmalar.",
-    welcomeHeadline: "Opsiyonel karşılama başlığı",
-    welcomeHeadlineHelp: "İsteğe bağlı. Profilin üst kısmında kısa bir başlık olarak görünür.",
-    welcomeHeadlinePlaceholder: "İsteğe bağlı başlık",
-    whatsapp: "Müşteriler sana buradan yazacak",
-    whatsappHelp: "Müşteriler sana buradan direkt yazacak.",
-    whatsappEmptyHint: "Müşteriler sana ulaşamaz.",
-    instagram: "Müşteriler profilini buradan inceleyebilir",
-    instagramHelp: "Müşteriler profilini buradan inceleyebilir.",
+    shortBio: "Kısa bio",
+    shortBioHelp: "Başlığın altında görünür.",
+    shortBioPlaceholder: "Minimal ve ince çizgi dövmeler.",
+    welcomeHeadline: "Karşılama başlığı (opsiyonel)",
+    welcomeHeadlineHelp: "En üstte görünür.",
+    welcomeHeadlinePlaceholder: "Karşılama başlığı",
+    whatsapp: "WhatsApp numarası",
+    whatsappHelp: "Müşteri sana buradan yazar.",
+    whatsappEmptyHint: undefined,
+    instagram: "Instagram kullanıcı adı",
+    instagramHelp: "Profilini buradan açabilir.",
     active: "Sanatçı sayfası aktif",
     saving: "Kaydediliyor",
     save: "Profili güncelle",
-    saveHint: "Yaptığın değişiklikleri müşteriler hemen görür.",
+    saveHint: "Kaydettiğinde görünür.",
     demoSaved: "Demo verisi güncellendi.",
     saved: "Profil kaydedildi.",
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
@@ -132,7 +130,7 @@ function MediaUploadField({
   emptyHint,
 }: {
   label: string;
-  description: string;
+  description?: string;
   imageUrl: string;
   onUpload: (file: File) => void;
   onRemove: () => void;
@@ -404,11 +402,7 @@ export function ProfileForm({
           <CardContent className="grid gap-5 lg:grid-cols-2">
             <Field
               label={copy.whatsapp}
-              description={
-                form.watch("whatsappNumber")?.trim().length
-                  ? copy.whatsappHelp
-                  : `${copy.whatsappHelp} ${copy.whatsappEmptyHint}`
-              }
+              description={copy.whatsappHelp}
               error={form.formState.errors.whatsappNumber?.message}
             >
               <Input {...form.register("whatsappNumber")} />
@@ -456,8 +450,8 @@ export function ProfileForm({
             <CardTitle>{locale === "tr" ? "Canlı görünüm" : "Live preview"}</CardTitle>
             <CardDescription>
               {locale === "tr"
-                ? "Müşteri tarafında profilin yaklaşık böyle görünür."
-                : "This is roughly how your profile appears to clients."}
+                ? "Müşteri tarafında yaklaşık böyle görünür."
+                : "This is roughly how it appears to clients."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -483,15 +477,20 @@ export function ProfileForm({
                         </div>
                       )}
                     </div>
-                    <div className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] text-white">
-                      @{form.watch("instagramHandle") || "instagram"}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-white">{artistName || profile.artistName}</p>
+                      {form.watch("instagramHandle")?.trim() ? (
+                        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] text-white">
+                          @{form.watch("instagramHandle")}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-display text-white">
-                      {welcomeHeadline || profile.welcomeHeadline || (locale === "tr" ? "Aklında ne var?" : "What do you have in mind?")}
-                    </h3>
+                    {welcomeHeadline?.trim() ? (
+                      <h3 className="text-2xl font-display text-white">{welcomeHeadline}</h3>
+                    ) : null}
                     {shortBio?.trim() ? (
                       <p className="text-sm leading-6 text-[var(--foreground-muted)]">
                         {shortBio}
@@ -503,12 +502,11 @@ export function ProfileForm({
                   </div>
 
                   <div className="rounded-[22px] border border-white/8 bg-white/[0.04] p-4">
-                    <p className="text-sm font-medium text-white">{artistName || profile.artistName}</p>
                     <a
                       href={publicLink}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-2 text-sm text-[var(--accent-soft)]"
+                      className="inline-flex items-center gap-2 text-sm text-[var(--accent-soft)]"
                     >
                       <ExternalLink className="size-4" />
                       {publicLink}
