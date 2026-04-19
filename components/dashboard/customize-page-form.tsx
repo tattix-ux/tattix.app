@@ -130,7 +130,7 @@ function ThemeCardPreview({
         isPanel ? "p-5 sm:p-6" : "p-3.5",
       )}
     >
-      <div className={cn("mx-auto w-full", isPanel ? "max-w-[290px]" : "max-w-[190px]")}>
+      <div className={cn("w-full", isPanel ? "max-w-[290px]" : "max-w-[190px]")}>
         <div
           className={cn(
             "overflow-hidden border shadow-[0_20px_60px_rgba(0,0,0,0.35)]",
@@ -154,12 +154,10 @@ function ThemeCardPreview({
                 className={cn("relative overflow-hidden rounded-[18px] border border-white/10 bg-black/15", isPanel ? "h-20" : "h-14")}
               >
                 {artist.profile.coverImageUrl ? (
-                  <Image
+                  <img
                     src={artist.profile.coverImageUrl}
                     alt={artist.profile.artistName}
-                    fill
-                    className="object-cover"
-                    sizes={isPanel ? "290px" : "190px"}
+                    className="h-full w-full object-cover"
                   />
                 ) : null}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/45" />
@@ -169,12 +167,10 @@ function ThemeCardPreview({
                   className={cn("relative overflow-hidden rounded-[18px] border border-white/10 bg-black/30", isPanel ? "size-14" : "size-11")}
                 >
                   {artist.profile.profileImageUrl ? (
-                    <Image
+                    <img
                       src={artist.profile.profileImageUrl}
                       alt={artist.profile.artistName}
-                      fill
-                      className="object-cover"
-                      sizes={isPanel ? "56px" : "44px"}
+                      className="h-full w-full object-cover"
                     />
                   ) : null}
                 </div>
