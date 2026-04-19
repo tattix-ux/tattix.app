@@ -102,21 +102,13 @@ function getCopy(locale: PublicLocale) {
 
 function buildDraftFromProfile(profile: DetailCalibrationProfile | null | undefined): DraftState {
   if (!profile) {
-    return {
-      sampleOrder: createRandomizedDetailCalibrationOrder(),
-      responses: {},
-      currentIndex: 0,
-    };
+    return buildEmptyDraft();
   }
 
   const sampleOrder = profile.sampleOrder.filter(isDetailCalibrationSampleId);
 
   if (sampleOrder.length !== DETAIL_CALIBRATION_SAMPLES.length) {
-    return {
-      sampleOrder: createRandomizedDetailCalibrationOrder(),
-      responses: {},
-      currentIndex: 0,
-    };
+    return buildEmptyDraft();
   }
 
   const responses = Object.fromEntries(
@@ -128,6 +120,14 @@ function buildDraftFromProfile(profile: DetailCalibrationProfile | null | undefi
   return {
     sampleOrder,
     responses,
+    currentIndex: 0,
+  };
+}
+
+function buildEmptyDraft(): DraftState {
+  return {
+    sampleOrder: createRandomizedDetailCalibrationOrder(),
+    responses: {},
     currentIndex: 0,
   };
 }
@@ -269,11 +269,7 @@ export function DetailCalibrationForm({
   }
 
   function handleRestart() {
-    const nextDraft: DraftState = {
-      sampleOrder: createRandomizedDetailCalibrationOrder(),
-      responses: {},
-      currentIndex: 0,
-    };
+    const nextDraft = buildEmptyDraft();
 
     setDraft(nextDraft);
     setStatusMessage(null);
@@ -325,25 +321,41 @@ export function DetailCalibrationForm({
 
   function handleSelection(level: DetailCalibrationLevel) {
     setStatusMessage(null);
-    const currentSampleId = draft.sampleOrder[draft.currentIndex];
-    const nextResponses = {
-      ...draft.responses,
-      [currentSampleId]: level,
-    };
-    const nextIndex =
-      draft.currentIndex < draft.sampleOrder.length - 1 ? draft.currentIndex + 1 : draft.currentIndex;
-    const nextDraft = {
-      ...draft,
-      responses: nextResponses,
-      currentIndex: nextIndex,
-    };
+    let nextDraftSnapshot: DraftState | null = null;
 
-    setDraft(nextDraft);
+    setDraft((current) => {
+      const currentSampleId = current.sampleOrder[current.currentIndex];
+      const nextResponses = {
+        ...current.responses,
+        [currentSampleId]: level,
+      };
+      const nextIndex =
+        current.currentIndex < current.sampleOrder.length - 1
+          ? current.currentIndex + 1
+          : current.currentIndex;
+      const nextDraft = {
+        ...current,
+        responses: nextResponses,
+        currentIndex: nextIndex,
+      };
 
-    const isCompleteNow = nextDraft.sampleOrder.every((sampleId) => Boolean(nextDraft.responses[sampleId]));
-    if (isCompleteNow) {
-      void persistDraft(nextDraft);
-    }
+      nextDraftSnapshot = nextDraft;
+      return nextDraft;
+    });
+
+    queueMicrotask(() => {
+      if (!nextDraftSnapshot) {
+        return;
+      }
+
+      const isCompleteNow = nextDraftSnapshot.sampleOrder.every((sampleId) =>
+        Boolean(nextDraftSnapshot?.responses[sampleId]),
+      );
+
+      if (isCompleteNow) {
+        void persistDraft(nextDraftSnapshot);
+      }
+    });
   }
 
   async function handleSave() {
