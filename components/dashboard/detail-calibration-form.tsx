@@ -273,7 +273,7 @@ export function DetailCalibrationForm({
 
     setDraft(nextDraft);
     setStatusMessage(null);
-    setIsOpen(true);
+    setIsOpen(false);
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(storageKey);
     }
