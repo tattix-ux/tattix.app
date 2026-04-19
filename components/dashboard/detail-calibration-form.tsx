@@ -71,6 +71,7 @@ function getCopy(locale: PublicLocale) {
       medium: "Orta detay",
       high: "Yüksek detay",
       back: "Geri",
+      close: "Daha sonra devam et",
       imageFallback: "Görsel yüklenemedi.",
       devDebug: "Debug verisi",
     };
@@ -95,6 +96,7 @@ function getCopy(locale: PublicLocale) {
     medium: "Medium detail",
     high: "High detail",
     back: "Back",
+    close: "Continue later",
     imageFallback: "Image could not be loaded.",
     devDebug: "Debug data",
   };
@@ -497,6 +499,17 @@ export function DetailCalibrationForm({
               <Button type="button" variant="ghost" onClick={handleRestart}>
                 <RotateCcw className="size-4" />
                 {copy.reset}
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setStatusMessage(null);
+                  setIsOpen(false);
+                }}
+              >
+                {copy.close}
               </Button>
 
               {isComplete ? (

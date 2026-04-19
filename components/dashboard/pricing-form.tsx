@@ -249,9 +249,24 @@ function buildInitialValues(pricingRules: ArtistPricingRules): PricingCalibratio
   };
 }
 
+function buildBlankValues(): PricingCalibrationValues {
+  return {
+    openingPrice: "",
+    textAnchor: "",
+    minimalSymbolAnchor: "",
+    size8: "",
+    size18: "",
+    size25: "",
+    detailLow: "",
+    detailHigh: "",
+    detailColor: "",
+    anchor18: "",
+  };
+}
+
 function createEmptyDraft(pricingRules: ArtistPricingRules): PricingCalibrationDraft {
   return {
-    values: buildInitialValues(pricingRules),
+    values: buildBlankValues(),
     currentIndex: 0,
     isOpen: false,
     isFinalControlOpen: false,
