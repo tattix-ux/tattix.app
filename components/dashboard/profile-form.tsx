@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { CheckCircle2, Copy, ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, Copy, ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -20,16 +20,20 @@ import { buildThemeStyles } from "@/lib/theme";
 import type { ArtistPageTheme, ArtistProfile } from "@/lib/types";
 
 type ProfileValues = z.infer<typeof profileSchema>;
+export type ProfilePreviewDraft = {
+  artistName: string;
+  upperLabel: string;
+  profileImageUrl: string | null;
+  coverImageUrl: string | null;
+  welcomeHeadline: string;
+  shortBio: string;
+};
 
 const profileCopy = {
   en: {
-    profileSection: "Visible on your profile",
-    linkSection: "Your page link",
-    contactSection: "Contact",
+    sectionTitle: "Profile settings",
     artistName: "Name",
-    slug: "Your page link",
-    copyLink: "Copy",
-    copied: "Copied",
+    upperLabel: "Top label (optional)",
     profileImage: "Profile photo",
     coverImage: "Cover image",
     noImage: "No image selected yet",
@@ -39,6 +43,9 @@ const profileCopy = {
     shortBioPlaceholder: "Minimal and fine line tattoos. Small and medium-size pieces.",
     welcomeHeadline: "Heading (optional)",
     welcomeHeadlinePlaceholder: "Heading",
+    linkSection: "Your page link",
+    copyLink: "Copy",
+    copied: "Copied",
     whatsapp: "WhatsApp number",
     instagram: "Instagram username",
     saving: "Saving",
@@ -50,17 +57,11 @@ const profileCopy = {
     uploadQueued: "Image uploaded.",
     uploadFailed: "Unable to upload image.",
     saveFailed: "Unable to save profile.",
-    livePreview: "Live preview",
-    liveCta: "Get an estimate",
   },
   tr: {
-    profileSection: "Profilde görünenler",
-    linkSection: "Sayfa linkin",
-    contactSection: "İletişim",
+    sectionTitle: "Profil ayarları",
     artistName: "İsim",
-    slug: "Sayfa linkin",
-    copyLink: "Kopyala",
-    copied: "Kopyalandı",
+    upperLabel: "Üst etiket (opsiyonel)",
     profileImage: "Profil fotoğrafı",
     coverImage: "Kapak görseli",
     noImage: "Henüz görsel seçilmedi",
@@ -70,6 +71,9 @@ const profileCopy = {
     shortBioPlaceholder: "Minimal ve ince çizgi dövmeler. Küçük ve orta boy çalışmalar.",
     welcomeHeadline: "Başlık (opsiyonel)",
     welcomeHeadlinePlaceholder: "Başlık",
+    linkSection: "Sayfa linkin",
+    copyLink: "Kopyala",
+    copied: "Kopyalandı",
     whatsapp: "WhatsApp numarası",
     instagram: "Instagram kullanıcı adı",
     saving: "Kaydediliyor",
@@ -81,8 +85,6 @@ const profileCopy = {
     uploadQueued: "Görsel yüklendi.",
     uploadFailed: "Görsel yüklenemedi.",
     saveFailed: "Profil kaydedilemedi.",
-    livePreview: "Canlı görünüm",
-    liveCta: "Fiyat tahmini al",
   },
 } as const;
 
@@ -148,14 +150,16 @@ function MediaUploadField({
 
 export function ProfileForm({
   profile,
-  pageTheme,
+  upperLabel,
   demoMode,
   locale,
+  onPreviewChange,
 }: {
   profile: ArtistProfile;
-  pageTheme: ArtistPageTheme;
+  upperLabel: string;
   demoMode: boolean;
   locale: PublicLocale;
+  onPreviewChange?: (draft: ProfilePreviewDraft) => void;
 }) {
   const copy = profileCopy[locale];
   const [copied, setCopied] = useState(false);
@@ -167,13 +171,14 @@ export function ProfileForm({
       slug: profile.slug,
       profileImageUrl: profile.profileImageUrl ?? "",
       coverImageUrl: profile.coverImageUrl ?? "",
+      upperLabel: upperLabel ?? "",
       shortBio: profile.shortBio,
       welcomeHeadline: profile.welcomeHeadline,
       whatsappNumber: profile.whatsappNumber,
       instagramHandle: profile.instagramHandle,
       active: profile.active,
     }),
-    [profile],
+    [profile, upperLabel],
   );
   const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
@@ -182,14 +187,14 @@ export function ProfileForm({
   const watchedValues = useWatch({ control: form.control }) as ProfileValues | undefined;
   const lastSavedPayloadRef = useRef(JSON.stringify(defaultValues));
   const saveRequestIdRef = useRef(0);
-  const artistName = useWatch({ control: form.control, name: "artistName" }) ?? "";
   const slug = useWatch({ control: form.control, name: "slug" }) ?? "";
-  const shortBio = useWatch({ control: form.control, name: "shortBio" }) ?? "";
-  const welcomeHeadline = useWatch({ control: form.control, name: "welcomeHeadline" }) ?? "";
-  const profileImageUrl = useWatch({ control: form.control, name: "profileImageUrl" }) ?? "";
-  const coverImageUrl = useWatch({ control: form.control, name: "coverImageUrl" }) ?? "";
+  const watchedArtistName = useWatch({ control: form.control, name: "artistName" }) ?? "";
+  const watchedUpperLabel = useWatch({ control: form.control, name: "upperLabel" }) ?? "";
+  const watchedShortBio = useWatch({ control: form.control, name: "shortBio" }) ?? "";
+  const watchedWelcomeHeadline = useWatch({ control: form.control, name: "welcomeHeadline" }) ?? "";
+  const watchedProfileImageUrl = useWatch({ control: form.control, name: "profileImageUrl" }) ?? "";
+  const watchedCoverImageUrl = useWatch({ control: form.control, name: "coverImageUrl" }) ?? "";
   const publicLink = useMemo(() => `${getAppOrigin()}/${slug || profile.slug}`, [slug, profile.slug]);
-  const { wrapperStyle } = buildThemeStyles(pageTheme);
 
   useEffect(() => {
     form.reset(defaultValues);
@@ -201,9 +206,7 @@ export function ProfileForm({
   async function persistProfile(values: ProfileValues) {
     const response = await fetch("/api/dashboard/profile", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
     });
 
@@ -255,6 +258,25 @@ export function ProfileForm({
 
     return () => window.clearTimeout(timeoutId);
   }, [copy.saving, form, watchedValues]);
+
+  useEffect(() => {
+    onPreviewChange?.({
+      artistName: watchedArtistName,
+      upperLabel: watchedUpperLabel,
+      profileImageUrl: watchedProfileImageUrl || null,
+      coverImageUrl: watchedCoverImageUrl || null,
+      welcomeHeadline: watchedWelcomeHeadline,
+      shortBio: watchedShortBio,
+    });
+  }, [
+    onPreviewChange,
+    watchedArtistName,
+    watchedCoverImageUrl,
+    watchedProfileImageUrl,
+    watchedShortBio,
+    watchedUpperLabel,
+    watchedWelcomeHeadline,
+  ]);
 
   async function handleMediaUpload(field: "profileImageUrl" | "coverImageUrl", file: File) {
     if (demoMode) {
@@ -318,171 +340,99 @@ export function ProfileForm({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-5">
+    <div className="space-y-3">
+      <details open className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
+          <p className="text-base font-medium text-white">{copy.sectionTitle}</p>
+          <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
+        </summary>
+        <div className="space-y-5 border-t border-white/8 px-5 py-5">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <MediaUploadField
+              label={copy.profileImage}
+              imageUrl={form.watch("profileImageUrl") || ""}
+              onUpload={(file) => void handleMediaUpload("profileImageUrl", file)}
+              onRemove={() => void handleMediaRemove("profileImageUrl")}
+              emptyLabel={copy.noImage}
+              uploadLabel={copy.upload}
+              removeLabel={copy.remove}
+            />
+            <MediaUploadField
+              label={copy.coverImage}
+              imageUrl={form.watch("coverImageUrl") || ""}
+              onUpload={(file) => void handleMediaUpload("coverImageUrl", file)}
+              onRemove={() => void handleMediaRemove("coverImageUrl")}
+              emptyLabel={copy.noImage}
+              uploadLabel={copy.upload}
+              removeLabel={copy.remove}
+            />
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
+              <Input {...form.register("artistName")} />
+            </Field>
+            <Field label={copy.upperLabel} error={form.formState.errors.upperLabel?.message}>
+              <Input {...form.register("upperLabel")} />
+            </Field>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Field label={copy.welcomeHeadline} error={form.formState.errors.welcomeHeadline?.message}>
+              <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
+            </Field>
+            <Field label={copy.shortBio} error={form.formState.errors.shortBio?.message}>
+              <Textarea
+                {...form.register("shortBio")}
+                placeholder={copy.shortBioPlaceholder}
+                className="min-h-[104px]"
+              />
+            </Field>
+          </div>
+
           <Card className="surface-border">
             <CardHeader className="pb-3">
-              <CardTitle>{copy.profileSection}</CardTitle>
+              <CardTitle>{copy.linkSection}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-5 lg:grid-cols-2">
-                <MediaUploadField
-                  label={copy.profileImage}
-                  imageUrl={profileImageUrl}
-                  onUpload={(file) => void handleMediaUpload("profileImageUrl", file)}
-                  onRemove={() => void handleMediaRemove("profileImageUrl")}
-                  emptyLabel={copy.noImage}
-                  uploadLabel={copy.upload}
-                  removeLabel={copy.remove}
-                />
-                <MediaUploadField
-                  label={copy.coverImage}
-                  imageUrl={coverImageUrl}
-                  onUpload={(file) => void handleMediaUpload("coverImageUrl", file)}
-                  onRemove={() => void handleMediaRemove("coverImageUrl")}
-                  emptyLabel={copy.noImage}
-                  uploadLabel={copy.upload}
-                  removeLabel={copy.remove}
-                />
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex min-w-0 flex-1 overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
+                  <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
+                    {getAppOrigin()}/
+                  </div>
+                  <Input
+                    {...form.register("slug")}
+                    className="border-0 bg-transparent focus-visible:ring-0"
+                  />
+                </div>
+                <Button type="button" variant="secondary" onClick={() => void handleCopyLink()}>
+                  <Copy className="size-4" />
+                  {copied ? copy.copied : copy.copyLink}
+                </Button>
               </div>
-
-              <div className="grid gap-5 lg:grid-cols-2">
-                <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
-                  <Input {...form.register("artistName")} />
-                </Field>
-                <Field label={copy.welcomeHeadline} error={form.formState.errors.welcomeHeadline?.message}>
-                  <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
-                </Field>
+              <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-[var(--foreground-muted)]">
+                {publicLink}
               </div>
+            </CardContent>
+          </Card>
 
-              <Field label={copy.shortBio} error={form.formState.errors.shortBio?.message}>
-                <Textarea
-                  {...form.register("shortBio")}
-                  placeholder={copy.shortBioPlaceholder}
-                  className="min-h-[104px]"
-                />
+          <Card className="surface-border">
+            <CardHeader className="pb-3">
+              <CardTitle>{locale === "tr" ? "İletişim" : "Contact"}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-5 lg:grid-cols-2">
+              <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
+                <Input {...form.register("whatsappNumber")} />
+              </Field>
+              <Field label={copy.instagram} error={form.formState.errors.instagramHandle?.message}>
+                <Input {...form.register("instagramHandle")} />
               </Field>
             </CardContent>
           </Card>
+
+          <input type="hidden" {...form.register("active")} />
         </div>
-
-        <div className="xl:sticky xl:top-6 xl:self-start">
-          <Card className="surface-border overflow-hidden">
-            <CardHeader className="pb-3">
-              <CardTitle>{copy.livePreview}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mx-auto max-w-[320px]">
-                <div
-                  className="overflow-hidden rounded-[28px] border"
-                  style={{
-                    ...wrapperStyle,
-                    borderColor: "var(--artist-border)",
-                    background:
-                      "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
-                  }}
-                >
-                  <div
-                    className="h-32 border-b bg-grid"
-                    style={
-                      coverImageUrl
-                        ? {
-                            backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.82)), url(${coverImageUrl})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            borderColor: "var(--artist-border)",
-                          }
-                        : { borderColor: "var(--artist-border)" }
-                    }
-                  />
-                  <div className="-mt-10 space-y-3 p-4">
-                    <AvatarTile
-                      name={artistName || profile.artistName}
-                      imageUrl={profileImageUrl}
-                      planType={profile.planType}
-                    />
-                    <div className="space-y-3">
-                      <p
-                        className="text-base"
-                        style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
-                      >
-                        {artistName || profile.artistName}
-                      </p>
-                      {welcomeHeadline?.trim() ? (
-                        <h3
-                          className="text-[1.55rem] leading-tight"
-                          style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
-                        >
-                          {welcomeHeadline}
-                        </h3>
-                      ) : null}
-                      {shortBio?.trim() ? (
-                        <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                          {shortBio}
-                        </p>
-                      ) : null}
-                      <div
-                        className="inline-flex h-10 items-center rounded-full px-4 text-sm font-medium"
-                        style={{
-                          backgroundColor: "var(--artist-primary)",
-                          color: "var(--artist-primary-foreground)",
-                        }}
-                      >
-                        {pageTheme.customCtaLabel || copy.liveCta}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-2">
-        <Card className="surface-border">
-          <CardHeader className="pb-3">
-            <CardTitle>{copy.linkSection}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="flex min-w-0 flex-1 overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
-                <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
-                  {getAppOrigin()}/
-                </div>
-                <Input
-                  {...form.register("slug")}
-                  className="border-0 bg-transparent focus-visible:ring-0"
-                />
-              </div>
-              <Button type="button" variant="secondary" onClick={() => void handleCopyLink()}>
-                <Copy className="size-4" />
-                {copied ? copy.copied : copy.copyLink}
-              </Button>
-            </div>
-            <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-[var(--foreground-muted)]">
-              {publicLink}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="surface-border">
-          <CardHeader className="pb-3">
-            <CardTitle>{copy.contactSection}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-5 lg:grid-cols-2">
-            <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
-              <Input {...form.register("whatsappNumber")} />
-            </Field>
-            <Field label={copy.instagram} error={form.formState.errors.instagramHandle?.message}>
-              <Input {...form.register("instagramHandle")} />
-            </Field>
-          </CardContent>
-        </Card>
-      </div>
-
-      <input type="hidden" {...form.register("active")} />
+      </details>
 
       <div className="flex min-h-6 items-center gap-2 px-1 text-sm text-[var(--foreground-muted)]">
         {autosaveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
@@ -490,5 +440,103 @@ export function ProfileForm({
         {form.formState.errors.root?.message ?? statusMessage}
       </div>
     </div>
+  );
+}
+
+export function ProfilePreviewCard({
+  profile,
+  pageTheme,
+  upperLabel,
+  locale,
+}: {
+  profile: ArtistProfile;
+  pageTheme: ArtistPageTheme;
+  upperLabel: string;
+  locale: PublicLocale;
+}) {
+  const { wrapperStyle } = buildThemeStyles(pageTheme);
+
+  return (
+    <Card className="surface-border overflow-hidden xl:sticky xl:top-6 xl:self-start">
+      <CardHeader className="pb-3">
+        <CardTitle>{locale === "tr" ? "Canlı görünüm" : "Live preview"}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="mx-auto max-w-[320px]">
+          <div
+            className="overflow-hidden rounded-[28px] border"
+            style={{
+              ...wrapperStyle,
+              borderColor: "var(--artist-border)",
+              background:
+                "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+            }}
+          >
+            <div
+              className="h-32 border-b bg-grid"
+              style={
+                profile.coverImageUrl
+                  ? {
+                      backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.82)), url(${profile.coverImageUrl})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      borderColor: "var(--artist-border)",
+                    }
+                  : { borderColor: "var(--artist-border)" }
+              }
+            />
+            <div className="-mt-10 space-y-3 p-4">
+              <AvatarTile
+                name={profile.artistName}
+                imageUrl={profile.profileImageUrl}
+                planType={profile.planType}
+              />
+              <div className="space-y-3">
+                {upperLabel.trim() ? (
+                  <div
+                    className="inline-flex rounded-full border px-3 py-1 text-[11px] font-medium"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "color-mix(in srgb, var(--artist-primary) 12%, transparent)",
+                      color: "var(--artist-primary)",
+                    }}
+                  >
+                    {upperLabel}
+                  </div>
+                ) : null}
+                <p
+                  className="text-base"
+                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
+                >
+                  {profile.artistName}
+                </p>
+                {profile.welcomeHeadline.trim() ? (
+                  <h3
+                    className="text-[1.55rem] leading-tight"
+                    style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
+                  >
+                    {profile.welcomeHeadline}
+                  </h3>
+                ) : null}
+                {profile.shortBio.trim() ? (
+                  <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                    {profile.shortBio}
+                  </p>
+                ) : null}
+                <div
+                  className="inline-flex h-10 items-center rounded-full px-4 text-sm font-medium"
+                  style={{
+                    backgroundColor: "var(--artist-primary)",
+                    color: "var(--artist-primary-foreground)",
+                  }}
+                >
+                  {pageTheme.customCtaLabel || (locale === "tr" ? "Fiyat tahmini al" : "Get an estimate")}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

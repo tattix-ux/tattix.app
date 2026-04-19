@@ -42,8 +42,15 @@ export async function POST(request: Request) {
     })
     .eq("id", artist.id);
 
-  if (error) {
-    return NextResponse.json({ message: error.message }, { status: 400 });
+  const { error: funnelError } = await supabase
+    .from("artist_funnel_settings")
+    .upsert({
+      artist_id: artist.id,
+      intro_eyebrow: parsed.data.upperLabel?.trim() || "",
+    });
+
+  if (error || funnelError) {
+    return NextResponse.json({ message: error?.message ?? funnelError?.message }, { status: 400 });
   }
 
   return NextResponse.json({ message: "Artist profile saved." });

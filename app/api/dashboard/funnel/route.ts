@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
-import { funnelSettingsSchema } from "@/lib/forms/schemas";
+import { requestSettingsSchema } from "@/lib/forms/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -27,15 +27,15 @@ function buildStyleKey(label: string, usedKeys: Set<string>) {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const parsed = funnelSettingsSchema.safeParse(body);
+  const parsed = requestSettingsSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ message: "Invalid funnel settings payload." }, { status: 400 });
+    return NextResponse.json({ message: "Invalid request settings payload." }, { status: 400 });
   }
 
   if (!isSupabaseConfigured()) {
     return NextResponse.json({
-      message: "Demo mode active. Connect Supabase to persist funnel settings.",
+      message: "Demo mode active. Connect Supabase to persist request settings.",
     });
   }
 
@@ -99,14 +99,6 @@ export async function POST(request: Request) {
       "style_key,multiplier,label,is_custom,style_description,example_image_url,example_image_path,deleted",
     )
     .eq("artist_id", artist.id);
-
-  const { error: settingsError } = await supabase.from("artist_funnel_settings").upsert({
-    artist_id: artist.id,
-    intro_eyebrow: parsed.data.introEyebrow,
-    intro_title: parsed.data.introTitle,
-    show_featured_designs: parsed.data.showFeaturedDesigns,
-    default_language: "tr",
-  });
 
   const builtInRows = baseStyleOptions.map((style) => {
     const existingStyle = existingStyles.data?.find((item) => item.style_key === style.value);
@@ -208,7 +200,6 @@ export async function POST(request: Request) {
   }
 
   const error =
-    settingsError ??
     deleteCustomError ??
     stylesError ??
     deleteDatesError ??

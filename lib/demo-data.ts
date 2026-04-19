@@ -35,10 +35,9 @@ export const demoArtistProfile: ArtistProfile = {
 
 export const demoFunnelSettings: ArtistFunnelSettings = {
   artistId: demoArtistId,
-  introEyebrow: "Link-in-bio funnel",
-  introTitle: "Tell us the vibe, size, and placement. Tattix will estimate the range.",
-  introDescription:
-    "Perfect for Instagram bio traffic. Collect warmer leads, surface flash designs, and move straight into WhatsApp with context.",
+  introEyebrow: "",
+  introTitle: "",
+  introDescription: "",
   showFeaturedDesigns: true,
   defaultLanguage: "tr",
   bookingCities: [

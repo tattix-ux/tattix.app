@@ -18,10 +18,9 @@ export function ArtistPagePreview({
 }) {
   const previewWidth = device === "mobile" ? "max-w-[248px] sm:max-w-[300px]" : "max-w-[920px]";
   const introTitle =
-    theme.customWelcomeTitle ||
-    artist.funnelSettings.introTitle ||
-    artist.profile.welcomeHeadline ||
-    "Share your tattoo idea in a few quick steps.";
+    theme.customWelcomeTitle?.trim() ||
+    artist.profile.welcomeHeadline?.trim() ||
+    "";
   const introText =
     theme.customIntroText?.trim() ||
     artist.profile.shortBio?.trim() ||
@@ -63,16 +62,20 @@ export function ArtistPagePreview({
                 planType={artist.profile.planType}
               />
               <div className="space-y-3">
-                <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
-                <h3
-                  className="text-[1.2rem] leading-tight sm:text-[1.55rem]"
-                  style={{
-                    fontFamily: "var(--artist-heading-font)",
-                    color: "var(--artist-foreground)",
-                  }}
-                >
-                  {introTitle}
-                </h3>
+                {artist.funnelSettings.introEyebrow?.trim() ? (
+                  <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
+                ) : null}
+                {introTitle ? (
+                  <h3
+                    className="text-[1.2rem] leading-tight sm:text-[1.55rem]"
+                    style={{
+                      fontFamily: "var(--artist-heading-font)",
+                      color: "var(--artist-foreground)",
+                    }}
+                  >
+                    {introTitle}
+                  </h3>
+                ) : null}
                 {introText ? (
                   <p className="text-[11px] leading-5 sm:text-xs sm:leading-6" style={{ color: "var(--artist-muted)" }}>
                     {introText}

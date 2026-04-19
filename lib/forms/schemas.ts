@@ -60,6 +60,7 @@ export const profileSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers, and hyphens only."),
   profileImageUrl: z.string().url().nullable().or(z.literal("")),
   coverImageUrl: z.string().url().nullable().or(z.literal("")),
+  upperLabel: z.string().max(48),
   shortBio: z.string().max(220),
   welcomeHeadline: z.string().max(120),
   whatsappNumber: z.string().min(8),
@@ -108,6 +109,77 @@ export const funnelSettingsSchema = z.object({
   introDescription: z.string().max(220),
   showFeaturedDesigns: z.boolean(),
   defaultLanguage: z.enum(["en", "tr"]),
+  enabledStyles: z.array(z.string().min(1)).default([]),
+  removedBuiltInStyles: z.array(z.string().min(1)).default([]),
+  builtInStyles: z.array(builtInStyleSchema).default([]),
+  customStyles: z.array(customStyleSchema).default([]),
+  bookingCities: z.array(bookingCitySchema).default([]),
+}).superRefine((values, ctx) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const seen = new Set<string>();
+
+  values.bookingCities.forEach((city, index) => {
+    const normalized = city.cityName.trim().toLocaleLowerCase("tr-TR");
+
+    if (seen.has(normalized)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bookingCities", index, "cityName"],
+        message: "City names must be unique.",
+      });
+    } else {
+      seen.add(normalized);
+    }
+
+    const dateSeen = new Set<string>();
+    city.availableDates.forEach((date, dateIndex) => {
+      if (dateSeen.has(date)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["bookingCities", index, "availableDates", dateIndex],
+          message: "Dates must be unique for each city.",
+        });
+      } else {
+        dateSeen.add(date);
+      }
+
+      const parsedDate = new Date(`${date}T00:00:00`);
+      if (Number.isNaN(parsedDate.getTime()) || parsedDate < today) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["bookingCities", index, "availableDates", dateIndex],
+          message: "Past dates are not allowed.",
+        });
+      }
+    });
+  });
+
+  values.enabledStyles.forEach((styleKey) => {
+    const builtInStyleIndex = values.builtInStyles.findIndex((style) => style.styleKey === styleKey);
+    if (builtInStyleIndex !== -1 && !values.builtInStyles[builtInStyleIndex]?.imageUrl?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["builtInStyles", builtInStyleIndex, "imageUrl"],
+        message:
+          "Add at least one example image for this style. Clients may not understand the style name on its own.",
+      });
+    }
+  });
+
+  values.customStyles.forEach((style, index) => {
+    if (!style.imageUrl?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["customStyles", index, "imageUrl"],
+        message:
+          "Add at least one example image for this style. Clients may not understand the style name on its own.",
+      });
+    }
+  });
+});
+
+export const requestSettingsSchema = z.object({
   enabledStyles: z.array(z.string().min(1)).default([]),
   removedBuiltInStyles: z.array(z.string().min(1)).default([]),
   builtInStyles: z.array(builtInStyleSchema).default([]),

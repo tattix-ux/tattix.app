@@ -135,10 +135,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     description: copy.stepDescriptions[index],
   }));
   const introTitle =
-    artist.pageTheme.customWelcomeTitle ||
-    artist.funnelSettings.introTitle ||
-    artist.profile.welcomeHeadline ||
-    (locale === "tr" ? "Dövme fikrini kısaca paylaş." : "Share your tattoo idea in a few quick steps.");
+    artist.pageTheme.customWelcomeTitle?.trim() ||
+    artist.profile.welcomeHeadline?.trim() ||
+    "";
   const introText =
     artist.pageTheme.customIntroText?.trim() ||
     artist.profile.shortBio?.trim() ||
@@ -425,13 +424,17 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 planType={artist.profile.planType}
               />
               <div className="space-y-3">
-                <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
-                <h1
-                  className="text-[1.55rem] leading-tight sm:text-3xl"
-                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
-                >
-                  {introTitle}
-                </h1>
+                {artist.funnelSettings.introEyebrow?.trim() ? (
+                  <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge>
+                ) : null}
+                {introTitle ? (
+                  <h1
+                    className="text-[1.55rem] leading-tight sm:text-3xl"
+                    style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
+                  >
+                    {introTitle}
+                  </h1>
+                ) : null}
                 {introText ? (
                   <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-card-muted)" }}>
                     {introText}

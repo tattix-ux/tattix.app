@@ -156,7 +156,7 @@ function ThemeCardPreview({
   theme: ArtistPageTheme;
   variant?: "card" | "panel";
 }) {
-  const title = theme.customWelcomeTitle || artist.funnelSettings.introTitle || artist.profile.welcomeHeadline || "Aklında ne var?";
+  const title = theme.customWelcomeTitle?.trim() || artist.profile.welcomeHeadline?.trim() || "";
   const intro = theme.customIntroText?.trim() || artist.profile.shortBio?.trim() || "";
   const cta = theme.customCtaLabel || "Fiyat tahmini al";
   const isPanel = variant === "panel";
@@ -280,15 +280,28 @@ function ThemeCardPreview({
                   </div>
 
                   <div className="space-y-2">
-                    <p
-                      className={cn("leading-tight tracking-[-0.02em]", isPanel ? "text-[1.75rem]" : "text-[1.36rem]")}
-                      style={{
-                        fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.modern,
-                        color: headingColor,
-                      }}
-                    >
-                      {title}
-                    </p>
+                    {artist.funnelSettings.introEyebrow?.trim() ? (
+                      <div
+                        className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
+                        style={{
+                          backgroundColor: "color-mix(in srgb, white 10%, transparent)",
+                          color: bodyColor,
+                        }}
+                      >
+                        {artist.funnelSettings.introEyebrow}
+                      </div>
+                    ) : null}
+                    {title ? (
+                      <p
+                        className={cn("leading-tight tracking-[-0.02em]", isPanel ? "text-[1.75rem]" : "text-[1.36rem]")}
+                        style={{
+                          fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.modern,
+                          color: headingColor,
+                        }}
+                      >
+                        {title}
+                      </p>
+                    ) : null}
                     {intro ? (
                       <p className={cn(isPanel ? "text-[13px] leading-5" : "text-[11px] leading-[1.45]")} style={{ color: bodyColor, fontFamily: bodyFont }}>
                         {intro}
@@ -446,7 +459,7 @@ export function CustomizePageForm({
           colorsDescription: "Sadece ana vurgu rengini seç.",
           textSection: "Metinler",
           textSectionDescription: "Müşteri sayfasında görünen başlık ve karşılama metnini buradan düzenle.",
-          welcomeTitleLabel: "Karşılama başlığı",
+          welcomeTitleLabel: "Başlık",
           welcomeTitlePlaceholder: "Örn. Aklında ne var?",
           introTextLabel: "Karşılama metni (müşteri sayfasında başlığın altında görünür)",
           introTextPlaceholder: "Örn. Dövme fikrini birkaç adımda netleştir.",
@@ -506,7 +519,7 @@ export function CustomizePageForm({
           colorsDescription: "Pick the main accent color.",
           textSection: "Texts",
           textSectionDescription: "Adjust the heading and welcome copy shown on the client page.",
-          welcomeTitleLabel: "Welcome heading",
+          welcomeTitleLabel: "Heading",
           welcomeTitlePlaceholder: "e.g. What's on your mind?",
           introTextLabel: "Welcome text (shown under the heading on the client page)",
           introTextPlaceholder: "e.g. Clarify your tattoo idea in a few quick steps.",
@@ -1074,7 +1087,7 @@ export function CustomizePageForm({
                         fontPairingPreset: preset.fontPairingPreset,
                         radiusStyle: preset.radiusStyle,
                         themeMode: preset.themeMode,
-                        customWelcomeTitle: artist.funnelSettings.introTitle || artist.profile.welcomeHeadline,
+                        customWelcomeTitle: artist.profile.welcomeHeadline,
                         customIntroText: artist.profile.shortBio || null,
                         customCtaLabel: locale === "tr" ? "Fiyat tahmini al" : "Start estimate",
                         featuredSectionLabel1: null,

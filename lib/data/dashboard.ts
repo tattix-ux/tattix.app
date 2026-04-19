@@ -217,10 +217,9 @@ export async function ensureArtistForUser(user: User) {
   await Promise.all([
     supabase.from("artist_funnel_settings").upsert({
       artist_id: artist.id,
-      intro_eyebrow: "Tattix intake",
-      intro_title: "Tell us the placement, size, and style.",
-      intro_description:
-        "This quick mobile flow captures the basics before you move into consultation.",
+      intro_eyebrow: "",
+      intro_title: "",
+      intro_description: "",
       show_featured_designs: true,
       default_language: "tr",
     }),

@@ -9,7 +9,6 @@ import {
   Crown,
   MessageSquareText,
   PaintbrushVertical,
-  Settings2,
   UserRound,
 } from "lucide-react";
 
@@ -27,11 +26,6 @@ type DashboardNavItem = {
 function getItems(locale: "en" | "tr"): DashboardNavItem[] {
   return [
     { href: "/dashboard/profile", label: locale === "tr" ? "Profil" : "Profile", icon: UserRound },
-    {
-      href: "/dashboard/funnel",
-      label: locale === "tr" ? "Talep Ayarları" : "Request Settings",
-      icon: Settings2,
-    },
     { href: "/dashboard/pricing", label: locale === "tr" ? "Fiyatlama" : "Pricing", icon: CircleDollarSign },
     {
       href: "/dashboard/designs",

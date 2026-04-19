@@ -44,7 +44,7 @@ function mapArtistProfile(row: Record<string, unknown>): ArtistProfile {
 function mapFunnelSettings(row: Record<string, unknown>, artistId: string): ArtistFunnelSettings {
   return {
     artistId,
-    introEyebrow: String(row.intro_eyebrow ?? "Tattix intake"),
+    introEyebrow: String(row.intro_eyebrow ?? ""),
     introTitle: String(row.intro_title ?? ""),
     introDescription: String(row.intro_description ?? ""),
     showFeaturedDesigns: Boolean(row.show_featured_designs ?? true),

@@ -1,6 +1,6 @@
 import { isAdminEmail } from "@/lib/access";
 import { AdminProAccessForm } from "@/components/dashboard/admin-pro-access-form";
-import { ProfileForm } from "@/components/dashboard/profile-form";
+import { ProfilePageContent } from "@/components/dashboard/profile-page-content";
 import { SectionHeading } from "@/components/shared/shell";
 import { getDashboardData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
@@ -17,17 +17,15 @@ export default async function DashboardProfilePage() {
       <div className="space-y-3">
         <SectionHeading
           eyebrow={isTurkish ? "Profil" : "Profile"}
-          title={
-            isTurkish ? "Profilin" : "Your profile"
-          }
-          description={
-            isTurkish ? "Bu sayfa müşterilerin gördüğü profil." : "This is the profile clients see."
-          }
+          title={isTurkish ? "Profilin" : "Your profile"}
+          description={isTurkish ? "Bu sayfa müşterilerin gördüğü profil." : "This is the profile clients see."}
         />
       </div>
-      <ProfileForm
+      <ProfilePageContent
         profile={data.profile}
         pageTheme={data.pageTheme}
+        funnelSettings={data.funnelSettings}
+        styleOptions={data.styleOptions}
         demoMode={data.demoMode}
         locale={data.funnelSettings.defaultLanguage}
       />
