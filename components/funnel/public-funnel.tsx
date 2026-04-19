@@ -140,12 +140,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     artist.profile.welcomeHeadline ||
     (locale === "tr" ? "Dövme fikrini kısaca paylaş." : "Share your tattoo idea in a few quick steps.");
   const introText =
-    artist.pageTheme.customIntroText ||
-    artist.profile.shortBio ||
-    artist.funnelSettings.introDescription ||
-    (locale === "tr"
-      ? "Yerleşim, boyut ve tarzı seç. Yaklaşık fiyatı hemen gör."
-      : "Choose the placement, size, and style. See the approximate price right away.");
+    artist.pageTheme.customIntroText?.trim() ||
+    artist.profile.shortBio?.trim() ||
+    "";
   const primaryActionLabel = artist.pageTheme.customCtaLabel || copy.defaultPrimaryCta;
   const { tokens } = buildThemeStyles(artist.pageTheme);
   const primaryButtonClass = "border-0 shadow-none hover:opacity-95";
@@ -435,9 +432,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 >
                   {introTitle}
                 </h1>
-                <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-card-muted)" }}>
-                  {introText}
-                </p>
+                {introText ? (
+                  <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-card-muted)" }}>
+                    {introText}
+                  </p>
+                ) : null}
                 <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] leading-4 sm:text-xs sm:leading-5" style={{ color: "var(--artist-card-muted)" }}>
                   <span>{artist.profile.instagramHandle}</span>
                 </div>

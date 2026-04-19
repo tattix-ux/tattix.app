@@ -112,12 +112,6 @@ export function FunnelSettingsForm({
           introTitle: "Karşılama başlığı",
           introTitlePlaceholder: "Nasıl bir dövme yaptırmak istiyorsun?",
           introTitleWarning: "Müşteriye ilk soruyu yazmalısın.",
-          introDescription: "Kısa yönlendirme metni",
-          introDescriptionHelp:
-            "Müşteriye ne yazması gerektiğini söylersen daha doğru talepler alırsın.",
-          introDescriptionWarning: "Müşteriye ne yazması gerektiğini söylemelisin.",
-          introDescriptionPlaceholder: "Örn: Minimal ince çizgi bir çiçek, 10 cm, bilek içi",
-          introDescriptionTip: "Kısa ve net yazılan akışlar daha fazla doğru müşteri getirir.",
           activeStyles: "Hangi stillerde çalışıyorsun?",
           activeStylesHelp: "Müşteri sadece örneği olan bu stillerde sana yazabilir.",
           activeStylesTip: "Az ve net seçim yapmak daha doğru müşteri getirir.",
@@ -175,11 +169,6 @@ export function FunnelSettingsForm({
           introTitle: "Welcome heading",
           introTitlePlaceholder: "What kind of tattoo do you want?",
           introTitleWarning: "Add the first question clients should answer.",
-          introDescription: "Short guidance text",
-          introDescriptionHelp: "Clear guidance here brings better requests.",
-          introDescriptionWarning: "Tell clients what they should write.",
-          introDescriptionPlaceholder: "e.g. Fine line flower, around 10 cm, inner wrist",
-          introDescriptionTip: "Short and clear flows bring better-fit clients.",
           activeStyles: "Which styles do you work in?",
           activeStylesHelp: "Clients can only message you in the styles that have an example.",
           activeStylesTip: "Fewer, clearer choices bring better-fit clients.",
@@ -655,21 +644,7 @@ export function FunnelSettingsForm({
               placeholder={copy.introTitlePlaceholder}
             />
           </Field>
-          <Field
-            label={copy.introDescription}
-            description={
-              form.watch("introDescription")?.trim().length
-                ? copy.introDescriptionHelp
-                : copy.introDescriptionWarning
-            }
-            error={form.formState.errors.introDescription?.message}
-          >
-            <Textarea
-              {...form.register("introDescription")}
-              placeholder={copy.introDescriptionPlaceholder}
-            />
-          </Field>
-          <p className="text-sm text-[var(--accent-soft)]">{copy.introDescriptionTip}</p>
+          <input type="hidden" {...form.register("introDescription")} />
           <input type="hidden" {...form.register("defaultLanguage")} value="tr" />
           <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/20 p-4">
             <div className="space-y-1">

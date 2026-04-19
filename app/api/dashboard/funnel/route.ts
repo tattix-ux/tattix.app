@@ -104,7 +104,6 @@ export async function POST(request: Request) {
     artist_id: artist.id,
     intro_eyebrow: parsed.data.introEyebrow,
     intro_title: parsed.data.introTitle,
-    intro_description: parsed.data.introDescription,
     show_featured_designs: parsed.data.showFeaturedDesigns,
     default_language: "tr",
   });

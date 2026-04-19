@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 import { themePresetOptions, themePresets } from "@/lib/constants/theme";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
@@ -156,7 +157,7 @@ function ThemeCardPreview({
   variant?: "card" | "panel";
 }) {
   const title = theme.customWelcomeTitle || artist.funnelSettings.introTitle || artist.profile.welcomeHeadline || "Aklında ne var?";
-  const intro = theme.customIntroText || artist.funnelSettings.introDescription || artist.profile.shortBio || "Dövme fikrini birkaç adımda netleştir.";
+  const intro = theme.customIntroText?.trim() || artist.profile.shortBio?.trim() || "";
   const cta = theme.customCtaLabel || "Fiyat tahmini al";
   const isPanel = variant === "panel";
   const headingColor =
@@ -288,9 +289,11 @@ function ThemeCardPreview({
                     >
                       {title}
                     </p>
-                    <p className={cn(isPanel ? "text-[13px] leading-5" : "text-[11px] leading-[1.45]")} style={{ color: bodyColor, fontFamily: bodyFont }}>
-                      {intro}
-                    </p>
+                    {intro ? (
+                      <p className={cn(isPanel ? "text-[13px] leading-5" : "text-[11px] leading-[1.45]")} style={{ color: bodyColor, fontFamily: bodyFont }}>
+                        {intro}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div
@@ -441,6 +444,12 @@ export function CustomizePageForm({
           quickPresetsDescription: "Tek tıkla temel görünümü değiştir.",
           colors: "Renkler",
           colorsDescription: "Sadece ana vurgu rengini seç.",
+          textSection: "Metinler",
+          textSectionDescription: "Müşteri sayfasında görünen başlık ve karşılama metnini buradan düzenle.",
+          welcomeTitleLabel: "Karşılama başlığı",
+          welcomeTitlePlaceholder: "Örn. Aklında ne var?",
+          introTextLabel: "Karşılama metni (müşteri sayfasında başlığın altında görünür)",
+          introTextPlaceholder: "Örn. Dövme fikrini birkaç adımda netleştir.",
           primaryColor: "Ana renk",
           customColor: "Detaylı renk seç",
           backgrounds: "Arka plan",
@@ -495,6 +504,12 @@ export function CustomizePageForm({
           quickPresetsDescription: "Change the overall mood in one click.",
           colors: "Colors",
           colorsDescription: "Pick the main accent color.",
+          textSection: "Texts",
+          textSectionDescription: "Adjust the heading and welcome copy shown on the client page.",
+          welcomeTitleLabel: "Welcome heading",
+          welcomeTitlePlaceholder: "e.g. What's on your mind?",
+          introTextLabel: "Welcome text (shown under the heading on the client page)",
+          introTextPlaceholder: "e.g. Clarify your tattoo idea in a few quick steps.",
           primaryColor: "Primary color",
           customColor: "Fine tune color",
           backgrounds: "Background",
@@ -1060,7 +1075,7 @@ export function CustomizePageForm({
                         radiusStyle: preset.radiusStyle,
                         themeMode: preset.themeMode,
                         customWelcomeTitle: artist.funnelSettings.introTitle || artist.profile.welcomeHeadline,
-                        customIntroText: artist.funnelSettings.introDescription || artist.profile.shortBio,
+                        customIntroText: artist.profile.shortBio || null,
                         customCtaLabel: locale === "tr" ? "Fiyat tahmini al" : "Start estimate",
                         featuredSectionLabel1: null,
                         featuredSectionLabel2: null,
@@ -1119,6 +1134,40 @@ export function CustomizePageForm({
                                 {locale === "tr" ? preset.labelTr : preset.labelEn}
                               </Button>
                             ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-[22px] bg-white/[0.02] p-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-white">{copy.textSection}</h3>
+                            <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.textSectionDescription}</p>
+                          </div>
+                          <div className="grid gap-4">
+                            <Field label={copy.welcomeTitleLabel}>
+                              <Input
+                                value={watchedValues.customWelcomeTitle ?? ""}
+                                onChange={(event) =>
+                                  form.setValue("customWelcomeTitle", event.target.value, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                  })
+                                }
+                                placeholder={copy.welcomeTitlePlaceholder}
+                              />
+                            </Field>
+                            <Field label={copy.introTextLabel}>
+                              <Textarea
+                                value={watchedValues.customIntroText ?? ""}
+                                onChange={(event) =>
+                                  form.setValue("customIntroText", event.target.value, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                  })
+                                }
+                                placeholder={copy.introTextPlaceholder}
+                                className="min-h-[108px]"
+                              />
+                            </Field>
                           </div>
                         </div>
 

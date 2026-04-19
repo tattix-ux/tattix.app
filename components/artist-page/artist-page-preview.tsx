@@ -23,10 +23,9 @@ export function ArtistPagePreview({
     artist.profile.welcomeHeadline ||
     "Share your tattoo idea in a few quick steps.";
   const introText =
-    theme.customIntroText ||
-    artist.profile.shortBio ||
-    artist.funnelSettings.introDescription ||
-    "Choose the placement, size, and style to preview the intake flow.";
+    theme.customIntroText?.trim() ||
+    artist.profile.shortBio?.trim() ||
+    "";
   const ctaLabel = theme.customCtaLabel || "Start estimate";
 
   return (
@@ -74,9 +73,11 @@ export function ArtistPagePreview({
                 >
                   {introTitle}
                 </h3>
-                <p className="text-[11px] leading-5 sm:text-xs sm:leading-6" style={{ color: "var(--artist-muted)" }}>
-                  {introText}
-                </p>
+                {introText ? (
+                  <p className="text-[11px] leading-5 sm:text-xs sm:leading-6" style={{ color: "var(--artist-muted)" }}>
+                    {introText}
+                  </p>
+                ) : null}
                 <button
                   type="button"
                   className="inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] font-medium sm:h-10 sm:px-4 sm:text-xs"
