@@ -80,7 +80,17 @@ const customStyleSchema = z.object({
   styleKey: z.string().default(""),
   label: z.string().min(2).max(40),
   description: z.string().max(140).optional().default(""),
+  imageUrl: z.string().url().or(z.literal("")).default(""),
+  imagePath: z.string().default(""),
   enabled: z.boolean().default(true),
+});
+
+const builtInStyleSchema = z.object({
+  styleKey: z.string().min(1),
+  label: z.string().min(2).max(40),
+  description: z.string().max(140).optional().default(""),
+  imageUrl: z.string().url().or(z.literal("")).default(""),
+  imagePath: z.string().default(""),
 });
 
 const bookingCitySchema = z.object({
@@ -108,6 +118,7 @@ export const funnelSettingsSchema = z.object({
   defaultLanguage: z.enum(["en", "tr"]),
   enabledStyles: z.array(z.string().min(1)).default([]),
   removedBuiltInStyles: z.array(z.string().min(1)).default([]),
+  builtInStyles: z.array(builtInStyleSchema).default([]),
   customStyles: z.array(customStyleSchema).default([]),
   bookingCities: z.array(bookingCitySchema).default([]),
 }).superRefine((values, ctx) => {
@@ -149,6 +160,29 @@ export const funnelSettingsSchema = z.object({
         });
       }
     });
+  });
+
+  values.enabledStyles.forEach((styleKey) => {
+    const builtInStyleIndex = values.builtInStyles.findIndex((style) => style.styleKey === styleKey);
+    if (builtInStyleIndex !== -1 && !values.builtInStyles[builtInStyleIndex]?.imageUrl?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["builtInStyles", builtInStyleIndex, "imageUrl"],
+        message:
+          "Add at least one example image for this style. Clients may not understand the style name on its own.",
+      });
+    }
+  });
+
+  values.customStyles.forEach((style, index) => {
+    if (!style.imageUrl?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["customStyles", index, "imageUrl"],
+        message:
+          "Add at least one example image for this style. Clients may not understand the style name on its own.",
+      });
+    }
   });
 });
 

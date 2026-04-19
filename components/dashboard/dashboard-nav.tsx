@@ -29,7 +29,7 @@ function getItems(locale: "en" | "tr"): DashboardNavItem[] {
     { href: "/dashboard/profile", label: locale === "tr" ? "Profil" : "Profile", icon: UserRound },
     {
       href: "/dashboard/funnel",
-      label: locale === "tr" ? "Akış Ayarları" : "Funnel Settings",
+      label: locale === "tr" ? "Talep Ayarları" : "Request Settings",
       icon: Settings2,
     },
     { href: "/dashboard/pricing", label: locale === "tr" ? "Fiyatlama" : "Pricing", icon: CircleDollarSign },

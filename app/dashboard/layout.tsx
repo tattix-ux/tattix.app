@@ -77,8 +77,8 @@ export default async function DashboardLayout({
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
                     {isTurkish
-                      ? "Instagram profilindeki linkten açılan müşteri akışını ve sanatçı sayfanı buradan yönet."
-                      : "Configure the public funnel clients open from your Instagram bio."}
+                      ? "Instagram bio linkinden açılan talep ekranını ve sanatçı sayfanı buradan yönet."
+                      : "Manage the request flow and artist page clients open from your Instagram bio."}
                   </p>
                   <div className="mt-5">
                     <DashboardNav

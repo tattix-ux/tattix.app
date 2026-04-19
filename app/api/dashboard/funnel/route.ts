@@ -47,10 +47,17 @@ export async function POST(request: Request) {
 
   const builtInKeys = new Set<string>(baseStyleOptions.map((style) => style.value));
   const usedCustomKeys = new Set<string>(builtInKeys);
-  const normalizedCustomStyles = parsed.data.customStyles.map((style) => ({
-    ...style,
-    styleKey: buildStyleKey(style.label, usedCustomKeys),
-  }));
+  const normalizedCustomStyles = parsed.data.customStyles.map((style) => {
+    const existingKey = style.styleKey?.trim();
+    if (existingKey) {
+      usedCustomKeys.add(existingKey);
+    }
+
+    return {
+      ...style,
+      styleKey: existingKey || buildStyleKey(style.label, usedCustomKeys),
+    };
+  });
   const customKeys = normalizedCustomStyles.map((style) => style.styleKey);
   const removedBuiltInKeys = new Set(parsed.data.removedBuiltInStyles);
   const hasDuplicateCustomKeys = new Set(customKeys).size !== customKeys.length;
@@ -85,9 +92,12 @@ export async function POST(request: Request) {
 
   const supabase = await createSupabaseServerClient();
   const enabledSet = new Set(parsed.data.enabledStyles);
+  const builtInStyleMap = new Map(parsed.data.builtInStyles.map((style) => [style.styleKey, style]));
   const existingStyles = await supabase
     .from("artist_style_options")
-    .select("style_key,multiplier,label,is_custom,style_description,deleted")
+    .select(
+      "style_key,multiplier,label,is_custom,style_description,example_image_url,example_image_path,deleted",
+    )
     .eq("artist_id", artist.id);
 
   const { error: settingsError } = await supabase.from("artist_funnel_settings").upsert({
@@ -99,25 +109,31 @@ export async function POST(request: Request) {
     default_language: "tr",
   });
 
-  const builtInRows = baseStyleOptions.map((style) => ({
-    artist_id: artist.id,
-    style_key: style.value,
-    label:
-      existingStyles.data?.find((item) => item.style_key === style.value)?.label ?? style.label,
-    style_description:
-      existingStyles.data?.find((item) => item.style_key === style.value)?.style_description ?? null,
-    multiplier:
-      existingStyles.data?.find((item) => item.style_key === style.value)?.multiplier ?? 1,
-    enabled: !removedBuiltInKeys.has(style.value) && enabledSet.has(style.value),
-    is_custom: false,
-    deleted: removedBuiltInKeys.has(style.value),
-  }));
+  const builtInRows = baseStyleOptions.map((style) => {
+    const existingStyle = existingStyles.data?.find((item) => item.style_key === style.value);
+    const builtInStyle = builtInStyleMap.get(style.value);
+
+    return {
+      artist_id: artist.id,
+      style_key: style.value,
+      label: existingStyle?.label ?? style.label,
+      style_description: builtInStyle?.description?.trim() || existingStyle?.style_description || null,
+      example_image_url: builtInStyle?.imageUrl?.trim() || existingStyle?.example_image_url || null,
+      example_image_path: builtInStyle?.imagePath?.trim() || existingStyle?.example_image_path || null,
+      multiplier: existingStyle?.multiplier ?? 1,
+      enabled: !removedBuiltInKeys.has(style.value) && enabledSet.has(style.value),
+      is_custom: false,
+      deleted: removedBuiltInKeys.has(style.value),
+    };
+  });
 
   const customRows = normalizedCustomStyles.map((style) => ({
     artist_id: artist.id,
     style_key: style.styleKey,
     label: style.label,
     style_description: style.description || null,
+    example_image_url: style.imageUrl?.trim() || null,
+    example_image_path: style.imagePath?.trim() || null,
     multiplier:
       existingStyles.data?.find((item) => item.style_key === style.styleKey)?.multiplier ?? 1,
     enabled: style.enabled,
@@ -205,5 +221,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 
-  return NextResponse.json({ message: "Funnel settings saved." });
+  return NextResponse.json({ message: "Request settings saved." });
 }

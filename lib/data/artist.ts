@@ -81,6 +81,8 @@ function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption {
     styleKey: String(row.style_key) as ArtistStyleOption["styleKey"],
     label: String(row.label),
     description: row.style_description ? String(row.style_description) : null,
+    imageUrl: row.example_image_url ? String(row.example_image_url) : null,
+    imagePath: row.example_image_path ? String(row.example_image_path) : null,
     enabled: Boolean(row.enabled),
     multiplier: Number(row.multiplier ?? 1),
     isCustom: Boolean(row.is_custom ?? false),

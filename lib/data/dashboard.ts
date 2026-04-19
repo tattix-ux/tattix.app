@@ -312,6 +312,8 @@ export async function ensureArtistForUser(user: User) {
         style_key: style.value,
         label: style.label,
         style_description: null,
+        example_image_url: null,
+        example_image_path: null,
         enabled: ["fine-line", "blackwork", "micro-realism"].includes(style.value),
         is_custom: false,
         deleted: false,

@@ -12,11 +12,11 @@ export default async function DashboardFunnelPage() {
     <div className="space-y-6">
       <div className="space-y-3">
         <SectionHeading
-          eyebrow={isTurkish ? "Akış" : "Funnel"}
+          eyebrow={isTurkish ? "Talep" : "Requests"}
           title={
             isTurkish
-              ? "Müşterinin sana yazma sürecini düzenle."
-              : "Shape the path that leads clients to message you."
+              ? "Müşterinin sana talep gönderirken gördüğü alanları düzenle."
+              : "Adjust the fields clients see while sending you a request."
           }
           description={
             isTurkish
@@ -33,6 +33,7 @@ export default async function DashboardFunnelPage() {
       <FunnelSettingsForm
         settings={data.funnelSettings}
         styles={data.styleOptions}
+        demoMode={data.demoMode}
         locale={isTurkish ? "tr" : "en"}
       />
     </div>

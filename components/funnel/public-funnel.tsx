@@ -95,6 +95,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   }, [step]);
 
   const enabledStyles = artist.styleOptions.filter((style) => style.enabled);
+  const visibleStyleOptions = enabledStyles.filter((style) => Boolean(style.imageUrl));
   const activeDesigns = artist.featuredDesigns.filter((design) => design.active);
   const hasFlashDesigns = activeDesigns.some((design) => design.category === "flash-designs");
   const hasDiscountedDesigns = activeDesigns.some(
@@ -149,7 +150,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const { tokens } = buildThemeStyles(artist.pageTheme);
   const primaryButtonClass = "border-0 shadow-none hover:opacity-95";
   const secondaryButtonClass = "border-0 shadow-none hover:opacity-95";
-  const styleStepActive = requiresStyleSelection(draft.intent);
+  const styleStepActive = requiresStyleSelection(draft.intent) && visibleStyleOptions.length > 0;
   const isSelectedDesignFlow = Boolean(draft.selectedDesignId);
   const compactArtistHeader = step > 1 || Boolean(draft.intent);
   const resultStep = 6;
@@ -170,6 +171,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const selectedStyleLabel =
     enabledStyles.find((style) => style.styleKey === draft.style)?.label ??
     getStyleLabel(draft.style as never, locale);
+  const selectedStyleOption =
+    visibleStyleOptions.find((style) => style.styleKey === draft.style) ?? null;
 
   const resultSummaryItems = useMemo(() => {
     const items: Array<{ label: string; value: string }> = [
@@ -672,9 +675,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                               {copy.optionalStyleHelp}
                             </p>
                           ) : null}
-                          <div className="mt-4 grid gap-2.5 sm:gap-3">
-                            {enabledStyles.map((style) => {
+                          <div className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+                            {visibleStyleOptions.map((style) => {
                               const active = draft.style === style.styleKey;
+                              const styleLabel = style.isCustom ? style.label : getStyleLabel(style.styleKey, locale);
                               return (
                                 <button
                                   key={style.id}
@@ -682,7 +686,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                   onClick={() => {
                                     setField("style", style.styleKey);
                                   }}
-                                  className="min-w-0 w-full whitespace-normal rounded-[24px] border px-4 py-4 text-left transition"
+                                  className="min-w-0 w-full whitespace-normal rounded-[24px] border px-3 py-3 text-left transition"
                                   style={{
                                     borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                                     backgroundColor: active
@@ -691,11 +695,25 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                     color: tokens.cardText,
                                   }}
                                 >
-                                  <div className="flex items-start justify-between gap-3">
-                                    <p className="break-words font-medium">
-                                      {style.isCustom ? style.label : getStyleLabel(style.styleKey, locale)}
-                                    </p>
-                                    {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                                  <div className="flex items-center gap-3">
+                                    <div className="size-14 shrink-0 overflow-hidden rounded-[16px] border border-white/10 bg-black/20">
+                                      <img
+                                        src={style.imageUrl ?? ""}
+                                        alt={styleLabel}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-start justify-between gap-3">
+                                        <p className="break-words font-medium">{styleLabel}</p>
+                                        {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                                      </div>
+                                      {style.description ? (
+                                        <p className="mt-1 line-clamp-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                          {style.description}
+                                        </p>
+                                      ) : null}
+                                    </div>
                                   </div>
                                 </button>
                               );
@@ -723,6 +741,35 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                               </p>
                             </button>
                           </div>
+                          {selectedStyleOption ? (
+                            <div
+                              className="mt-4 overflow-hidden rounded-[24px] border p-3 sm:p-4"
+                              style={{
+                                borderColor: "var(--artist-border)",
+                                backgroundColor: "rgba(0,0,0,0.14)",
+                              }}
+                            >
+                              <div className="overflow-hidden rounded-[20px] border border-white/10 bg-black/20">
+                                <img
+                                  src={selectedStyleOption.imageUrl ?? ""}
+                                  alt={selectedStyleOption.label}
+                                  className="h-[220px] w-full object-cover sm:h-[260px]"
+                                />
+                              </div>
+                              <div className="mt-3 space-y-1">
+                                <p className="text-base font-medium" style={{ color: "var(--artist-card-text)" }}>
+                                  {selectedStyleOption.isCustom
+                                    ? selectedStyleOption.label
+                                    : getStyleLabel(selectedStyleOption.styleKey, locale)}
+                                </p>
+                                {selectedStyleOption.description ? (
+                                  <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                    {selectedStyleOption.description}
+                                  </p>
+                                ) : null}
+                              </div>
+                            </div>
+                          ) : null}
                         </div>
                       ) : null}
                 </div>

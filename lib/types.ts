@@ -68,6 +68,8 @@ export type ArtistStyleOption = {
   styleKey: string;
   label: string;
   description?: string | null;
+  imageUrl?: string | null;
+  imagePath?: string | null;
   enabled: boolean;
   multiplier: number;
   isCustom?: boolean;
