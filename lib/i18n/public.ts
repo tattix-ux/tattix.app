@@ -138,7 +138,7 @@ const placementCategoryLabels: Record<PlacementCategoryValue, LocalizedText> = {
 };
 
 const placementCategoryDescriptions: Record<PlacementCategoryValue, LocalizedText> = {
-  arm: { en: "Upper arm, lower arm, wrist, or hand", tr: "Üst kol, alt kol, bilek veya el" },
+  arm: { en: "Upper arm, lower arm, or wrist", tr: "Üst kol, alt kol veya bilek" },
   leg: { en: "Upper leg, lower leg, ankle, or foot", tr: "Üst bacak, alt bacak, ayak bileği veya ayak" },
   torso: { en: "Chest, ribs, or stomach", tr: "Göğüs, kaburga veya karın" },
   back: { en: "Upper back, lower back, or spine", tr: "Üst sırt, alt sırt veya omurga" },

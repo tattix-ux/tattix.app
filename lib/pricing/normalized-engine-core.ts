@@ -88,17 +88,21 @@ const BASE_UNCERTAINTY_BAND = 0.075;
 const MIN_UNCERTAINTY_BAND = 0.06;
 const MAX_UNCERTAINTY_BAND = 0.12;
 const DEFAULT_HARD_PLACEMENTS = new Set<BodyAreaDetailValue>([
-  "ribs",
-  "spine-area",
-  "neck-front",
-  "neck-side",
   "hand",
   "fingers",
-  "foot",
-  "toes",
-  "ankle",
-  "wrist",
+  "hand-other",
+  "neck-front",
+  "neck-side",
+  "neck-back",
+  "neck-other",
+  "ribs",
+  "stomach",
   "head",
+  "head-other",
+]);
+
+const CURATED_HARD_PLACEMENTS = new Set<BodyAreaDetailValue>([
+  ...DEFAULT_HARD_PLACEMENTS,
 ]);
 
 function isFinitePositive(value: number | null | undefined) {
@@ -214,24 +218,19 @@ function hasCalibrationExamples(examples: PricingCalibrationExamples | undefined
 }
 
 function collectHardPlacementDetails(rules: ArtistPricingRules) {
-  const derived = Object.entries(rules.placementModifiers ?? {})
-    .filter(([, range]) => midpoint(range) !== null)
-    .filter(([, range]) => (midpoint(range) ?? 1) >= 1.12)
-    .map(([key]) => key as BodyAreaDetailValue);
+  const curatedFromModifiers = Object.entries(rules.placementModifiers ?? {})
+    .map(([key]) => key as BodyAreaDetailValue)
+    .filter((key) => CURATED_HARD_PLACEMENTS.has(key));
 
-  if (derived.length > 0) {
-    return new Set(derived);
-  }
+  const curatedFromLegacyMultipliers = Object.entries(rules.placementMultipliers ?? {})
+    .map(([key]) => key as BodyAreaDetailValue)
+    .filter((key) => CURATED_HARD_PLACEMENTS.has(key));
 
-  const legacyDerived = Object.entries(rules.placementMultipliers ?? {})
-    .filter(([, multiplier]) => Number.isFinite(multiplier) && multiplier >= 1.12)
-    .map(([key]) => key as BodyAreaDetailValue);
-
-  if (legacyDerived.length > 0) {
-    return new Set(legacyDerived);
-  }
-
-  return DEFAULT_HARD_PLACEMENTS;
+  return new Set<BodyAreaDetailValue>([
+    ...DEFAULT_HARD_PLACEMENTS,
+    ...curatedFromModifiers,
+    ...curatedFromLegacyMultipliers,
+  ]);
 }
 
 function deriveSizeCurvePoints(

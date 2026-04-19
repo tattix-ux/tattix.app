@@ -6,7 +6,6 @@ export const bodyPlacementGroups = [
       { value: "upper-arm-outer", label: "Upper arm" },
       { value: "forearm-outer", label: "Lower arm" },
       { value: "wrist", label: "Wrist" },
-      { value: "hand", label: "Hand" },
       { value: "arm-other", label: "Others" },
     ],
   },
