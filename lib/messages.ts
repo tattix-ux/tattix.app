@@ -1,21 +1,12 @@
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import {
-  getIntentLabel,
   getPlacementDetailLocaleLabel,
   getPublicCopy,
   getSizeLabel,
-  getStyleLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
-import type { SubmissionRequest } from "@/lib/types";
+import type { PricingSourceValue, RequestTypeValue, SubmissionRequest } from "@/lib/types";
 import { sanitizePhoneNumber } from "@/lib/utils";
-
-function formatCurrencyRange(minimum: number, maximum: number, locale: PublicLocale) {
-  const formatter = new Intl.NumberFormat(locale === "tr" ? "tr-TR" : "en-US");
-  const prefix = locale === "tr" ? "₺" : "TRY ";
-
-  return `${prefix}${formatter.format(minimum)} – ${prefix}${formatter.format(maximum)}`;
-}
 
 function getReferenceUploadLine(locale: PublicLocale, uploaded: boolean) {
   if (locale === "tr") {
@@ -85,37 +76,39 @@ function getGenderLabel(
 
 export function buildSubmissionMessage(
   submission: SubmissionRequest,
-  _profile: { currency?: string },
-  estimatedMin: number,
-  estimatedMax: number,
-  locale: PublicLocale = "en",
-  selectedDesignTitle?: string | null,
-  selectedStyleLabel?: string | null,
+  options: {
+    locale: PublicLocale;
+    pricingSource: PricingSourceValue;
+    requestTypeLabel?: string | null;
+    selectedDesignTitle?: string | null;
+    displayEstimateLabel: string;
+  },
 ) {
+  const { locale, pricingSource, requestTypeLabel, selectedDesignTitle, displayEstimateLabel } = options;
   const copy = getPublicCopy(locale);
   const labels = copy.summaryLabels;
   const sizeLabel = getSizeLabel(submission.sizeCategory, locale);
   const manualSize = formatApproximateSizeLabel(submission) ?? sizeLabel;
+  const requestTypeLine =
+    pricingSource === "featured_design"
+      ? selectedDesignTitle
+        ? `${labels.selectedDesign}: ${selectedDesignTitle}`
+        : null
+      : requestTypeLabel
+        ? `${labels.intent}: ${requestTypeLabel}`
+        : null;
   const lines = [
     locale === "tr"
       ? "Merhaba, dövme talebim için bilgi almak istiyorum."
       : "Hi! I want to discuss a tattoo.",
     "",
-    `${labels.intent}: ${getIntentLabel(submission.intent, locale)}`,
+    requestTypeLine,
   ];
-
-  if (selectedDesignTitle) {
-    lines.push(`${labels.selectedDesign}: ${selectedDesignTitle}`);
-  }
 
   lines.push(
     `${labels.placement}: ${getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale)}`,
     `${labels.size}: ${sizeLabel}${manualSize && manualSize !== sizeLabel ? ` (${manualSize})` : ""}`,
   );
-
-  if (!selectedDesignTitle) {
-    lines.push(`${labels.style}: ${selectedStyleLabel ?? getStyleLabel(submission.style, locale)}`);
-  }
 
   if (submission.referenceImage) {
     lines.push(`${labels.referenceImage}: ${getReferenceUploadLine(locale, true)}`);
@@ -152,9 +145,9 @@ export function buildSubmissionMessage(
     lines.push(`${labels.ageRange}: ${submission.ageRange}`);
   }
 
-  lines.push("", `${labels.estimatedPriceShown}: ${formatCurrencyRange(estimatedMin, estimatedMax, locale)}`);
+  lines.push("", `${labels.estimatedPriceShown}: ${displayEstimateLabel}`);
 
-  return lines.join("\n");
+  return lines.filter(Boolean).join("\n");
 }
 
 export function buildWhatsAppLink(phoneNumber: string, message: string) {

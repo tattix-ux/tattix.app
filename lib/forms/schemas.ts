@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
-import { featuredDesignCategories, intentOptions, sizeOptions } from "@/lib/constants/options";
+import {
+  featuredDesignCategories,
+  intentOptions,
+  requestTypeOptions,
+  sizeOptions,
+} from "@/lib/constants/options";
 import {
   backgroundTypeOptions,
   bodyFontOptions,
@@ -25,6 +30,7 @@ const detailValues = bodyPlacementGroups.flatMap((group) =>
   group.details.map((detail) => detail.value),
 );
 const intentValues = intentOptions.map((intent) => intent.value);
+const requestTypeValues = requestTypeOptions.map((requestType) => requestType.value);
 const sizeValues = sizeOptions.map((size) => size.value);
 const categoryValues = featuredDesignCategories.map((item) => item.value);
 export const loginSchema = z.object({
@@ -293,46 +299,26 @@ export const detailCalibrationSubmissionSchema = z.object({
 });
 
 export const pricingOnboardingSchema = z.object({
-  minimumPrice: z.coerce.number().gt(0),
-  roseMedium8cm: z.coerce.number().gt(0),
-  roseMedium18cm: z.coerce.number().gt(0),
-  roseMedium25cm: z.coerce.number().gt(0),
-  roseLow18cm: z.coerce.number().gt(0),
-  roseHigh18cm: z.coerce.number().gt(0),
-  roseColor18cm: z.coerce.number().gt(0),
-  daggerAnchor18cm: z.coerce.number().gt(0),
-  textAnchorPrice: z.coerce.number().gt(0).optional(),
-  minimalSymbolAnchorPrice: z.coerce.number().gt(0).optional(),
-  finalControl: z
-    .object({
-      validationRound: z.coerce.number().int().min(1).default(1),
-      feedback: z
-        .record(
-          z.enum(pricingValidationExampleIds),
-          z.enum(pricingValidationFeedbackValues),
-        )
-        .optional(),
-      reasons: z
-        .record(z.string(), z.enum(pricingValidationReasonValues))
-        .optional()
-        .default({}),
-      rounds: z
-        .array(
-          z.object({
-            feedback: z.record(
-              z.enum(pricingValidationExampleIds),
-              z.enum(pricingValidationFeedbackValues),
-            ),
-            reasons: z
-              .record(z.string(), z.enum(pricingValidationReasonValues))
-              .optional()
-              .default({}),
-          }),
-        )
-        .optional()
-        .default([]),
-    })
-    .optional(),
+  minimumJobPrice: z.coerce.number().gt(0),
+  textStartingPrice: z.coerce.number().gt(0),
+  colorImpactPreference: z.enum(["low", "medium", "high"]),
+  coverUpImpactPreference: z.enum(["medium", "high"]),
+  leadPreference: z.enum(["lead_friendly", "balanced", "filtered"]),
+  onboardingCases: z.array(
+    z.object({
+      id: z.string().min(1),
+      min: z.coerce.number().gt(0),
+      max: z.coerce.number().gt(0),
+    }),
+  ).min(8),
+  reviewCases: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        verdict: z.enum(pricingValidationFeedbackValues),
+      }),
+    )
+    .default([]),
 });
 
 export const pricingSchema = z.object({
@@ -452,17 +438,22 @@ export const featuredDesignSchema = z
     referenceDetailLevel: z.enum(["simple", "standard", "detailed"]).nullable().optional(),
     referencePriceMin: nullableNumberSchema.optional(),
     referencePriceMax: nullableNumberSchema.optional(),
+    referenceSizeCm: nullableNumberSchema.optional(),
+    referenceColorMode: z.enum(["black-only", "black-grey", "full-color"]).nullable().optional(),
+    pricingMode: z
+      .enum(["fixed_range", "size_adjusted", "size_and_placement_adjusted", "starting_from"])
+      .nullable()
+      .optional(),
+    colorImpactPreference: z.enum(["low", "medium", "high"]).nullable().optional(),
     active: z.boolean().default(true),
     sortOrder: z.coerce.number().int().min(0),
   })
   .superRefine((values, ctx) => {
-    const normalizedSize = values.priceNote?.trim() ?? "";
-
-    if (!normalizedSize) {
+    if (values.referenceSizeCm === null || values.referenceSizeCm === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["priceNote"],
-        message: "Örnek boyut gir.",
+        path: ["referenceSizeCm"],
+        message: "Referans boyut gir.",
       });
     }
 
@@ -479,6 +470,43 @@ export const featuredDesignSchema = z
         code: z.ZodIssueCode.custom,
         path: ["referencePriceMax"],
         message: "Maks fiyat gir.",
+      });
+    }
+
+    if (
+      (values.pricingMode === null || values.pricingMode === undefined) &&
+      values.referencePriceMin !== null &&
+      values.referencePriceMin !== undefined
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["pricingMode"],
+        message: "Fiyat davranışını seç.",
+      });
+    }
+
+    if (
+      (values.referenceColorMode === null || values.referenceColorMode === undefined) &&
+      values.referencePriceMin !== null &&
+      values.referencePriceMin !== undefined
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referenceColorMode"],
+        message: "Referans renk yapısını seç.",
+      });
+    }
+
+    if (
+      (values.colorImpactPreference === null ||
+        values.colorImpactPreference === undefined) &&
+      values.referencePriceMin !== null &&
+      values.referencePriceMin !== undefined
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["colorImpactPreference"],
+        message: "Renk etkisini seç.",
       });
     }
 
@@ -504,6 +532,8 @@ export const featuredDesignsSchema = z.object({
 export const submissionSchema = z.object({
   artistSlug: z.string().min(3),
   locale: z.enum(["en", "tr"]).optional(),
+  pricingSource: z.enum(["custom_request", "featured_design"]).optional(),
+  requestType: z.enum(requestTypeValues as [string, ...string[]]).optional(),
   intent: z.enum(intentValues as [string, ...string[]]),
   selectedDesignId: z.string().nullable().optional(),
   referenceImage: z.string().max(255).nullable().optional(),

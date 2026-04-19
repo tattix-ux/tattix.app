@@ -1,3 +1,6 @@
+// Legacy pricing bridge.
+// New public submit flow uses lib/pricing/v2 instead of this hybrid normalized/legacy path.
+
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import {
   getIntentLabel,

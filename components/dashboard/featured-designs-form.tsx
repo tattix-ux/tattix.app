@@ -99,26 +99,24 @@ const copy = {
     sectionImage: "Visual",
     sectionImageHelp: "Use the image clients will see before they choose the design.",
     sectionPricing: "Price reference",
-    sectionPricingHelp: "Set the reference size, detail level, and example price range.",
+    sectionPricingHelp: "Set the starting range and how this design should react to size, placement, and color.",
     sectionClientCopy: "Client-facing description",
     sectionClientCopyHelp: "Add a short note that helps clients understand the design.",
     liveLabel: "Show to clients",
     liveHelp: "If this is on, the design appears in the client screen.",
     liveOn: "Live",
     liveOff: "Hidden",
-    priceNote: "Example size",
-    priceNoteHelp: "The longest reference measurement for this design.",
-    detailLevel: "Detail level",
-    detailLevelHelp: "More workmanship usually means a higher price.",
-    detailLow: "Low detail",
-    detailMedium: "Medium detail",
-    detailHigh: "High detail",
-    detailHintLow: "Simpler and faster to tattoo",
-    detailHintMedium: "Balanced amount of work",
-    detailHintHigh: "Denser work and more time",
+    priceNote: "Reference size",
+    priceNoteHelp: "This range is for roughly this many cm.",
+    pricingMode: "Should the price change?",
+    pricingModeHelp: "Keep the behavior simple and predictable for this design.",
+    referenceColorMode: "Reference color setup",
+    referenceColorModeHelp: "Choose the color setup you used for the reference range.",
+    colorImpactPreference: "If color changes, how much should it affect the price?",
+    colorImpactHelp: "This only applies when the client picks a different color direction.",
     priceRange: "Price range for this design",
-    priceRangeHelp: "Clients see this range for the example size and detail level above.",
-    priceRangeNote: "Final price can still change after placement and final brief.",
+    priceRangeHelp: "Clients see this as the starting range for the reference setup above.",
+    priceRangeNote: "Final price can still change after placement and the final brief.",
     summaryPrefix: "Example",
     priceMin: "Min price",
     priceMax: "Max price",
@@ -134,6 +132,22 @@ const copy = {
     replaceImage: "Replace image",
     unsavedChanges: "You have unsaved changes.",
     savedState: "All changes are saved.",
+    pricingModes: {
+      fixed_range: "Keep it fixed",
+      size_adjusted: "Change by size",
+      size_and_placement_adjusted: "Change by size and placement",
+      starting_from: "Show starting price only",
+    },
+    referenceColorModes: {
+      "black-only": "Black only",
+      "black-grey": "Black and grey",
+      "full-color": "Color",
+    },
+    colorImpactOptions: {
+      low: "Barely affects it",
+      medium: "Raises it a bit",
+      high: "Raises it clearly",
+    },
   },
   tr: {
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
@@ -170,25 +184,23 @@ const copy = {
     sectionImage: "Görsel",
     sectionImageHelp: "Müşterinin seçim ekranında göreceği görseli kullan.",
     sectionPricing: "Fiyat referansı",
-    sectionPricingHelp: "Örnek boyut, detay seviyesi ve fiyat aralığını birlikte belirle.",
+    sectionPricingHelp: "Başlangıç aralığını ve bu tasarımın boyut, bölge, renk değişimine nasıl tepki vereceğini belirle.",
     sectionClientCopy: "Müşteriye gösterilecek açıklama",
     sectionClientCopyHelp: "Müşterinin tasarımı daha hızlı anlaması için kısa bir not ekle.",
     liveLabel: "Müşteriye göster",
     liveHelp: "Açıksa bu tasarım müşteri ekranında görünür.",
     liveOn: "Yayında",
     liveOff: "Yayında değil",
-    priceNote: "Örnek boyut",
-    priceNoteHelp: "Bu tasarım için referans alınan en uzun ölçü.",
-    detailLevel: "Detay seviyesi",
-    detailLevelHelp: "İşçilik yoğunluğu arttıkça fiyat da artabilir.",
-    detailLow: "Az detay",
-    detailMedium: "Orta detay",
-    detailHigh: "Çok detay",
-    detailHintLow: "Daha sade ve hızlı uygulanır",
-    detailHintMedium: "Standart yoğunlukta çalışma",
-    detailHintHigh: "Daha yoğun işçilik ve süre gerektirir",
+    priceNote: "Bu fiyat yaklaşık kaç cm için geçerli?",
+    priceNoteHelp: "Referans fiyatı yaklaşık bu boyut için düşün.",
+    pricingMode: "Boyuta göre değişsin mi?",
+    pricingModeHelp: "Bu tasarım için fiyat davranışını sade şekilde seç.",
+    referenceColorMode: "Referans renk yapısı",
+    referenceColorModeHelp: "Bu aralığı hangi renk düzenine göre düşündüğünü seç.",
+    colorImpactPreference: "Renk değişirse fiyat etkilensin mi?",
+    colorImpactHelp: "Müşteri farklı bir renk düzeni seçerse ne kadar fark olacağını belirler.",
     priceRange: "Bu tasarım için fiyat aralığı",
-    priceRangeHelp: "Müşteriye, yukarıdaki örnek boyut ve detay seviyesi için bu aralık gösterilir.",
+    priceRangeHelp: "Müşteriye bu referans yapı için başlangıç aralığı olarak gösterilir.",
     priceRangeNote: "Kesin fiyat, yerleşim ve son brief’e göre değişebilir.",
     summaryPrefix: "Örnek",
     priceMin: "Min fiyat",
@@ -205,6 +217,22 @@ const copy = {
     replaceImage: "Görseli değiştir",
     unsavedChanges: "Kaydedilmemiş değişiklikler var.",
     savedState: "Tüm değişiklikler kaydedildi.",
+    pricingModes: {
+      fixed_range: "Sabit kalsın",
+      size_adjusted: "Boyuta göre değişsin",
+      size_and_placement_adjusted: "Boyut ve bölgeye göre değişsin",
+      starting_from: "Sadece başlangıç fiyatı göster",
+    },
+    referenceColorModes: {
+      "black-only": "Sadece siyah",
+      "black-grey": "Siyah-gri",
+      "full-color": "Renkli",
+    },
+    colorImpactOptions: {
+      low: "Pek etkilemez",
+      medium: "Biraz artar",
+      high: "Belirgin artar",
+    },
   },
 } as const;
 
@@ -235,9 +263,13 @@ export function FeaturedDesignsForm({
         imageUrl: design.imageUrl ?? "",
         imagePath: design.imagePath ?? "",
         priceNote: design.priceNote ?? "",
-        referenceDetailLevel: design.referenceDetailLevel ?? "standard",
+        referenceDetailLevel: design.referenceDetailLevel ?? null,
         referencePriceMin: design.referencePriceMin,
         referencePriceMax: design.referencePriceMax,
+        referenceSizeCm: design.referenceSizeCm,
+        referenceColorMode: design.referenceColorMode ?? "black-only",
+        pricingMode: design.pricingMode ?? "size_adjusted",
+        colorImpactPreference: design.colorImpactPreference ?? "medium",
         active: design.active,
         sortOrder: design.sortOrder,
       })),
@@ -387,12 +419,6 @@ export function FeaturedDesignsForm({
     return typeof value === "number" && Number.isFinite(value) ? value : null;
   }
 
-  const detailOptions = [
-    { value: "simple", label: labels.detailLow, hint: labels.detailHintLow },
-    { value: "standard", label: labels.detailMedium, hint: labels.detailHintMedium },
-    { value: "detailed", label: labels.detailHigh, hint: labels.detailHintHigh },
-  ] as const;
-
   const statusMessage =
     form.formState.errors.root?.message ?? (form.formState.isDirty ? labels.unsavedChanges : labels.savedState);
 
@@ -412,12 +438,11 @@ export function FeaturedDesignsForm({
               const isExpanded = expandedId === field.id;
               const cardTitle = currentDesign?.title?.trim() || `${labels.newItem} ${index + 1}`;
               const isCustomCategory = getCategorySelectValue(currentDesign?.category || "") === "__custom__";
-              const detailLabel =
-                currentDesign?.referenceDetailLevel === "simple"
-                  ? labels.detailLow
-                  : currentDesign?.referenceDetailLevel === "detailed"
-                    ? labels.detailHigh
-                    : labels.detailMedium;
+              const pricingModeLabel =
+                currentDesign?.pricingMode
+                  ? labels.pricingModes[currentDesign.pricingMode]
+                  : labels.pricingModes.size_adjusted;
+              const referenceSize = toNullableNumber(currentDesign?.referenceSizeCm);
               const formattedMin = formatPrice(toNullableNumber(currentDesign?.referencePriceMin));
               const formattedMax = formatPrice(toNullableNumber(currentDesign?.referencePriceMax));
 
@@ -473,8 +498,8 @@ export function FeaturedDesignsForm({
                             {getCategoryLabel(currentDesign?.category || "flash-designs")}
                           </span>
                           <span className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-                            {currentDesign?.priceNote?.trim()
-                              ? `${currentDesign.priceNote} cm`
+                            {currentDesign?.referenceSizeCm
+                              ? `${referenceSize} cm`
                               : labels.priceNote}
                           </span>
                         </div>
@@ -693,14 +718,14 @@ export function FeaturedDesignsForm({
                                 <Field
                                   label={labels.priceNote}
                                   description={labels.priceNoteHelp}
-                                  error={form.formState.errors.designs?.[index]?.priceNote?.message}
+                                  error={form.formState.errors.designs?.[index]?.referenceSizeCm?.message}
                                 >
                                   <div className="relative">
                                     <Input
                                       type="number"
                                       placeholder={labels.sizePlaceholder}
                                       className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
-                                      {...form.register(`designs.${index}.priceNote`)}
+                                      {...form.register(`designs.${index}.referenceSizeCm`)}
                                     />
                                       <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
                                         cm
@@ -708,42 +733,65 @@ export function FeaturedDesignsForm({
                                     </div>
                                   </Field>
 
-                                <Field label={labels.detailLevel} description={labels.detailLevelHelp}>
-                                  <div className="rounded-[20px] border border-white/8 bg-white/[0.02] p-1.5">
-                                    <div className="grid gap-1.5">
-                                    {detailOptions.map((option) => {
-                                      const active = currentDesign?.referenceDetailLevel === option.value;
-                                      return (
-                                        <button
-                                          key={option.value}
-                                          type="button"
-                                          onClick={() =>
-                                            form.setValue(`designs.${index}.referenceDetailLevel`, option.value, {
-                                              shouldDirty: true,
-                                              shouldValidate: true,
-                                            })
-                                          }
-                                          className={cn(
-                                            "rounded-[16px] border px-4 py-3 text-left transition",
-                                            active
-                                              ? "border-[var(--accent)]/26 bg-[var(--accent)]/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                                              : "border-transparent bg-transparent hover:border-white/8 hover:bg-white/[0.03]",
-                                          )}
-                                        >
-                                          <p className="text-sm font-medium text-white">{option.label}</p>
-                                          <p className="mt-1.5 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{option.hint}</p>
-                                        </button>
-                                      );
-                                    })}
-                                    </div>
-                                  </div>
+                                <Field label={labels.pricingMode} description={labels.pricingModeHelp}>
+                                  <NativeSelect
+                                    className="h-12 rounded-[18px] bg-white/[0.03]"
+                                    value={currentDesign?.pricingMode ?? "size_adjusted"}
+                                    onChange={(event) =>
+                                      form.setValue(`designs.${index}.pricingMode`, event.target.value as FeaturedDesignValues["designs"][number]["pricingMode"], {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      })
+                                    }
+                                  >
+                                    <option value="fixed_range">{labels.pricingModes.fixed_range}</option>
+                                    <option value="size_adjusted">{labels.pricingModes.size_adjusted}</option>
+                                    <option value="size_and_placement_adjusted">{labels.pricingModes.size_and_placement_adjusted}</option>
+                                    <option value="starting_from">{labels.pricingModes.starting_from}</option>
+                                  </NativeSelect>
+                                </Field>
+                              </div>
+
+                              <div className="grid gap-4 md:grid-cols-2">
+                                <Field label={labels.referenceColorMode} description={labels.referenceColorModeHelp}>
+                                  <NativeSelect
+                                    className="h-12 rounded-[18px] bg-white/[0.03]"
+                                    value={currentDesign?.referenceColorMode ?? "black-only"}
+                                    onChange={(event) =>
+                                      form.setValue(`designs.${index}.referenceColorMode`, event.target.value as FeaturedDesignValues["designs"][number]["referenceColorMode"], {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      })
+                                    }
+                                  >
+                                    <option value="black-only">{labels.referenceColorModes["black-only"]}</option>
+                                    <option value="black-grey">{labels.referenceColorModes["black-grey"]}</option>
+                                    <option value="full-color">{labels.referenceColorModes["full-color"]}</option>
+                                  </NativeSelect>
+                                </Field>
+
+                                <Field label={labels.colorImpactPreference} description={labels.colorImpactHelp}>
+                                  <NativeSelect
+                                    className="h-12 rounded-[18px] bg-white/[0.03]"
+                                    value={currentDesign?.colorImpactPreference ?? "medium"}
+                                    onChange={(event) =>
+                                      form.setValue(`designs.${index}.colorImpactPreference`, event.target.value as FeaturedDesignValues["designs"][number]["colorImpactPreference"], {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      })
+                                    }
+                                  >
+                                    <option value="low">{labels.colorImpactOptions.low}</option>
+                                    <option value="medium">{labels.colorImpactOptions.medium}</option>
+                                    <option value="high">{labels.colorImpactOptions.high}</option>
+                                  </NativeSelect>
                                 </Field>
                               </div>
 
                               <Field label={labels.priceRange} description={labels.priceRangeHelp}>
                                 <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3.5 text-sm text-white">
                                   {labels.summaryPrefix}:{" "}
-                                  {currentDesign?.priceNote?.trim() || "—"} cm · {detailLabel} ·{" "}
+                                  {referenceSize ?? "—"} cm · {pricingModeLabel} ·{" "}
                                   {formattedMin ? `${labels.currencyPrefix}${formattedMin}` : "—"}
                                   {" – "}
                                   {formattedMax ? `${labels.currencyPrefix}${formattedMax}` : "—"}
@@ -822,12 +870,16 @@ export function FeaturedDesignsForm({
                   imageUrl: "",
                   imagePath: "",
                   priceNote: "",
-                  referenceDetailLevel: "standard",
+                  referenceDetailLevel: null,
                   referencePriceMin: null,
                   referencePriceMax: null,
+                  referenceSizeCm: 10,
+                  referenceColorMode: "black-only",
+                  pricingMode: "size_adjusted",
+                  colorImpactPreference: "medium",
                   active: true,
-                        sortOrder: designsFieldArray.fields.length,
-                      });
+                  sortOrder: designsFieldArray.fields.length,
+                });
                       setExpandLatestCard(true);
                     }}
                   >

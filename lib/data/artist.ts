@@ -92,6 +92,10 @@ function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption {
 
 function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedDesign {
   const rawCategory = String(row.category);
+  const legacyReferenceSize =
+    row.reference_size_cm === null || row.reference_size_cm === undefined
+      ? Number.parseFloat(String(row.price_note ?? "").replace(",", "."))
+      : Number(row.reference_size_cm);
 
   return {
     id: String(row.id),
@@ -108,6 +112,15 @@ function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedDesign {
       row.reference_price_min === null ? null : Number(row.reference_price_min),
     referencePriceMax:
       row.reference_price_max === null ? null : Number(row.reference_price_max),
+    referenceSizeCm: Number.isFinite(legacyReferenceSize) ? legacyReferenceSize : null,
+    referenceColorMode:
+      row.reference_color_mode ? String(row.reference_color_mode) as ColorModeValue : null,
+    pricingMode:
+      row.pricing_mode ? String(row.pricing_mode) as ArtistFeaturedDesign["pricingMode"] : null,
+    colorImpactPreference:
+      row.color_impact_preference
+        ? String(row.color_impact_preference) as ArtistFeaturedDesign["colorImpactPreference"]
+        : null,
     active: Boolean(row.active ?? true),
     sortOrder: Number(row.sort_order ?? 0),
   };
@@ -322,6 +335,7 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
     detailCalibration: storedCalibrationExamples?.detailCalibration ?? defaultCalibrationExamples.detailCalibration,
     pricingRawInputs: storedCalibrationExamples?.pricingRawInputs ?? defaultCalibrationExamples.pricingRawInputs,
     pricingProfile: storedCalibrationExamples?.pricingProfile ?? defaultCalibrationExamples.pricingProfile,
+    pricingV2Profile: storedCalibrationExamples?.pricingV2Profile ?? null,
     finalValidation:
       storedCalibrationExamples?.finalValidation ?? defaultCalibrationExamples.finalValidation,
   };
@@ -331,6 +345,7 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
 
   return {
     artistId,
+    pricingVersion: row.pricing_version ? String(row.pricing_version) : "v2",
     anchorPrice,
     basePrice,
     minimumCharge,

@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 
 import { getPublicArtistPageData } from "@/lib/data/artist";
 import { submissionSchema } from "@/lib/forms/schemas";
-import { getPublicCopy, type PublicLocale } from "@/lib/i18n/public";
+import type { PublicLocale } from "@/lib/i18n/public";
 import { buildSubmissionMessage, buildWhatsAppLink } from "@/lib/messages";
-import { buildEstimateSummary, estimateTattooPrice } from "@/lib/pricing/estimate";
+import { estimateSubmissionPriceV2 } from "@/lib/pricing/v2";
+import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SubmissionRequest } from "@/lib/types";
@@ -46,21 +47,24 @@ export async function POST(request: Request) {
   const selectedDesign = submission.selectedDesignId
     ? artist.featuredDesigns.find((design) => design.id === submission.selectedDesignId) ?? null
     : null;
-  const selectedStyle = artist.styleOptions.find((style) => style.styleKey === submission.style) ?? null;
-  const estimate = estimateTattooPrice(submission, {
+  const estimate = estimateSubmissionPriceV2(submission, {
+    locale,
+    currency: artist.profile.currency,
     pricingRules: artist.pricingRules,
-    styleOptions: artist.styleOptions,
     featuredDesigns: artist.featuredDesigns,
   });
-  const copy = getPublicCopy(locale);
+  const requestTypeLabel = estimate.requestType
+    ? getRequestTypeLabel(estimate.requestType, locale)
+    : null;
   const message = buildSubmissionMessage(
     submission,
-    artist.profile,
-    estimate.min,
-    estimate.max,
-    locale,
-    selectedDesign?.title ?? null,
-    selectedStyle?.label ?? null,
+    {
+      locale,
+      pricingSource: estimate.pricingSource,
+      requestTypeLabel,
+      selectedDesignTitle: selectedDesign?.title ?? null,
+      displayEstimateLabel: estimate.displayLabel,
+    },
   );
   const combinedNotes = [
     submission.notes?.trim(),
@@ -92,7 +96,13 @@ export async function POST(request: Request) {
       style: submission.style,
       notes: combinedNotes || null,
       estimated_min: estimate.min,
-      estimated_max: estimate.max,
+      estimated_max: estimate.max ?? estimate.min,
+      pricing_version: "v2",
+      pricing_source: estimate.pricingSource,
+      request_type: estimate.requestType,
+      estimate_mode: estimate.mode,
+      featured_design_pricing_mode: estimate.featuredDesignPricingMode,
+      display_estimate_label: estimate.displayLabel,
       contact_message: message,
       status: "new",
     };
@@ -103,12 +113,22 @@ export async function POST(request: Request) {
       error &&
       (error.message.toLowerCase().includes("status") ||
         error.message.toLowerCase().includes("customer_gender") ||
-        error.message.toLowerCase().includes("customer_age_range"))
+        error.message.toLowerCase().includes("customer_age_range") ||
+        error.message.toLowerCase().includes("pricing_version") ||
+        error.message.toLowerCase().includes("pricing_source") ||
+        error.message.toLowerCase().includes("estimate_mode") ||
+        error.message.toLowerCase().includes("display_estimate_label"))
     ) {
       const {
         status: _status,
         customer_gender: _customerGender,
         customer_age_range: _customerAgeRange,
+        pricing_version: _pricingVersion,
+        pricing_source: _pricingSource,
+        request_type: _requestType,
+        estimate_mode: _estimateMode,
+        featured_design_pricing_mode: _featuredDesignPricingMode,
+        display_estimate_label: _displayEstimateLabel,
         ...legacyPayload
       } = insertPayload;
       await supabase.from("client_submissions").insert(legacyPayload);
@@ -117,15 +137,14 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     estimatedMin: estimate.min,
-    estimatedMax: estimate.max,
-    summary: buildEstimateSummary(submission, locale, selectedStyle?.label ?? null),
-    disclaimer:
-      submission.coverUp ||
-      (!submission.selectedDesignId &&
-        submission.intent !== "flash-design" &&
-        submission.intent !== "discounted-design")
-        ? copy.coverUpCustomWarning
-        : copy.disclaimer,
+    estimatedMax: estimate.max ?? estimate.min,
+    estimateMode: estimate.mode,
+    displayLabel: estimate.displayLabel,
+    summary:
+      estimate.pricingSource === "featured_design" && selectedDesign
+        ? selectedDesign.title
+        : requestTypeLabel ?? "",
+    disclaimer: estimate.summaryText,
     whatsappLink: buildWhatsAppLink(artist.profile.whatsappNumber, message),
     message,
   });

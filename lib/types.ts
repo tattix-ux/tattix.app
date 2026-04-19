@@ -7,6 +7,8 @@ import type {
   IntentValue,
   SizeValue,
 } from "@/lib/constants/options";
+export type { RequestTypeValue } from "@/lib/constants/options";
+import type { RequestTypeValue } from "@/lib/constants/options";
 import type { SizeMode } from "@/lib/constants/size-estimation";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type {
@@ -23,6 +25,17 @@ export type PriceRange = {
   min: number;
   max: number;
 };
+
+export type PricingSourceValue = "custom_request" | "featured_design";
+export type EstimateMode = "range" | "soft_range" | "starting_from";
+export type LeadPreferenceValue = "lead_friendly" | "balanced" | "filtered";
+export type ColorImpactPreferenceValue = "low" | "medium" | "high";
+export type CoverUpImpactPreferenceValue = "medium" | "high";
+export type FeaturedDesignPricingMode =
+  | "fixed_range"
+  | "size_adjusted"
+  | "size_and_placement_adjusted"
+  | "starting_from";
 
 export type TimeRange = {
   minHours: number;
@@ -88,6 +101,10 @@ export type ArtistFeaturedDesign = {
   referenceDetailLevel?: DetailLevelValue | null;
   referencePriceMin: number | null;
   referencePriceMax: number | null;
+  referenceSizeCm?: number | null;
+  referenceColorMode?: ColorModeValue | null;
+  pricingMode?: FeaturedDesignPricingMode | null;
+  colorImpactPreference?: ColorImpactPreferenceValue | null;
   active: boolean;
   sortOrder: number;
 };
@@ -132,6 +149,26 @@ export type PricingSimpleBaseline = {
   textAnchorPrice: number;
   minimalSymbolAnchorPrice: number;
   blendedPrice: number;
+};
+export type PricingV2CaseAnswer = {
+  id: string;
+  min: number;
+  max: number;
+};
+export type PricingV2ReviewAnswer = {
+  id: string;
+  verdict: PricingValidationFeedback;
+};
+export type ArtistPricingV2Profile = {
+  version: 2;
+  leadPreference: LeadPreferenceValue;
+  minimumJobPrice: number;
+  textStartingPrice: number;
+  colorImpactPreference: ColorImpactPreferenceValue;
+  coverUpImpactPreference: CoverUpImpactPreferenceValue;
+  onboardingCases: PricingV2CaseAnswer[];
+  reviewCases: PricingV2ReviewAnswer[];
+  onboardingCompleted: boolean;
 };
 export type PricingProfile = {
   version: 1;
@@ -258,6 +295,7 @@ export type PricingCalibrationExamples = {
   detailCalibration?: DetailCalibrationProfile | null;
   pricingRawInputs?: PricingCalibrationRawInputs | null;
   pricingProfile?: PricingProfile | null;
+  pricingV2Profile?: ArtistPricingV2Profile | null;
 };
 
 export type PricingCalibrationReferenceSlot = {
@@ -270,6 +308,7 @@ export type PricingCalibrationReferenceSlot = {
 
 export type ArtistPricingRules = {
   artistId: string;
+  pricingVersion?: string | null;
   anchorPrice: number;
   basePrice: number;
   minimumCharge: number;
@@ -327,6 +366,12 @@ export type ClientSubmission = {
   id: string;
   artistId: string;
   status: LeadStatus;
+  pricingVersion: string | null;
+  pricingSource: PricingSourceValue | null;
+  requestType: RequestTypeValue | null;
+  estimateMode: EstimateMode | null;
+  featuredDesignPricingMode: FeaturedDesignPricingMode | null;
+  displayEstimateLabel: string | null;
   intent: IntentValue;
   selectedDesignId: string | null;
   bodyAreaGroup: BodyAreaGroupValue;
@@ -358,6 +403,8 @@ export type ClientSubmission = {
 export type LeadStatus = "new" | "contacted" | "sold" | "lost";
 
 export type SubmissionDraft = {
+  pricingSource: PricingSourceValue | "";
+  requestType: RequestTypeValue | "";
   intent: IntentValue | "";
   selectedDesignId: string | "";
   referenceImage: string;
@@ -385,6 +432,8 @@ export type SubmissionDraft = {
 export type EstimateResult = {
   estimatedMin: number;
   estimatedMax: number;
+  estimateMode: EstimateMode;
+  displayLabel: string;
   summary: string;
   disclaimer: string;
   whatsappLink: string;
@@ -430,6 +479,8 @@ export type ArtistNotification = {
 export type SubmissionRequest = {
   artistSlug: string;
   locale?: PublicLocale;
+  pricingSource?: PricingSourceValue | null;
+  requestType?: RequestTypeValue | null;
   intent: IntentValue;
   selectedDesignId?: string | null;
   referenceImage?: string | null;

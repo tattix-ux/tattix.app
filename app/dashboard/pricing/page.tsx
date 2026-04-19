@@ -1,4 +1,3 @@
-import { DetailCalibrationForm } from "@/components/dashboard/detail-calibration-form";
 import { PricingForm } from "@/components/dashboard/pricing-form";
 import { SectionHeading } from "@/components/shared/shell";
 import { getDashboardData } from "@/lib/data/dashboard";
@@ -15,31 +14,14 @@ export default async function DashboardPricingPage() {
         eyebrow={isTurkish ? "Fiyatlama" : "Pricing"}
         title={
           isTurkish
-            ? "Fiyat aralığını sen belirle."
-            : "Set the price range yourself."
+            ? "Başlangıç fiyatlarını birlikte oturtalım."
+            : "Let’s shape the starting prices together."
         }
         description={
           isTurkish
-            ? "En küçük ve en basit iş için alacağın başlangıç ücretini gir."
-            : "Set the opening price and complete calibration."
+            ? "Sistem müşteriye göstereceği başlangıç seviyesini senin fiyat yapına göre ayarlar."
+            : "The system adapts its starting estimates to the way you usually price your work."
         }
-      />
-      <div className="-mt-2 max-w-2xl space-y-2 text-sm leading-6 text-[var(--foreground-muted)]">
-        {isTurkish ? (
-          <>
-            <p>Tattix; boyut, detay, bölge ve renge göre fiyat önerisi oluşturur.</p>
-            <p>Özel tasarım ve cover-up gibi durumlarda son fiyatı müşteriyle netleştirirsin.</p>
-          </>
-        ) : (
-          <>
-            <p>Tattix suggests pricing based on size, detail, placement, and color.</p>
-            <p>You confirm the final price for custom design and cover-up after speaking with the client.</p>
-          </>
-        )}
-      </div>
-      <DetailCalibrationForm
-        pricingRules={data.pricingRules}
-        locale={isTurkish ? "tr" : "en"}
       />
       <PricingForm
         pricingRules={data.pricingRules}

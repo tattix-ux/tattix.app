@@ -20,6 +20,7 @@ import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/bo
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import { intentOptions, styleOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
+import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
 import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
 import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
@@ -99,6 +100,7 @@ const leadCopy = {
       reference: "Reference image",
       shownEstimate: "Estimate shown",
       selectedDesign: "Selected design",
+      source: "Source",
       noCity: "Not shared",
       noTiming: "Not shared",
       noNotes: "No notes",
@@ -181,6 +183,7 @@ const leadCopy = {
       reference: "Referans görsel",
       shownEstimate: "Müşteriye gösterilen tahmin",
       selectedDesign: "Seçilen tasarım",
+      source: "Kaynak",
       noCity: "Paylaşılmadı",
       noTiming: "Paylaşılmadı",
       noNotes: "Not yok",
@@ -362,6 +365,31 @@ function getSizeLabel(lead: ClientSubmission, locale: PublicLocale) {
     formatApproximateSizeLabel(lead) ??
     sizeLabels[locale === "tr" ? "tr" : "en"][lead.sizeCategory]
   );
+}
+
+function getDisplayedEstimate(lead: ClientSubmission, currency: string) {
+  return lead.displayEstimateLabel ?? formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency);
+}
+
+function getPricingSourceLabel(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.pricingSource === "featured_design") {
+    return locale === "tr" ? "Hazır tasarım" : "Featured design";
+  }
+
+  return locale === "tr" ? "Serbest talep" : "Custom request";
+}
+
+function getRequestLabel(lead: ClientSubmission, locale: PublicLocale, designs: ArtistFeaturedDesign[]) {
+  if (lead.pricingSource === "featured_design") {
+    const selectedDesign = designs.find((design) => design.id === lead.selectedDesignId);
+    return selectedDesign?.title ?? formatIntent(lead.intent, locale);
+  }
+
+  if (lead.requestType) {
+    return getRequestTypeLabel(lead.requestType, locale);
+  }
+
+  return formatIntent(lead.intent, locale);
 }
 
 function getPreferredTimingLabel(lead: ClientSubmission, locale: PublicLocale, noTiming: string) {
@@ -745,7 +773,7 @@ export function LeadsTable({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.intent}</p>
-              <p className="text-sm text-white">{formatIntent(lead.intent, locale)}</p>
+              <p className="text-sm text-white">{getRequestLabel(lead, locale, designs)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.placement}</p>
@@ -769,11 +797,15 @@ export function LeadsTable({
             </div>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.shownEstimate}</p>
-              <p className="text-sm text-white">{formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}</p>
+              <p className="text-sm text-white">{getDisplayedEstimate(lead, currency)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.selectedDesign}</p>
               <p className="text-sm text-white">{selectedDesign}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.source}</p>
+              <p className="text-sm text-white">{getPricingSourceLabel(lead, locale)}</p>
             </div>
             <div className="space-y-1 sm:col-span-2">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.notes}</p>
@@ -1051,13 +1083,13 @@ export function LeadsTable({
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-2xl font-semibold text-white">
-                          {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}
+                          {getDisplayedEstimate(lead, currency)}
                         </p>
                         <p className="mt-1 text-sm text-white">
                           {formatPlacement(lead.bodyAreaDetail, locale)} · {getSizeLabel(lead, locale)}
                         </p>
                         <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                          {formatIntent(lead.intent, locale)}
+                          {getRequestLabel(lead, locale, designs)}
                         </p>
                       </div>
                       <StatusBadge status={lead.status} locale={locale} />
@@ -1065,7 +1097,7 @@ export function LeadsTable({
 
                     <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--foreground-muted)]">
                       <span>{formatLeadDate(lead.createdAt, locale)}</span>
-                      <span>{copy.table.style}: {formatStyle(lead.style, locale)}</span>
+                      <span>{copy.table.source}: {getPricingSourceLabel(lead, locale)}</span>
                       {getReferenceImageUrl(lead) ? (
                         <span className="inline-flex items-center gap-1">
                           <ImageIcon className="size-4" />
@@ -1118,7 +1150,7 @@ export function LeadsTable({
                           <TableCell className="align-top">
                             <div className="space-y-1">
                               <p className="text-lg font-semibold text-white">
-                                {formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency)}
+                                {getDisplayedEstimate(lead, currency)}
                               </p>
                               <p className="text-xs text-[var(--foreground-muted)]">
                                 {formatLeadDate(lead.createdAt, locale)}
@@ -1131,14 +1163,14 @@ export function LeadsTable({
                                 {formatPlacement(lead.bodyAreaDetail, locale)} · {getSizeLabel(lead, locale)}
                               </p>
                               <p className="text-sm text-[var(--foreground-muted)]">
-                                {formatIntent(lead.intent, locale)}
+                                {getRequestLabel(lead, locale, designs)}
                               </p>
                             </div>
                           </TableCell>
                           <TableCell className="align-top">
                             <div className="space-y-2">
                               <p className="text-sm text-[var(--foreground-muted)]">
-                                {copy.table.style}: {formatStyle(lead.style, locale)}
+                                {copy.table.source}: {getPricingSourceLabel(lead, locale)}
                               </p>
                               <p className="text-sm text-[var(--foreground-muted)]">
                                 {notesPreview(lead.notes, copy.table.noNotes)}

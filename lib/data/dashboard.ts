@@ -5,6 +5,7 @@ import { demoArtistPageData, demoLeads } from "@/lib/demo-data";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
 import type { ArtistProfile, ClientSubmission, DashboardData, LeadStatus } from "@/lib/types";
 import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
+import { buildPricingV2Profile } from "@/lib/pricing/v2/profile";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getArtistPageDataById } from "@/lib/data/artist";
@@ -40,6 +41,15 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     id: String(row.id),
     artistId: String(row.artist_id),
     status,
+    pricingVersion: row.pricing_version ? String(row.pricing_version) : null,
+    pricingSource: row.pricing_source ? String(row.pricing_source) as ClientSubmission["pricingSource"] : null,
+    requestType: row.request_type ? String(row.request_type) as ClientSubmission["requestType"] : null,
+    estimateMode: row.estimate_mode ? String(row.estimate_mode) as ClientSubmission["estimateMode"] : null,
+    featuredDesignPricingMode:
+      row.featured_design_pricing_mode
+        ? String(row.featured_design_pricing_mode) as ClientSubmission["featuredDesignPricingMode"]
+        : null,
+    displayEstimateLabel: row.display_estimate_label ? String(row.display_estimate_label) : null,
     intent: String(row.intent) as ClientSubmission["intent"],
     selectedDesignId: row.selected_design_id ? String(row.selected_design_id) : null,
     bodyAreaGroup: String(row.body_area_group) as ClientSubmission["bodyAreaGroup"],
@@ -225,6 +235,7 @@ export async function ensureArtistForUser(user: User) {
     }),
     supabase.from("artist_pricing_rules").upsert({
       artist_id: artist.id,
+      pricing_version: "v2",
       anchor_price: 2400,
       base_price: 3200,
       minimum_charge: 1500,
@@ -261,6 +272,24 @@ export async function ensureArtistForUser(user: User) {
         detailCalibration: null,
         pricingRawInputs: null,
         pricingProfile: null,
+        pricingV2Profile: buildPricingV2Profile({
+          minimumJobPrice: 1500,
+          textStartingPrice: 1500,
+          colorImpactPreference: "medium",
+          coverUpImpactPreference: "medium",
+          leadPreference: "balanced",
+          onboardingCases: [
+            { id: "text-4cm-wrist", min: 1500, max: 1800 },
+            { id: "symbol-4cm-ankle", min: 1500, max: 1900 },
+            { id: "object-8cm-forearm", min: 1800, max: 2400 },
+            { id: "figure-12cm-upper-arm", min: 2400, max: 3200 },
+            { id: "multi-15cm-calf", min: 3200, max: 4500 },
+            { id: "ornamental-small-hard", min: 2800, max: 3900 },
+            { id: "medium-color-piece", min: 3400, max: 4700 },
+            { id: "small-cover-up", min: 3000, max: 4200 },
+          ],
+          reviewCases: [],
+        }),
       },
       calibration_reference_slots: CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot })),
       size_modifiers: {

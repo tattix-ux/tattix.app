@@ -19,6 +19,8 @@ type FunnelState = {
 };
 
 const initialDraft: SubmissionDraft = {
+  pricingSource: "",
+  requestType: "",
   intent: "",
   selectedDesignId: "",
   referenceImage: "",
@@ -39,7 +41,7 @@ const initialDraft: SubmissionDraft = {
   detailLevel: "",
   colorMode: "",
   coverUp: null,
-  style: "not-sure-style",
+  style: "custom",
   notes: "",
 };
 

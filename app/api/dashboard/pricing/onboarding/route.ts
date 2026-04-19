@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { pricingOnboardingSchema } from "@/lib/forms/schemas";
-import {
-  applyFinalControlRoundsToPricingProfile,
-  buildFinalControlUpdateDebugSnapshot,
-  buildPricingProfileDebugSnapshot,
-  derivePricingProfile,
-} from "@/lib/pricing/pricing-profile";
+import { buildPricingV2Profile } from "@/lib/pricing/v2/profile";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ArtistPricingRules } from "@/lib/types";
@@ -32,39 +27,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
   }
 
-  const { sanitizedInputs, pricingProfile } = derivePricingProfile(parsed.data);
-  const finalControlRounds =
-    parsed.data.finalControl?.rounds?.length
-      ? parsed.data.finalControl.rounds
-      : parsed.data.finalControl?.feedback
-        ? [
-            {
-              feedback: parsed.data.finalControl.feedback,
-              reasons: parsed.data.finalControl.reasons ?? {},
-            },
-          ]
-        : [];
-  const nextPricingProfile =
-    finalControlRounds.length > 0
-      ? applyFinalControlRoundsToPricingProfile(pricingProfile, finalControlRounds)
-      : null;
-  const effectivePricingProfile = nextPricingProfile?.pricingProfile ?? pricingProfile;
-
-  if (process.env.NODE_ENV !== "production") {
-    console.debug("[pricing-onboarding]", buildPricingProfileDebugSnapshot(sanitizedInputs, effectivePricingProfile));
-
-    if (nextPricingProfile) {
-      console.debug(
-        "[pricing-onboarding:final-control]",
-        buildFinalControlUpdateDebugSnapshot(
-          nextPricingProfile.finalValidation.perExampleFeedback,
-          nextPricingProfile.finalValidation.perExampleReason ?? {},
-          pricingProfile,
-          nextPricingProfile,
-        ),
-      );
-    }
-  }
+  const nextPricingProfile = buildPricingV2Profile(parsed.data);
 
   const supabase = await createSupabaseServerClient();
   const existingPricing = await supabase
@@ -79,22 +42,16 @@ export async function POST(request: Request) {
 
   const nextCalibrationExamples = {
     ...(existingCalibrationExamples ?? {}),
-    pricingRawInputs: sanitizedInputs,
-    pricingProfile: effectivePricingProfile,
-    ...(nextPricingProfile?.finalValidation || existingCalibrationExamples?.finalValidation
-      ? {
-          finalValidation:
-            nextPricingProfile?.finalValidation ?? existingCalibrationExamples?.finalValidation,
-        }
-      : {}),
+    pricingV2Profile: nextPricingProfile,
   };
 
   const { error } = await supabase.from("artist_pricing_rules").upsert({
     artist_id: artist.id,
-    anchor_price: sanitizedInputs.minimumPrice,
-    base_price: sanitizedInputs.minimumPrice,
-    minimum_charge: sanitizedInputs.minimumPrice,
-    minimum_session_price: sanitizedInputs.minimumPrice,
+    pricing_version: "v2",
+    anchor_price: parsed.data.minimumJobPrice,
+    base_price: parsed.data.minimumJobPrice,
+    minimum_charge: parsed.data.minimumJobPrice,
+    minimum_session_price: parsed.data.minimumJobPrice,
     calibration_examples: nextCalibrationExamples,
   });
 
@@ -104,8 +61,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     message: "Pricing onboarding saved.",
-    rawInputs: sanitizedInputs,
-    pricingProfile: effectivePricingProfile,
-    finalValidation: nextPricingProfile?.finalValidation ?? null,
+    pricingProfile: nextPricingProfile,
   });
 }

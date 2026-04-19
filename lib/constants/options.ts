@@ -10,6 +10,15 @@ export const intentOptions = [
   { value: "not-sure", label: "I'm not sure", category: null },
 ] as const;
 
+export const requestTypeOptions = [
+  { value: "text", label: "Text" },
+  { value: "mini_simple", label: "Mini simple" },
+  { value: "single_object", label: "Single object" },
+  { value: "multi_element", label: "Multi element" },
+  { value: "cover_up", label: "Cover up" },
+  { value: "unsure", label: "Unsure" },
+] as const;
+
 export const sizeOptions = [
   { value: "tiny", label: "Tiny", detail: "Quick accent or finger-scale design" },
   { value: "small", label: "Small", detail: "Palm-size or simple linework" },
@@ -43,6 +52,7 @@ export const currencyOptions = [
 ] as const;
 
 export type IntentValue = (typeof intentOptions)[number]["value"];
+export type RequestTypeValue = (typeof requestTypeOptions)[number]["value"];
 export type SizeValue = (typeof sizeOptions)[number]["value"];
 export type StyleValue = string;
 export type FeaturedCategoryValue = string;
