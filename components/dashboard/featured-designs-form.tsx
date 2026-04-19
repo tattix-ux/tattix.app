@@ -27,9 +27,41 @@ import { featuredDesignsSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import type { ArtistFeaturedDesign } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type FeaturedDesignFormInput = z.input<typeof featuredDesignsSchema>;
 type FeaturedDesignValues = z.output<typeof featuredDesignsSchema>;
+
+function DesignSection({
+  title,
+  description,
+  className,
+  children,
+}: {
+  title: string;
+  description?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-[26px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-6",
+        className,
+      )}
+    >
+      <div className="space-y-1">
+        <h3 className="text-[0.95rem] font-semibold tracking-[-0.01em] text-white">{title}</h3>
+        {description ? (
+          <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
+            {description}
+          </p>
+        ) : null}
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
 
 const copy = {
   en: {
@@ -40,8 +72,8 @@ const copy = {
     uploadFailed: "Unable to upload image.",
     saveFailed: "Unable to save designs.",
     saved: "Designs saved.",
-    title: "Design details",
-    description: "Add the image, example price, and short copy clients will see.",
+    title: "Designs",
+    description: "Manage the designs clients can see, with a clear visual and reference price range.",
     item: "Design",
     newItem: "New design",
     remove: "Remove",
@@ -62,14 +94,14 @@ const copy = {
     noImage: "No image selected yet",
     uploadImage: "Upload image",
     removeImage: "Remove image",
-    sectionVisibility: "Visibility",
-    sectionVisibilityHelp: "Decide if clients should see this design.",
-    sectionDetails: "Design details",
-    sectionDetailsHelp: "Add the core information for this design.",
-    sectionPricing: "Example pricing",
-    sectionPricingHelp: "Set the reference size and price range for this design.",
-    sectionClientCopy: "Client-facing copy",
-    sectionClientCopyHelp: "Keep the text short and easy to understand.",
+    sectionGeneral: "Design overview",
+    sectionGeneralHelp: "Set the name, category, and client visibility.",
+    sectionImage: "Visual",
+    sectionImageHelp: "Use the image clients will see before they choose the design.",
+    sectionPricing: "Price reference",
+    sectionPricingHelp: "Set the reference size, detail level, and example price range.",
+    sectionClientCopy: "Client-facing description",
+    sectionClientCopyHelp: "Add a short note that helps clients understand the design.",
     liveLabel: "Show to clients",
     liveHelp: "If this is on, the design appears in the client screen.",
     liveOn: "Live",
@@ -99,6 +131,9 @@ const copy = {
     customOption: "Custom category",
     dragHint: "Drag to reorder",
     currencyPrefix: "TRY",
+    replaceImage: "Replace image",
+    unsavedChanges: "You have unsaved changes.",
+    savedState: "All changes are saved.",
   },
   tr: {
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
@@ -108,8 +143,8 @@ const copy = {
     uploadFailed: "Görsel yüklenemedi.",
     saveFailed: "Tasarımlar kaydedilemedi.",
     saved: "Tasarımlar kaydedildi.",
-    title: "Tasarıma ait bilgiler",
-    description: "Her tasarım için görsel, örnek fiyat ve kısa açıklama gir.",
+    title: "Tasarımlar",
+    description: "Müşteriye göstereceğin tasarımları, referans fiyat aralığıyla birlikte düzenle.",
     item: "Tasarım",
     newItem: "Yeni tasarım",
     remove: "Kaldır",
@@ -130,14 +165,14 @@ const copy = {
     noImage: "Henüz görsel seçilmedi",
     uploadImage: "Görsel yükle",
     removeImage: "Görseli kaldır",
-    sectionVisibility: "Görünürlük",
-    sectionVisibilityHelp: "Bu tasarımın müşteri ekranında görünüp görünmeyeceğini seç.",
-    sectionDetails: "Tasarım bilgileri",
-    sectionDetailsHelp: "Bu tasarımın temel bilgilerini gir.",
-    sectionPricing: "Fiyat örneği",
-    sectionPricingHelp: "Bu tasarım için örnek boyut ve fiyat aralığını belirle.",
+    sectionGeneral: "Tasarım genel",
+    sectionGeneralHelp: "Tasarım adı, kategori ve görünürlüğü burada belirlenir.",
+    sectionImage: "Görsel",
+    sectionImageHelp: "Müşterinin seçim ekranında göreceği görseli kullan.",
+    sectionPricing: "Fiyat referansı",
+    sectionPricingHelp: "Örnek boyut, detay seviyesi ve fiyat aralığını birlikte belirle.",
     sectionClientCopy: "Müşteriye gösterilecek açıklama",
-    sectionClientCopyHelp: "Kısa ve anlaşılır bir metin ekle.",
+    sectionClientCopyHelp: "Müşterinin tasarımı daha hızlı anlaması için kısa bir not ekle.",
     liveLabel: "Müşteriye göster",
     liveHelp: "Açıksa bu tasarım müşteri ekranında görünür.",
     liveOn: "Yayında",
@@ -167,6 +202,9 @@ const copy = {
     customOption: "Özel kategori",
     dragHint: "Sıralamak için sürükle",
     currencyPrefix: "₺",
+    replaceImage: "Görseli değiştir",
+    unsavedChanges: "Kaydedilmemiş değişiklikler var.",
+    savedState: "Tüm değişiklikler kaydedildi.",
   },
 } as const;
 
@@ -333,13 +371,24 @@ export function FeaturedDesignsForm({
     return typeof value === "number" && Number.isFinite(value) ? value : null;
   }
 
+  const detailOptions = [
+    { value: "simple", label: labels.detailLow, hint: labels.detailHintLow },
+    { value: "standard", label: labels.detailMedium, hint: labels.detailHintMedium },
+    { value: "detailed", label: labels.detailHigh, hint: labels.detailHintHigh },
+  ] as const;
+
+  const statusMessage = form.formState.errors.root?.message ?? (form.formState.isDirty ? labels.unsavedChanges : labels.savedState);
+
   return (
-    <Card className="surface-border">
-      <CardHeader>
+    <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] shadow-[0_32px_120px_rgba(0,0,0,0.28)]">
+      <CardHeader className="relative overflow-hidden pb-4">
+        <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(247,177,93,0.10),transparent_72%)]" />
         <CardTitle>{labels.title}</CardTitle>
-        <CardDescription>{labels.description}</CardDescription>
+        <CardDescription className="max-w-[62ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
+          {labels.description}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-4">
             {designsFieldArray.fields.map((field, index) => {
@@ -371,41 +420,67 @@ export function FeaturedDesignsForm({
                     designsFieldArray.move(dragIndex, index);
                     setDragIndex(null);
                   }}
-                  className="rounded-[22px] border border-white/8 bg-black/20 p-3.5 sm:rounded-[24px] sm:p-4"
+                  className="group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.16)] transition sm:p-5"
                 >
                   <div
-                    className="flex cursor-pointer flex-wrap items-start justify-between gap-3"
+                    className="flex cursor-pointer flex-wrap items-start justify-between gap-4"
                     onClick={() => setExpandedId((current) => (current === field.id ? null : field.id))}
                   >
                     <div className="flex min-w-0 items-start gap-3">
                       <button
                         type="button"
-                        className="inline-flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white/70"
+                        className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/20 text-white/60 transition hover:border-white/16 hover:text-white/90"
                         aria-label={labels.dragHint}
                         onClick={(event) => event.stopPropagation()}
                       >
                         <GripVertical className="size-4" />
                       </button>
+                      <div className="relative size-14 shrink-0 overflow-hidden rounded-[18px] border border-white/10 bg-black/25">
+                        {currentDesign?.imageUrl ? (
+                          <img
+                            src={currentDesign.imageUrl}
+                            alt={currentDesign.title || cardTitle}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[var(--foreground-muted)]">
+                            <ImagePlus className="size-5" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/35" />
+                      </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                          {labels.item} {index + 1}
-                        </p>
-                        <p className="mt-1 truncate text-base font-medium text-white">
+                        <p className="truncate text-[1.02rem] font-semibold tracking-[-0.02em] text-white">
                           {cardTitle}
                         </p>
-                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                          {getCategoryLabel(currentDesign?.category || "flash-designs")}
-                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-white/8 bg-black/20 px-2.5 py-1 text-[11px] text-[var(--foreground-muted)]">
+                            {getCategoryLabel(currentDesign?.category || "flash-designs")}
+                          </span>
+                          <span className="text-xs text-[var(--foreground-muted)]">
+                            {currentDesign?.priceNote?.trim()
+                              ? `${currentDesign.priceNote} cm`
+                              : labels.priceNote}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex flex-wrap items-start justify-end gap-2">
-                      <span className="rounded-full border border-white/8 bg-black/25 px-3 py-2 text-xs text-[var(--foreground-muted)]">
+                      <span
+                        className={cn(
+                          "rounded-full border px-3 py-2 text-xs font-medium",
+                          currentDesign?.active
+                            ? "border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[var(--accent-soft)]"
+                            : "border-white/8 bg-black/25 text-[var(--foreground-muted)]",
+                        )}
+                      >
                         {currentDesign?.active ? labels.liveOn : labels.liveOff}
                       </span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
+                        className="text-[var(--foreground-muted)] hover:text-white"
                         onClick={(event) => {
                           event.stopPropagation();
                           handleRemove(index);
@@ -418,199 +493,92 @@ export function FeaturedDesignsForm({
 
                   {isExpanded ? (
                     <>
-                      <div className="mt-5">
+                      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
                         <div className="space-y-5">
-                          <div className="space-y-3 rounded-[22px] border border-white/8 bg-black/20 p-4">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium text-white">{labels.sectionVisibility}</p>
-                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionVisibilityHelp}</p>
-                            </div>
-                            <label
-                              className="flex items-center justify-between gap-3 rounded-[18px] border border-white/8 bg-black/25 px-3 py-3"
-                            >
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-white">{labels.liveLabel}</p>
-                                <p className="text-xs text-[var(--foreground-muted)]">{labels.liveHelp}</p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-[var(--foreground-muted)]">
-                                  {currentDesign?.active ? labels.liveOn : labels.liveOff}
-                                </span>
-                                <input
-                                  type="checkbox"
-                                  className="size-4 accent-[var(--accent)]"
-                                  {...form.register(`designs.${index}.active`)}
-                                />
-                              </div>
-                            </label>
-                          </div>
-
-                          <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium text-white">{labels.sectionDetails}</p>
-                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionDetailsHelp}</p>
-                            </div>
-
+                          <DesignSection title={labels.sectionImage} description={labels.sectionImageHelp}>
                             <Field label={labels.image} description={labels.imageDescription}>
-                            <div className="space-y-3">
-                              <div className="relative flex min-h-[240px] items-center justify-center overflow-hidden rounded-[22px] border border-white/10 bg-white/5 sm:min-h-[280px]">
-                                {currentDesign?.imageUrl ? (
-                                  <div
-                                    className="absolute inset-0 bg-cover bg-center"
-                                    style={{ backgroundImage: `url(${currentDesign.imageUrl})` }}
-                                    aria-label={currentDesign.title || `${labels.item} ${index + 1}`}
-                                    role="img"
-                                  />
-                                ) : (
-                                  <div className="flex flex-col items-center gap-2 px-6 text-center text-sm text-[var(--foreground-muted)]">
-                                    <ImagePlus className="size-6" />
-                                    <span>{labels.noImage}</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
-                                <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
-                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
-                                  <Upload className="size-4" />
-                                  {labels.uploadImage}
-                                  <input
-                                    type="file"
-                                    accept="image/png,image/jpeg,image/webp,image/gif"
-                                    className="hidden"
-                                    onChange={(event) => {
-                                      const file = event.target.files?.[0];
-                                      if (file) {
-                                        void handleImageUpload(index, file);
-                                      }
-                                      event.currentTarget.value = "";
-                                    }}
-                                  />
-                                </label>
-                                {currentDesign?.imageUrl ? (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-sm"
-                                    onClick={() => void handleImageRemove(index)}
-                                  >
-                                    <X className="size-4" />
-                                    {labels.removeImage}
-                                  </Button>
-                                ) : null}
-                              </div>
-                            </div>
-                            </Field>
-
-                            <div className="grid gap-5 md:grid-cols-2">
-                              <Field
-                                label={labels.priceNote}
-                                description={labels.priceNoteHelp}
-                                error={form.formState.errors.designs?.[index]?.priceNote?.message}
-                              >
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  placeholder={labels.sizePlaceholder}
-                                  className="pr-12"
-                                  {...form.register(`designs.${index}.priceNote`)}
-                                />
-                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
-                                  cm
-                                </span>
-                              </div>
-                              </Field>
-
-                              <Field label={labels.detailLevel} description={labels.detailLevelHelp}>
-                              <NativeSelect {...form.register(`designs.${index}.referenceDetailLevel`)}>
-                                <option value="simple">{labels.detailLow}</option>
-                                <option value="standard">{labels.detailMedium}</option>
-                                <option value="detailed">{labels.detailHigh}</option>
-                              </NativeSelect>
-                                <div className="mt-2 grid gap-1 text-xs text-[var(--foreground-muted)]">
-                                  <p>{labels.detailLow}: {labels.detailHintLow}</p>
-                                  <p>{labels.detailMedium}: {labels.detailHintMedium}</p>
-                                  <p>{labels.detailHigh}: {labels.detailHintHigh}</p>
+                              <div className="space-y-4">
+                                <div className="group/preview relative min-h-[280px] overflow-hidden rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] sm:min-h-[360px]">
+                                  {currentDesign?.imageUrl ? (
+                                    <>
+                                      <img
+                                        src={currentDesign.imageUrl}
+                                        alt={currentDesign.title || `${labels.item} ${index + 1}`}
+                                        className="absolute inset-0 h-full w-full object-contain p-6 transition duration-300 group-hover/preview:scale-[1.02]"
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/45" />
+                                      <div className="absolute inset-x-4 bottom-4 flex flex-wrap gap-2 opacity-100 sm:opacity-0 sm:transition sm:duration-200 sm:group-hover/preview:opacity-100">
+                                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/14 bg-black/55 px-4 py-2 text-sm text-white backdrop-blur-md transition hover:bg-black/70">
+                                          <Upload className="size-4" />
+                                          {labels.replaceImage}
+                                          <input
+                                            type="file"
+                                            accept="image/png,image/jpeg,image/webp,image/gif"
+                                            className="hidden"
+                                            onChange={(event) => {
+                                              const file = event.target.files?.[0];
+                                              if (file) {
+                                                void handleImageUpload(index, file);
+                                              }
+                                              event.currentTarget.value = "";
+                                            }}
+                                          />
+                                        </label>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 px-6 text-center text-sm text-[var(--foreground-muted)] sm:min-h-[360px]">
+                                      <div className="rounded-full border border-white/10 bg-white/6 p-4">
+                                        <ImagePlus className="size-7" />
+                                      </div>
+                                      <div className="space-y-1">
+                                        <p className="text-sm font-medium text-white/90">{labels.noImage}</p>
+                                        <p className="text-xs text-[var(--foreground-muted)]">{labels.imageDescription}</p>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                              </Field>
-                            </div>
-                          </div>
 
-                          <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium text-white">{labels.sectionPricing}</p>
-                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionPricingHelp}</p>
-                            </div>
-
-                            <Field label={labels.priceRange} description={labels.priceRangeHelp}>
-                              <div className="rounded-[18px] border border-white/8 bg-black/25 px-3 py-3 text-sm text-white">
-                                {labels.summaryPrefix}:{" "}
-                                {currentDesign?.priceNote?.trim() || "—"} cm · {detailLabel} ·{" "}
-                                {formattedMin ? `${labels.currencyPrefix}${formattedMin}` : "—"}
-                                {"–"}
-                                {formattedMax ? `${labels.currencyPrefix}${formattedMax}` : "—"}
-                              </div>
-                              <div className="grid gap-4 md:grid-cols-2">
-                                <Field
-                                  label={labels.priceMin}
-                                  className="gap-2"
-                                  error={form.formState.errors.designs?.[index]?.referencePriceMin?.message}
-                                >
-                                  <div className="relative">
-                                    <Input
-                                      type="number"
-                                      placeholder="2500"
-                                      className="pl-10"
-                                      {...form.register(`designs.${index}.referencePriceMin`)}
+                                <div className="flex flex-wrap gap-2">
+                                  <input type="hidden" {...form.register(`designs.${index}.imagePath`)} />
+                                  <input type="hidden" {...form.register(`designs.${index}.imageUrl`)} />
+                                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10">
+                                    <Upload className="size-4" />
+                                    {currentDesign?.imageUrl ? labels.replaceImage : labels.uploadImage}
+                                    <input
+                                      type="file"
+                                      accept="image/png,image/jpeg,image/webp,image/gif"
+                                      className="hidden"
+                                      onChange={(event) => {
+                                        const file = event.target.files?.[0];
+                                        if (file) {
+                                          void handleImageUpload(index, file);
+                                        }
+                                        event.currentTarget.value = "";
+                                      }}
                                     />
-                                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
-                                      {labels.currencyPrefix}
-                                    </span>
-                                  </div>
-                                </Field>
-                                <Field
-                                  label={labels.priceMax}
-                                  className="gap-2"
-                                  error={form.formState.errors.designs?.[index]?.referencePriceMax?.message}
-                                >
-                                  <div className="relative">
-                                    <Input
-                                      type="number"
-                                      placeholder="3800"
-                                      className="pl-10"
-                                      {...form.register(`designs.${index}.referencePriceMax`)}
-                                    />
-                                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
-                                      {labels.currencyPrefix}
-                                    </span>
-                                  </div>
-                                </Field>
+                                  </label>
+                                  {currentDesign?.imageUrl ? (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-sm text-[var(--foreground-muted)] hover:text-white"
+                                      onClick={() => void handleImageRemove(index)}
+                                    >
+                                      <X className="size-4" />
+                                      {labels.removeImage}
+                                    </Button>
+                                  ) : null}
+                                </div>
                               </div>
-                              <p className="text-sm text-[var(--foreground-muted)]">{labels.priceRangeNote}</p>
                             </Field>
-                          </div>
+                          </DesignSection>
 
-                          <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium text-white">{labels.sectionClientCopy}</p>
-                              <p className="text-sm text-[var(--foreground-muted)]">{labels.sectionClientCopyHelp}</p>
-                            </div>
-
-                            <div className="grid gap-5">
-                            <Field
-                              label={labels.titleLabel}
-                              description={labels.titleHelp}
-                              error={form.formState.errors.designs?.[index]?.title?.message}
-                            >
-                              <Input
-                                placeholder={labels.titlePlaceholder}
-                                {...form.register(`designs.${index}.title`)}
-                              />
-                            </Field>
-
+                          <DesignSection title={labels.sectionClientCopy} description={labels.sectionClientCopyHelp}>
                             <Field label={labels.shortDescription} description={labels.shortDescriptionHelp}>
                               <Textarea
+                                className="min-h-[164px]"
                                 placeholder={labels.shortDescriptionPlaceholder}
                                 {...form.register(`designs.${index}.shortDescription`)}
                               />
@@ -618,42 +586,194 @@ export function FeaturedDesignsForm({
                                 {labels.shortDescriptionHints}
                               </p>
                             </Field>
-
-                            <Field label={labels.category} description={labels.categoryHelp}>
-                              <NativeSelect
-                                value={getCategorySelectValue(currentDesign?.category || "")}
-                                onChange={(event) =>
-                                  form.setValue(
-                                    `designs.${index}.category`,
-                                    event.target.value === "__custom__" ? "" : event.target.value,
-                                    { shouldDirty: true, shouldValidate: true },
-                                  )
-                                }
-                              >
-                                <option value="flash-designs">{labels.flash}</option>
-                                <option value="discounted-designs">{labels.discounted}</option>
-                                <option value="__custom__">{labels.customOption}</option>
-                              </NativeSelect>
-                            </Field>
-
-                            {isCustomCategory ? (
-                              <Field label={labels.customCategory}>
-                                <Input
-                                  placeholder={labels.customCategoryPlaceholder}
-                                  value={currentDesign?.category || ""}
-                                  onChange={(event) =>
-                                    form.setValue(`designs.${index}.category`, event.target.value, {
-                                      shouldDirty: true,
-                                      shouldValidate: true,
-                                    })
-                                  }
-                                />
-                              </Field>
-                            ) : null}
-                          </div>
-                          </div>
+                          </DesignSection>
                         </div>
 
+                        <div className="space-y-5">
+                          <DesignSection title={labels.sectionGeneral} description={labels.sectionGeneralHelp}>
+                            <div className="space-y-5">
+                              <Field
+                                label={labels.titleLabel}
+                                description={labels.titleHelp}
+                                error={form.formState.errors.designs?.[index]?.title?.message}
+                              >
+                                <Input
+                                  className="h-12 rounded-[20px] bg-black/22"
+                                  placeholder={labels.titlePlaceholder}
+                                  {...form.register(`designs.${index}.title`)}
+                                />
+                              </Field>
+
+                              <div className="grid gap-5">
+                                <Field label={labels.category} description={labels.categoryHelp}>
+                                  <NativeSelect
+                                    className="h-12 rounded-[20px] bg-black/22"
+                                    value={getCategorySelectValue(currentDesign?.category || "")}
+                                    onChange={(event) =>
+                                      form.setValue(
+                                        `designs.${index}.category`,
+                                        event.target.value === "__custom__" ? "" : event.target.value,
+                                        { shouldDirty: true, shouldValidate: true },
+                                      )
+                                    }
+                                  >
+                                    <option value="flash-designs">{labels.flash}</option>
+                                    <option value="discounted-designs">{labels.discounted}</option>
+                                    <option value="__custom__">{labels.customOption}</option>
+                                  </NativeSelect>
+                                </Field>
+
+                                {isCustomCategory ? (
+                                  <Field label={labels.customCategory}>
+                                    <Input
+                                      className="h-12 rounded-[20px] bg-black/22"
+                                      placeholder={labels.customCategoryPlaceholder}
+                                      value={currentDesign?.category || ""}
+                                      onChange={(event) =>
+                                        form.setValue(`designs.${index}.category`, event.target.value, {
+                                          shouldDirty: true,
+                                          shouldValidate: true,
+                                        })
+                                      }
+                                    />
+                                  </Field>
+                                ) : null}
+                              </div>
+
+                              <label className="flex items-center justify-between gap-4 rounded-[22px] border border-white/8 bg-black/22 px-4 py-4">
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-white">{labels.liveLabel}</p>
+                                  <p className="mt-1 text-xs leading-5 text-[var(--foreground-muted)]">{labels.liveHelp}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span
+                                    className={cn(
+                                      "rounded-full px-2.5 py-1 text-[11px] font-medium",
+                                      currentDesign?.active
+                                        ? "bg-[var(--accent)]/12 text-[var(--accent-soft)]"
+                                        : "bg-white/8 text-[var(--foreground-muted)]",
+                                    )}
+                                  >
+                                    {currentDesign?.active ? labels.liveOn : labels.liveOff}
+                                  </span>
+                                  <span className="relative inline-flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      className="peer sr-only"
+                                      {...form.register(`designs.${index}.active`)}
+                                    />
+                                    <span className="h-7 w-12 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
+                                    <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
+                                  </span>
+                                </div>
+                              </label>
+                            </div>
+                          </DesignSection>
+
+                          <DesignSection title={labels.sectionPricing} description={labels.sectionPricingHelp}>
+                            <div className="space-y-5">
+                              <div className="grid gap-5 md:grid-cols-2">
+                                <Field
+                                  label={labels.priceNote}
+                                  description={labels.priceNoteHelp}
+                                  error={form.formState.errors.designs?.[index]?.priceNote?.message}
+                                >
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      placeholder={labels.sizePlaceholder}
+                                      className="h-12 rounded-[20px] bg-black/22 pr-12"
+                                      {...form.register(`designs.${index}.priceNote`)}
+                                    />
+                                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
+                                      cm
+                                    </span>
+                                  </div>
+                                </Field>
+
+                                <Field label={labels.detailLevel} description={labels.detailLevelHelp}>
+                                  <div className="grid gap-2">
+                                    {detailOptions.map((option) => {
+                                      const active = currentDesign?.referenceDetailLevel === option.value;
+                                      return (
+                                        <button
+                                          key={option.value}
+                                          type="button"
+                                          onClick={() =>
+                                            form.setValue(`designs.${index}.referenceDetailLevel`, option.value, {
+                                              shouldDirty: true,
+                                              shouldValidate: true,
+                                            })
+                                          }
+                                          className={cn(
+                                            "rounded-[20px] border px-4 py-3 text-left transition",
+                                            active
+                                              ? "border-[var(--accent)] bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.08),0_18px_40px_rgba(0,0,0,0.16)]"
+                                              : "border-white/8 bg-black/22 hover:border-white/14 hover:bg-white/5",
+                                          )}
+                                        >
+                                          <p className="text-sm font-medium text-white">{option.label}</p>
+                                          <p className="mt-1 text-xs leading-5 text-[var(--foreground-muted)]">{option.hint}</p>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </Field>
+                              </div>
+
+                              <Field label={labels.priceRange} description={labels.priceRangeHelp}>
+                                <div className="rounded-[22px] border border-white/8 bg-black/25 px-4 py-4 text-sm text-white">
+                                  {labels.summaryPrefix}:{" "}
+                                  {currentDesign?.priceNote?.trim() || "—"} cm · {detailLabel} ·{" "}
+                                  {formattedMin ? `${labels.currencyPrefix}${formattedMin}` : "—"}
+                                  {" – "}
+                                  {formattedMax ? `${labels.currencyPrefix}${formattedMax}` : "—"}
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-end">
+                                  <Field
+                                    label={labels.priceMin}
+                                    className="gap-2"
+                                    error={form.formState.errors.designs?.[index]?.referencePriceMin?.message}
+                                  >
+                                    <div className="relative">
+                                      <Input
+                                        type="number"
+                                        placeholder="2500"
+                                        className="h-12 rounded-[20px] bg-black/22 pl-10"
+                                        {...form.register(`designs.${index}.referencePriceMin`)}
+                                      />
+                                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
+                                        {labels.currencyPrefix}
+                                      </span>
+                                    </div>
+                                  </Field>
+                                  <div className="hidden h-12 items-center justify-center text-sm text-[var(--foreground-muted)] md:flex">
+                                    —
+                                  </div>
+                                  <Field
+                                    label={labels.priceMax}
+                                    className="gap-2"
+                                    error={form.formState.errors.designs?.[index]?.referencePriceMax?.message}
+                                  >
+                                    <div className="relative">
+                                      <Input
+                                        type="number"
+                                        placeholder="3800"
+                                        className="h-12 rounded-[20px] bg-black/22 pl-10"
+                                        {...form.register(`designs.${index}.referencePriceMax`)}
+                                      />
+                                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--foreground-muted)]">
+                                        {labels.currencyPrefix}
+                                      </span>
+                                    </div>
+                                  </Field>
+                                </div>
+                                <p className="text-sm text-[var(--foreground-muted)]">{labels.priceRangeNote}</p>
+                              </Field>
+                            </div>
+                          </DesignSection>
+                        </div>
                       </div>
                     </>
                   ) : null}
@@ -662,16 +782,24 @@ export function FeaturedDesignsForm({
             })}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() =>
-                {
-                  designsFieldArray.append({
-                  category: "flash-designs",
-                  title: "",
-                  shortDescription: "",
+          <div className="sticky bottom-4 z-20 pt-2">
+            <div className="rounded-[24px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_72%,black)]/90 px-4 py-4 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-xl sm:px-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-white">{statusMessage}</p>
+                  <p className="mt-1 text-xs text-[var(--foreground-muted)]">
+                    {designsFieldArray.fields.length} {labels.item.toLowerCase()}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      designsFieldArray.append({
+                        category: "flash-designs",
+                        title: "",
+                        shortDescription: "",
                   imageUrl: "",
                   imagePath: "",
                   priceNote: "",
@@ -679,33 +807,31 @@ export function FeaturedDesignsForm({
                   referencePriceMin: null,
                   referencePriceMax: null,
                   active: true,
-                  sortOrder: designsFieldArray.fields.length,
-                  });
-                  setExpandLatestCard(true);
-                }
-              }
-            >
-              <Plus className="size-4" />
-              {labels.addDesign}
-            </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? (
-                <>
-                  <LoaderCircle className="size-4 animate-spin" />
-                  {labels.saving}
-                </>
-              ) : (
-                <>
-                  <Save className="size-4" />
-                  {labels.save}
-                </>
-              )}
-            </Button>
+                        sortOrder: designsFieldArray.fields.length,
+                      });
+                      setExpandLatestCard(true);
+                    }}
+                  >
+                    <Plus className="size-4" />
+                    {labels.addDesign}
+                  </Button>
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <LoaderCircle className="size-4 animate-spin" />
+                        {labels.saving}
+                      </>
+                    ) : (
+                      <>
+                        <Save className="size-4" />
+                        {labels.save}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
-
-          {form.formState.errors.root?.message ? (
-            <p className="text-sm text-[var(--accent-soft)]">{form.formState.errors.root.message}</p>
-          ) : null}
         </form>
       </CardContent>
     </Card>
