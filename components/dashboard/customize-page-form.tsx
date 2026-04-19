@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
+import Image from "next/image";
+import { ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -107,6 +108,14 @@ function ThemeCardPreview({
   const intro = theme.customIntroText || artist.funnelSettings.introDescription || artist.profile.shortBio || "Dövme fikrini birkaç adımda netleştir.";
   const cta = theme.customCtaLabel || "Fiyat tahmini al";
   const isPanel = variant === "panel";
+  const headingColor =
+    theme.themeMode === "light"
+      ? "color-mix(in srgb, var(--artist-card-text, #1f1814) 94%, transparent)"
+      : "var(--artist-card-text, #f8f5ef)";
+  const bodyColor =
+    theme.themeMode === "light"
+      ? "color-mix(in srgb, var(--artist-card-muted, #5b5147) 96%, transparent)"
+      : "var(--artist-card-muted, #d4ccc2)";
   const background =
     theme.backgroundType === "image" && theme.backgroundImageUrl
       ? `linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.48)), url(${theme.backgroundImageUrl})`
@@ -141,9 +150,34 @@ function ThemeCardPreview({
             }}
           >
             <div className={cn("space-y-4", isPanel ? "p-4" : "p-3")}>
-              <div className={cn("rounded-[18px] border border-white/10 bg-black/15", isPanel ? "h-20" : "h-14")} />
+              <div
+                className={cn("relative overflow-hidden rounded-[18px] border border-white/10 bg-black/15", isPanel ? "h-20" : "h-14")}
+              >
+                {artist.profile.coverImageUrl ? (
+                  <Image
+                    src={artist.profile.coverImageUrl}
+                    alt={artist.profile.artistName}
+                    fill
+                    className="object-cover"
+                    sizes={isPanel ? "290px" : "190px"}
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/45" />
+              </div>
               <div className={cn("flex items-end gap-3", isPanel ? "-mt-10" : "-mt-8")}>
-                <div className={cn("rounded-[18px] border border-white/10 bg-black/30", isPanel ? "size-14" : "size-11")} />
+                <div
+                  className={cn("relative overflow-hidden rounded-[18px] border border-white/10 bg-black/30", isPanel ? "size-14" : "size-11")}
+                >
+                  {artist.profile.profileImageUrl ? (
+                    <Image
+                      src={artist.profile.profileImageUrl}
+                      alt={artist.profile.artistName}
+                      fill
+                      className="object-cover"
+                      sizes={isPanel ? "56px" : "44px"}
+                    />
+                  ) : null}
+                </div>
                 <div className="min-w-0">
                   <div
                     className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
@@ -162,14 +196,14 @@ function ThemeCardPreview({
                   className={cn("leading-tight", isPanel ? "text-lg" : "text-base")}
                   style={{
                     fontFamily: "var(--artist-heading-font)",
-                    color: theme.textColor,
+                    color: headingColor,
                   }}
                 >
                   {title}
                 </p>
                 <p
                   className="text-xs leading-5"
-                  style={{ color: `color-mix(in srgb, ${theme.textColor} 80%, transparent)` }}
+                  style={{ color: bodyColor }}
                 >
                   {intro}
                 </p>
@@ -194,10 +228,10 @@ function ThemeCardPreview({
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-white">Aklında ne var?</p>
+                    <p className="text-sm font-medium" style={{ color: headingColor }}>Aklında ne var?</p>
                     <p
                       className="mt-1 text-[11px]"
-                      style={{ color: `color-mix(in srgb, ${theme.textColor} 60%, transparent)` }}
+                      style={{ color: bodyColor }}
                     >
                       Talep türünü seç.
                     </p>
@@ -213,10 +247,10 @@ function ThemeCardPreview({
                   </span>
                 </div>
                 <div className="mt-3 space-y-2">
-                  <div className="rounded-[16px] border border-white/10 bg-black/15 px-3 py-2 text-xs" style={{ color: theme.textColor }}>Özel tasarım dövme</div>
+                  <div className="rounded-[16px] border border-white/10 bg-black/15 px-3 py-2 text-xs" style={{ color: headingColor }}>Özel tasarım dövme</div>
                   <div
                     className="rounded-[16px] border border-white/10 bg-black/10 px-3 py-2 text-xs"
-                    style={{ color: `color-mix(in srgb, ${theme.textColor} 76%, transparent)` }}
+                    style={{ color: bodyColor }}
                   >
                     Flash tasarım
                   </div>
@@ -296,7 +330,6 @@ export function CustomizePageForm({
           saving: "Kaydediliyor",
           demo: "Demo modunda yalnızca önizleme",
           selected: "Seçildi",
-          advancedToggle: "Gelişmiş ayarlar",
         }
       : {
           presetTitle: "Preset themes",
@@ -348,7 +381,6 @@ export function CustomizePageForm({
           saving: "Saving",
           demo: "Preview only in demo mode",
           selected: "Selected",
-          advancedToggle: "Advanced settings",
         };
 
   const presetDescriptions =
@@ -385,7 +417,6 @@ export function CustomizePageForm({
   };
 
   const [presetName, setPresetName] = useState("");
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [customizeMode, setCustomizeMode] = useState<"preset" | "custom">("preset");
 
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
@@ -821,7 +852,12 @@ export function CustomizePageForm({
           </Button>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+        <div
+          className={cn(
+            "grid gap-6 xl:items-start",
+            customizeMode === "custom" ? "xl:grid-cols-[minmax(0,1fr)_360px]" : "xl:grid-cols-1",
+          )}
+        >
           <div className="space-y-6">
             {customizeMode === "preset" ? (
               <Card className="surface-border">
@@ -897,24 +933,12 @@ export function CustomizePageForm({
 
             {customizeMode === "custom" ? (
               <Card className="surface-border">
-                <CardContent className="p-0">
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
-                    onClick={() => setIsAdvancedOpen((current) => !current)}
-                  >
-                    <div>
-                      <p className="text-base font-medium text-white">{copy.advancedToggle}</p>
-                      <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.customDescription}</p>
-                    </div>
-                    <ChevronDown
-                      className={cn("size-5 text-[var(--foreground-muted)] transition", isAdvancedOpen ? "rotate-180" : "")}
-                    />
-                  </button>
-
-                  {isAdvancedOpen ? (
-                    <div className="border-t border-white/8 px-5 py-5">
-                      <div className="space-y-6">
+                <CardHeader>
+                  <CardTitle>{copy.customTitle}</CardTitle>
+                  <CardDescription>{copy.customDescription}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
                         <div className="space-y-4">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.quickPresets}</h3>
@@ -1180,23 +1204,23 @@ export function CustomizePageForm({
                             ) : null}
                           </CardContent>
                         </Card>
-                      </div>
-                    </div>
-                  ) : null}
+                  </div>
                 </CardContent>
               </Card>
             ) : null}
           </div>
 
-          <Card className="surface-border xl:sticky xl:top-6">
-            <CardHeader>
-              <CardTitle>{copy.previewTitle}</CardTitle>
-              <CardDescription>{copy.previewDescription}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ThemeCardPreview artist={previewArtist} theme={previewTheme} variant="panel" />
-            </CardContent>
-          </Card>
+          {customizeMode === "custom" ? (
+            <Card className="surface-border xl:sticky xl:top-6">
+              <CardHeader>
+                <CardTitle>{copy.previewTitle}</CardTitle>
+                <CardDescription>{copy.previewDescription}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ThemeCardPreview artist={previewArtist} theme={previewTheme} variant="panel" />
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
 
         <div className="space-y-3">
