@@ -19,20 +19,15 @@ export default async function DashboardProfilePage() {
           eyebrow={isTurkish ? "Profil" : "Profile"}
           title={
             isTurkish
-              ? "Müşterilerin seni seçmesini sağlayacak profilini düzenle."
-              : "Shape the profile that helps clients choose you."
+              ? "Müşteri seni görmeden önce profilin böyle görünür"
+              : "This is how your profile looks before clients message you"
           }
           description={
             isTurkish
-              ? "Buradaki bilgiler, müşterinin sana yazmadan önce gördüğü her şeyi belirler."
-              : "These details shape everything a client sees before they message you."
+              ? "Buradaki bilgiler, sana yazmadan önce müşterinin gördüğü ilk şeydir."
+              : "These details are the first things clients see before they message you."
           }
         />
-        <p className="text-sm text-[var(--accent-soft)]">
-          {isTurkish
-            ? "İyi bir profil, daha fazla mesaj almanı sağlar."
-            : "A stronger profile helps you get more messages."}
-        </p>
       </div>
       <ProfileForm
         profile={data.profile}

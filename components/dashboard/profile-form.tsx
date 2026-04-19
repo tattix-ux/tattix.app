@@ -2,7 +2,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
-import { ImagePlus, LoaderCircle, Save, Upload, X } from "lucide-react";
+import { Copy, ExternalLink, ImagePlus, LoaderCircle, Save, Upload, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 
 import { Field } from "@/components/shared/field";
@@ -11,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { currencyOptions } from "@/lib/constants/options";
+import { getAppOrigin } from "@/lib/config/site";
 import { profileSchema } from "@/lib/forms/schemas";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import type { PublicLocale } from "@/lib/i18n/public";
@@ -20,36 +22,47 @@ type ProfileValues = z.infer<typeof profileSchema>;
 
 const profileCopy = {
   en: {
-    title: "Artist profile",
-    description: "Clients see these details before they decide to message you. Keep your profile short, clear, and trustworthy.",
-    artistName: "Artist name",
+    title: "Profile overview",
+    description: "This is the profile clients see before they message you.",
+    profileSection: "Profile appearance",
+    profileSectionHelp: "Clients see this first.",
+    linkSection: "Your page link",
+    linkSectionHelp: "This is the link for your Instagram bio.",
+    contactSection: "Contact",
+    contactSectionHelp: "Clients reach you from here.",
+    generalSection: "General settings",
+    generalSectionHelp: "Small details that affect the public page.",
+    artistName: "Name shown on your profile",
     artistNameHelp: "It works best when this matches your Instagram name.",
-    slug: "Public slug",
-    slugHelp: "This is the link you put in your Instagram bio. Clients arrive from here.",
-    profileImage: "Profile image",
-    profileImageHelp: "Use a clear face photo or an image that shows your signature style.",
-    profileImageEmptyHint: "Artists with a profile photo usually get more messages.",
-    coverImage: "Cover image",
-    coverImageHelp: "Use the tattoo photo that shows your style best.",
-    coverImageEmptyHint: "A strong cover image helps clients trust the page faster.",
+    slug: "Link for your Instagram bio",
+    slugHelp: "You put this link in your Instagram bio. Clients arrive from here.",
+    copyLink: "Copy",
+    copied: "Copied",
+    profileImage: "The photo clients see first",
+    profileImageHelp: "Show your face so clients trust you faster.",
+    profileImageEmptyHint: "Artists with a visible face photo usually get more messages.",
+    coverImage: "The large image at the top of your profile",
+    coverImageHelp: "Add one of your strongest pieces so clients understand your style quickly.",
+    coverImageEmptyHint: "A strong cover image helps clients understand your style faster.",
     noImage: "No image selected yet",
     upload: "Upload image",
     remove: "Remove image",
-    shortBio: "Short bio",
-    shortBioHelp: "Optional. If empty, the public page falls back to your funnel intro copy.",
+    shortBio: "Short intro text",
+    shortBioHelp: "Optional. A short line about your studio or style.",
     shortBioPlaceholder: "Optional short studio intro",
-    welcomeHeadline: "Welcome headline",
-    welcomeHeadlineHelp: "Optional. Leave empty if you want funnel copy or theme overrides to lead.",
-    welcomeHeadlinePlaceholder: "Optional headline",
-    whatsapp: "WhatsApp number",
+    welcomeHeadline: "Optional welcome title",
+    welcomeHeadlineHelp: "Optional. A short title clients will see near the top.",
+    welcomeHeadlinePlaceholder: "Optional welcome title",
+    whatsapp: "Clients will message you here",
     whatsappHelp: "Clients will message you directly here.",
     whatsappEmptyHint: "Clients cannot reach you if this is empty.",
-    instagram: "Instagram handle",
+    instagram: "Clients can check your Instagram here",
     instagramHelp: "Clients can check your profile from here.",
     currency: "Currency",
     active: "Artist page is active",
     saving: "Saving",
-    save: "Save changes",
+    save: "Update profile",
+    saveHint: "Clients see these changes right away.",
     demoSaved: "Demo data refreshed.",
     saved: "Profile saved.",
     uploadUnavailable: "Image upload is unavailable in demo mode.",
@@ -60,36 +73,47 @@ const profileCopy = {
     saveFailed: "Unable to save profile.",
   },
   tr: {
-    title: "Sanatçı profili",
-    description: "Müşteriler sana gelmeden önce bu bilgileri görür. Kısa, net ve güven veren bir profil oluştur.",
-    artistName: "Sanatçı adı",
+    title: "Profil görünümü",
+    description: "Burası müşterinin seni görmeden önce baktığı profildir.",
+    profileSection: "Profil görünümü",
+    profileSectionHelp: "Müşteri ilk bunu görür.",
+    linkSection: "Sayfa linkin",
+    linkSectionHelp: "Instagram bio için kullanacağın link burada.",
+    contactSection: "İletişim",
+    contactSectionHelp: "Müşteri sana buradan ulaşır.",
+    generalSection: "Genel ayar",
+    generalSectionHelp: "Sayfanın genel davranışını etkileyen küçük ayarlar.",
+    artistName: "Profilde görünen isim",
     artistNameHelp: "Instagram’daki adınla aynı olması önerilir.",
-    slug: "Sayfa bağlantısı",
+    slug: "Instagram bio’ya koyacağın link",
     slugHelp: "Instagram bio’na koyacağın link. Müşteriler buradan gelir.",
-    profileImage: "Profil görseli",
-    profileImageHelp: "Net bir yüz fotoğrafı veya imza stilini gösteren görsel kullan.",
+    copyLink: "Kopyala",
+    copied: "Kopyalandı",
+    profileImage: "Müşterinin ilk gördüğü fotoğrafın",
+    profileImageHelp: "Yüzün görünsün -> müşteriler daha çok güvenir.",
     profileImageEmptyHint: "Profil fotoğrafı olan sanatçılar daha fazla mesaj alır.",
-    coverImage: "Kapak görseli",
-    coverImageHelp: "Tarzını gösteren en iyi dövme fotoğrafını kullan.",
+    coverImage: "Profilinin üstünde görünen büyük görsel",
+    coverImageHelp: "En iyi işlerinden birini koy -> müşteri tarzını hemen anlasın.",
     coverImageEmptyHint: "Tarzını gösteren bir kapak görseli eklemek güven verir.",
     noImage: "Henüz görsel seçilmedi",
     upload: "Görsel yükle",
     remove: "Görseli kaldır",
-    shortBio: "Kısa biyografi",
-    shortBioHelp: "İsteğe bağlı. Boş bırakırsan sanatçı sayfası giriş metnini kullanır.",
+    shortBio: "Kısa tanıtım metni",
+    shortBioHelp: "İsteğe bağlı. Stilin veya stüdyon için kısa bir satır ekleyebilirsin.",
     shortBioPlaceholder: "İsteğe bağlı kısa stüdyo tanıtımı",
-    welcomeHeadline: "Karşılama başlığı",
-    welcomeHeadlineHelp: "İsteğe bağlı. Boş bırakırsan akış metni veya tema ayarı öne çıkar.",
+    welcomeHeadline: "Opsiyonel karşılama başlığı",
+    welcomeHeadlineHelp: "İsteğe bağlı. Profilin üst kısmında kısa bir başlık olarak görünür.",
     welcomeHeadlinePlaceholder: "İsteğe bağlı başlık",
-    whatsapp: "WhatsApp numarası",
+    whatsapp: "Müşteriler sana buradan yazacak",
     whatsappHelp: "Müşteriler sana buradan direkt yazacak.",
     whatsappEmptyHint: "Müşteriler sana ulaşamaz.",
-    instagram: "Instagram kullanıcı adı",
+    instagram: "Müşteriler profilini buradan inceleyebilir",
     instagramHelp: "Müşteriler profilini buradan inceleyebilir.",
     currency: "Para birimi",
     active: "Sanatçı sayfası aktif",
     saving: "Kaydediliyor",
-    save: "Değişiklikleri kaydet",
+    save: "Profili güncelle",
+    saveHint: "Yaptığın değişiklikleri müşteriler hemen görür.",
     demoSaved: "Demo verisi güncellendi.",
     saved: "Profil kaydedildi.",
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
@@ -177,6 +201,7 @@ export function ProfileForm({
 }) {
   const router = useRouter();
   const copy = profileCopy[locale];
+  const [copied, setCopied] = useState(false);
   const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -192,8 +217,13 @@ export function ProfileForm({
       active: profile.active,
     },
   });
+  const artistName = useWatch({ control: form.control, name: "artistName" }) ?? "";
+  const slug = useWatch({ control: form.control, name: "slug" }) ?? "";
+  const shortBio = useWatch({ control: form.control, name: "shortBio" }) ?? "";
+  const welcomeHeadline = useWatch({ control: form.control, name: "welcomeHeadline" }) ?? "";
   const profileImageUrl = useWatch({ control: form.control, name: "profileImageUrl" }) ?? "";
   const coverImageUrl = useWatch({ control: form.control, name: "coverImageUrl" }) ?? "";
+  const publicLink = useMemo(() => `${getAppOrigin()}/${slug || profile.slug}`, [slug, profile.slug]);
 
   async function onSubmit(values: ProfileValues) {
     const response = await fetch("/api/dashboard/profile", {
@@ -266,67 +296,114 @@ export function ProfileForm({
     form.setValue(field, "", { shouldDirty: true, shouldValidate: true });
   }
 
+  async function handleCopyLink() {
+    try {
+      await navigator.clipboard.writeText(publicLink);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      form.setError("root", { message: locale === "tr" ? "Link kopyalanamadı." : "Unable to copy link." });
+    }
+  }
+
   return (
-    <Card className="surface-border">
-      <CardHeader>
-        <CardTitle>{copy.title}</CardTitle>
-        <CardDescription>{copy.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-5 lg:grid-cols-2">
+    <form className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]" onSubmit={form.handleSubmit(onSubmit)}>
+      <div className="space-y-5">
+        <Card className="surface-border">
+          <CardHeader className="pb-4">
+            <CardTitle>{copy.profileSection}</CardTitle>
+            <CardDescription>{copy.profileSectionHelp}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="grid gap-5 lg:grid-cols-2">
+              <MediaUploadField
+                label={copy.profileImage}
+                description={copy.profileImageHelp}
+                imageUrl={profileImageUrl}
+                onUpload={(file) => void handleMediaUpload("profileImageUrl", file)}
+                onRemove={() => void handleMediaRemove("profileImageUrl")}
+                emptyLabel={copy.noImage}
+                uploadLabel={copy.upload}
+                removeLabel={copy.remove}
+                emptyHint={!profileImageUrl ? copy.profileImageEmptyHint : undefined}
+              />
+              <MediaUploadField
+                label={copy.coverImage}
+                description={copy.coverImageHelp}
+                imageUrl={coverImageUrl}
+                onUpload={(file) => void handleMediaUpload("coverImageUrl", file)}
+                onRemove={() => void handleMediaRemove("coverImageUrl")}
+                emptyLabel={copy.noImage}
+                uploadLabel={copy.upload}
+                removeLabel={copy.remove}
+                emptyHint={!coverImageUrl ? copy.coverImageEmptyHint : undefined}
+              />
+            </div>
+            <div className="grid gap-5 lg:grid-cols-2">
+              <Field
+                label={copy.artistName}
+                description={copy.artistNameHelp}
+                error={form.formState.errors.artistName?.message}
+              >
+                <Input {...form.register("artistName")} />
+              </Field>
+              <Field
+                label={copy.welcomeHeadline}
+                description={copy.welcomeHeadlineHelp}
+                error={form.formState.errors.welcomeHeadline?.message}
+              >
+                <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
+              </Field>
+            </div>
             <Field
-              label={copy.artistName}
-              description={
-                form.watch("artistName")?.trim().length
-                  ? copy.artistNameHelp
-                  : `${copy.artistNameHelp} ${locale === "tr" ? "Bu alan müşterilerin seni tanıması için gerekli." : "Clients need this to recognize you."}`
-              }
-              error={form.formState.errors.artistName?.message}
+              label={copy.shortBio}
+              description={copy.shortBioHelp}
+              error={form.formState.errors.shortBio?.message}
             >
-              <Input {...form.register("artistName")} />
+              <Input {...form.register("shortBio")} placeholder={copy.shortBioPlaceholder} />
             </Field>
+          </CardContent>
+        </Card>
+
+        <Card className="surface-border">
+          <CardHeader className="pb-4">
+            <CardTitle>{copy.linkSection}</CardTitle>
+            <CardDescription>{copy.linkSectionHelp}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <Field
               label={copy.slug}
               description={copy.slugHelp}
               error={form.formState.errors.slug?.message}
             >
-              <div className="flex overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
-                <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
-                  tattix.io/
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="flex min-w-0 flex-1 overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
+                  <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
+                    {getAppOrigin()}/
+                  </div>
+                  <Input
+                    {...form.register("slug")}
+                    className="border-0 bg-transparent focus-visible:ring-0"
+                  />
                 </div>
-                <Input
-                  {...form.register("slug")}
-                  className="border-0 bg-transparent focus-visible:ring-0"
-                />
+                <Button type="button" variant="secondary" onClick={() => void handleCopyLink()}>
+                  <Copy className="size-4" />
+                  {copied ? copy.copied : copy.copyLink}
+                </Button>
               </div>
             </Field>
-          </div>
-          <div className="grid gap-5 lg:grid-cols-2">
-            <MediaUploadField
-              label={copy.profileImage}
-              description={copy.profileImageHelp}
-              imageUrl={profileImageUrl}
-              onUpload={(file) => void handleMediaUpload("profileImageUrl", file)}
-              onRemove={() => void handleMediaRemove("profileImageUrl")}
-              emptyLabel={copy.noImage}
-              uploadLabel={copy.upload}
-              removeLabel={copy.remove}
-              emptyHint={!profileImageUrl ? copy.profileImageEmptyHint : undefined}
-            />
-            <MediaUploadField
-              label={copy.coverImage}
-              description={copy.coverImageHelp}
-              imageUrl={coverImageUrl}
-              onUpload={(file) => void handleMediaUpload("coverImageUrl", file)}
-              onRemove={() => void handleMediaRemove("coverImageUrl")}
-              emptyLabel={copy.noImage}
-              uploadLabel={copy.upload}
-              removeLabel={copy.remove}
-              emptyHint={!coverImageUrl ? copy.coverImageEmptyHint : undefined}
-            />
-          </div>
-          <div className="grid gap-5 lg:grid-cols-3">
+            <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-[var(--foreground-muted)]">
+              {publicLink}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="surface-border">
+          <CardHeader className="pb-4">
+            <CardTitle>{copy.contactSection}</CardTitle>
+            <CardDescription>{copy.contactSectionHelp}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-5 lg:grid-cols-2">
             <Field
               label={copy.whatsapp}
               description={
@@ -340,15 +417,20 @@ export function ProfileForm({
             </Field>
             <Field
               label={copy.instagram}
-              description={
-                form.watch("instagramHandle")?.trim().length
-                  ? copy.instagramHelp
-                  : `${copy.instagramHelp} ${locale === "tr" ? "Bu alan müşterilerin seni görmesi için gerekli." : "Clients need this to review your work."}`
-              }
+              description={copy.instagramHelp}
               error={form.formState.errors.instagramHandle?.message}
             >
               <Input {...form.register("instagramHandle")} />
             </Field>
+          </CardContent>
+        </Card>
+
+        <Card className="surface-border">
+          <CardHeader className="pb-4">
+            <CardTitle>{copy.generalSection}</CardTitle>
+            <CardDescription>{copy.generalSectionHelp}</CardDescription>
+          </CardHeader>
+          <CardContent>
             <Field label={copy.currency} error={form.formState.errors.currency?.message}>
               <NativeSelect {...form.register("currency")}>
                 {currencyOptions.map((currency) => (
@@ -358,28 +440,104 @@ export function ProfileForm({
                 ))}
               </NativeSelect>
             </Field>
+          </CardContent>
+        </Card>
+
+        <input type="hidden" {...form.register("active")} />
+
+        <div className="rounded-[22px] border border-white/8 bg-black/20 px-4 py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              {form.formState.errors.root?.message ? (
+                <p className="text-sm text-[var(--accent-soft)]">{form.formState.errors.root.message}</p>
+              ) : null}
+              <p className="text-sm text-[var(--foreground-muted)]">{copy.saveHint}</p>
+            </div>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" />
+                  {copy.saving}
+                </>
+              ) : (
+                <>
+                  <Save className="size-4" />
+                  {copy.save}
+                </>
+              )}
+            </Button>
           </div>
-          <input type="hidden" {...form.register("active")} />
-          {form.formState.errors.root?.message ? (
-            <p className="text-sm text-[var(--accent-soft)]">
-              {form.formState.errors.root.message}
-            </p>
-          ) : null}
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" />
-                {copy.saving}
-              </>
-            ) : (
-              <>
-                <Save className="size-4" />
-                {copy.save}
-              </>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </div>
+
+      <div className="xl:sticky xl:top-6 xl:self-start">
+        <Card className="surface-border overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle>{locale === "tr" ? "Canlı görünüm" : "Live preview"}</CardTitle>
+            <CardDescription>
+              {locale === "tr"
+                ? "Müşteri tarafında profilin yaklaşık böyle görünür."
+                : "This is roughly how your profile appears to clients."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="mx-auto max-w-[300px] rounded-[30px] border border-white/10 bg-[#161312] p-2.5 shadow-2xl">
+              <div className="overflow-hidden rounded-[26px] bg-[#110f0f]">
+                <div className="relative h-28 border-b border-white/10 bg-white/5">
+                  {coverImageUrl ? (
+                    <img src={coverImageUrl} alt={copy.coverImage} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-[var(--foreground-muted)]">
+                      {copy.coverImage}
+                    </div>
+                  )}
+                </div>
+                <div className="-mt-8 space-y-4 px-4 pb-4">
+                  <div className="flex items-end gap-3">
+                    <div className="size-16 overflow-hidden rounded-[20px] border border-white/10 bg-white/8">
+                      {profileImageUrl ? (
+                        <img src={profileImageUrl} alt={copy.profileImage} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-[10px] text-[var(--foreground-muted)]">
+                          {copy.profileImage}
+                        </div>
+                      )}
+                    </div>
+                    <div className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] text-white">
+                      @{form.watch("instagramHandle") || "instagram"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-display text-white">
+                      {welcomeHeadline || artistName || profile.artistName}
+                    </h3>
+                    <p className="text-sm leading-6 text-[var(--foreground-muted)]">
+                      {shortBio || copy.description}
+                    </p>
+                    <div className="inline-flex h-10 items-center rounded-full bg-[var(--accent)] px-4 text-sm font-medium text-[var(--accent-foreground)]">
+                      {locale === "tr" ? "Fiyat tahmini al" : "Get an estimate"}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border border-white/8 bg-white/[0.04] p-4">
+                    <p className="text-sm font-medium text-white">{artistName || profile.artistName}</p>
+                    <a
+                      href={publicLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-2 text-sm text-[var(--accent-soft)]"
+                    >
+                      <ExternalLink className="size-4" />
+                      {publicLink}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </form>
   );
 }
