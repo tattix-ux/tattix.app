@@ -37,6 +37,8 @@ const backgroundGradientPresets = [
 const fontOptions = [
   { value: "modern", labelTr: "Modern", labelEn: "Modern" },
   { value: "serif", labelTr: "Serif", labelEn: "Serif" },
+  { value: "editorial", labelTr: "Editoryal", labelEn: "Editorial" },
+  { value: "gothic", labelTr: "Gotik", labelEn: "Gothic" },
   { value: "minimal", labelTr: "Minimal", labelEn: "Minimal" },
 ] as const;
 
@@ -46,6 +48,22 @@ const quickCustomPresets = [
   { key: "luxury-serif", labelTr: "Altın ton", labelEn: "Gold tone" },
   { key: "neon-accent", labelTr: "Mavi ton", labelEn: "Blue tone" },
 ] as const;
+
+const headingPreviewFonts = {
+  modern: '"Avenir Next", "Helvetica Neue", sans-serif',
+  serif: '"Baskerville", "Times New Roman", serif',
+  editorial: '"Iowan Old Style", "Palatino Linotype", serif',
+  gothic: '"Arial Narrow", "Helvetica Neue", sans-serif',
+  minimal: '"SFMono-Regular", "Menlo", monospace',
+} as const;
+
+const previewHeadingFontMap = {
+  "display-serif": headingPreviewFonts.editorial,
+  "modern-sans": headingPreviewFonts.modern,
+  "gothic-sans": headingPreviewFonts.gothic,
+  "editorial-serif": headingPreviewFonts.serif,
+  "mono-display": headingPreviewFonts.minimal,
+} as const;
 
 function ColorField({
   label,
@@ -191,7 +209,7 @@ function ThemeCardPreview({
                 <p
                   className={cn("leading-tight", isPanel ? "text-lg" : "text-base")}
                   style={{
-                    fontFamily: "var(--artist-heading-font)",
+                    fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.modern,
                     color: headingColor,
                   }}
                 >
@@ -399,12 +417,20 @@ export function CustomizePageForm({
   const unifiedFontMap = {
     modern: { headingFont: "modern-sans", bodyFont: "clean-sans", fontPairingPreset: "bold-modern" },
     serif: { headingFont: "editorial-serif", bodyFont: "clean-sans", fontPairingPreset: "elegant-editorial" },
+    editorial: { headingFont: "display-serif", bodyFont: "editorial-sans", fontPairingPreset: "premium-editorial" },
+    gothic: { headingFont: "gothic-sans", bodyFont: "neutral-sans", fontPairingPreset: "edgy-clean" },
     minimal: { headingFont: "mono-display", bodyFont: "mono-body", fontPairingPreset: "minimal-sans" },
   } as const;
 
   const inferFontStyle = (headingFont: string) => {
-    if (headingFont === "editorial-serif" || headingFont === "display-serif") {
+    if (headingFont === "display-serif") {
+      return "editorial";
+    }
+    if (headingFont === "editorial-serif") {
       return "serif";
+    }
+    if (headingFont === "gothic-sans") {
+      return "gothic";
     }
     if (headingFont === "mono-display") {
       return "minimal";
@@ -475,7 +501,7 @@ export function CustomizePageForm({
         bodyFont: watchedValues.bodyFont ?? theme.bodyFont,
         fontPairingPreset: watchedValues.fontPairingPreset ?? theme.fontPairingPreset,
         radiusStyle: watchedValues.radiusStyle ?? theme.radiusStyle,
-        themeMode: "dark",
+        themeMode: watchedValues.themeMode ?? theme.themeMode,
         customWelcomeTitle: watchedValues.customWelcomeTitle || null,
         customIntroText: watchedValues.customIntroText || null,
         customCtaLabel: watchedValues.customCtaLabel || null,
@@ -546,7 +572,7 @@ export function CustomizePageForm({
       bodyFont: storedTheme.bodyFont,
       fontPairingPreset: storedTheme.fontPairingPreset,
       radiusStyle: storedTheme.radiusStyle,
-      themeMode: "dark",
+      themeMode: storedTheme.themeMode,
       customWelcomeTitle: storedTheme.customWelcomeTitle ?? "",
       customIntroText: storedTheme.customIntroText ?? "",
       customCtaLabel: storedTheme.customCtaLabel ?? "",
@@ -622,7 +648,7 @@ export function CustomizePageForm({
       artistId: artist.profile.id,
       ...values,
       backgroundImageUrl: values.backgroundImageUrl || null,
-      themeMode: "dark",
+      themeMode: values.themeMode,
       customWelcomeTitle: values.customWelcomeTitle || null,
       customIntroText: values.customIntroText || null,
       customCtaLabel: values.customCtaLabel || null,
@@ -646,7 +672,7 @@ export function CustomizePageForm({
       bodyFont: resolved.bodyFont,
       fontPairingPreset: resolved.fontPairingPreset,
       radiusStyle: resolved.radiusStyle,
-      themeMode: "dark",
+      themeMode: resolved.themeMode,
       customWelcomeTitle: resolved.customWelcomeTitle,
       customIntroText: resolved.customIntroText,
       customCtaLabel: resolved.customCtaLabel,
@@ -726,7 +752,7 @@ export function CustomizePageForm({
     form.setValue("bodyFont", preset.bodyFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("fontPairingPreset", preset.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
     form.setValue("radiusStyle", preset.radiusStyle, { shouldDirty: true, shouldValidate: true });
-    form.setValue("themeMode", "dark", { shouldDirty: true, shouldValidate: true });
+    form.setValue("themeMode", preset.themeMode, { shouldDirty: true, shouldValidate: true });
   }
 
   function resetThemeToDefault() {
@@ -759,7 +785,7 @@ export function CustomizePageForm({
     form.setValue("bodyFont", values.bodyFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("fontPairingPreset", values.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
     form.setValue("radiusStyle", values.radiusStyle, { shouldDirty: true, shouldValidate: true });
-    form.setValue("themeMode", "dark", { shouldDirty: true, shouldValidate: true });
+    form.setValue("themeMode", values.themeMode, { shouldDirty: true, shouldValidate: true });
     form.setValue("customWelcomeTitle", values.customWelcomeTitle ?? "", { shouldDirty: true, shouldValidate: true });
     form.setValue("customIntroText", values.customIntroText ?? "", { shouldDirty: true, shouldValidate: true });
     form.setValue("customCtaLabel", values.customCtaLabel ?? "", { shouldDirty: true, shouldValidate: true });
@@ -1105,12 +1131,7 @@ export function CustomizePageForm({
                                   <p
                                     className="mt-2 text-lg"
                                     style={{
-                                      fontFamily:
-                                        option.value === "serif"
-                                          ? '"Baskerville", "Times New Roman", serif'
-                                          : option.value === "minimal"
-                                            ? '"SFMono-Regular", "Menlo", monospace'
-                                            : '"Avenir Next", "Helvetica Neue", sans-serif',
+                                      fontFamily: headingPreviewFonts[option.value],
                                     }}
                                   >
                                     Aklında ne var?
