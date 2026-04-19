@@ -87,6 +87,8 @@ export async function POST(request: Request) {
       city: bookingCities.length > 0 ? selectedBookingCity?.cityName ?? null : submission.city?.trim() || null,
       preferred_start_date: bookingCities.length > 0 ? submission.preferredStartDate || null : submission.preferredStartDate || null,
       preferred_end_date: bookingCities.length > 0 ? null : submission.preferredEndDate || null,
+      customer_gender: submission.gender ?? null,
+      customer_age_range: submission.ageRange ?? null,
       style: submission.style,
       notes: combinedNotes || null,
       estimated_min: estimate.min,
@@ -97,8 +99,18 @@ export async function POST(request: Request) {
 
     const { error } = await supabase.from("client_submissions").insert(insertPayload);
 
-    if (error && error.message.toLowerCase().includes("status")) {
-      const { status: _status, ...legacyPayload } = insertPayload;
+    if (
+      error &&
+      (error.message.toLowerCase().includes("status") ||
+        error.message.toLowerCase().includes("customer_gender") ||
+        error.message.toLowerCase().includes("customer_age_range"))
+    ) {
+      const {
+        status: _status,
+        customer_gender: _customerGender,
+        customer_age_range: _customerAgeRange,
+        ...legacyPayload
+      } = insertPayload;
       await supabase.from("client_submissions").insert(legacyPayload);
     }
   }

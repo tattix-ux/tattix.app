@@ -248,6 +248,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       city: draft.city || undefined,
       preferredStartDate: draft.preferredStartDate || undefined,
       preferredEndDate: draft.preferredEndDate || undefined,
+      gender: draft.gender || undefined,
+      ageRange: draft.ageRange || undefined,
       detailLevel: draft.detailLevel || undefined,
       colorMode: draft.colorMode || undefined,
       coverUp: draft.coverUp === null ? undefined : draft.coverUp,
@@ -792,6 +794,59 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           {draft.coverUp === true ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                         </div>
                       </button>
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.customerDetailsTitle}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.customerDetailsHelp}
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.genderLabel}
+                        </span>
+                        <NativeSelect
+                          value={draft.gender}
+                          onChange={(event) => setField("gender", event.target.value as typeof draft.gender)}
+                          style={{
+                            borderColor: "var(--artist-border)",
+                            color: "var(--artist-card-text)",
+                          }}
+                        >
+                          <option value="">{copy.genderPlaceholder}</option>
+                          <option value="female">{copy.genders.female}</option>
+                          <option value="male">{copy.genders.male}</option>
+                          <option value="prefer_not_to_say">{copy.genders.prefer_not_to_say}</option>
+                        </NativeSelect>
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.ageRangeLabel}
+                        </span>
+                        <NativeSelect
+                          value={draft.ageRange}
+                          onChange={(event) => setField("ageRange", event.target.value as typeof draft.ageRange)}
+                          style={{
+                            borderColor: "var(--artist-border)",
+                            color: "var(--artist-card-text)",
+                          }}
+                        >
+                          <option value="">{copy.ageRangePlaceholder}</option>
+                          <option value="18-24">{copy.ageRanges["18-24"]}</option>
+                          <option value="25-34">{copy.ageRanges["25-34"]}</option>
+                          <option value="35-44">{copy.ageRanges["35-44"]}</option>
+                          <option value="45+">{copy.ageRanges["45+"]}</option>
+                        </NativeSelect>
+                      </div>
                     </div>
                   </div>
                   <Textarea

@@ -64,6 +64,25 @@ function isSafeHttpUrl(value: string | null | undefined) {
   return /^https?:\/\//i.test(value);
 }
 
+function getGenderLabel(
+  value: SubmissionRequest["gender"],
+  locale: PublicLocale,
+) {
+  if (!value) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    if (value === "female") return "Kadın";
+    if (value === "male") return "Erkek";
+    return "Belirtmek istemiyorum";
+  }
+
+  if (value === "female") return "Female";
+  if (value === "male") return "Male";
+  return "Prefer not to say";
+}
+
 export function buildSubmissionMessage(
   submission: SubmissionRequest,
   _profile: { currency?: string },
@@ -123,11 +142,17 @@ export function buildSubmissionMessage(
     lines.push(`${locale === "tr" ? "Tarih" : labels.preferredTiming}: ${preferredTiming}`);
   }
 
-  lines.push(
-    `${locale === "tr" ? "Not" : labels.notes}: ${submission.notes?.trim() ? submission.notes.trim() : labels.noNotes}`,
-    "",
-    `${labels.estimatedPriceShown}: ${formatCurrencyRange(estimatedMin, estimatedMax, locale)}`,
-  );
+  lines.push(`${locale === "tr" ? "Not" : labels.notes}: ${submission.notes?.trim() ? submission.notes.trim() : labels.noNotes}`);
+
+  if (submission.gender) {
+    lines.push(`${labels.gender}: ${getGenderLabel(submission.gender, locale)}`);
+  }
+
+  if (submission.ageRange) {
+    lines.push(`${labels.ageRange}: ${submission.ageRange}`);
+  }
+
+  lines.push("", `${labels.estimatedPriceShown}: ${formatCurrencyRange(estimatedMin, estimatedMax, locale)}`);
 
   return lines.join("\n");
 }

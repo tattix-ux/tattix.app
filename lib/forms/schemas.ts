@@ -414,6 +414,8 @@ export const submissionSchema = z.object({
   city: z.string().max(80).optional(),
   preferredStartDate: z.string().max(20).optional(),
   preferredEndDate: z.string().max(20).optional(),
+  gender: z.enum(["female", "male", "prefer_not_to_say"]).nullable().optional(),
+  ageRange: z.enum(["18-24", "25-34", "35-44", "45+"]).nullable().optional(),
   bodyAreaGroup: z.enum(groupValues as [string, ...string[]]),
   bodyAreaDetail: z.enum(detailValues as [string, ...string[]]),
   sizeMode: z.enum(["quick", "visual"]),

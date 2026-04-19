@@ -92,6 +92,8 @@ export type ArtistFeaturedDesign = {
 
 export type DetailLevelValue = "simple" | "standard" | "detailed";
 export type ColorModeValue = "black-only" | "black-grey" | "full-color";
+export type CustomerGenderValue = "female" | "male" | "prefer_not_to_say";
+export type CustomerAgeRangeValue = "18-24" | "25-34" | "35-44" | "45+";
 export type DetailCalibrationLevel = "low" | "medium" | "high";
 export type DetailCalibrationFamily = "floral" | "geometric" | "snake";
 export type DetailCalibrationRawResponse = {
@@ -338,6 +340,8 @@ export type ClientSubmission = {
   city: string | null;
   preferredStartDate: string | null;
   preferredEndDate: string | null;
+  gender: CustomerGenderValue | null;
+  ageRange: CustomerAgeRangeValue | null;
   style: string;
   notes: string | null;
   estimatedMin: number;
@@ -360,6 +364,8 @@ export type SubmissionDraft = {
   city: string;
   preferredStartDate: string;
   preferredEndDate: string;
+  gender: CustomerGenderValue | "";
+  ageRange: CustomerAgeRangeValue | "";
   bodyAreaGroup: BodyAreaGroupValue | "";
   bodyAreaDetail: BodyAreaDetailValue | "";
   sizeMode: SizeMode;
@@ -430,6 +436,8 @@ export type SubmissionRequest = {
   city?: string | null;
   preferredStartDate?: string | null;
   preferredEndDate?: string | null;
+  gender?: CustomerGenderValue | null;
+  ageRange?: CustomerAgeRangeValue | null;
   bodyAreaGroup: BodyAreaGroupValue;
   bodyAreaDetail: BodyAreaDetailValue;
   sizeMode: SizeMode;

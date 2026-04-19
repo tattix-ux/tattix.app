@@ -56,6 +56,8 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     city: row.city ? String(row.city) : null,
     preferredStartDate: row.preferred_start_date ? String(row.preferred_start_date) : null,
     preferredEndDate: row.preferred_end_date ? String(row.preferred_end_date) : null,
+    gender: row.customer_gender ? String(row.customer_gender) as ClientSubmission["gender"] : null,
+    ageRange: row.customer_age_range ? String(row.customer_age_range) as ClientSubmission["ageRange"] : null,
     style: String(row.style) as ClientSubmission["style"],
     notes: row.notes ? String(row.notes) : null,
     estimatedMin: Number(row.estimated_min),

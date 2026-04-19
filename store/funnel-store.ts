@@ -27,6 +27,8 @@ const initialDraft: SubmissionDraft = {
   city: "",
   preferredStartDate: "",
   preferredEndDate: "",
+  gender: "",
+  ageRange: "",
   bodyAreaGroup: "",
   bodyAreaDetail: "",
   sizeMode: "quick",
