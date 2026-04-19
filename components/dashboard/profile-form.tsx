@@ -1,146 +1,110 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
-import { Copy, ExternalLink, ImagePlus, LoaderCircle, Save, Upload, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CheckCircle2, Copy, ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
+import { AvatarTile } from "@/components/shared/avatar-tile";
 import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getAppOrigin } from "@/lib/config/site";
 import { profileSchema } from "@/lib/forms/schemas";
-import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { ArtistProfile } from "@/lib/types";
+import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
+import { buildThemeStyles } from "@/lib/theme";
+import type { ArtistPageTheme, ArtistProfile } from "@/lib/types";
 
 type ProfileValues = z.infer<typeof profileSchema>;
 
 const profileCopy = {
   en: {
-    title: "Profile overview",
-    description: "This is what clients see before they message you.",
     profileSection: "Visible on your profile",
-    profileSectionHelp: "Shown at the top of your client page.",
     linkSection: "Your page link",
-    linkSectionHelp: "You can place this in your Instagram bio.",
     contactSection: "Contact",
-    contactSectionHelp: "Clients can reach you here.",
-    artistName: "Name shown to clients",
-    artistNameHelp: "Shown on the page.",
-    slug: "Link for your Instagram bio",
-    slugHelp: undefined,
+    artistName: "Name",
+    slug: "Your page link",
     copyLink: "Copy",
     copied: "Copied",
     profileImage: "Profile photo",
-    profileImageHelp: undefined,
-    profileImageEmptyHint: undefined,
     coverImage: "Cover image",
-    coverImageHelp: undefined,
-    coverImageEmptyHint: undefined,
     noImage: "No image selected yet",
     upload: "Upload image",
     remove: "Remove image",
-    shortBio: "Short bio",
-    shortBioHelp: "Shown under the heading.",
-    shortBioPlaceholder: "Minimal and fine line tattoos.",
-    welcomeHeadline: "Welcome heading (optional)",
-    welcomeHeadlineHelp: "Shown at the top.",
-    welcomeHeadlinePlaceholder: "Welcome heading",
+    shortBio: "Short description",
+    shortBioPlaceholder: "Minimal and fine line tattoos. Small and medium-size pieces.",
+    welcomeHeadline: "Heading (optional)",
+    welcomeHeadlinePlaceholder: "Heading",
     whatsapp: "WhatsApp number",
-    whatsappHelp: "Clients message you here.",
-    whatsappEmptyHint: undefined,
     instagram: "Instagram username",
-    instagramHelp: "Clients can open your profile here.",
-    active: "Artist page is active",
     saving: "Saving",
-    save: "Update profile",
-    saveHint: "Clients see these changes right away.",
+    saved: "Saved",
     demoSaved: "Demo data refreshed.",
-    saved: "Profile saved.",
     uploadUnavailable: "Image upload is unavailable in demo mode.",
     uploadType: "Only image files are allowed.",
     uploadSize: "Images must be 6 MB or smaller.",
-    uploadQueued: "Image uploaded. Save profile to persist it.",
+    uploadQueued: "Image uploaded.",
     uploadFailed: "Unable to upload image.",
     saveFailed: "Unable to save profile.",
+    livePreview: "Live preview",
+    liveCta: "Get an estimate",
   },
   tr: {
-    title: "Profil görünümü",
-    description: "Müşteri seni görmeden önce bunları görür.",
     profileSection: "Profilde görünenler",
-    profileSectionHelp: "Sayfanın üst kısmında görünür.",
     linkSection: "Sayfa linkin",
-    linkSectionHelp: "Instagram bio’ya bunu koyarsın.",
     contactSection: "İletişim",
-    contactSectionHelp: "Müşteri sana buradan ulaşır.",
-    artistName: "Müşteri tarafında görünen isim",
-    artistNameHelp: "Sayfada görünür.",
-    slug: "Instagram bio’ya koyacağın link",
-    slugHelp: undefined,
+    artistName: "İsim",
+    slug: "Sayfa linkin",
     copyLink: "Kopyala",
     copied: "Kopyalandı",
     profileImage: "Profil fotoğrafı",
-    profileImageHelp: undefined,
-    profileImageEmptyHint: undefined,
     coverImage: "Kapak görseli",
-    coverImageHelp: undefined,
-    coverImageEmptyHint: undefined,
     noImage: "Henüz görsel seçilmedi",
     upload: "Görsel yükle",
     remove: "Görseli kaldır",
-    shortBio: "Kısa bio",
-    shortBioHelp: "Başlığın altında görünür.",
-    shortBioPlaceholder: "Minimal ve ince çizgi dövmeler.",
-    welcomeHeadline: "Karşılama başlığı (opsiyonel)",
-    welcomeHeadlineHelp: "En üstte görünür.",
-    welcomeHeadlinePlaceholder: "Karşılama başlığı",
+    shortBio: "Kısa açıklama",
+    shortBioPlaceholder: "Minimal ve ince çizgi dövmeler. Küçük ve orta boy çalışmalar.",
+    welcomeHeadline: "Başlık (opsiyonel)",
+    welcomeHeadlinePlaceholder: "Başlık",
     whatsapp: "WhatsApp numarası",
-    whatsappHelp: "Müşteri sana buradan yazar.",
-    whatsappEmptyHint: undefined,
     instagram: "Instagram kullanıcı adı",
-    instagramHelp: "Profilini buradan açabilir.",
-    active: "Sanatçı sayfası aktif",
     saving: "Kaydediliyor",
-    save: "Profili güncelle",
-    saveHint: "Kaydettiğinde görünür.",
+    saved: "Kaydedildi",
     demoSaved: "Demo verisi güncellendi.",
-    saved: "Profil kaydedildi.",
     uploadUnavailable: "Demo modunda görsel yükleme kullanılamıyor.",
     uploadType: "Sadece görsel dosyaları yüklenebilir.",
     uploadSize: "Görseller en fazla 6 MB olabilir.",
-    uploadQueued: "Görsel yüklendi. Kalıcı olması için profili kaydet.",
+    uploadQueued: "Görsel yüklendi.",
     uploadFailed: "Görsel yüklenemedi.",
     saveFailed: "Profil kaydedilemedi.",
+    livePreview: "Canlı görünüm",
+    liveCta: "Fiyat tahmini al",
   },
 } as const;
 
 function MediaUploadField({
   label,
-  description,
   imageUrl,
   onUpload,
   onRemove,
   emptyLabel,
   uploadLabel,
   removeLabel,
-  emptyHint,
 }: {
   label: string;
-  description?: string;
   imageUrl: string;
   onUpload: (file: File) => void;
   onRemove: () => void;
   emptyLabel: string;
   uploadLabel: string;
   removeLabel: string;
-  emptyHint?: string;
 }) {
   return (
-    <Field label={label} description={description}>
+    <Field label={label}>
       <div className="space-y-3">
         <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
           {imageUrl ? (
@@ -150,7 +114,6 @@ function MediaUploadField({
             <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
               <ImagePlus className="size-5" />
               <span>{emptyLabel}</span>
-              {emptyHint ? <span className="text-xs leading-5 text-[var(--accent-soft)]">{emptyHint}</span> : null}
             </div>
           )}
         </div>
@@ -185,19 +148,21 @@ function MediaUploadField({
 
 export function ProfileForm({
   profile,
+  pageTheme,
   demoMode,
   locale,
 }: {
   profile: ArtistProfile;
+  pageTheme: ArtistPageTheme;
   demoMode: boolean;
   locale: PublicLocale;
 }) {
-  const router = useRouter();
   const copy = profileCopy[locale];
   const [copied, setCopied] = useState(false);
-  const form = useForm<ProfileValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
+  const [autosaveState, setAutosaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const defaultValues = useMemo<ProfileValues>(
+    () => ({
       artistName: profile.artistName,
       slug: profile.slug,
       profileImageUrl: profile.profileImageUrl ?? "",
@@ -207,8 +172,16 @@ export function ProfileForm({
       whatsappNumber: profile.whatsappNumber,
       instagramHandle: profile.instagramHandle,
       active: profile.active,
-    },
+    }),
+    [profile],
+  );
+  const form = useForm<ProfileValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues,
   });
+  const watchedValues = useWatch({ control: form.control }) as ProfileValues | undefined;
+  const lastSavedPayloadRef = useRef(JSON.stringify(defaultValues));
+  const saveRequestIdRef = useRef(0);
   const artistName = useWatch({ control: form.control, name: "artistName" }) ?? "";
   const slug = useWatch({ control: form.control, name: "slug" }) ?? "";
   const shortBio = useWatch({ control: form.control, name: "shortBio" }) ?? "";
@@ -216,8 +189,16 @@ export function ProfileForm({
   const profileImageUrl = useWatch({ control: form.control, name: "profileImageUrl" }) ?? "";
   const coverImageUrl = useWatch({ control: form.control, name: "coverImageUrl" }) ?? "";
   const publicLink = useMemo(() => `${getAppOrigin()}/${slug || profile.slug}`, [slug, profile.slug]);
+  const { wrapperStyle } = buildThemeStyles(pageTheme);
 
-  async function onSubmit(values: ProfileValues) {
+  useEffect(() => {
+    form.reset(defaultValues);
+    lastSavedPayloadRef.current = JSON.stringify(defaultValues);
+    setAutosaveState("idle");
+    setStatusMessage(null);
+  }, [defaultValues, form]);
+
+  async function persistProfile(values: ProfileValues) {
     const response = await fetch("/api/dashboard/profile", {
       method: "POST",
       headers: {
@@ -230,14 +211,50 @@ export function ProfileForm({
 
     if (!response.ok) {
       form.setError("root", { message: payload.message ?? copy.saveFailed });
+      return false;
+    }
+
+    form.clearErrors("root");
+    setStatusMessage(payload.message ?? (demoMode ? copy.demoSaved : copy.saved));
+    return true;
+  }
+
+  useEffect(() => {
+    if (!watchedValues) {
       return;
     }
 
-    form.setError("root", {
-      message: payload.message ?? (demoMode ? copy.demoSaved : copy.saved),
-    });
-    router.refresh();
-  }
+    const serializedValues = JSON.stringify(watchedValues);
+    if (serializedValues === lastSavedPayloadRef.current) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      const isValid = await form.trigger(undefined, { shouldFocus: false });
+      if (!isValid) {
+        return;
+      }
+
+      const requestId = saveRequestIdRef.current + 1;
+      saveRequestIdRef.current = requestId;
+      setAutosaveState("saving");
+      setStatusMessage(copy.saving);
+
+      const saved = await persistProfile(watchedValues);
+      if (requestId !== saveRequestIdRef.current) {
+        return;
+      }
+
+      if (saved) {
+        lastSavedPayloadRef.current = serializedValues;
+        setAutosaveState("saved");
+      } else {
+        setAutosaveState("error");
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [copy.saving, form, watchedValues]);
 
   async function handleMediaUpload(field: "profileImageUrl" | "coverImageUrl", file: File) {
     if (demoMode) {
@@ -269,7 +286,8 @@ export function ProfileForm({
         }
       }
       form.setValue(field, uploaded.publicUrl, { shouldDirty: true, shouldValidate: true });
-      form.setError("root", { message: copy.uploadQueued });
+      form.clearErrors("root");
+      setStatusMessage(copy.uploadQueued);
     } catch (error) {
       form.setError("root", {
         message: error instanceof Error ? error.message : copy.uploadFailed,
@@ -286,6 +304,7 @@ export function ProfileForm({
       }
     }
     form.setValue(field, "", { shouldDirty: true, shouldValidate: true });
+    form.clearErrors("root");
   }
 
   async function handleCopyLink() {
@@ -299,95 +318,149 @@ export function ProfileForm({
   }
 
   return (
-    <form className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]" onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="space-y-5">
-        <Card className="surface-border">
-          <CardHeader className="pb-4">
-            <CardTitle>{copy.profileSection}</CardTitle>
-            <CardDescription>{copy.profileSectionHelp}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-5 lg:grid-cols-2">
-              <MediaUploadField
-                label={copy.profileImage}
-                description={copy.profileImageHelp}
-                imageUrl={profileImageUrl}
-                onUpload={(file) => void handleMediaUpload("profileImageUrl", file)}
-                onRemove={() => void handleMediaRemove("profileImageUrl")}
-                emptyLabel={copy.noImage}
-                uploadLabel={copy.upload}
-                removeLabel={copy.remove}
-                emptyHint={!profileImageUrl ? copy.profileImageEmptyHint : undefined}
-              />
-              <MediaUploadField
-                label={copy.coverImage}
-                description={copy.coverImageHelp}
-                imageUrl={coverImageUrl}
-                onUpload={(file) => void handleMediaUpload("coverImageUrl", file)}
-                onRemove={() => void handleMediaRemove("coverImageUrl")}
-                emptyLabel={copy.noImage}
-                uploadLabel={copy.upload}
-                removeLabel={copy.remove}
-                emptyHint={!coverImageUrl ? copy.coverImageEmptyHint : undefined}
-              />
-            </div>
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Field
-                label={copy.artistName}
-                description={copy.artistNameHelp}
-                error={form.formState.errors.artistName?.message}
-              >
-                <Input {...form.register("artistName")} />
-              </Field>
-              <Field
-                label={copy.welcomeHeadline}
-                description={copy.welcomeHeadlineHelp}
-                error={form.formState.errors.welcomeHeadline?.message}
-              >
-                <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
-              </Field>
-            </div>
-            <Field
-              label={copy.shortBio}
-              description={copy.shortBioHelp}
-              error={form.formState.errors.shortBio?.message}
-            >
-              <Textarea
-                {...form.register("shortBio")}
-                placeholder={copy.shortBioPlaceholder}
-                className="min-h-[116px]"
-              />
-            </Field>
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-5">
+          <Card className="surface-border">
+            <CardHeader className="pb-3">
+              <CardTitle>{copy.profileSection}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid gap-5 lg:grid-cols-2">
+                <MediaUploadField
+                  label={copy.profileImage}
+                  imageUrl={profileImageUrl}
+                  onUpload={(file) => void handleMediaUpload("profileImageUrl", file)}
+                  onRemove={() => void handleMediaRemove("profileImageUrl")}
+                  emptyLabel={copy.noImage}
+                  uploadLabel={copy.upload}
+                  removeLabel={copy.remove}
+                />
+                <MediaUploadField
+                  label={copy.coverImage}
+                  imageUrl={coverImageUrl}
+                  onUpload={(file) => void handleMediaUpload("coverImageUrl", file)}
+                  onRemove={() => void handleMediaRemove("coverImageUrl")}
+                  emptyLabel={copy.noImage}
+                  uploadLabel={copy.upload}
+                  removeLabel={copy.remove}
+                />
+              </div>
 
+              <div className="grid gap-5 lg:grid-cols-2">
+                <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
+                  <Input {...form.register("artistName")} />
+                </Field>
+                <Field label={copy.welcomeHeadline} error={form.formState.errors.welcomeHeadline?.message}>
+                  <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
+                </Field>
+              </div>
+
+              <Field label={copy.shortBio} error={form.formState.errors.shortBio?.message}>
+                <Textarea
+                  {...form.register("shortBio")}
+                  placeholder={copy.shortBioPlaceholder}
+                  className="min-h-[104px]"
+                />
+              </Field>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="xl:sticky xl:top-6 xl:self-start">
+          <Card className="surface-border overflow-hidden">
+            <CardHeader className="pb-3">
+              <CardTitle>{copy.livePreview}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mx-auto max-w-[320px]">
+                <div
+                  className="overflow-hidden rounded-[28px] border"
+                  style={{
+                    ...wrapperStyle,
+                    borderColor: "var(--artist-border)",
+                    background:
+                      "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+                  }}
+                >
+                  <div
+                    className="h-32 border-b bg-grid"
+                    style={
+                      coverImageUrl
+                        ? {
+                            backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.82)), url(${coverImageUrl})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            borderColor: "var(--artist-border)",
+                          }
+                        : { borderColor: "var(--artist-border)" }
+                    }
+                  />
+                  <div className="-mt-10 space-y-3 p-4">
+                    <AvatarTile
+                      name={artistName || profile.artistName}
+                      imageUrl={profileImageUrl}
+                      planType={profile.planType}
+                    />
+                    <div className="space-y-3">
+                      <p
+                        className="text-base"
+                        style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
+                      >
+                        {artistName || profile.artistName}
+                      </p>
+                      {welcomeHeadline?.trim() ? (
+                        <h3
+                          className="text-[1.55rem] leading-tight"
+                          style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
+                        >
+                          {welcomeHeadline}
+                        </h3>
+                      ) : null}
+                      {shortBio?.trim() ? (
+                        <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                          {shortBio}
+                        </p>
+                      ) : null}
+                      <div
+                        className="inline-flex h-10 items-center rounded-full px-4 text-sm font-medium"
+                        style={{
+                          backgroundColor: "var(--artist-primary)",
+                          color: "var(--artist-primary-foreground)",
+                        }}
+                      >
+                        {pageTheme.customCtaLabel || copy.liveCta}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-2">
         <Card className="surface-border">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-3">
             <CardTitle>{copy.linkSection}</CardTitle>
-            <CardDescription>{copy.linkSectionHelp}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Field
-              label={copy.slug}
-              description={copy.slugHelp}
-              error={form.formState.errors.slug?.message}
-            >
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <div className="flex min-w-0 flex-1 overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
-                  <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
-                    {getAppOrigin()}/
-                  </div>
-                  <Input
-                    {...form.register("slug")}
-                    className="border-0 bg-transparent focus-visible:ring-0"
-                  />
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex min-w-0 flex-1 overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
+                <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
+                  {getAppOrigin()}/
                 </div>
-                <Button type="button" variant="secondary" onClick={() => void handleCopyLink()}>
-                  <Copy className="size-4" />
-                  {copied ? copy.copied : copy.copyLink}
-                </Button>
+                <Input
+                  {...form.register("slug")}
+                  className="border-0 bg-transparent focus-visible:ring-0"
+                />
               </div>
-            </Field>
+              <Button type="button" variant="secondary" onClick={() => void handleCopyLink()}>
+                <Copy className="size-4" />
+                {copied ? copy.copied : copy.copyLink}
+              </Button>
+            </div>
             <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-[var(--foreground-muted)]">
               {publicLink}
             </div>
@@ -395,129 +468,27 @@ export function ProfileForm({
         </Card>
 
         <Card className="surface-border">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-3">
             <CardTitle>{copy.contactSection}</CardTitle>
-            <CardDescription>{copy.contactSectionHelp}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-5 lg:grid-cols-2">
-            <Field
-              label={copy.whatsapp}
-              description={copy.whatsappHelp}
-              error={form.formState.errors.whatsappNumber?.message}
-            >
+            <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
               <Input {...form.register("whatsappNumber")} />
             </Field>
-            <Field
-              label={copy.instagram}
-              description={copy.instagramHelp}
-              error={form.formState.errors.instagramHandle?.message}
-            >
+            <Field label={copy.instagram} error={form.formState.errors.instagramHandle?.message}>
               <Input {...form.register("instagramHandle")} />
             </Field>
           </CardContent>
         </Card>
-
-        <input type="hidden" {...form.register("active")} />
-
-        <div className="rounded-[22px] border border-white/8 bg-black/20 px-4 py-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              {form.formState.errors.root?.message ? (
-                <p className="text-sm text-[var(--accent-soft)]">{form.formState.errors.root.message}</p>
-              ) : null}
-              <p className="text-sm text-[var(--foreground-muted)]">{copy.saveHint}</p>
-            </div>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? (
-                <>
-                  <LoaderCircle className="size-4 animate-spin" />
-                  {copy.saving}
-                </>
-              ) : (
-                <>
-                  <Save className="size-4" />
-                  {copy.save}
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
       </div>
 
-      <div className="xl:sticky xl:top-6 xl:self-start">
-        <Card className="surface-border overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle>{locale === "tr" ? "Canlı görünüm" : "Live preview"}</CardTitle>
-            <CardDescription>
-              {locale === "tr"
-                ? "Müşteri tarafında yaklaşık böyle görünür."
-                : "This is roughly how it appears to clients."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mx-auto max-w-[300px] rounded-[30px] border border-white/10 bg-[#161312] p-2.5 shadow-2xl">
-              <div className="overflow-hidden rounded-[26px] bg-[#110f0f]">
-                <div className="relative h-28 border-b border-white/10 bg-white/5">
-                  {coverImageUrl ? (
-                    <img src={coverImageUrl} alt={copy.coverImage} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-[var(--foreground-muted)]">
-                      {copy.coverImage}
-                    </div>
-                  )}
-                </div>
-                <div className="-mt-8 space-y-4 px-4 pb-4">
-                  <div className="flex items-end gap-3">
-                    <div className="size-16 overflow-hidden rounded-[20px] border border-white/10 bg-white/8">
-                      {profileImageUrl ? (
-                        <img src={profileImageUrl} alt={copy.profileImage} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-[10px] text-[var(--foreground-muted)]">
-                          {copy.profileImage}
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-white">{artistName || profile.artistName}</p>
-                      {form.watch("instagramHandle")?.trim() ? (
-                        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] text-white">
-                          @{form.watch("instagramHandle")}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
+      <input type="hidden" {...form.register("active")} />
 
-                  <div className="space-y-2">
-                    {welcomeHeadline?.trim() ? (
-                      <h3 className="text-2xl font-display text-white">{welcomeHeadline}</h3>
-                    ) : null}
-                    {shortBio?.trim() ? (
-                      <p className="text-sm leading-6 text-[var(--foreground-muted)]">
-                        {shortBio}
-                      </p>
-                    ) : null}
-                    <div className="inline-flex h-10 items-center rounded-full bg-[var(--accent)] px-4 text-sm font-medium text-[var(--accent-foreground)]">
-                      {locale === "tr" ? "Fiyat tahmini al" : "Get an estimate"}
-                    </div>
-                  </div>
-
-                  <div className="rounded-[22px] border border-white/8 bg-white/[0.04] p-4">
-                    <a
-                      href={publicLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-[var(--accent-soft)]"
-                    >
-                      <ExternalLink className="size-4" />
-                      {publicLink}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex min-h-6 items-center gap-2 px-1 text-sm text-[var(--foreground-muted)]">
+        {autosaveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
+        {autosaveState === "saved" ? <CheckCircle2 className="size-4 text-[var(--accent-soft)]" /> : null}
+        {form.formState.errors.root?.message ?? statusMessage}
       </div>
-    </form>
+    </div>
   );
 }

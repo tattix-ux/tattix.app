@@ -18,19 +18,16 @@ export default async function DashboardProfilePage() {
         <SectionHeading
           eyebrow={isTurkish ? "Profil" : "Profile"}
           title={
-            isTurkish
-              ? "Müşteri seni görmeden önce profilin böyle görünür"
-              : "This is how your profile looks before clients message you"
+            isTurkish ? "Profilin" : "Your profile"
           }
           description={
-            isTurkish
-              ? "Müşterinin gördüğü alanları burada güncellersin."
-              : "Update the parts clients see before they message you."
+            isTurkish ? "Bu sayfa müşterilerin gördüğü profil." : "This is the profile clients see."
           }
         />
       </div>
       <ProfileForm
         profile={data.profile}
+        pageTheme={data.pageTheme}
         demoMode={data.demoMode}
         locale={data.funnelSettings.defaultLanguage}
       />
