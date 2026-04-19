@@ -39,6 +39,8 @@ test("sanitizePricingCalibrationInputs falls back deterministically for invalid 
     roseHigh18cm: 1,
     roseColor18cm: 1,
     daggerAnchor18cm: 2500,
+    textAnchorPrice: null,
+    minimalSymbolAnchorPrice: null,
   });
 });
 
@@ -63,6 +65,30 @@ test("derivePricingProfile creates a stable profile from sane inputs", () => {
   assert.ok(pricingProfile.detail.high >= 1);
   assert.ok(pricingProfile.color.factor >= 1);
   assert.ok(pricingProfile.anchor.ratio >= 0.7);
+  assert.equal(pricingProfile.simpleBaseline, null);
+});
+
+test("derivePricingProfile keeps simple baseline when both low-end anchors are present", () => {
+  const { pricingProfile, sanitizedInputs } = derivePricingProfile({
+    minimumPrice: 2500,
+    roseMedium8cm: 1800,
+    roseMedium18cm: 3200,
+    roseMedium25cm: 6200,
+    roseLow18cm: 2800,
+    roseHigh18cm: 4300,
+    roseColor18cm: 3900,
+    daggerAnchor18cm: 4500,
+    textAnchorPrice: 1400,
+    minimalSymbolAnchorPrice: 1600,
+  });
+
+  assert.equal(sanitizedInputs.textAnchorPrice, 1400);
+  assert.equal(sanitizedInputs.minimalSymbolAnchorPrice, 1600);
+  assert.deepEqual(pricingProfile.simpleBaseline, {
+    textAnchorPrice: 1400,
+    minimalSymbolAnchorPrice: 1600,
+    blendedPrice: 1500,
+  });
 });
 
 test("derivePricingProfile fixes broken ordering without spikes", () => {

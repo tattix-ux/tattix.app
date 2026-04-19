@@ -121,6 +121,13 @@ export type PricingCalibrationRawInputs = {
   roseHigh18cm: number;
   roseColor18cm: number;
   daggerAnchor18cm: number;
+  textAnchorPrice?: number | null;
+  minimalSymbolAnchorPrice?: number | null;
+};
+export type PricingSimpleBaseline = {
+  textAnchorPrice: number;
+  minimalSymbolAnchorPrice: number;
+  blendedPrice: number;
 };
 export type PricingProfile = {
   version: 1;
@@ -141,6 +148,7 @@ export type PricingProfile = {
   anchor: {
     ratio: number;
   };
+  simpleBaseline?: PricingSimpleBaseline | null;
   adjustments: PricingProfileAdjustments;
   finalControl: PricingFinalControlState | null;
 };

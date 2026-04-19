@@ -14,6 +14,8 @@ import highDetailImage from "@/sample-tattoos/high.png";
 import lowDetailImage from "@/sample-tattoos/low.png";
 import mediumDetailImage from "@/sample-tattoos/medium.png";
 import colorMediumImage from "@/sample-tattoos/colour-medium.png";
+import textAnchorImage from "@/sample-tattoos/text.png";
+import minimalSymbolImage from "@/sample-tattoos/minimal linework.png";
 import { Field } from "@/components/shared/field";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,8 @@ import type {
 
 type PricingCalibrationFieldKey =
   | "openingPrice"
+  | "textAnchor"
+  | "minimalSymbolAnchor"
   | "size8"
   | "size18"
   | "size25"
@@ -71,6 +75,8 @@ type PricingCalibrationDraft = {
 
 type PricingCalibrationStep = {
   key: PricingCalibrationFieldKey;
+  fieldKeys?: PricingCalibrationFieldKey[];
+  groupType?: "simple-anchors" | "size";
   title: string;
   prompt: string;
   hint?: string;
@@ -92,15 +98,21 @@ function getText(locale: PublicLocale) {
     return {
       title: "Fiyat ayarı",
       description:
-        "Minimum sayıda soruyla nasıl fiyat verdiğini öğrenelim. Her ekranda tek bir cevap girmen yeterli.",
+        "Minimum sayıda soruyla nasıl fiyat verdiğini öğrenelim.",
       start: "Fiyat ayarını başlat",
       edit: "Cevapları düzenle",
       reset: "Sıfırla",
       close: "Daha sonra devam et",
-      completed: "8 soru tamamlandı.",
+      completed: "Kalibrasyon tamamlandı.",
       saveLater: "Cevapların bu cihazda korunur.",
       openingTitle: "En basit dövmen için minimum ücretin nedir?",
       openingHint: "Çok küçük ve basit bir dövme için alacağın en düşük fiyat.",
+      simpleCheckTitle: "Çok basit dövmeler için kısa kontrol",
+      simpleCheckHint: "Normal dövmelerden daha sade kalan işler için hızlıca iki örnek fiyat gir.",
+      textAnchorTitle: "Yazı dövmesi örneği",
+      textAnchorHint: "Kısa ve sade bir yazı dövmesini düşün.",
+      minimalSymbolTitle: "Minimal sembol örneği",
+      minimalSymbolHint: "Çok sade, küçük bir sembol dövmesini düşün.",
       sizeHint: "Aynı dövme, sadece boyut değişiyor. Kol gibi düz bir bölgede düşün.",
       size8Prompt: "Bu dövmeyi yaklaşık 8 cm boyutta kaça yaparsın?",
       size18Prompt: "Bu dövmeyi yaklaşık 18 cm boyutta kaça yaparsın?",
@@ -155,10 +167,16 @@ function getText(locale: PublicLocale) {
     edit: "Edit answers",
     reset: "Reset",
     close: "Continue later",
-    completed: "All 8 questions are complete.",
+    completed: "Calibration is complete.",
     saveLater: "Your answers stay on this device for now.",
     openingTitle: "What is your minimum price for the simplest tattoo?",
     openingHint: "The lowest price you would charge for a very small and simple tattoo.",
+    simpleCheckTitle: "Quick check for very simple tattoos",
+    simpleCheckHint: "Add two quick prices for jobs that stay simpler than most tattoos.",
+    textAnchorTitle: "Text tattoo example",
+    textAnchorHint: "Think of a short and simple lettering tattoo.",
+    minimalSymbolTitle: "Minimal symbol example",
+    minimalSymbolHint: "Think of a very small and simple symbol tattoo.",
     sizeHint: "Same tattoo, only the size changes. Think of a flat placement like an arm.",
     size8Prompt: "What would you charge for this tattoo at around 8 cm?",
     size18Prompt: "What would you charge for this tattoo at around 18 cm?",
@@ -217,6 +235,10 @@ function buildInitialValues(pricingRules: ArtistPricingRules): PricingCalibratio
         : pricingRules.basePrice > 0
           ? String(Math.round(pricingRules.basePrice))
           : "",
+    textAnchor: rawInputs?.textAnchorPrice ? String(Math.round(rawInputs.textAnchorPrice)) : "",
+    minimalSymbolAnchor: rawInputs?.minimalSymbolAnchorPrice
+      ? String(Math.round(rawInputs.minimalSymbolAnchorPrice))
+      : "",
     size8: rawInputs?.roseMedium8cm ? String(Math.round(rawInputs.roseMedium8cm)) : "",
     size18: rawInputs?.roseMedium18cm ? String(Math.round(rawInputs.roseMedium18cm)) : "",
     size25: rawInputs?.roseMedium25cm ? String(Math.round(rawInputs.roseMedium25cm)) : "",
@@ -243,7 +265,9 @@ function createEmptyDraft(pricingRules: ArtistPricingRules): PricingCalibrationD
 }
 
 function findFirstIncompleteIndex(values: PricingCalibrationValues, steps: PricingCalibrationStep[]) {
-  const nextIndex = steps.findIndex((step) => !values[step.key].trim());
+  const nextIndex = steps.findIndex((step) =>
+    (step.fieldKeys ?? [step.key]).some((fieldKey) => !values[fieldKey].trim()),
+  );
   return nextIndex === -1 ? steps.length - 1 : nextIndex;
 }
 
@@ -258,25 +282,19 @@ function buildSteps(locale: PublicLocale): PricingCalibrationStep[] {
       hint: copy.openingHint,
     },
     {
+      key: "textAnchor",
+      fieldKeys: ["textAnchor", "minimalSymbolAnchor"],
+      groupType: "simple-anchors",
+      title: copy.simpleCheckTitle,
+      prompt: copy.simpleCheckTitle,
+      hint: copy.simpleCheckHint,
+    },
+    {
       key: "size8",
+      fieldKeys: ["size8", "size18", "size25"],
+      groupType: "size",
       title: copy.size8Prompt,
       prompt: copy.size8Prompt,
-      hint: copy.sizeHint,
-      image: mediumDetailImage,
-      imageAlt: "Medium detail rose",
-    },
-    {
-      key: "size18",
-      title: copy.size18Prompt,
-      prompt: copy.size18Prompt,
-      hint: copy.sizeHint,
-      image: mediumDetailImage,
-      imageAlt: "Medium detail rose",
-    },
-    {
-      key: "size25",
-      title: copy.size25Prompt,
-      prompt: copy.size25Prompt,
       hint: copy.sizeHint,
       image: mediumDetailImage,
       imageAlt: "Medium detail rose",
@@ -316,20 +334,6 @@ function buildSteps(locale: PublicLocale): PricingCalibrationStep[] {
       imageAlt: copy.anchorLabel,
     },
   ];
-}
-
-const SIZE_GROUP_KEYS: PricingCalibrationFieldKey[] = ["size8", "size18", "size25"];
-
-function isSizeGroupStep(key: PricingCalibrationFieldKey) {
-  return SIZE_GROUP_KEYS.includes(key);
-}
-
-function normalizeStepIndex(index: number) {
-  if (index >= 1 && index <= 3) {
-    return 1;
-  }
-
-  return index;
 }
 
 function CurrencyInput({
@@ -420,8 +424,8 @@ export function PricingForm({
 
       const nextIndex =
         typeof parsed.currentIndex === "number" && Number.isFinite(parsed.currentIndex)
-          ? normalizeStepIndex(Math.max(0, Math.min(parsed.currentIndex, steps.length - 1)))
-          : normalizeStepIndex(findFirstIncompleteIndex(nextValues, steps));
+          ? Math.max(0, Math.min(parsed.currentIndex, steps.length - 1))
+          : findFirstIncompleteIndex(nextValues, steps);
 
       setDraft({
         values: nextValues,
@@ -470,12 +474,14 @@ export function PricingForm({
     window.localStorage.setItem(storageKey, JSON.stringify(draft));
   }, [draft, storageKey]);
 
-  const completedCount = steps.filter((step) => draft.values[step.key].trim().length > 0).length;
+  const completedCount = steps.filter((step) =>
+    (step.fieldKeys ?? [step.key]).every((fieldKey) => draft.values[fieldKey].trim().length > 0),
+  ).length;
   const isComplete = completedCount === steps.length;
   const currentStep = steps[draft.currentIndex] ?? steps[0];
-  const canContinue = isSizeGroupStep(currentStep.key)
-    ? SIZE_GROUP_KEYS.every((key) => draft.values[key].trim().length > 0)
-    : draft.values[currentStep.key].trim().length > 0;
+  const canContinue = (currentStep.fieldKeys ?? [currentStep.key]).every(
+    (fieldKey) => draft.values[fieldKey].trim().length > 0,
+  );
   const progressWidth = `${(completedCount / steps.length) * 100}%`;
   const currentScenarioId = draft.reviewScenarioIds[draft.reviewIndex] ?? draft.reviewScenarioIds[0];
   const currentScenario =
@@ -485,6 +491,8 @@ export function PricingForm({
   const previewRanges = useMemo(() => {
     const rawInputs: PricingCalibrationRawInputLike = {
       minimumPrice: Number(draft.values.openingPrice),
+      textAnchorPrice: Number(draft.values.textAnchor),
+      minimalSymbolAnchorPrice: Number(draft.values.minimalSymbolAnchor),
       roseMedium8cm: Number(draft.values.size8),
       roseMedium18cm: Number(draft.values.size18),
       roseMedium25cm: Number(draft.values.size25),
@@ -554,7 +562,7 @@ export function PricingForm({
       ...current,
       isOpen: true,
       isFinalControlOpen: false,
-      currentIndex: normalizeStepIndex(findFirstIncompleteIndex(current.values, steps)),
+      currentIndex: findFirstIncompleteIndex(current.values, steps),
       reviewIndex: 0,
       reviewRound: 1,
       reviewScenarioIds: VALIDATION_SCENARIOS.map((scenario) => scenario.id),
@@ -608,7 +616,7 @@ export function PricingForm({
 
     setDraft((current) => ({
       ...current,
-      currentIndex: current.currentIndex === 1 ? 4 : current.currentIndex + 1,
+      currentIndex: Math.min(current.currentIndex + 1, steps.length - 1),
     }));
   }
 
@@ -616,8 +624,7 @@ export function PricingForm({
     setStatusMessage(null);
     setDraft((current) => ({
       ...current,
-      currentIndex:
-        current.currentIndex === 4 ? 1 : Math.max(0, current.currentIndex - 1),
+      currentIndex: Math.max(0, current.currentIndex - 1),
     }));
   }
 
@@ -724,6 +731,8 @@ export function PricingForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           minimumPrice: Number(draft.values.openingPrice),
+          textAnchorPrice: Number(draft.values.textAnchor),
+          minimalSymbolAnchorPrice: Number(draft.values.minimalSymbolAnchor),
           roseMedium8cm: Number(draft.values.size8),
           roseMedium18cm: Number(draft.values.size18),
           roseMedium25cm: Number(draft.values.size25),
@@ -817,7 +826,7 @@ export function PricingForm({
                 <div className="mt-4 space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-white">
-                      {isSizeGroupStep(currentStep.key)
+                      {currentStep.groupType === "size"
                         ? locale === "tr"
                           ? "Bu dövmeyi farklı boyutlarda kaça yaparsın?"
                           : "What would you charge for this tattoo at different sizes?"
@@ -847,7 +856,51 @@ export function PricingForm({
                     </div>
                   ) : null}
 
-                  {isSizeGroupStep(currentStep.key) ? (
+                  {currentStep.groupType === "simple-anchors" ? (
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+                      <div className="grid gap-4 lg:grid-cols-2">
+                        {[
+                          {
+                            key: "textAnchor" as const,
+                            title: copy.textAnchorTitle,
+                            hint: copy.textAnchorHint,
+                            image: textAnchorImage,
+                          },
+                          {
+                            key: "minimalSymbolAnchor" as const,
+                            title: copy.minimalSymbolTitle,
+                            hint: copy.minimalSymbolHint,
+                            image: minimalSymbolImage,
+                          },
+                        ].map((item) => (
+                          <div key={item.key} className="rounded-[18px] border border-white/8 bg-black/20 p-3">
+                            <div className="overflow-hidden rounded-[16px] border border-white/8 bg-black/10">
+                              <div className="relative aspect-[4/3] w-full">
+                                <Image
+                                  src={item.image}
+                                  alt={item.title}
+                                  fill
+                                  className="object-contain"
+                                  sizes="(max-width: 1024px) 100vw, 320px"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="mt-3 space-y-2">
+                              <p className="text-sm font-medium text-white">{item.title}</p>
+                              <p className="text-sm text-[var(--foreground-muted)]">{item.hint}</p>
+                              <CurrencyInput
+                                label={copy.priceLabel}
+                                suffix={copy.currency}
+                                value={draft.values[item.key]}
+                                onChange={(value) => updateValue(item.key, value)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : currentStep.groupType === "size" ? (
                     <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
                       <div className="grid gap-4">
                         <CurrencyInput

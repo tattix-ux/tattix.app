@@ -203,6 +203,8 @@ export const pricingOnboardingSchema = z.object({
   roseHigh18cm: z.coerce.number().gt(0),
   roseColor18cm: z.coerce.number().gt(0),
   daggerAnchor18cm: z.coerce.number().gt(0),
+  textAnchorPrice: z.coerce.number().gt(0).optional(),
+  minimalSymbolAnchorPrice: z.coerce.number().gt(0).optional(),
   finalControl: z
     .object({
       validationRound: z.coerce.number().int().min(1).default(1),

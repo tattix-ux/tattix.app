@@ -5,6 +5,7 @@ import type {
   PricingCalibrationRawInputs,
   PricingFinalValidation,
   PricingProfile,
+  PricingSimpleBaseline,
   PricingProfileAdjustmentKey,
   PricingProfileAdjustments,
   PricingProfileUpdateLog,
@@ -112,6 +113,16 @@ function sanitizePositivePrice(value: PriceInputValue, fallback: number) {
 
   if (numeric === null || numeric <= 0) {
     return roundPrice(fallback);
+  }
+
+  return roundPrice(numeric);
+}
+
+function sanitizeOptionalPositivePrice(value: PriceInputValue) {
+  const numeric = toFiniteNumber(value);
+
+  if (numeric === null || numeric <= 0) {
+    return null;
   }
 
   return roundPrice(numeric);
@@ -355,6 +366,29 @@ export function sanitizePricingCalibrationInputs(
     roseHigh18cm: sanitizePositivePrice(rawInputs.roseHigh18cm, roseMedium18cm),
     roseColor18cm: sanitizePositivePrice(rawInputs.roseColor18cm, roseMedium18cm),
     daggerAnchor18cm: sanitizePositivePrice(rawInputs.daggerAnchor18cm, roseMedium18cm),
+    textAnchorPrice: sanitizeOptionalPositivePrice(rawInputs.textAnchorPrice),
+    minimalSymbolAnchorPrice: sanitizeOptionalPositivePrice(rawInputs.minimalSymbolAnchorPrice),
+  };
+}
+
+function deriveSimpleBaseline(
+  sanitizedInputs: PricingCalibrationRawInputs,
+): PricingSimpleBaseline | null {
+  if (
+    !sanitizedInputs.textAnchorPrice ||
+    !sanitizedInputs.minimalSymbolAnchorPrice
+  ) {
+    return null;
+  }
+
+  const blendedPrice = roundPrice(
+    (sanitizedInputs.textAnchorPrice + sanitizedInputs.minimalSymbolAnchorPrice) / 2,
+  );
+
+  return {
+    textAnchorPrice: sanitizedInputs.textAnchorPrice,
+    minimalSymbolAnchorPrice: sanitizedInputs.minimalSymbolAnchorPrice,
+    blendedPrice,
   };
 }
 
@@ -416,6 +450,7 @@ export function derivePricingProfile(
     min: ANCHOR_LIMITS.min,
     max: ANCHOR_LIMITS.max,
   });
+  const simpleBaseline = deriveSimpleBaseline(sanitizedInputs);
 
   return {
     sanitizedInputs,
@@ -438,6 +473,7 @@ export function derivePricingProfile(
       anchor: {
         ratio: anchorRatio,
       },
+      simpleBaseline,
       adjustments: buildNeutralPricingProfileAdjustments(),
       finalControl: null,
     },
@@ -549,6 +585,10 @@ export function resolveStyleFactor(profile: PricingProfile | null) {
     RESOLVED_FACTOR_LIMITS.style.min,
     RESOLVED_FACTOR_LIMITS.style.max,
   );
+}
+
+export function resolveSimpleBaseline(profile: PricingProfile | null) {
+  return profile?.simpleBaseline ?? null;
 }
 
 export function applyFinalControlFeedbackToPricingProfile(

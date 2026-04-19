@@ -336,6 +336,117 @@ test("style and color feedback adjust only their relevant probe outputs", () => 
   assert.ok(styleAfter.min > styleBefore.min);
 });
 
+test("simple anchors lower only tiny simple black estimates when provided", () => {
+  const simpleRules = {
+    ...baseRules,
+    minimumCharge: 1000,
+    minimumSessionPrice: 1000,
+  };
+  const calibratedProfile = derivePricingProfile({
+    minimumPrice: 2500,
+    roseMedium8cm: 1700,
+    roseMedium18cm: 3200,
+    roseMedium25cm: 5900,
+    roseLow18cm: 2700,
+    roseHigh18cm: 4300,
+    roseColor18cm: 3900,
+    daggerAnchor18cm: 4700,
+  }).pricingProfile;
+  const baselineConfig = buildNormalizedQuoteConfig({
+    ...simpleRules,
+    calibrationExamples: {
+      ...simpleRules.calibrationExamples,
+      pricingRawInputs: {
+        minimumPrice: 2500,
+        roseMedium8cm: 1700,
+        roseMedium18cm: 3200,
+        roseMedium25cm: 5900,
+        roseLow18cm: 2700,
+        roseHigh18cm: 4300,
+        roseColor18cm: 3900,
+        daggerAnchor18cm: 4700,
+      },
+      pricingProfile: calibratedProfile,
+    },
+  });
+  const anchoredConfig = buildNormalizedQuoteConfig({
+    ...simpleRules,
+    calibrationExamples: {
+      ...simpleRules.calibrationExamples,
+      pricingRawInputs: {
+        minimumPrice: 2500,
+        roseMedium8cm: 1700,
+        roseMedium18cm: 3200,
+        roseMedium25cm: 5900,
+        roseLow18cm: 2700,
+        roseHigh18cm: 4300,
+        roseColor18cm: 3900,
+        daggerAnchor18cm: 4700,
+        textAnchorPrice: 900,
+        minimalSymbolAnchorPrice: 1000,
+      },
+      pricingProfile: derivePricingProfile({
+        minimumPrice: 2500,
+        roseMedium8cm: 1700,
+        roseMedium18cm: 3200,
+        roseMedium25cm: 5900,
+        roseLow18cm: 2700,
+        roseHigh18cm: 4300,
+        roseColor18cm: 3900,
+        daggerAnchor18cm: 4700,
+        textAnchorPrice: 900,
+        minimalSymbolAnchorPrice: 1000,
+      }).pricingProfile,
+    },
+  });
+
+  const simpleBefore = estimateNormalizedQuote(
+    {
+      size: "tiny",
+      sizeCm: 7,
+      placement: "forearm-outer",
+      detailLevel: "simple",
+      colorMode: "black-only",
+    },
+    baselineConfig,
+  );
+  const simpleAfter = estimateNormalizedQuote(
+    {
+      size: "tiny",
+      sizeCm: 7,
+      placement: "forearm-outer",
+      detailLevel: "simple",
+      colorMode: "black-only",
+    },
+    anchoredConfig,
+  );
+  const standardAfter = estimateNormalizedQuote(
+    {
+      size: "small",
+      sizeCm: 12,
+      placement: "forearm-outer",
+      detailLevel: "standard",
+      colorMode: "black-only",
+    },
+    anchoredConfig,
+  );
+  const standardBefore = estimateNormalizedQuote(
+    {
+      size: "small",
+      sizeCm: 12,
+      placement: "forearm-outer",
+      detailLevel: "standard",
+      colorMode: "black-only",
+    },
+    baselineConfig,
+  );
+
+  assert.ok(simpleAfter.min < simpleBefore.min);
+  assert.ok(simpleAfter.max < simpleBefore.max);
+  assert.equal(standardAfter.min, standardBefore.min);
+  assert.equal(standardAfter.max, standardBefore.max);
+});
+
 test("featured design keeps the artist-entered reference range at its reference size and easy placement", () => {
   const quote = estimateFeaturedDesignPrice(
     {

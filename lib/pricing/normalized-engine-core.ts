@@ -10,6 +10,7 @@ import type {
   PricingCalibrationExamples,
   PricingCalibrationRawInputs,
   PricingProfile,
+  PricingSimpleBaseline,
   SubmissionRequest,
 } from "../types.ts";
 import {
@@ -22,6 +23,9 @@ import {
   resolveBaselineAdjustment,
   resolveColorFactor,
   resolveDetailFactor,
+  resolveSimpleBaseline,
+  safeDivide,
+  smoothRatio,
   resolveStyleFactor,
 } from "./pricing-profile.ts";
 import { roundToNearestFifty } from "../utils.ts";
@@ -55,6 +59,7 @@ export type NormalizedQuoteConfig = {
   detailCalibrationProfile: DetailCalibrationProfile | null;
   pricingProfile: PricingProfile | null;
   pricingRawInputs: PricingCalibrationRawInputs | null;
+  simpleBaseline: PricingSimpleBaseline | null;
   detailSurcharges: Record<QuoteDetailLevel, SurchargeRange>;
   placementSurcharges: {
     easy: SurchargeRange;
@@ -495,6 +500,30 @@ function deriveColorSurcharges(
   };
 }
 
+function deriveSimpleBaseline(
+  pricingProfile: PricingProfile | null,
+  pricingRawInputs: PricingCalibrationRawInputs | null,
+) {
+  if (resolveSimpleBaseline(pricingProfile)) {
+    return resolveSimpleBaseline(pricingProfile);
+  }
+
+  if (
+    pricingRawInputs?.textAnchorPrice &&
+    pricingRawInputs?.minimalSymbolAnchorPrice
+  ) {
+    return {
+      textAnchorPrice: pricingRawInputs.textAnchorPrice,
+      minimalSymbolAnchorPrice: pricingRawInputs.minimalSymbolAnchorPrice,
+      blendedPrice: Math.round(
+        (pricingRawInputs.textAnchorPrice + pricingRawInputs.minimalSymbolAnchorPrice) / 2,
+      ),
+    } satisfies PricingSimpleBaseline;
+  }
+
+  return null;
+}
+
 function interpolateWeight(
   sizeCm: number,
   points: Array<{ cm: number; value: number }>,
@@ -617,6 +646,7 @@ export function buildNormalizedQuoteConfig(
   const detailCalibrationProfile = getArtistDetailCalibration(rules);
   const pricingProfile = getArtistPricingProfile(rules);
   const pricingRawInputs = getArtistPricingRawInputs(rules);
+  const simpleBaseline = deriveSimpleBaseline(pricingProfile, pricingRawInputs);
 
   return {
     anchorPrice,
@@ -639,6 +669,7 @@ export function buildNormalizedQuoteConfig(
     detailCalibrationProfile,
     pricingProfile,
     pricingRawInputs,
+    simpleBaseline,
     detailSurcharges: {
       simple: clampRange(deriveDetailSurcharges(rules, baselinePrice, sizeCurvePoints).simple, { min: -120, max: -40 }),
       standard: { min: 0, max: 0 },
@@ -647,6 +678,55 @@ export function buildNormalizedQuoteConfig(
     },
     placementSurcharges: derivePlacementSurcharges(rules, baselinePrice, hardPlacementDetails),
     colorSurcharges: deriveColorSurcharges(rules, baselinePrice, sizeCurvePoints),
+  };
+}
+
+function isSimpleEligible(
+  input: NormalizedQuoteInput,
+  placementBucket: "easy" | "hard" | "not-sure",
+) {
+  return (
+    (input.detailLevel ?? DEFAULT_DETAIL_LEVEL) === "simple" &&
+    (input.colorMode ?? DEFAULT_COLOR_MODE) === "black-only" &&
+    !input.coverUp &&
+    placementBucket === "easy" &&
+    input.sizeCm <= 10
+  );
+}
+
+function getSimpleBaselineBlend(sizeCm: number) {
+  return interpolateWeight(sizeCm, [
+    { cm: 4, value: 0.72 },
+    { cm: 6, value: 0.62 },
+    { cm: 8, value: 0.46 },
+    { cm: 10, value: 0.28 },
+  ]);
+}
+
+function getSimpleBaselineRange(
+  input: NormalizedQuoteInput,
+  config: NormalizedQuoteConfig,
+  placementBucket: "easy" | "hard" | "not-sure",
+) {
+  if (!config.simpleBaseline || !isSimpleEligible(input, placementBucket)) {
+    return null;
+  }
+
+  const referencePoint = config.sizeCurvePoints["8"];
+  const requestedPoint = interpolateBetweenPoints(Math.max(4, Math.min(10, input.sizeCm)), config.sizeCurvePoints);
+  const dampedSizeRatio = smoothRatio(safeDivide(requestedPoint, referencePoint, 1), {
+    center: 1,
+    strength: 0.42,
+    min: 0.88,
+    max: 1.16,
+  });
+  const center = config.simpleBaseline.blendedPrice * dampedSizeRatio * config.validationAdjustment;
+
+  return {
+    blend: getSimpleBaselineBlend(input.sizeCm),
+    min: center * 0.92,
+    max: center * 1.08,
+    center,
   };
 }
 
@@ -714,13 +794,22 @@ export function estimateNormalizedQuote(
 
   const rawMin = Math.min(rangeMin, centralEstimate * (1 - uncertaintyBand));
   const rawMax = Math.max(rangeMax, centralEstimate * (1 + uncertaintyBand));
+  const simpleBaselineRange = getSimpleBaselineRange(input, config, placementBucket);
+  const adjustedMin =
+    simpleBaselineRange
+      ? rawMin + (Math.min(simpleBaselineRange.min, rawMin) - rawMin) * simpleBaselineRange.blend
+      : rawMin;
+  const adjustedMax =
+    simpleBaselineRange
+      ? rawMax + (Math.min(simpleBaselineRange.max, rawMax) - rawMax) * simpleBaselineRange.blend
+      : rawMax;
 
-  const roundedMin = Math.max(roundToNearestFifty(rawMin), config.minimumCharge);
-  const roundedMax = Math.max(roundToNearestFifty(rawMax), roundedMin);
+  const roundedMin = Math.max(roundToNearestFifty(adjustedMin), config.minimumCharge);
+  const finalMax = Math.max(roundToNearestFifty(adjustedMax), roundedMin);
 
   return {
     min: roundedMin,
-    max: roundedMax,
+    max: finalMax,
     ...(process.env.NODE_ENV !== "production"
       ? {
           debug: {
@@ -740,6 +829,16 @@ export function estimateNormalizedQuote(
             },
             styleAdjustment: Number(resolveStyleFactor(config.pricingProfile).toFixed(3)),
             validationAdjustment: config.validationAdjustment,
+            ...(simpleBaselineRange
+              ? {
+                  simpleBaseline: {
+                    blendedPrice: config.simpleBaseline?.blendedPrice ?? null,
+                    blend: Number(simpleBaselineRange.blend.toFixed(3)),
+                    targetMin: Number(simpleBaselineRange.min.toFixed(2)),
+                    targetMax: Number(simpleBaselineRange.max.toFixed(2)),
+                  },
+                }
+              : {}),
           },
         }
       : {}),
