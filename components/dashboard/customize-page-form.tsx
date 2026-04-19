@@ -73,7 +73,7 @@ const previewBodyFonts = {
 
 function ThemeSelectionBadge({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-black/25 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-white/85 shadow-[0_10px_30px_rgba(0,0,0,0.18)] backdrop-blur-md">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-black/18 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-white/85">
       <Check className="size-3" />
       {label}
     </span>
@@ -94,9 +94,9 @@ function ColorField({
   customLabel: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+    <div className="rounded-[22px] border border-white/8 bg-black/16 p-4">
       <p className="text-sm font-medium text-white">{label}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2.5">
         {swatches.map((swatch) => {
           const active = value.toLowerCase() === swatch.toLowerCase();
 
@@ -107,7 +107,9 @@ function ColorField({
               onClick={() => onChange(swatch)}
               className={cn(
                 "size-10 rounded-full border transition",
-                active ? "border-white shadow-[0_0_0_2px_rgba(255,255,255,0.18)]" : "border-white/10",
+                active
+                  ? "border-white/70 shadow-[0_0_0_3px_rgba(255,255,255,0.08)]"
+                  : "border-white/10 hover:border-white/18",
               )}
               style={{ backgroundColor: swatch }}
               aria-label={swatch}
@@ -115,14 +117,19 @@ function ColorField({
           );
         })}
       </div>
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-white/8 bg-black/18 p-2">
         <input
           type="color"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="h-11 w-16 rounded-xl border border-white/10 bg-transparent"
+          className="h-10 w-14 rounded-xl border border-white/10 bg-transparent"
         />
-        <Input aria-label={customLabel} value={value} onChange={(event) => onChange(event.target.value)} />
+        <Input
+          aria-label={customLabel}
+          className="h-10 border-0 bg-transparent px-2 focus:border-0 focus:ring-0"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
       </div>
     </div>
   );
@@ -155,19 +162,15 @@ function ThemeCardPreview({
       : theme.backgroundType === "gradient"
         ? `linear-gradient(180deg, ${theme.gradientStart}, ${theme.gradientEnd})`
         : theme.backgroundColor;
-  const outerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.56)" : "rgba(255,255,255,0.06)";
-  const innerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.82)" : "rgba(9,9,12,0.92)";
-  const screenGlow =
-    theme.themeMode === "light"
-      ? `radial-gradient(circle at top, color-mix(in srgb, ${theme.primaryColor} 18%, white), transparent 60%)`
-      : `radial-gradient(circle at top, color-mix(in srgb, ${theme.primaryColor} 24%, transparent), transparent 62%)`;
+  const outerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.58)" : "rgba(255,255,255,0.05)";
+  const innerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.88)" : "rgba(9,9,12,0.94)";
   const bodyFont = previewBodyFonts[theme.bodyFont] ?? previewBodyFonts["clean-sans"];
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[28px] border border-white/10",
-        isPanel ? "min-h-[560px] p-6 sm:p-7" : "min-h-[360px] p-5",
+        "relative overflow-hidden rounded-[26px] border border-white/8",
+        isPanel ? "min-h-[560px] p-6 sm:p-7" : "min-h-[350px] p-4",
       )}
       style={{
         background:
@@ -176,42 +179,30 @@ function ThemeCardPreview({
             : `linear-gradient(180deg, color-mix(in srgb, ${theme.cardColor} 34%, #0a0a0d), color-mix(in srgb, ${theme.backgroundColor} 88%, #060608))`,
         boxShadow:
           theme.themeMode === "light"
-            ? "inset 0 1px 0 rgba(255,255,255,0.7), 0 20px 60px rgba(9,10,14,0.08)"
-            : "inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 90px rgba(0,0,0,0.28)",
+            ? "inset 0 1px 0 rgba(255,255,255,0.7), 0 16px 44px rgba(9,10,14,0.07)"
+            : "inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 54px rgba(0,0,0,0.24)",
       }}
     >
-      <div
-        className="absolute inset-x-0 top-0 h-32 opacity-80"
-        style={{
-          background: `radial-gradient(circle at 50% 0%, color-mix(in srgb, ${theme.primaryColor} 20%, transparent), transparent 70%)`,
-        }}
-      />
-      <div
-        className={cn(
-          "relative flex h-full items-center",
-          isPanel ? "justify-center" : "justify-center",
-        )}
-      >
-        <div
-          className="pointer-events-none absolute inset-x-[10%] top-5 h-28 rounded-full blur-3xl"
-          style={{ background: screenGlow, opacity: theme.themeMode === "light" ? 0.7 : 0.85 }}
-        />
-        <div className={cn("relative w-full", isPanel ? "max-w-[310px]" : "max-w-[210px]")}>
+      <div className="relative flex h-full items-center justify-center">
+        <div className={cn("relative w-full", isPanel ? "max-w-[332px]" : "max-w-[236px]")}>
           <div
             className={cn(
-              "relative overflow-hidden border shadow-[0_24px_80px_rgba(0,0,0,0.42)]",
-              isPanel ? "rounded-[36px] p-2.5" : "rounded-[28px] p-2",
+              "relative overflow-hidden border",
+              isPanel ? "rounded-[34px] p-2.5" : "rounded-[30px] p-2.5",
             )}
             style={{
-              borderColor: "color-mix(in srgb, white 10%, transparent)",
+              borderColor: "color-mix(in srgb, white 9%, transparent)",
               background: `linear-gradient(180deg, ${outerShell}, color-mix(in srgb, ${theme.cardColor} 16%, transparent))`,
+              boxShadow:
+                theme.themeMode === "light"
+                  ? "0 20px 54px rgba(20,22,27,0.12)"
+                  : "0 26px 72px rgba(0,0,0,0.34)",
             }}
           >
-            <div className="pointer-events-none absolute inset-x-6 top-2 h-5 rounded-full bg-white/8 blur-md" />
             <div
               className={cn(
                 "overflow-hidden border",
-                isPanel ? "rounded-[30px]" : "rounded-[24px]",
+                isPanel ? "rounded-[30px]" : "rounded-[26px]",
               )}
               style={{
                 borderColor: "color-mix(in srgb, white 6%, transparent)",
@@ -226,11 +217,11 @@ function ThemeCardPreview({
                   backgroundPosition: theme.backgroundType === "image" ? "center" : undefined,
                 }}
               >
-                <div className={cn("space-y-4", isPanel ? "p-5" : "p-3.5")}>
+                <div className={cn("space-y-4", isPanel ? "p-5" : "p-4")}>
                   <div
                     className={cn(
                       "relative overflow-hidden rounded-[20px] border border-white/10 bg-black/15",
-                      isPanel ? "h-24" : "h-16",
+                      isPanel ? "h-24" : "h-[70px]",
                     )}
                   >
                     {artist.profile.coverImageUrl ? (
@@ -242,7 +233,7 @@ function ThemeCardPreview({
                     ) : null}
                     <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/20 to-black/45" />
                   </div>
-                  <div className={cn("flex items-end gap-3", isPanel ? "-mt-11" : "-mt-8")}>
+                  <div className={cn("flex items-end gap-3", isPanel ? "-mt-11" : "-mt-9")}>
                     <div
                       className={cn(
                         "relative overflow-hidden rounded-[18px] border border-white/12 bg-black/30 shadow-[0_10px_25px_rgba(0,0,0,0.28)]",
@@ -259,7 +250,7 @@ function ThemeCardPreview({
                     </div>
                     <div className="min-w-0 pb-0.5">
                       <p
-                        className={cn("truncate font-medium", isPanel ? "text-[15px]" : "text-[13px]")}
+                      className={cn("truncate font-medium", isPanel ? "text-[15px]" : "text-[13px]")}
                         style={{ color: headingColor, fontFamily: bodyFont }}
                       >
                         {artist.profile.artistName}
@@ -278,7 +269,7 @@ function ThemeCardPreview({
 
                   <div className="space-y-2">
                     <p
-                      className={cn("leading-tight tracking-[-0.02em]", isPanel ? "text-[1.75rem]" : "text-[1.18rem]")}
+                      className={cn("leading-tight tracking-[-0.02em]", isPanel ? "text-[1.75rem]" : "text-[1.24rem]")}
                       style={{
                         fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.modern,
                         color: headingColor,
@@ -292,10 +283,7 @@ function ThemeCardPreview({
                   </div>
 
                   <div
-                    className={cn(
-                      "inline-flex rounded-full font-medium shadow-[0_10px_30px_rgba(0,0,0,0.2)]",
-                      isPanel ? "px-4 py-2 text-xs" : "px-3 py-1.5 text-[11px]",
-                    )}
+                    className={cn("inline-flex rounded-full font-medium", isPanel ? "px-4 py-2 text-xs" : "px-3 py-1.5 text-[11px]")}
                     style={{
                       backgroundColor: theme.primaryColor,
                       color: theme.themeMode === "light" ? "#1b120f" : "#0b0b0c",
@@ -312,7 +300,7 @@ function ThemeCardPreview({
                         theme.themeMode === "light"
                           ? "color-mix(in srgb, white 78%, transparent)"
                           : "color-mix(in srgb, black 18%, transparent)",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
                     }}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -387,32 +375,24 @@ function ThemePresetCard({
       type="button"
       onClick={onSelect}
       className={cn(
-        "group relative overflow-hidden rounded-[30px] border p-5 text-left transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0",
+        "group relative overflow-hidden rounded-[28px] border p-4 text-left transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 sm:p-5",
         active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_82%,white)] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-[0_0_0_1px_rgba(247,177,93,0.10),0_24px_80px_rgba(0,0,0,0.34),0_0_70px_rgba(247,177,93,0.10)]"
-          : "border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] shadow-[0_24px_70px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 hover:border-white/16 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]",
+          ? "border-[color:color-mix(in_srgb,var(--accent)_62%,white)] bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] shadow-[0_0_0_1px_rgba(247,177,93,0.07),0_18px_44px_rgba(0,0,0,0.26)]"
+          : "border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] shadow-[0_18px_40px_rgba(0,0,0,0.16)] hover:-translate-y-0.5 hover:border-white/14",
       )}
     >
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-24 opacity-70"
-        style={{
-          background: `radial-gradient(circle at top, color-mix(in srgb, ${theme.primaryColor} 18%, transparent), transparent 72%)`,
-        }}
-      />
       <div className="pointer-events-none absolute inset-[1px] rounded-[28px] border border-white/5" />
-
-      <div className="relative flex items-start justify-between gap-4">
+      <div className="relative">
+        <div className="absolute right-0 top-0 z-10">{active ? <ThemeSelectionBadge label={selectedLabel} /> : null}</div>
+        <ThemeCardPreview artist={artist} theme={theme} />
+      </div>
+      <div className="relative mt-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[1.05rem] font-semibold tracking-[-0.02em] text-white">{title}</p>
-          <p className="mt-1.5 max-w-[28ch] text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_6%)]">
+          <p className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">{title}</p>
+          <p className="mt-1 max-w-[30ch] text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
             {description}
           </p>
         </div>
-        {active ? <ThemeSelectionBadge label={selectedLabel} /> : null}
-      </div>
-
-      <div className="relative mt-5">
-        <ThemeCardPreview artist={artist} theme={theme} />
       </div>
     </button>
   );
@@ -442,6 +422,9 @@ export function CustomizePageForm({
           customMode: "Kendi stilini oluştur",
           previewTitle: "Canlı önizleme",
           previewDescription: "Seçtiğin görünüm müşteri sayfanda böyle görünür.",
+          stickyApplyHint: "Seçtiğin görünüm müşteri sayfanda görünür.",
+          unsaved: "Kaydedilmemiş değişiklikler var",
+          savedState: "Görünüm güncel",
           customTitle: "Gelişmiş ayarlar",
           customDescription: "Renkleri kendine göre düzenle.",
           quickPresets: "Hızlı seçimler",
@@ -493,6 +476,9 @@ export function CustomizePageForm({
           customMode: "Build your own style",
           previewTitle: "Live preview",
           previewDescription: "This is how the selected look appears on the client page.",
+          stickyApplyHint: "The selected look will show on your client page.",
+          unsaved: "You have unsaved changes",
+          savedState: "Appearance is up to date",
           customTitle: "Advanced settings",
           customDescription: "Adjust the colors to fit your style.",
           quickPresets: "Quick presets",
@@ -544,14 +530,14 @@ export function CustomizePageForm({
           "gothic-black": "Daha sert, soğuk ve dramatik",
           "soft-neutral": "Açık, yumuşak ve ferah",
           "luxury-serif": "Daha premium ve klasik",
-          "neon-accent": "Daha dikkat çekici",
+          "neon-accent": "Daha serin ve modern",
         }
       : {
           "dark-minimal": "Clean and minimal",
           "gothic-black": "Sharper, colder, and more dramatic",
           "soft-neutral": "Light, soft, and airy",
           "luxury-serif": "More premium and classic",
-          "neon-accent": "More attention-grabbing",
+          "neon-accent": "Cool and modern",
         };
 
   const unifiedFontMap = {
@@ -621,6 +607,7 @@ export function CustomizePageForm({
   const currentCardOpacity =
     typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
   const currentFontStyle = inferFontStyle(watchedValues.headingFont ?? theme.headingFont);
+  const actionStatus = form.formState.errors.root?.message ?? (form.formState.isDirty ? copy.unsaved : copy.savedState);
 
   const previewTheme = useMemo(
     () =>
@@ -1025,20 +1012,19 @@ export function CustomizePageForm({
         <div
           className={cn(
             "grid gap-6 xl:items-start",
-            customizeMode === "custom" ? "xl:grid-cols-[minmax(0,1fr)_360px]" : "xl:grid-cols-1",
+            customizeMode === "custom" ? "xl:grid-cols-[minmax(0,1fr)_400px]" : "xl:grid-cols-1",
           )}
         >
           <div className="space-y-6">
             {customizeMode === "preset" ? (
-              <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] shadow-[0_32px_120px_rgba(0,0,0,0.28)]">
-                <CardHeader className="relative overflow-hidden pb-4">
-                  <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(247,177,93,0.10),transparent_72%)]" />
+              <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.014))] shadow-[0_24px_60px_rgba(0,0,0,0.2)]">
+                <CardHeader className="pb-3">
                   <CardTitle className="relative text-[1.2rem] tracking-[-0.02em]">{copy.presetTitle}</CardTitle>
                   <CardDescription className="relative max-w-[56ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
                     {copy.presetDescription}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-5">
+                <CardContent className="space-y-5 pt-0">
                   <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_3%)]">
                     {copy.presetHint}
                   </p>
@@ -1093,17 +1079,16 @@ export function CustomizePageForm({
             ) : null}
 
             {customizeMode === "custom" ? (
-              <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] shadow-[0_32px_120px_rgba(0,0,0,0.28)]">
-                <CardHeader className="relative overflow-hidden pb-4">
-                  <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(247,177,93,0.10),transparent_72%)]" />
+              <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.014))] shadow-[0_24px_60px_rgba(0,0,0,0.2)]">
+                <CardHeader className="pb-3">
                   <CardTitle className="relative text-[1.2rem] tracking-[-0.02em]">{copy.customTitle}</CardTitle>
                   <CardDescription className="relative max-w-[56ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
                     {copy.customDescription}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="space-y-6">
-                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                        <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/16 p-5">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.quickPresets}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.quickPresetsDescription}</p>
@@ -1127,7 +1112,7 @@ export function CustomizePageForm({
                           </div>
                         </div>
 
-                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                        <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/16 p-5">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.colors}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.colorsDescription}</p>
@@ -1143,7 +1128,7 @@ export function CustomizePageForm({
                           </div>
                         </div>
 
-                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                        <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/16 p-5">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.backgrounds}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.backgroundsDescription}</p>
@@ -1180,7 +1165,7 @@ export function CustomizePageForm({
                                     key={preset.key}
                                     type="button"
                                     onClick={() => applyBackgroundPreset(preset)}
-                                    className="rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/8"
+                                    className="rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:border-white/16 hover:bg-white/6"
                                   >
                                     {preset.label}
                                   </button>
@@ -1251,7 +1236,7 @@ export function CustomizePageForm({
                           ) : null}
                         </div>
 
-                        <div className="space-y-4 rounded-[26px] border border-white/8 bg-black/18 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                        <div className="space-y-4 rounded-[24px] border border-white/8 bg-black/16 p-5">
                           <div>
                             <h3 className="text-sm font-medium text-white">{copy.fonts}</h3>
                             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.fontsDescription}</p>
@@ -1265,29 +1250,50 @@ export function CustomizePageForm({
                                   type="button"
                                   onClick={() => setFontStyle(option.value)}
                                   className={cn(
-                                    "rounded-[20px] border px-4 py-4 text-left transition",
+                                    "rounded-[18px] border px-4 py-4 text-left transition",
                                     active
-                                      ? "border-[var(--accent)] bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.08),0_18px_40px_rgba(0,0,0,0.16)]"
-                                      : "border-white/8 bg-black/20 hover:-translate-y-0.5 hover:border-white/14",
+                                      ? "border-[var(--accent)] bg-[var(--accent)]/10 shadow-[0_0_0_1px_rgba(247,177,93,0.05),0_12px_26px_rgba(0,0,0,0.12)]"
+                                      : "border-white/8 bg-black/18 hover:border-white/14",
                                   )}
                                 >
                                   <p className="text-sm font-medium text-white">
                                     {locale === "tr" ? option.labelTr : option.labelEn}
                                   </p>
                                   <p
-                                    className="mt-2 text-lg"
+                                    className="mt-2 text-lg leading-none"
                                     style={{
                                       fontFamily: headingPreviewFonts[option.value],
                                     }}
                                   >
                                     Aklında ne var?
                                   </p>
+                                  <p className="mt-2 text-xs text-[var(--foreground-muted)]">
+                                    {option.value === "serif"
+                                      ? locale === "tr"
+                                        ? "Daha klasik ve yumuşak"
+                                        : "More classic and soft"
+                                      : option.value === "editorial"
+                                        ? locale === "tr"
+                                          ? "Daha premium ve editoryal"
+                                          : "More premium and editorial"
+                                        : option.value === "gothic"
+                                          ? locale === "tr"
+                                            ? "Daha keskin ve kontrastlı"
+                                            : "Sharper and higher contrast"
+                                          : option.value === "minimal"
+                                            ? locale === "tr"
+                                              ? "Daha sade ve teknik"
+                                              : "More minimal and technical"
+                                            : locale === "tr"
+                                              ? "Temiz ve modern"
+                                              : "Clean and modern"}
+                                  </p>
                                 </button>
                               );
                             })}
                           </div>
                         </div>
-                        <Card className="surface-border">
+                        <Card className="surface-border border-white/8 bg-black/16 shadow-none">
                           <CardHeader>
                             <CardTitle>{copy.saveTheme}</CardTitle>
                             <CardDescription>{copy.saveThemeDescription}</CardDescription>
@@ -1297,6 +1303,7 @@ export function CustomizePageForm({
                               <div className="min-w-0 flex-1">
                                 <Field label={copy.presetName}>
                                   <Input
+                                    className="bg-black/18"
                                     value={presetName}
                                     onChange={(event) => setPresetName(event.target.value)}
                                     placeholder={copy.presetNamePlaceholder}
@@ -1374,39 +1381,45 @@ export function CustomizePageForm({
           </div>
 
           {customizeMode === "custom" ? (
-            <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] shadow-[0_30px_90px_rgba(0,0,0,0.28)] xl:sticky xl:top-6">
-              <CardHeader className="relative overflow-hidden">
-                <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(247,177,93,0.10),transparent_72%)]" />
+            <Card className="surface-border overflow-hidden border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] shadow-[0_24px_60px_rgba(0,0,0,0.22)] xl:sticky xl:top-6">
+              <CardHeader>
                 <CardTitle className="relative text-[1.15rem] tracking-[-0.02em]">{copy.previewTitle}</CardTitle>
                 <CardDescription className="relative text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_4%)]">
                   {copy.previewDescription}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-0">
                 <ThemeCardPreview artist={previewArtist} theme={previewTheme} variant="panel" />
               </CardContent>
             </Card>
           ) : null}
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? (
-                <>
-                  <LoaderCircle className="size-4 animate-spin" />
-                  {copy.saving}
-                </>
-              ) : (
-                <>
-                  <Save className="size-4" />
-                  {copy.save}
-                </>
-              )}
-            </Button>
-            {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
+        <div className="sticky bottom-4 z-20 pt-2">
+          <div className="rounded-[22px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_80%,black)]/90 px-4 py-3.5 shadow-[0_18px_44px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-white">{actionStatus}</p>
+                <p className="mt-1 text-xs text-[var(--foreground-muted)]">{copy.stickyApplyHint}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <LoaderCircle className="size-4 animate-spin" />
+                      {copy.saving}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="size-4" />
+                      {copy.save}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-[var(--foreground-muted)]">{copy.saveHelp}</p>
         </div>
 
         <input type="hidden" {...form.register("bodyFont")} />
@@ -1422,9 +1435,6 @@ export function CustomizePageForm({
         <input type="hidden" {...form.register("featuredSectionLabel1")} />
         <input type="hidden" {...form.register("featuredSectionLabel2")} />
 
-        {form.formState.errors.root?.message ? (
-          <p className="text-sm text-[var(--accent-soft)]">{form.formState.errors.root.message}</p>
-        ) : null}
       </form>
     </div>
   );
