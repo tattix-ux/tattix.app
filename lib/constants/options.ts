@@ -47,6 +47,29 @@ export const workStyleOptions = [
   { value: "unsure", label: "Unsure" },
 ] as const;
 
+export const areaScopeOptions = [
+  { value: "standard_piece", label: "Standard piece" },
+  { value: "large_single_area", label: "Large single area" },
+  { value: "wide_area", label: "Wide area" },
+  { value: "unsure", label: "Unsure" },
+] as const;
+
+export const largeAreaCoverageOptions = [
+  { value: "partial", label: "Partial" },
+  { value: "mostly", label: "Mostly" },
+  { value: "almost_full", label: "Almost full" },
+] as const;
+
+export const wideAreaTargetOptions = [
+  { value: "half_arm", label: "Half arm" },
+  { value: "full_arm", label: "Full arm" },
+  { value: "wide_chest", label: "Wide chest" },
+  { value: "wide_back", label: "Wide back" },
+  { value: "half_leg", label: "Half leg" },
+  { value: "mostly_leg", label: "Mostly leg" },
+  { value: "unsure", label: "Unsure" },
+] as const;
+
 export const featuredDesignCategories = [
   { value: "discounted-designs", label: "Discounted designs" },
   { value: "flash-designs", label: "Flash designs" },
@@ -63,4 +86,7 @@ export type RequestTypeValue = (typeof requestTypeOptions)[number]["value"];
 export type SizeValue = (typeof sizeOptions)[number]["value"];
 export type StyleValue = string;
 export type WorkStyleValue = (typeof workStyleOptions)[number]["value"];
+export type AreaScopeValue = (typeof areaScopeOptions)[number]["value"];
+export type LargeAreaCoverageValue = (typeof largeAreaCoverageOptions)[number]["value"];
+export type WideAreaTargetValue = (typeof wideAreaTargetOptions)[number]["value"];
 export type FeaturedCategoryValue = string;

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Copy, ImagePlus, LoaderCircle, MessageCircle, Sparkles } from "lucide-react";
 
 import { IntentSelectionStep } from "@/components/funnel/intent-selection-step";
+import { RequestTypeSelectionStep } from "@/components/funnel/request-type-selection-step";
 import { BodyPlacementSelector } from "@/components/funnel/body-placement-selector";
 import { SizeEstimationSelector } from "@/components/funnel/size-estimation-selector";
 import { AvatarTile } from "@/components/shared/avatar-tile";
@@ -13,12 +14,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DateCalendarPopover } from "@/components/ui/date-calendar-popover";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import type { BodyAreaDetailValue, BodyAreaGroupValue } from "@/lib/constants/body-placement";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import { getPlacementDetailLocaleLabel, type PublicLocale } from "@/lib/i18n/public";
-import { getRequestTypeLabel, getWorkStyleLabel } from "@/lib/pricing/v2/output";
+import {
+  getAreaScopeLabel,
+  getLargeAreaCoverageLabel,
+  getRequestTypeLabel,
+  getWideAreaTargetLabel,
+  getWorkStyleLabel,
+} from "@/lib/pricing/v2/output";
 import { uploadPublicReferenceImage } from "@/lib/supabase/storage";
 import { buildThemeStyles } from "@/lib/theme";
-import type { ArtistPageData, ColorModeValue, PricingSourceValue, WorkStyleValue } from "@/lib/types";
+import type {
+  AreaScopeValue,
+  ArtistPageData,
+  ColorModeValue,
+  LargeAreaCoverageValue,
+  PricingSourceValue,
+  WideAreaTargetValue,
+  WorkStyleValue,
+} from "@/lib/types";
 import { useFunnelStore } from "@/store/funnel-store";
 
 type SubmissionResponse = {
@@ -32,6 +48,17 @@ type SubmissionResponse = {
   message: string;
 };
 
+type FunnelFlowStep =
+  | "start"
+  | "request_type"
+  | "placement"
+  | "size"
+  | "large_coverage"
+  | "wide_area_target"
+  | "color_character"
+  | "color_only"
+  | "extras";
+
 function getCopy(locale: PublicLocale) {
   if (locale === "tr") {
     return {
@@ -41,6 +68,44 @@ function getCopy(locale: PublicLocale) {
       introDescription: "Seçtiklerine göre sana yaklaşık bir başlangıç fiyatı göstereceğiz.",
       featuredFlowTitle: "Tasarımlardan birini seç, kalanını birlikte netleştirelim",
       featuredFlowDescription: "Seçtiğin tasarıma göre yaklaşık başlangıç fiyatını gösterelim.",
+      areaScopeTitle: "Yaklaşık ne kadar alan kaplayacak?",
+      areaScopeDescription: "Sana en yakın seçeneği seç.",
+      areaScopes: {
+        standard_piece: "Küçük / orta bir alan",
+        large_single_area: "Tek bölgede büyük bir alan",
+        wide_area: "Çok geniş bir alan",
+        unsure: "Emin değilim",
+      },
+      areaScopeDescriptions: {
+        standard_piece: "Yazı, sembol, tek parça işler gibi",
+        large_single_area: "Ön kolun, baldırın veya göğsün büyük kısmı gibi",
+        wide_area: "Kolun yarısı, tüm kol, sırt, göğüs veya bacağın büyük kısmı gibi",
+        unsure: "Karar veremiyorsan bunu seçebilirsin",
+      },
+      requestTypeTitle: "Ne yaptırmak istiyorsun?",
+      requestTypeDescription: "Sana en yakın olan seçeneği işaretle.",
+      placementTitle: "Nereye yaptırmak istiyorsun?",
+      placementDescription: "En yakın bölgeyi seç.",
+      sizeTitle: "Yaklaşık boyut kaç cm olsun?",
+      sizeDescription: "En geniş noktayı düşünerek yaklaşık seçim yapabilirsin.",
+      largeAreaCoverageTitle: "Bu alanın ne kadarını kaplayacak?",
+      largeAreaCoverageDescription: "En yakın seçeneği seç.",
+      largeAreaCoverageOptions: {
+        partial: "Bir kısmını",
+        mostly: "Büyük kısmını",
+        almost_full: "Neredeyse tamamını",
+      },
+      wideAreaTargetTitle: "En çok hangisine yakın?",
+      wideAreaTargetDescription: "Sana en yakın seçeneği seç.",
+      wideAreaTargets: {
+        half_arm: "Kolun yarısı",
+        full_arm: "Tüm kol",
+        wide_chest: "Göğüste geniş alan",
+        wide_back: "Sırtta geniş alan",
+        half_leg: "Bacağın yarısı",
+        mostly_leg: "Bacağın büyük kısmı",
+        unsure: "Emin değilim",
+      },
       stepTitles: {
         1: "Aklındaki dövmeyi birkaç adımda netleştirelim",
         2: "Nereye yaptırmak istiyorsun?",
@@ -61,18 +126,18 @@ function getCopy(locale: PublicLocale) {
       colorTitleFeatured: "Renk aynı mı kalsın?",
       colorDescriptionCustom: "Dövmenin genel görünümüne en yakın seçeneği seç.",
       colorDescriptionFeatured: "Tasarıma en yakın görünümü seç.",
-      workStyleTitle: "Bu dövme daha çok nasıl görünüyor?",
+      workStyleTitle: "Bu iş daha çok nasıl bir şey?",
       workStyleDescription: "Sana en yakın olan seçeneği seç.",
       workStyles: {
-        clean_line: "Sade çizgisel",
-        shaded_detailed: "Daha işçilikli / gölgeli",
-        precision_symmetric: "Hassas / simetrik",
+        clean_line: "Daha sade çizgili",
+        shaded_detailed: "Daha dolu / gölgeli",
+        precision_symmetric: "Daha düzenli / simetrik",
         unsure: "Emin değilim",
       },
       workStyleDescriptions: {
-        clean_line: "Daha basit çizgiler, küçük semboller, sade tasarımlar",
-        shaded_detailed: "Daha dolu, daha gerçekçi, gölgeli görünümler",
-        precision_symmetric: "Geometrik şekiller, düzenli süsleme, simetri isteyen tasarımlar",
+        clean_line: "Temiz çizgiler, daha sade görünüm",
+        shaded_detailed: "Daha dolu, gölgeli veya emek isteyen görünüm",
+        precision_symmetric: "Daha dikkatli ve kontrollü çalışma isteyen görünüm",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
       colorModes: {
@@ -137,6 +202,9 @@ function getCopy(locale: PublicLocale) {
       summaryTitle: "Seçim özeti",
       summaryLabels: {
         requestType: "İş tipi",
+        areaScope: "Alan",
+        areaCoverage: "Kaplayacağı alan",
+        wideAreaTarget: "Yakın olduğu alan",
         selectedDesign: "Tasarım",
         placement: "Bölge",
         size: "Boyut",
@@ -159,6 +227,44 @@ function getCopy(locale: PublicLocale) {
     introDescription: "Based on your choices, we’ll show you an approximate starting price.",
     featuredFlowTitle: "Pick one of the designs and let’s clarify the rest together",
     featuredFlowDescription: "We’ll show you an approximate starting price based on the design you choose.",
+    areaScopeTitle: "About how much area will it cover?",
+    areaScopeDescription: "Choose the option that feels closest.",
+    areaScopes: {
+      standard_piece: "Small / medium area",
+      large_single_area: "Large area in one placement",
+      wide_area: "Very wide area",
+      unsure: "Not sure",
+    },
+    areaScopeDescriptions: {
+      standard_piece: "Like text, symbols, or single-piece work",
+      large_single_area: "Like a large part of the forearm, calf, or chest",
+      wide_area: "Like half an arm, full arm, back, chest, or most of a leg",
+      unsure: "Choose this if you’re not sure yet",
+    },
+    requestTypeTitle: "What do you want to get?",
+    requestTypeDescription: "Pick the option that feels closest.",
+    placementTitle: "Where do you want to get it?",
+    placementDescription: "Choose the closest area.",
+    sizeTitle: "About how many cm should it be?",
+    sizeDescription: "Think about the widest point and choose approximately.",
+    largeAreaCoverageTitle: "How much of that area will it cover?",
+    largeAreaCoverageDescription: "Choose the option that feels closest.",
+    largeAreaCoverageOptions: {
+      partial: "Part of it",
+      mostly: "Most of it",
+      almost_full: "Almost all of it",
+    },
+    wideAreaTargetTitle: "Which one is it closest to?",
+    wideAreaTargetDescription: "Choose the option that feels closest.",
+    wideAreaTargets: {
+      half_arm: "Half arm",
+      full_arm: "Full arm",
+      wide_chest: "Wide chest area",
+      wide_back: "Wide back area",
+      half_leg: "Half leg",
+      mostly_leg: "Most of the leg",
+      unsure: "Not sure",
+    },
     stepTitles: {
       1: "Let’s clarify the tattoo you have in mind in a few steps",
       2: "Where do you want it?",
@@ -179,18 +285,18 @@ function getCopy(locale: PublicLocale) {
     colorTitleFeatured: "Will the color stay the same?",
     colorDescriptionCustom: "Choose the option closest to the overall look of the tattoo.",
     colorDescriptionFeatured: "Choose the look that feels closest to the design.",
-    workStyleTitle: "What does this tattoo look more like?",
+    workStyleTitle: "What is this piece more like?",
     workStyleDescription: "Choose the option that feels closest.",
     workStyles: {
-      clean_line: "Clean line",
-      shaded_detailed: "More worked / shaded",
-      precision_symmetric: "Precise / symmetric",
+      clean_line: "More line-based",
+      shaded_detailed: "More filled / shaded",
+      precision_symmetric: "More orderly / symmetric",
       unsure: "Not sure",
     },
     workStyleDescriptions: {
-      clean_line: "Simpler lines, small symbols, and cleaner designs",
-      shaded_detailed: "A fuller, more realistic, or shaded look",
-      precision_symmetric: "Geometric shapes, ornamental balance, or symmetry-led designs",
+      clean_line: "Cleaner lines and a simpler look",
+      shaded_detailed: "A fuller, shaded, or more worked look",
+      precision_symmetric: "A more controlled and symmetry-led look",
       unsure: "Choose this if you’re not sure yet",
     },
     colorModes: {
@@ -255,6 +361,9 @@ function getCopy(locale: PublicLocale) {
     summaryTitle: "Summary",
     summaryLabels: {
       requestType: "Job type",
+      areaScope: "Area",
+      areaCoverage: "Coverage",
+      wideAreaTarget: "Closest area",
       selectedDesign: "Design",
       placement: "Placement",
       size: "Size",
@@ -299,6 +408,58 @@ function getFeaturedColorOptions(referenceColorMode: ColorModeValue) {
   }
 
   return options;
+}
+
+function getFlowSteps(
+  pricingSource: PricingSourceValue | "",
+  areaScope: AreaScopeValue | "",
+): FunnelFlowStep[] {
+  if (pricingSource === "featured_design") {
+    return ["start", "placement", "size", "color_only", "extras"];
+  }
+
+  if (areaScope === "large_single_area") {
+    return ["start", "placement", "large_coverage", "color_character", "extras"];
+  }
+
+  if (areaScope === "wide_area") {
+    return ["start", "wide_area_target", "color_character", "extras"];
+  }
+
+  return ["start", "request_type", "placement", "size", "color_character", "extras"];
+}
+
+function getWideAreaPlacementTarget(
+  value: WideAreaTargetValue,
+): { group: BodyAreaGroupValue; detail: BodyAreaDetailValue; sizeCm: number } {
+  switch (value) {
+    case "half_arm":
+      return { group: "arm", detail: "forearm-outer", sizeCm: 22 };
+    case "full_arm":
+      return { group: "arm", detail: "upper-arm-outer", sizeCm: 30 };
+    case "wide_chest":
+      return { group: "torso", detail: "chest-center", sizeCm: 26 };
+    case "wide_back":
+      return { group: "back", detail: "upper-back", sizeCm: 30 };
+    case "half_leg":
+      return { group: "leg", detail: "thigh-front", sizeCm: 24 };
+    case "mostly_leg":
+      return { group: "leg", detail: "thigh-front", sizeCm: 32 };
+    case "unsure":
+      return { group: "not-sure", detail: "placement-not-sure", sizeCm: 24 };
+  }
+}
+
+function getLargeAreaSize(detail: BodyAreaDetailValue, coverage: LargeAreaCoverageValue) {
+  const constraint = getPlacementSizeConstraint(detail);
+  const target =
+    coverage === "partial"
+      ? constraint.maxCm * 0.62
+      : coverage === "mostly"
+        ? constraint.maxCm * 0.82
+        : constraint.maxCm * 0.94;
+
+  return Math.max(constraint.minCm, Math.round(target));
 }
 
 export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; locale: PublicLocale }) {
@@ -349,36 +510,59 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const primaryActionLabel = artist.pageTheme.customCtaLabel || copy.heroCta;
   const compactArtistHeader = step > 1 || Boolean(draft.pricingSource);
   const { tokens } = buildThemeStyles(artist.pageTheme);
-  const resultStep = 6;
+  const flowSteps = useMemo(() => getFlowSteps(draft.pricingSource, draft.areaScope), [draft.areaScope, draft.pricingSource]);
+  const lastInteractiveStep = flowSteps.length;
+  const resultStep = lastInteractiveStep + 1;
+  const currentFlowStep = step < resultStep ? flowSteps[step - 1] : null;
   const currentTitle =
-    step === 1
+    currentFlowStep === "start"
       ? draft.pricingSource === "featured_design"
         ? copy.featuredFlowTitle
-        : copy.introTitle
-      : step === 4
-        ? draft.pricingSource === "featured_design"
-          ? copy.colorTitleFeatured
-          : copy.colorTitleCustom
-        : step === 5
-          ? draft.pricingSource === "featured_design"
-            ? copy.featuredNoteTitle
-            : copy.referenceTitle
-          : copy.stepTitles[step as 1 | 2 | 3 | 4 | 5 | 6];
+        : copy.areaScopeTitle
+      : currentFlowStep === "request_type"
+        ? copy.requestTypeTitle
+        : currentFlowStep === "placement"
+          ? copy.placementTitle
+          : currentFlowStep === "size"
+            ? copy.sizeTitle
+            : currentFlowStep === "large_coverage"
+              ? copy.largeAreaCoverageTitle
+              : currentFlowStep === "wide_area_target"
+                ? copy.wideAreaTargetTitle
+                : currentFlowStep === "color_only" || currentFlowStep === "color_character"
+                  ? draft.pricingSource === "featured_design"
+                    ? copy.colorTitleFeatured
+                    : copy.colorTitleCustom
+                  : currentFlowStep === "extras"
+                    ? draft.pricingSource === "featured_design"
+                      ? copy.featuredNoteTitle
+                      : copy.referenceTitle
+                    : copy.stepTitles[6];
   const currentDescription =
-    step === 1
+    currentFlowStep === "start"
       ? draft.pricingSource === "featured_design"
         ? copy.featuredFlowDescription
-        : copy.introDescription
-      : step === 4
-        ? draft.pricingSource === "featured_design"
-          ? copy.colorDescriptionFeatured
-          : copy.colorDescriptionCustom
-        : step === 5
-          ? draft.pricingSource === "featured_design"
-            ? copy.featuredNoteDescription
-            : copy.referenceDescription
-          : copy.stepDescriptions[step as 1 | 2 | 3 | 4 | 5 | 6];
-  const displayProgress = (Math.min(step, 5) / 5) * 100;
+        : copy.areaScopeDescription
+      : currentFlowStep === "request_type"
+        ? copy.requestTypeDescription
+        : currentFlowStep === "placement"
+          ? copy.placementDescription
+          : currentFlowStep === "size"
+            ? copy.sizeDescription
+            : currentFlowStep === "large_coverage"
+              ? copy.largeAreaCoverageDescription
+              : currentFlowStep === "wide_area_target"
+                ? copy.wideAreaTargetDescription
+                : currentFlowStep === "color_only" || currentFlowStep === "color_character"
+                  ? draft.pricingSource === "featured_design"
+                    ? copy.colorDescriptionFeatured
+                    : copy.colorDescriptionCustom
+                  : currentFlowStep === "extras"
+                    ? draft.pricingSource === "featured_design"
+                      ? copy.featuredNoteDescription
+                      : copy.referenceDescription
+                    : copy.stepDescriptions[6];
+  const displayProgress = (Math.min(step, lastInteractiveStep) / lastInteractiveStep) * 100;
   const colorChoices =
     draft.pricingSource === "featured_design" && selectedDesign
       ? getFeaturedColorOptions(selectedDesign.referenceColorMode ?? "black-only")
@@ -393,21 +577,46 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     { value: "precision_symmetric", label: copy.workStyles.precision_symmetric },
     { value: "unsure", label: copy.workStyles.unsure },
   ];
+  const largeAreaCoverageChoices: Array<{ value: LargeAreaCoverageValue; label: string }> = [
+    { value: "partial", label: copy.largeAreaCoverageOptions.partial },
+    { value: "mostly", label: copy.largeAreaCoverageOptions.mostly },
+    { value: "almost_full", label: copy.largeAreaCoverageOptions.almost_full },
+  ];
+  const wideAreaChoices: Array<{ value: WideAreaTargetValue; label: string }> = [
+    { value: "half_arm", label: copy.wideAreaTargets.half_arm },
+    { value: "full_arm", label: copy.wideAreaTargets.full_arm },
+    { value: "wide_chest", label: copy.wideAreaTargets.wide_chest },
+    { value: "wide_back", label: copy.wideAreaTargets.wide_back },
+    { value: "half_leg", label: copy.wideAreaTargets.half_leg },
+    { value: "mostly_leg", label: copy.wideAreaTargets.mostly_leg },
+    { value: "unsure", label: copy.wideAreaTargets.unsure },
+  ];
 
   const canAdvance =
-    (step === 1 &&
-      Boolean(
-        draft.pricingSource &&
-          (draft.pricingSource === "featured_design" ? draft.selectedDesignId : draft.requestType),
-      )) ||
-    (step === 2 && Boolean(draft.bodyAreaGroup && draft.bodyAreaDetail)) ||
-    (step === 3 && Boolean(draft.approximateSizeCm && draft.sizeCategory)) ||
-    (step === 4 &&
-      Boolean(
-        draft.colorMode &&
-          (draft.pricingSource === "featured_design" || draft.workStyle),
-      )) ||
-    step === 5;
+    currentFlowStep === "start"
+      ? Boolean(
+          draft.pricingSource &&
+            (draft.pricingSource === "featured_design" ? draft.selectedDesignId : draft.areaScope),
+        )
+      : currentFlowStep === "request_type"
+        ? Boolean(draft.requestType)
+        : currentFlowStep === "placement"
+          ? Boolean(draft.bodyAreaGroup && draft.bodyAreaDetail)
+          : currentFlowStep === "size"
+            ? Boolean(draft.approximateSizeCm && draft.sizeCategory)
+            : currentFlowStep === "large_coverage"
+              ? Boolean(draft.largeAreaCoverage)
+              : currentFlowStep === "wide_area_target"
+                ? Boolean(draft.wideAreaTarget)
+                : currentFlowStep === "color_only"
+                  ? Boolean(draft.colorMode)
+                  : currentFlowStep === "color_character"
+                    ? Boolean(draft.colorMode && draft.workStyle)
+                    : true;
+  const canSubmit =
+    draft.pricingSource === "custom_request" && (draft.areaScope === "large_single_area" || draft.areaScope === "wide_area")
+      ? draft.coverUp !== null
+      : true;
 
   const resultSummaryItems = useMemo(() => {
     const items: Array<{ label: string; value: string }> = [];
@@ -418,9 +627,25 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
     if (draft.pricingSource === "custom_request" && draft.requestType) {
       items.push({ label: copy.summaryLabels.requestType, value: getRequestTypeLabel(draft.requestType, locale) });
+    } else if (draft.pricingSource === "custom_request" && draft.areaScope) {
+      items.push({ label: copy.summaryLabels.areaScope, value: getAreaScopeLabel(draft.areaScope, locale) });
     }
 
-    if (draft.bodyAreaDetail) {
+    if (draft.pricingSource === "custom_request" && draft.largeAreaCoverage) {
+      items.push({
+        label: copy.summaryLabels.areaCoverage,
+        value: getLargeAreaCoverageLabel(draft.largeAreaCoverage, locale),
+      });
+    }
+
+    if (draft.pricingSource === "custom_request" && draft.wideAreaTarget) {
+      items.push({
+        label: copy.summaryLabels.wideAreaTarget,
+        value: getWideAreaTargetLabel(draft.wideAreaTarget, locale),
+      });
+    }
+
+    if (draft.bodyAreaDetail && draft.areaScope !== "wide_area") {
       items.push({
         label: copy.summaryLabels.placement,
         value: getPlacementDetailLocaleLabel(draft.bodyAreaDetail, locale),
@@ -453,7 +678,29 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     }
 
     return items;
-  }, [copy.colorModes, copy.summaryLabels.color, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.bodyAreaDetail, draft.colorMode, draft.pricingSource, draft.requestType, draft.workStyle, locale, selectedDesign]);
+  }, [copy.colorModes, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.largeAreaCoverage, draft.pricingSource, draft.requestType, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
+
+  function resetCustomPathState(nextAreaScope?: AreaScopeValue | "") {
+    setField("requestType", "");
+    setField("largeAreaCoverage", "");
+    setField("wideAreaTarget", "");
+    setField("bodyAreaGroup", "");
+    setField("bodyAreaDetail", "");
+    setField("approximateSizeCm", null);
+    setField("sizeCategory", "");
+    setField("colorMode", "");
+    setField("workStyle", "");
+    setField("coverUp", nextAreaScope === "wide_area" || nextAreaScope === "large_single_area" ? null : false);
+  }
+
+  function applyWideAreaTarget(value: WideAreaTargetValue) {
+    const mapped = getWideAreaPlacementTarget(value);
+    setField("wideAreaTarget", value);
+    setField("bodyAreaGroup", mapped.group);
+    setField("bodyAreaDetail", mapped.detail);
+    setField("approximateSizeCm", mapped.sizeCm);
+    setField("sizeCategory", deriveSizeCategoryFromCm(mapped.sizeCm));
+  }
 
   async function handleReferenceUpload(file: File) {
     if (!file.type.startsWith("image/")) {
@@ -500,6 +747,15 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       artistSlug: artist.profile.slug,
       locale,
       pricingSource: draft.pricingSource || (draft.selectedDesignId ? "featured_design" : "custom_request"),
+      areaScope: draft.pricingSource === "custom_request" ? draft.areaScope || undefined : undefined,
+      largeAreaCoverage:
+        draft.pricingSource === "custom_request" && draft.areaScope === "large_single_area"
+          ? draft.largeAreaCoverage || undefined
+          : undefined,
+      wideAreaTarget:
+        draft.pricingSource === "custom_request" && draft.areaScope === "wide_area"
+          ? draft.wideAreaTarget || undefined
+          : undefined,
       requestType: draft.requestType || undefined,
       intent: getIntentForSubmission(
         (draft.pricingSource || "custom_request") as PricingSourceValue,
@@ -528,7 +784,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           ? draft.workStyle || undefined
           : undefined,
       notes: draft.notes || undefined,
-      coverUp: draft.requestType === "cover_up",
+      coverUp:
+        draft.pricingSource === "custom_request" && (draft.areaScope === "large_single_area" || draft.areaScope === "wide_area")
+          ? draft.coverUp ?? undefined
+          : draft.requestType === "cover_up",
       customDesign: draft.pricingSource !== "featured_design",
       designType: draft.requestType || null,
     };
@@ -550,7 +809,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
       if (!response.ok) {
         setBookingError(copy.calculatingBody);
-        setStep(5);
+        setStep(lastInteractiveStep);
         return;
       }
 
@@ -567,7 +826,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     } catch {
       setSubmitting(false);
       setBookingError(copy.calculatingBody);
-      setStep(5);
+      setStep(lastInteractiveStep);
     }
   }
 
@@ -680,7 +939,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   borderColor: "var(--artist-border)",
                 }}
               >
-                {copy.stepLabel} {Math.min(step, 6)} / 6
+                {copy.stepLabel} {Math.min(step, resultStep)} / {resultStep}
               </Badge>
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/6 sm:mt-4 sm:h-2">
@@ -694,37 +953,74 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0 sm:px-6 sm:pb-6">
-            {step === 1 ? (
+            {currentFlowStep === "start" ? (
               <IntentSelectionStep
                 locale={locale}
                 designs={activeDesigns}
                 selectedDesignId={draft.selectedDesignId}
                 pricingSource={draft.pricingSource}
-                requestType={draft.requestType}
+                areaScope={draft.areaScope}
                 onPricingSourceChange={(value) => {
                   setBookingError(null);
                   setField("pricingSource", value);
                   setField("selectedDesignId", "");
-                  setField("requestType", "");
-                  setField("colorMode", "");
-                  setField("workStyle", "");
+                  if (value === "custom_request") {
+                    resetCustomPathState("");
+                    setField("areaScope", "");
+                  } else {
+                    setField("areaScope", "");
+                    setField("requestType", "");
+                    setField("largeAreaCoverage", "");
+                    setField("wideAreaTarget", "");
+                    setField("bodyAreaGroup", "");
+                    setField("bodyAreaDetail", "");
+                    setField("approximateSizeCm", null);
+                    setField("sizeCategory", "");
+                    setField("colorMode", "");
+                    setField("workStyle", "");
+                    setField("coverUp", null);
+                  }
                 }}
-                onRequestTypeChange={(value) => {
-                  setField("requestType", value);
+                onAreaScopeChange={(value) => {
                   setField("pricingSource", "custom_request");
+                  setField("areaScope", value);
+                  resetCustomPathState(value);
+                  if (value === "unsure") {
+                    setField("bodyAreaGroup", "");
+                    setField("bodyAreaDetail", "");
+                  }
                 }}
                 onDesignSelect={(designId) => {
                   const design = activeDesigns.find((item) => item.id === designId) ?? null;
                   setField("pricingSource", "featured_design");
+                  setField("areaScope", "");
                   setField("selectedDesignId", designId);
                   setField("requestType", "");
+                  setField("largeAreaCoverage", "");
+                  setField("wideAreaTarget", "");
+                  setField("bodyAreaGroup", "");
+                  setField("bodyAreaDetail", "");
+                  setField("approximateSizeCm", null);
+                  setField("sizeCategory", "");
                   setField("colorMode", design?.referenceColorMode ?? "black-only");
                   setField("workStyle", "");
+                  setField("coverUp", null);
                 }}
               />
             ) : null}
 
-            {step === 2 ? (
+            {currentFlowStep === "request_type" ? (
+              <RequestTypeSelectionStep
+                locale={locale}
+                requestType={draft.requestType}
+                onRequestTypeChange={(value) => {
+                  setField("requestType", value);
+                  setField("coverUp", value === "cover_up");
+                }}
+              />
+            ) : null}
+
+            {currentFlowStep === "placement" ? (
               <BodyPlacementSelector
                 selectedDetail={draft.bodyAreaDetail}
                 locale={locale}
@@ -733,6 +1029,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("bodyAreaDetail", detail);
 
                   if (!detail) {
+                    setField("largeAreaCoverage", "");
+                    setField("approximateSizeCm", null);
+                    setField("sizeCategory", "");
+                    return;
+                  }
+
+                  if (draft.areaScope === "large_single_area") {
+                    setField("largeAreaCoverage", "");
                     setField("approximateSizeCm", null);
                     setField("sizeCategory", "");
                     return;
@@ -745,7 +1049,99 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               />
             ) : null}
 
-            {step === 3 ? (
+            {currentFlowStep === "large_coverage" ? (
+              <div
+                className="rounded-[24px] border p-4"
+                style={{
+                  borderColor: "var(--artist-border)",
+                  backgroundColor: "rgba(0,0,0,0.12)",
+                }}
+              >
+                <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                  {copy.largeAreaCoverageTitle}
+                </p>
+                <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                  {copy.largeAreaCoverageDescription}
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {largeAreaCoverageChoices.map((option) => {
+                    const active = draft.largeAreaCoverage === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          if (!draft.bodyAreaDetail) {
+                            return;
+                          }
+                          const sizeCm = getLargeAreaSize(draft.bodyAreaDetail, option.value);
+                          setField("largeAreaCoverage", option.value);
+                          setField("approximateSizeCm", sizeCm);
+                          setField("sizeCategory", deriveSizeCategoryFromCm(sizeCm));
+                        }}
+                        className="rounded-[22px] border px-4 py-4 text-left transition"
+                        style={{
+                          borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                          backgroundColor: active
+                            ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
+                            : "rgba(0,0,0,0.12)",
+                          color: "var(--artist-card-text)",
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium">{option.label}</p>
+                          {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {currentFlowStep === "wide_area_target" ? (
+              <div
+                className="rounded-[24px] border p-4"
+                style={{
+                  borderColor: "var(--artist-border)",
+                  backgroundColor: "rgba(0,0,0,0.12)",
+                }}
+              >
+                <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                  {copy.wideAreaTargetTitle}
+                </p>
+                <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                  {copy.wideAreaTargetDescription}
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {wideAreaChoices.map((option) => {
+                    const active = draft.wideAreaTarget === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => applyWideAreaTarget(option.value)}
+                        className="rounded-[22px] border px-4 py-4 text-left transition"
+                        style={{
+                          borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                          backgroundColor: active
+                            ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
+                            : "rgba(0,0,0,0.12)",
+                          color: "var(--artist-card-text)",
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium">{option.label}</p>
+                          {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {currentFlowStep === "size" ? (
               <SizeEstimationSelector
                 selectedPlacement={draft.bodyAreaDetail}
                 approximateSizeCm={draft.approximateSizeCm}
@@ -758,7 +1154,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               />
             ) : null}
 
-            {step === 4 ? (
+            {currentFlowStep === "color_only" || currentFlowStep === "color_character" ? (
               <div className="space-y-3">
                 <div
                   className="rounded-[24px] border p-4"
@@ -804,7 +1200,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   </div>
                 </div>
 
-                {draft.pricingSource === "custom_request" ? (
+                {currentFlowStep === "color_character" && draft.pricingSource === "custom_request" ? (
                   <div
                     className="rounded-[24px] border p-4"
                     style={{
@@ -853,7 +1249,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               </div>
             ) : null}
 
-            {step === 5 ? (
+            {currentFlowStep === "extras" ? (
               <div className="space-y-3">
                 {selectedDesign ? (
                   <div
@@ -869,6 +1265,51 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     <p className="mt-2 text-base font-medium" style={{ color: "var(--artist-card-text)" }}>
                       {selectedDesign.title}
                     </p>
+                  </div>
+                ) : null}
+
+                {draft.pricingSource === "custom_request" && (draft.areaScope === "large_single_area" || draft.areaScope === "wide_area") ? (
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {locale === "tr" ? "Var olan dövmenin üstüne mi yapılacak?" : "Will it go over an existing tattoo?"}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {locale === "tr" ? "Bu bilgi ilk değerlendirmeyi etkileyebilir." : "This can affect the first estimate."}
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {[
+                        { value: true, label: locale === "tr" ? "Evet, var olan dövmenin üstüne" : "Yes, over an existing tattoo" },
+                        { value: false, label: locale === "tr" ? "Hayır, yeni bir alan" : "No, it will be in a new area" },
+                      ].map((option) => {
+                        const active = draft.coverUp === option.value;
+                        return (
+                          <button
+                            key={String(option.value)}
+                            type="button"
+                            onClick={() => setField("coverUp", option.value)}
+                            className="rounded-[22px] border px-4 py-4 text-left transition"
+                            style={{
+                              borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                              backgroundColor: active
+                                ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
+                                : "rgba(0,0,0,0.12)",
+                              color: "var(--artist-card-text)",
+                            }}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <p className="font-medium">{option.label}</p>
+                              {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : null}
 
@@ -1239,13 +1680,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       {copy.back}
                     </Button>
                   ) : null}
-                  {step < 5 ? (
+                  {step < lastInteractiveStep ? (
                     <Button type="button" onClick={() => setStep(step + 1)} disabled={!canAdvance}>
                       {copy.continue}
                       <ArrowRight className="size-4" />
                     </Button>
                   ) : (
-                    <Button type="button" onClick={handleFinalSubmit}>
+                    <Button type="button" onClick={handleFinalSubmit} disabled={!canSubmit}>
                       {primaryActionLabel}
                       <ArrowRight className="size-4" />
                     </Button>

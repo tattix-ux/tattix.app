@@ -3,13 +3,17 @@ import type {
   BodyAreaGroupValue,
 } from "@/lib/constants/body-placement";
 import type {
+  AreaScopeValue,
   FeaturedCategoryValue,
   IntentValue,
+  LargeAreaCoverageValue,
   SizeValue,
+  WideAreaTargetValue,
   WorkStyleValue,
 } from "@/lib/constants/options";
 export type { RequestTypeValue } from "@/lib/constants/options";
 export type { WorkStyleValue } from "@/lib/constants/options";
+export type { AreaScopeValue, LargeAreaCoverageValue, WideAreaTargetValue } from "@/lib/constants/options";
 import type { RequestTypeValue } from "@/lib/constants/options";
 import type { SizeMode } from "@/lib/constants/size-estimation";
 import type { PublicLocale } from "@/lib/i18n/public";
@@ -458,6 +462,9 @@ export type LeadStatus = "new" | "contacted" | "sold" | "lost";
 
 export type SubmissionDraft = {
   pricingSource: PricingSourceValue | "";
+  areaScope: AreaScopeValue | "";
+  largeAreaCoverage: LargeAreaCoverageValue | "";
+  wideAreaTarget: WideAreaTargetValue | "";
   requestType: RequestTypeValue | "";
   intent: IntentValue | "";
   selectedDesignId: string | "";
@@ -534,6 +541,9 @@ export type SubmissionRequest = {
   artistSlug: string;
   locale?: PublicLocale;
   pricingSource?: PricingSourceValue | null;
+  areaScope?: AreaScopeValue | null;
+  largeAreaCoverage?: LargeAreaCoverageValue | null;
+  wideAreaTarget?: WideAreaTargetValue | null;
   requestType?: RequestTypeValue | null;
   intent: IntentValue;
   selectedDesignId?: string | null;

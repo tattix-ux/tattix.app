@@ -2,54 +2,61 @@
 
 import { Check } from "lucide-react";
 
-import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { ArtistFeaturedDesign, PricingSourceValue, RequestTypeValue } from "@/lib/types";
+import type { AreaScopeValue, ArtistFeaturedDesign, PricingSourceValue } from "@/lib/types";
 
 export function IntentSelectionStep({
   locale,
   designs,
   selectedDesignId,
   pricingSource,
-  requestType,
+  areaScope,
   onPricingSourceChange,
-  onRequestTypeChange,
+  onAreaScopeChange,
   onDesignSelect,
 }: {
   locale: PublicLocale;
   designs: ArtistFeaturedDesign[];
   selectedDesignId: string;
   pricingSource: PricingSourceValue | "";
-  requestType: RequestTypeValue | "";
+  areaScope: AreaScopeValue | "";
   onPricingSourceChange: (value: PricingSourceValue) => void;
-  onRequestTypeChange: (value: RequestTypeValue) => void;
+  onAreaScopeChange: (value: AreaScopeValue) => void;
   onDesignSelect: (designId: string) => void;
 }) {
   const hasDesigns = designs.length > 0;
-  const requestTypeOptions: RequestTypeValue[] = [
-    "text",
-    "mini_simple",
-    "single_object",
-    "multi_element",
-    "cover_up",
+  const areaScopeOptions: AreaScopeValue[] = [
+    "standard_piece",
+    "large_single_area",
+    "wide_area",
     "unsure",
   ];
-  const requestTypeDescriptions: Record<RequestTypeValue, string> =
+  const areaScopeLabels: Record<AreaScopeValue, string> =
     locale === "tr"
       ? {
-          text: "Kelime, tarih veya kısa yazı",
-          mini_simple: "Sembol, küçük ikon, mini tasarım",
-          single_object: "Tek bir çiçek, kuş, hançer, kelebek gibi",
-          multi_element: "Birden fazla parçadan oluşan kompozisyon",
-          cover_up: "Var olan bir dövmeyi kapatmak veya dönüştürmek",
+          standard_piece: "Küçük / orta bir alan",
+          large_single_area: "Tek bölgede büyük bir alan",
+          wide_area: "Çok geniş bir alan",
+          unsure: "Emin değilim",
+        }
+      : {
+          standard_piece: "Small / medium area",
+          large_single_area: "Large area in one placement",
+          wide_area: "Very wide area",
+          unsure: "Not sure",
+        };
+  const areaScopeDescriptions: Record<AreaScopeValue, string> =
+    locale === "tr"
+      ? {
+          standard_piece: "Yazı, sembol, tek parça işler gibi",
+          large_single_area: "Ön kolun, baldırın veya göğsün büyük kısmı gibi",
+          wide_area: "Kolun yarısı, tüm kol, sırt, göğüs veya bacağın büyük kısmı gibi",
           unsure: "Karar veremiyorsan bunu seçebilirsin",
         }
       : {
-          text: "A word, date, or short text",
-          mini_simple: "A symbol, small icon, or mini design",
-          single_object: "A single flower, bird, dagger, butterfly, or similar",
-          multi_element: "A composition made of more than one element",
-          cover_up: "Covering or transforming an existing tattoo",
+          standard_piece: "Like text, symbols, or single-piece work",
+          large_single_area: "Like a large part of the forearm, calf, or chest",
+          wide_area: "Like half an arm, full arm, back, chest, or most of a leg",
           unsure: "Choose this if you are not sure yet",
         };
 
@@ -75,8 +82,8 @@ export function IntentSelectionStep({
           </div>
           <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
             {locale === "tr"
-              ? "Sana en yakın iş tipini seçip devam edebilirsin."
-              : "Pick the closest job type and continue."}
+              ? "Sana en yakın alan tipini seçip devam edebilirsin."
+              : "Choose the closest area type and continue."}
           </p>
         </button>
 
@@ -111,20 +118,20 @@ export function IntentSelectionStep({
         <div className="space-y-3">
           <div>
             <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
-              {locale === "tr" ? "Ne yaptırmak istiyorsun?" : "What do you want to get?"}
+              {locale === "tr" ? "Yaklaşık ne kadar alan kaplayacak?" : "About how much area will it cover?"}
             </p>
             <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-              {locale === "tr" ? "Sana en yakın olan seçeneği işaretle." : "Pick the option that feels closest."}
+              {locale === "tr" ? "Sana en yakın seçeneği seç." : "Choose the option that feels closest."}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {requestTypeOptions.map((option) => {
-              const active = requestType === option;
+            {areaScopeOptions.map((option) => {
+              const active = areaScope === option;
               return (
                 <button
                   key={option}
                   type="button"
-                  onClick={() => onRequestTypeChange(option)}
+                  onClick={() => onAreaScopeChange(option)}
                   className="rounded-[22px] border px-4 py-4 text-left transition"
                   style={{
                     borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -135,11 +142,11 @@ export function IntentSelectionStep({
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium">{getRequestTypeLabel(option, locale)}</p>
+                    <p className="font-medium">{areaScopeLabels[option]}</p>
                     {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                   </div>
                   <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                    {requestTypeDescriptions[option]}
+                    {areaScopeDescriptions[option]}
                   </p>
                 </button>
               );
@@ -159,51 +166,51 @@ export function IntentSelectionStep({
             </p>
           </div>
           <div className="grid gap-3">
-          {designs.map((design) => {
-            const active = selectedDesignId === design.id;
-            return (
-              <button
-                key={design.id}
-                type="button"
-                onClick={() => onDesignSelect(design.id)}
-                className="overflow-hidden rounded-[24px] border p-4 text-left transition"
-                style={{
-                  borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                  backgroundColor: active
-                    ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                    : "rgba(0,0,0,0.12)",
-                  color: "var(--artist-card-text)",
-                }}
-              >
-                <div className="grid gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">
-                  <div className="h-28 overflow-hidden rounded-[20px] border border-white/10 bg-black/20">
-                    {design.imageUrl ? (
-                      <img
-                        src={design.imageUrl}
-                        alt={design.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-sm text-[var(--artist-card-muted)]">
-                        {locale === "tr" ? "Görsel" : "Preview"}
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-base font-medium">{design.title}</p>
-                      {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+            {designs.map((design) => {
+              const active = selectedDesignId === design.id;
+              return (
+                <button
+                  key={design.id}
+                  type="button"
+                  onClick={() => onDesignSelect(design.id)}
+                  className="overflow-hidden rounded-[24px] border p-4 text-left transition"
+                  style={{
+                    borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                    backgroundColor: active
+                      ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
+                      : "rgba(0,0,0,0.12)",
+                    color: "var(--artist-card-text)",
+                  }}
+                >
+                  <div className="grid gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">
+                    <div className="h-28 overflow-hidden rounded-[20px] border border-white/10 bg-black/20">
+                      {design.imageUrl ? (
+                        <img
+                          src={design.imageUrl}
+                          alt={design.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-sm text-[var(--artist-card-muted)]">
+                          {locale === "tr" ? "Görsel" : "Preview"}
+                        </div>
+                      )}
                     </div>
-                    {design.shortDescription ? (
-                      <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                        {design.shortDescription}
-                      </p>
-                    ) : null}
+                    <div className="min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-base font-medium">{design.title}</p>
+                        {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                      </div>
+                      {design.shortDescription ? (
+                        <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                          {design.shortDescription}
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
           </div>
         </div>
       ) : null}

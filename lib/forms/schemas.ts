@@ -2,10 +2,13 @@ import { z } from "zod";
 
 import { bodyPlacementGroups } from "@/lib/constants/body-placement";
 import {
+  areaScopeOptions,
   featuredDesignCategories,
   intentOptions,
+  largeAreaCoverageOptions,
   requestTypeOptions,
   sizeOptions,
+  wideAreaTargetOptions,
   workStyleOptions,
 } from "@/lib/constants/options";
 import {
@@ -34,6 +37,9 @@ const intentValues = intentOptions.map((intent) => intent.value);
 const requestTypeValues = requestTypeOptions.map((requestType) => requestType.value);
 const sizeValues = sizeOptions.map((size) => size.value);
 const workStyleValues = workStyleOptions.map((item) => item.value);
+const areaScopeValues = areaScopeOptions.map((item) => item.value);
+const largeAreaCoverageValues = largeAreaCoverageOptions.map((item) => item.value);
+const wideAreaTargetValues = wideAreaTargetOptions.map((item) => item.value);
 const categoryValues = featuredDesignCategories.map((item) => item.value);
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -540,6 +546,9 @@ export const submissionSchema = z.object({
   artistSlug: z.string().min(3),
   locale: z.enum(["en", "tr"]).optional(),
   pricingSource: z.enum(["custom_request", "featured_design"]).optional(),
+  areaScope: z.enum(areaScopeValues as [string, ...string[]]).nullable().optional(),
+  largeAreaCoverage: z.enum(largeAreaCoverageValues as [string, ...string[]]).nullable().optional(),
+  wideAreaTarget: z.enum(wideAreaTargetValues as [string, ...string[]]).nullable().optional(),
   requestType: z.enum(requestTypeValues as [string, ...string[]]).optional(),
   intent: z.enum(intentValues as [string, ...string[]]),
   selectedDesignId: z.string().nullable().optional(),
@@ -564,7 +573,6 @@ export const submissionSchema = z.object({
   coverUp: z.boolean().optional(),
   customDesign: z.boolean().optional(),
   designType: z.string().max(80).nullable().optional(),
-  style: z.string().min(1).optional().default("custom"),
   notes: z.string().max(500).optional(),
 });
 

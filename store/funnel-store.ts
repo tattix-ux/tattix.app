@@ -20,6 +20,9 @@ type FunnelState = {
 
 const initialDraft: SubmissionDraft = {
   pricingSource: "",
+  areaScope: "",
+  largeAreaCoverage: "",
+  wideAreaTarget: "",
   requestType: "",
   intent: "",
   selectedDesignId: "",

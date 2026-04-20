@@ -294,6 +294,9 @@ export const publicCopy = {
     whatsappHelper: "Your selections are sent to the artist as a message.",
     summaryLabels: {
       intent: "Job type",
+      areaScope: "Area",
+      areaCoverage: "Coverage",
+      wideAreaTarget: "Closest area",
       selectedDesign: "Selected design",
       placement: "Placement",
       size: "Size",
@@ -457,6 +460,9 @@ export const publicCopy = {
     whatsappHelper: "Seçimlerin mesaj olarak sanatçıya gönderilir.",
     summaryLabels: {
       intent: "İş tipi",
+      areaScope: "Alan",
+      areaCoverage: "Kaplayacağı alan",
+      wideAreaTarget: "Yakın olduğu alan",
       selectedDesign: "Seçilen tasarım",
       placement: "Yerleşim",
       size: "Boyut",

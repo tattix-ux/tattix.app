@@ -5,7 +5,12 @@ import {
   getSizeLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
-import { getWorkStyleLabel } from "@/lib/pricing/v2/output";
+import {
+  getAreaScopeLabel,
+  getLargeAreaCoverageLabel,
+  getWideAreaTargetLabel,
+  getWorkStyleLabel,
+} from "@/lib/pricing/v2/output";
 import type { PricingSourceValue, RequestTypeValue, SubmissionRequest } from "@/lib/types";
 import { sanitizePhoneNumber } from "@/lib/utils";
 
@@ -116,7 +121,9 @@ export function buildSubmissionMessage(
         : null
       : requestTypeLabel
         ? `${labels.intent}: ${requestTypeLabel}`
-        : null;
+        : submission.areaScope
+          ? `${locale === "tr" ? "Alan" : "Area"}: ${getAreaScopeLabel(submission.areaScope, locale)}`
+          : null;
   const lines = [
     locale === "tr"
       ? "Merhaba, dövme talebim için bilgi almak istiyorum."
@@ -126,9 +133,19 @@ export function buildSubmissionMessage(
   ];
 
   lines.push(
-    `${labels.placement}: ${getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale)}`,
+    `${labels.placement}: ${
+      submission.wideAreaTarget
+        ? getWideAreaTargetLabel(submission.wideAreaTarget, locale)
+        : getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale)
+    }`,
     `${labels.size}: ${sizeLabel}${manualSize && manualSize !== sizeLabel ? ` (${manualSize})` : ""}`,
   );
+
+  if (submission.largeAreaCoverage) {
+    lines.push(
+      `${locale === "tr" ? "Kaplayacağı alan" : "Coverage"}: ${getLargeAreaCoverageLabel(submission.largeAreaCoverage, locale)}`,
+    );
+  }
 
   const colorLabel = getColorLabel(submission.colorMode, locale);
   if (colorLabel) {
