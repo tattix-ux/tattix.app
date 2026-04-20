@@ -32,7 +32,13 @@ type BuildPricingV2ProfileInput = {
   onboardingLargeAreasEnabled?: boolean;
   largeAreaCases?: Array<{ id: string; min: number; max: number }>;
   wideAreaCases?: Array<{ id: string; startingFrom: number }>;
-  reviewCases?: Array<{ id: string; verdict: "looks-right" | "slightly-low" | "slightly-high" }>;
+  reviewCases?: Array<{
+    id: string;
+    verdict: "looks-right" | "slightly-low" | "slightly-high";
+    note?: string;
+    adjustmentBias?: number;
+    iterationCount?: number;
+  }>;
 };
 
 function getDefaultWorkStyleSensitivity(): PricingV2WorkStyleSensitivity {
@@ -355,6 +361,12 @@ export function buildPricingV2Profile(
     reviewCases: (input.reviewCases ?? []).map((item) => ({
       id: item.id,
       verdict: item.verdict,
+      note: item.note?.trim() || "",
+      adjustmentBias:
+        typeof item.adjustmentBias === "number"
+          ? clamp(item.adjustmentBias, 0.78, 1.34)
+          : undefined,
+      iterationCount: Math.max(0, item.iterationCount ?? 0),
     })),
     sizeSeries,
     inferredSizeProfile,

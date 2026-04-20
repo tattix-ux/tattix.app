@@ -106,6 +106,37 @@ function getConcreteWorkStyleFactor(
   return 1 + (base - 1) * clamp(intensity * requestWeight, 0.22, 1);
 }
 
+function getReviewCalibrationFactor(
+  requestType: RequestTypeValue,
+  sizeCm: number,
+  profile: Pick<PricingV2Context["profile"], "reviewAdjustments">,
+) {
+  const review = profile.reviewAdjustments;
+
+  if (requestType === "text") {
+    return review.textBias;
+  }
+
+  if (requestType === "mini_simple") {
+    return review.miniSimpleBias;
+  }
+
+  if (requestType === "cover_up") {
+    return review.coverUpBias;
+  }
+
+  if (requestType === "multi_element") {
+    return review.multiElementBias;
+  }
+
+  if (requestType === "single_object") {
+    const singleBias = sizeCm >= 14 ? review.largeSizeBias : review.singleObjectBias;
+    return clamp(singleBias, 0.82, 1.26);
+  }
+
+  return review.globalBias;
+}
+
 function getStandardPieceMode(
   requestType: RequestTypeValue,
   hasReferenceSignal: boolean,
@@ -427,7 +458,8 @@ function estimateStandardPiecePrice(
     input.sizeCm,
     profile,
   );
-  const center = minimumTension.adjustedCenter * (options?.cautious ? 1.03 : 1);
+  const reviewCalibrationFactor = getReviewCalibrationFactor(requestType, input.sizeCm, profile);
+  const center = minimumTension.adjustedCenter * reviewCalibrationFactor * (options?.cautious ? 1.03 : 1);
   const hasReferenceSignal = input.hasReferenceImage || input.hasReferenceNote;
   const mode = getStandardPieceMode(requestType, hasReferenceSignal, options?.cautious ?? false);
   const spread = getStandardPieceSpread(
@@ -448,6 +480,7 @@ function estimateStandardPiecePrice(
     `workStyle:${input.workStyle}`,
     `colorFactor:${colorFactor.toFixed(3)}`,
     `workStyleFactor:${workStyleFactor.toFixed(3)}`,
+    `reviewCalibration:${reviewCalibrationFactor.toFixed(3)}`,
     `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
   ];
 

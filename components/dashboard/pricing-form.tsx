@@ -8,6 +8,7 @@ import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { estimateCustomRequestPrice } from "@/lib/pricing/v2/custom-request";
 import {
@@ -27,6 +28,7 @@ import {
   buildSuggestedWideAreaCases,
   getArtistPricingV2Profile,
 } from "@/lib/pricing/v2/profile";
+import { deriveReviewAdjustmentBias } from "@/lib/pricing/v2/size";
 import type { ArtistPricingRules } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,12 @@ type Verdict = "looks-right" | "slightly-low" | "slightly-high";
 type Phase = 1 | 2 | 3 | 4;
 type LargeAreaChoice = "enabled" | "disabled";
 type StatusTone = "success" | "error" | null;
+type ReviewCaseDraft = {
+  verdict: Verdict | "";
+  note: string;
+  adjustmentBias: number;
+  iterationCount: number;
+};
 
 function getText(locale: PublicLocale) {
   if (locale === "tr") {
@@ -86,6 +94,13 @@ function getText(locale: PublicLocale) {
       placeholderHelp: "Görseli sonra ekleyebilirsin.",
       reviewTitle: "Bu tahmin sana uygun mu?",
       reviewNote: "Buradaki seçimler, sistemin tahminlerini sana yaklaştırmak için kullanılır.",
+      reviewReasonLabelLow: "Neden biraz düşük geldi?",
+      reviewReasonLabelHigh: "Neden biraz yüksek geldi?",
+      reviewReasonPlaceholderLow: "Örn. bu boyutta biraz daha yukarıdan başlar, gölgesi daha yoğun, kapatması zor...",
+      reviewReasonPlaceholderHigh: "Örn. bu iş bu kadar yükselmez, daha sade kalır, yerleşimi daha rahat...",
+      reviewUpdate: "Tahmini güncelle",
+      reviewNeedsAdjustment: "Uygun değilse kısa nedenini yazıp tahmini güncelle.",
+      reviewAdjusted: "Tahmin güncellendi. Hâlâ uymuyorsa yeniden ayarlayabilirsin.",
       verdicts: {
         "looks-right": "Uygun",
         "slightly-low": "Biraz düşük",
@@ -150,6 +165,13 @@ function getText(locale: PublicLocale) {
     placeholderAsset: "Example image area",
     placeholderHelp: "You can add the real image later.",
     reviewTitle: "Does this estimate feel right?",
+    reviewReasonLabelLow: "Why does this feel a bit low?",
+    reviewReasonLabelHigh: "Why does this feel a bit high?",
+    reviewReasonPlaceholderLow: "For example: larger pieces start higher, shading is denser, cover-up is tougher...",
+    reviewReasonPlaceholderHigh: "For example: this stays simpler, should not rise that much, placement is easier...",
+    reviewUpdate: "Update estimate",
+    reviewNeedsAdjustment: "If it is not right yet, add a short reason and update the estimate.",
+    reviewAdjusted: "Estimate updated. If it still feels off, you can adjust it again.",
     verdicts: {
       "looks-right": "Looks right",
       "slightly-low": "A bit low",
@@ -291,6 +313,39 @@ function toDisplayCurrency(value: number, locale: PublicLocale) {
 
 function getEstimateDisplayClass(displayLabel: string) {
   return displayLabel.trim().endsWith("+") ? "text-[2.15rem]" : "text-2xl";
+}
+
+function createDefaultReviewCase(): ReviewCaseDraft {
+  return {
+    verdict: "",
+    note: "",
+    adjustmentBias: 1,
+    iterationCount: 0,
+  };
+}
+
+function buildReviewCaseState(initialProfile: ReturnType<typeof getArtistPricingV2Profile>) {
+  return Object.fromEntries(
+    initialProfile.reviewCases.map((item) => [
+      item.id,
+      {
+        verdict: item.verdict,
+        note: item.note ?? "",
+        adjustmentBias:
+          typeof item.adjustmentBias === "number"
+            ? item.adjustmentBias
+            : item.verdict === "looks-right"
+              ? 1
+              : deriveReviewAdjustmentBias({
+                  verdict: item.verdict,
+                  note: item.note,
+                  currentBias: 1,
+                  iterationCount: item.iterationCount ?? 0,
+                }),
+        iterationCount: item.iterationCount ?? 0,
+      } satisfies ReviewCaseDraft,
+    ]),
+  ) as Record<string, ReviewCaseDraft>;
 }
 
 function areRangeAnswersEqual(
@@ -471,8 +526,8 @@ export function PricingForm({
       };
     }),
   );
-  const [reviewCases, setReviewCases] = useState<Record<string, Verdict>>(
-    Object.fromEntries(initialProfile.reviewCases.map((item) => [item.id, item.verdict])),
+  const [reviewCases, setReviewCases] = useState<Record<string, ReviewCaseDraft>>(
+    buildReviewCaseState(initialProfile),
   );
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -528,7 +583,15 @@ export function PricingForm({
           id: item.id,
           startingFrom: toInputNumber(item.startingFrom),
         })),
-        reviewCases: Object.entries(reviewCases).map(([id, verdict]) => ({ id, verdict })),
+        reviewCases: Object.entries(reviewCases)
+          .filter(([, item]) => Boolean(item.verdict))
+          .map(([id, item]) => ({
+            id,
+            verdict: item.verdict as Verdict,
+            note: item.note.trim(),
+            adjustmentBias: item.adjustmentBias,
+            iterationCount: item.iterationCount,
+          })),
       }),
     [
       initialProfile.minimumJobPrice,
@@ -587,7 +650,7 @@ export function PricingForm({
     const currentCase = onboardingCases.find((entry) => entry.id === item.id);
     return Boolean(currentCase?.min.trim() && currentCase?.max.trim());
   });
-  const phaseThreeComplete = reviewEstimates.every((item) => Boolean(reviewCases[item.id]));
+  const phaseThreeComplete = reviewEstimates.every((item) => reviewCases[item.id]?.verdict === "looks-right");
   const phaseFourComplete =
     largeAreaChoice === "disabled" ||
     (largeAreaCases.every((item) => item.min.trim() && item.max.trim()) &&
@@ -620,7 +683,15 @@ export function PricingForm({
             id: item.id,
             startingFrom: toInputNumber(item.startingFrom),
           })),
-          reviewCases: Object.entries(reviewCases).map(([id, verdict]) => ({ id, verdict })),
+          reviewCases: Object.entries(reviewCases)
+            .filter(([, item]) => Boolean(item.verdict))
+            .map(([id, item]) => ({
+              id,
+              verdict: item.verdict as Verdict,
+              note: item.note.trim(),
+              adjustmentBias: item.adjustmentBias,
+              iterationCount: item.iterationCount,
+            })),
         }),
       });
 
@@ -640,6 +711,42 @@ export function PricingForm({
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function updateReviewCase(
+    id: string,
+    updater: (current: ReviewCaseDraft) => ReviewCaseDraft,
+  ) {
+    setReviewCases((current) => ({
+      ...current,
+      [id]: updater(current[id] ?? createDefaultReviewCase()),
+    }));
+  }
+
+  function handleReviewVerdictChange(id: string, verdict: Verdict) {
+    updateReviewCase(id, (current) => ({
+      ...current,
+      verdict,
+    }));
+  }
+
+  function handleReviewAdjustmentApply(id: string) {
+    updateReviewCase(id, (current) => {
+      if (!current.verdict || current.verdict === "looks-right" || !current.note.trim()) {
+        return current;
+      }
+
+      return {
+        ...current,
+        adjustmentBias: deriveReviewAdjustmentBias({
+          verdict: current.verdict,
+          note: current.note,
+          currentBias: current.adjustmentBias,
+          iterationCount: current.iterationCount,
+        }),
+        iterationCount: current.iterationCount + 1,
+      };
+    });
   }
 
   return (
@@ -852,54 +959,106 @@ export function PricingForm({
               {copy.reviewNote}
             </p>
             <div className="grid gap-4 xl:grid-cols-2">
-            {reviewEstimates.map((item) => (
-              <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                <div className="grid gap-5 md:grid-cols-[224px_minmax(0,1fr)] md:items-start">
-                  <ImageSlotPreview
-                    imageSlot={item.imageSlot}
-                    imagePresentation={item.imagePresentation}
-                    placeholderAsset={copy.placeholderAsset}
-                    placeholderHelp={copy.placeholderHelp}
-                    variant="review"
-                  />
-                  <div className="space-y-4 md:pt-1">
-                    <div className="space-y-2">
-                      <p className="text-base font-semibold text-white">{item.title[locale]}</p>
-                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
-                        {locale === "tr" ? `Boyut · ${item.referenceSizeCm} cm` : `Size · ${item.referenceSizeCm} cm`}
-                      </p>
-                      <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
-                        {item.metaLine[locale]}
-                      </p>
-                      <p className="pt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
-                        {copy.estimate}
-                      </p>
-                      <p className={cn("font-semibold tracking-tight text-white", getEstimateDisplayClass(item.estimate.displayLabel))}>
-                        {item.estimate.displayLabel}
-                      </p>
+            {reviewEstimates.map((item) => {
+              const reviewCase = reviewCases[item.id] ?? createDefaultReviewCase();
+              const needsReason = Boolean(
+                reviewCase.verdict && reviewCase.verdict !== "looks-right",
+              );
+
+              return (
+                <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+                  <div className="grid gap-5 md:grid-cols-[224px_minmax(0,1fr)] md:items-start">
+                    <ImageSlotPreview
+                      imageSlot={item.imageSlot}
+                      imagePresentation={item.imagePresentation}
+                      placeholderAsset={copy.placeholderAsset}
+                      placeholderHelp={copy.placeholderHelp}
+                      variant="review"
+                    />
+                    <div className="space-y-4 md:pt-1">
+                      <div className="space-y-2">
+                        <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
+                          {locale === "tr" ? `Boyut · ${item.referenceSizeCm} cm` : `Size · ${item.referenceSizeCm} cm`}
+                        </p>
+                        <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                          {item.metaLine[locale]}
+                        </p>
+                        <p className="pt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                          {copy.estimate}
+                        </p>
+                        <p className={cn("font-semibold tracking-tight text-white", getEstimateDisplayClass(item.estimate.displayLabel))}>
+                          {item.estimate.displayLabel}
+                        </p>
+                      </div>
+                      <Field label={copy.reviewTitle}>
+                        <ChoiceGroup
+                          value={reviewCase.verdict}
+                          onChange={(value) => handleReviewVerdictChange(item.id, value)}
+                          options={[
+                            { value: "looks-right", label: copy.verdicts["looks-right"] },
+                            { value: "slightly-low", label: copy.verdicts["slightly-low"] },
+                            { value: "slightly-high", label: copy.verdicts["slightly-high"] },
+                          ]}
+                          columnsClassName="sm:grid-cols-3"
+                          segmented
+                        />
+                      </Field>
+
+                      {needsReason ? (
+                        <div className="space-y-3 rounded-[20px] border border-[var(--accent)]/12 bg-[linear-gradient(180deg,rgba(247,177,93,0.06),rgba(255,255,255,0.01))] p-3.5">
+                          <Field
+                            label={
+                              reviewCase.verdict === "slightly-low"
+                                ? copy.reviewReasonLabelLow
+                                : copy.reviewReasonLabelHigh
+                            }
+                            description={
+                              reviewCase.iterationCount > 0
+                                ? copy.reviewAdjusted
+                                : copy.reviewNeedsAdjustment
+                            }
+                          >
+                            <Textarea
+                              value={reviewCase.note}
+                              onChange={(event) =>
+                                updateReviewCase(item.id, (current) => ({
+                                  ...current,
+                                  note: event.target.value,
+                                }))
+                              }
+                              placeholder={
+                                reviewCase.verdict === "slightly-low"
+                                  ? copy.reviewReasonPlaceholderLow
+                                  : copy.reviewReasonPlaceholderHigh
+                              }
+                              className="min-h-[108px]"
+                            />
+                          </Field>
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                              {reviewCase.iterationCount > 0
+                                ? locale === "tr"
+                                  ? `${reviewCase.iterationCount}. düzeltme uygulandı`
+                                  : `${reviewCase.iterationCount} adjustment${reviewCase.iterationCount > 1 ? "s" : ""} applied`
+                                : copy.reviewNeedsAdjustment}
+                            </p>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={() => handleReviewAdjustmentApply(item.id)}
+                              disabled={!reviewCase.note.trim()}
+                            >
+                              {copy.reviewUpdate}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
-                    <Field label={copy.reviewTitle}>
-                      <ChoiceGroup
-                        value={reviewCases[item.id] ?? ""}
-                        onChange={(value) =>
-                          setReviewCases((current) => ({
-                            ...current,
-                            [item.id]: value,
-                          }))
-                        }
-                        options={[
-                          { value: "looks-right", label: copy.verdicts["looks-right"] },
-                          { value: "slightly-low", label: copy.verdicts["slightly-low"] },
-                          { value: "slightly-high", label: copy.verdicts["slightly-high"] },
-                        ]}
-                        columnsClassName="sm:grid-cols-3"
-                        segmented
-                      />
-                    </Field>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             </div>
           </div>
         ) : null}

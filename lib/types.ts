@@ -169,6 +169,9 @@ export type PricingV2WideAreaAnswer = {
 export type PricingV2ReviewAnswer = {
   id: string;
   verdict: PricingValidationFeedback;
+  note?: string;
+  adjustmentBias?: number;
+  iterationCount?: number;
 };
 export type PricingV2SizeSeries = {
   object6cm: number;

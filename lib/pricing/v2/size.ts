@@ -51,6 +51,63 @@ function getReviewBiasMultiplier(verdict: "looks-right" | "slightly-low" | "slig
   return 1;
 }
 
+function getReviewCommentIntensity(note: string) {
+  const normalized = note.trim().toLocaleLowerCase("tr-TR");
+
+  if (!normalized) {
+    return 0;
+  }
+
+  let intensity = 0.05;
+  const strongSignals = [
+    "çok",
+    "epey",
+    "fazla",
+    "ciddi",
+    "bariz",
+    "oldukça",
+    "aşırı",
+    "hayli",
+    "kesin",
+    "net",
+    "çok daha",
+  ];
+  const softSignals = ["biraz", "az", "ufak", "hafif", "bir tık", "bir tik"];
+
+  if (strongSignals.some((item) => normalized.includes(item))) {
+    intensity += 0.12;
+  }
+
+  if (softSignals.some((item) => normalized.includes(item))) {
+    intensity += 0.04;
+  }
+
+  if (normalized.length >= 48) {
+    intensity += 0.04;
+  }
+
+  return clamp(intensity, 0.05, 0.22);
+}
+
+export function deriveReviewAdjustmentBias(input: {
+  verdict: "looks-right" | "slightly-low" | "slightly-high";
+  note?: string;
+  currentBias?: number;
+  iterationCount?: number;
+}) {
+  if (input.verdict === "looks-right") {
+    return clamp(input.currentBias ?? 1, 0.78, 1.34);
+  }
+
+  const direction = input.verdict === "slightly-low" ? 1 : -1;
+  const iterationBoost = Math.min(input.iterationCount ?? 0, 3) * 0.012;
+  const noteIntensity = getReviewCommentIntensity(input.note ?? "");
+  const step = clamp(0.04 + noteIntensity + iterationBoost, 0.05, 0.22);
+  const base = input.currentBias ?? 1;
+
+  return clamp(base * (1 + direction * step), 0.78, 1.34);
+}
+
 function getLowerSlope(object6cm: number, object10cm: number) {
   return Math.log(Math.max(object10cm, 1) / Math.max(object6cm, 1)) / Math.log(10 / 6);
 }
@@ -213,23 +270,28 @@ export function deriveSizeCategoryFromCm(sizeCm: number): SizeValue {
 }
 
 export function deriveReviewAdjustments(
-  reviewCases: Array<{ id: string; verdict: "looks-right" | "slightly-low" | "slightly-high" }>,
+  reviewCases: Array<{
+    id: string;
+    verdict: "looks-right" | "slightly-low" | "slightly-high";
+    adjustmentBias?: number;
+  }>,
 ): PricingV2ReviewAdjustments {
-  const lookup = Object.fromEntries(reviewCases.map((item) => [item.id, item.verdict]));
-  const allMultipliers = reviewCases.map((item) => getReviewBiasMultiplier(item.verdict));
-  const globalBias =
-    allMultipliers.length > 0
-      ? clamp(allMultipliers.reduce((sum, value) => sum + value, 0) / allMultipliers.length, 0.94, 1.06)
-      : 1;
+  const lookup = Object.fromEntries(
+    reviewCases.map((item) => [
+      item.id,
+      clamp(item.adjustmentBias ?? getReviewBiasMultiplier(item.verdict), 0.78, 1.34),
+    ]),
+  );
+  const singleLargeBias = lookup["review-single-large"] ?? 1;
 
   return {
-    globalBias,
-    textBias: getReviewBiasMultiplier(lookup["review-text"] ?? "looks-right"),
-    miniSimpleBias: getReviewBiasMultiplier(lookup["review-mini"] ?? "looks-right"),
-    singleObjectBias: getReviewBiasMultiplier(lookup["review-single-large"] ?? "looks-right"),
-    largeSizeBias: getReviewBiasMultiplier(lookup["review-single-large"] ?? "looks-right"),
-    multiElementBias: getReviewBiasMultiplier(lookup["review-multi"] ?? "looks-right"),
-    coverUpBias: getReviewBiasMultiplier(lookup["review-cover"] ?? "looks-right"),
+    globalBias: 1,
+    textBias: lookup["review-text"] ?? 1,
+    miniSimpleBias: lookup["review-mini"] ?? 1,
+    singleObjectBias: clamp(1 + (singleLargeBias - 1) * 0.35, 0.88, 1.16),
+    largeSizeBias: singleLargeBias,
+    multiElementBias: lookup["review-multi"] ?? 1,
+    coverUpBias: lookup["review-cover"] ?? 1,
   };
 }
 
@@ -254,14 +316,13 @@ export function deriveSizeSeriesFromOnboarding(
   const base6 = getCaseMidpoint(onboardingCases, SIZE_SERIES_CASE_IDS.object6cm, fallback6);
   const base10 = getCaseMidpoint(onboardingCases, SIZE_SERIES_CASE_IDS.object10cm, fallback10);
   const base16 = getCaseMidpoint(onboardingCases, SIZE_SERIES_CASE_IDS.object16cm, fallback16);
-  const sharedBias = review.globalBias * review.singleObjectBias;
 
   return {
-    object6cm: Math.max(minimumJobPrice, Math.round(base6 * sharedBias)),
-    object10cm: Math.max(minimumJobPrice, Math.round(base10 * sharedBias)),
+    object6cm: Math.max(minimumJobPrice, Math.round(base6)),
+    object10cm: Math.max(minimumJobPrice, Math.round(base10)),
     object16cm: Math.max(
       minimumJobPrice,
-      Math.round(base16 * sharedBias * review.largeSizeBias),
+      Math.round(base16),
     ),
   };
 }
