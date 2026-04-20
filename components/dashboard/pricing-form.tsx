@@ -643,7 +643,7 @@ export function PricingForm({
   }
 
   return (
-    <Card className="surface-border overflow-hidden border-white/7 bg-[linear-gradient(180deg,rgba(31,33,39,0.96),rgba(22,24,29,0.98))] shadow-[0_24px_48px_rgba(0,0,0,0.2)]">
+    <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_20px_52px_rgba(0,0,0,0.18)]">
       <CardHeader className="pb-3">
         <div>
           <CardTitle>{currentPhaseCopy.title}</CardTitle>
