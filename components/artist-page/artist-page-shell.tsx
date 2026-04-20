@@ -21,8 +21,9 @@ export function ArtistPageShell({
       )}
       style={wrapperStyle}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.22),transparent_35%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),transparent_20%,transparent_80%,rgba(0,0,0,0.08))]" />
+      <div className="pointer-events-none absolute inset-0" style={{ background: "var(--artist-shell-glow)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background: "var(--artist-shell-veil)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ boxShadow: `inset 0 0 0 1px ${"var(--artist-page-texture)"}` }} />
       <div className="relative w-full min-w-0 max-w-full overflow-visible">{children}</div>
     </div>
   );

@@ -863,9 +863,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         className={`${compactArtistHeader ? "sticky top-2 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full overflow-x-clip`}
         style={{
           borderColor: "var(--artist-border)",
-          backgroundColor:
-            "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
-          borderRadius: "var(--artist-radius)",
+          backgroundColor: "var(--artist-rail-surface)",
+          borderRadius: "var(--artist-card-radius, var(--artist-radius))",
+          boxShadow: "var(--artist-card-shadow)",
         }}
       >
         {compactArtistHeader ? (
@@ -910,7 +910,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               <div className="space-y-3">
                 {artist.funnelSettings.introEyebrow?.trim() ? <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge> : null}
                 {introTitle ? (
-                  <h1 className="text-[1.55rem] leading-tight sm:text-3xl" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}>
+                  <h1 className="leading-tight sm:text-3xl" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)", fontSize: "clamp(1.58rem, calc(1.42rem * var(--artist-heading-scale)), 2.35rem)" }}>
                     {introTitle}
                   </h1>
                 ) : null}
@@ -930,9 +930,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           className="w-full min-w-0 max-w-full overflow-x-clip"
           style={{
             borderColor: "var(--artist-border)",
-            backgroundColor:
-              "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
-            borderRadius: "var(--artist-radius)",
+            backgroundColor: "var(--artist-flow-surface)",
+            borderRadius: "var(--artist-card-radius, var(--artist-radius))",
+            boxShadow: "var(--artist-card-shadow)",
           }}
         >
           <CardHeader className="px-4 pb-3 sm:px-6 sm:pb-4">
@@ -952,14 +952,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 className="w-fit self-start text-[10px] tracking-[0.14em] sm:text-[11px] sm:tracking-[0.2em]"
                 style={{
                   color: "var(--artist-card-text)",
-                  backgroundColor: "color-mix(in srgb, var(--artist-card) 88%, white 12%)",
+                  backgroundColor: "var(--artist-chip-surface)",
                   borderColor: "var(--artist-border)",
                 }}
               >
                 {copy.stepLabel} {Math.min(step, resultStep)} / {resultStep}
               </Badge>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/6 sm:mt-4 sm:h-2">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full sm:mt-4 sm:h-2" style={{ backgroundColor: "var(--artist-divider)" }}>
               <div
                 className="h-full rounded-full transition-all"
                 style={{
@@ -1077,7 +1077,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 className="rounded-[24px] border p-4"
                 style={{
                   borderColor: "var(--artist-border)",
-                  backgroundColor: "rgba(0,0,0,0.12)",
+                  backgroundColor: "var(--artist-section-surface-strong)",
                 }}
               >
                 <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1106,8 +1106,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         style={{
                           borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                           backgroundColor: active
-                            ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                            : "rgba(0,0,0,0.12)",
+                            ? "var(--artist-selected-surface)"
+                            : "var(--artist-section-surface)",
                           color: "var(--artist-card-text)",
                         }}
                       >
@@ -1127,7 +1127,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 className="rounded-[24px] border p-4"
                 style={{
                   borderColor: "var(--artist-border)",
-                  backgroundColor: "rgba(0,0,0,0.12)",
+                  backgroundColor: "var(--artist-section-surface-strong)",
                 }}
               >
                 <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1148,8 +1148,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         style={{
                           borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                           backgroundColor: active
-                            ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                            : "rgba(0,0,0,0.12)",
+                            ? "var(--artist-selected-surface)"
+                            : "var(--artist-section-surface)",
                           color: "var(--artist-card-text)",
                         }}
                       >
@@ -1183,7 +1183,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   className="rounded-[24px] border p-4"
                   style={{
                     borderColor: "var(--artist-border)",
-                    backgroundColor: "rgba(0,0,0,0.12)",
+                    backgroundColor: "var(--artist-section-surface-strong)",
                   }}
                   >
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1204,8 +1204,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           style={{
                             borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                             backgroundColor: active
-                              ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                              : "rgba(0,0,0,0.12)",
+                              ? "var(--artist-selected-surface)"
+                              : "var(--artist-section-surface)",
                             color: tokens.cardText,
                           }}
                         >
@@ -1228,7 +1228,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     className="rounded-[24px] border p-4"
                     style={{
                       borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
+                      backgroundColor: "var(--artist-section-surface-strong)",
                     }}
                   >
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1249,8 +1249,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                             style={{
                               borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                               backgroundColor: active
-                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                                : "rgba(0,0,0,0.12)",
+                                ? "var(--artist-selected-surface)"
+                                : "var(--artist-section-surface)",
                               color: tokens.cardText,
                             }}
                           >
@@ -1279,7 +1279,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     className="rounded-[24px] border p-4"
                     style={{
                       borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
+                      backgroundColor: "var(--artist-section-surface-strong)",
                     }}
                   >
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1296,7 +1296,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     className="rounded-[24px] border p-4"
                     style={{
                       borderColor: "var(--artist-border)",
-                      backgroundColor: "rgba(0,0,0,0.12)",
+                      backgroundColor: "var(--artist-section-surface-strong)",
                     }}
                   >
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1320,8 +1320,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                             style={{
                               borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                               backgroundColor: active
-                                ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                                : "rgba(0,0,0,0.12)",
+                                ? "var(--artist-selected-surface)"
+                                : "var(--artist-section-surface)",
                               color: "var(--artist-card-text)",
                             }}
                           >
@@ -1340,7 +1340,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   className="rounded-[24px] border p-4"
                   style={{
                     borderColor: "var(--artist-border)",
-                    backgroundColor: "rgba(0,0,0,0.12)",
+                    backgroundColor: "var(--artist-section-surface-strong)",
                   }}
                 >
                   <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1381,7 +1381,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           </span>
                           <Textarea
                             style={{
-                              backgroundColor: "rgba(0,0,0,0.12)",
+                              backgroundColor: "var(--artist-input-surface)",
                               borderColor: "var(--artist-border)",
                               color: "var(--artist-card-text)",
                             }}
@@ -1394,7 +1394,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     ) : (
                       <Textarea
                         style={{
-                          backgroundColor: "rgba(0,0,0,0.12)",
+                          backgroundColor: "var(--artist-input-surface)",
                           borderColor: "var(--artist-border)",
                           color: "var(--artist-card-text)",
                         }}
@@ -1410,7 +1410,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   className="rounded-[24px] border p-4"
                   style={{
                     borderColor: "var(--artist-border)",
-                    backgroundColor: "rgba(0,0,0,0.12)",
+                    backgroundColor: "var(--artist-section-surface-strong)",
                   }}
                 >
                   <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1449,7 +1449,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       className="rounded-[24px] border p-4"
                       style={{
                         borderColor: "var(--artist-border)",
-                        backgroundColor: "rgba(0,0,0,0.12)",
+                        backgroundColor: "var(--artist-section-surface-strong)",
                       }}
                     >
                       <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1482,7 +1482,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       className="rounded-[24px] border p-4"
                       style={{
                         borderColor: "var(--artist-border)",
-                        backgroundColor: "rgba(0,0,0,0.12)",
+                        backgroundColor: "var(--artist-section-surface-strong)",
                       }}
                     >
                       <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1581,7 +1581,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 className="rounded-[24px] border p-4"
                 style={{
                   borderColor: "var(--artist-border)",
-                  backgroundColor: "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+                    backgroundColor: "var(--artist-section-surface-strong)",
                 }}
               >
                 <div className="flex items-start gap-4">
@@ -1606,7 +1606,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   className="rounded-[24px] border p-4 sm:rounded-[28px] sm:p-5"
                   style={{
                     borderColor: "color-mix(in srgb, var(--artist-primary) 28%, transparent)",
-                    backgroundColor: "color-mix(in srgb, var(--artist-primary) 12%, transparent)",
+                    backgroundColor: "var(--artist-selected-surface)",
                   }}
                 >
                   <div className="flex items-start gap-3">
@@ -1625,7 +1625,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   className="rounded-[24px] border p-4"
                   style={{
                     borderColor: "var(--artist-border)",
-                    backgroundColor: "rgba(0,0,0,0.12)",
+                    backgroundColor: "var(--artist-section-surface-strong)",
                   }}
                 >
                   <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -1646,7 +1646,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   className="rounded-[24px] border p-4"
                   style={{
                     borderColor: "var(--artist-border)",
-                    backgroundColor: "rgba(0,0,0,0.12)",
+                    backgroundColor: "var(--artist-section-surface-strong)",
                   }}
                 >
                   <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>

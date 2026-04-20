@@ -80,7 +80,9 @@ export function BodyPlacementSelector({
         className="rounded-[22px] border p-4 sm:rounded-[24px]"
         style={{
           borderColor: "var(--artist-border)",
-          backgroundColor: "rgba(0,0,0,0.12)",
+          backgroundColor: "var(--artist-section-surface-strong)",
+          borderRadius: "var(--artist-card-radius, 24px)",
+          boxShadow: "var(--artist-card-shadow)",
         }}
       >
         <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -100,11 +102,12 @@ export function BodyPlacementSelector({
                 onClick={() => handleCategoryToggle(category)}
                 className="w-full max-w-full rounded-[20px] border px-4 py-3.5 text-left transition sm:rounded-[22px] sm:py-4"
                 style={{
-                  borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                  borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
                   backgroundColor: active
-                    ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                    : "rgba(0,0,0,0.12)",
+                    ? "var(--artist-selected-surface)"
+                    : "var(--artist-section-surface)",
                   color: "var(--artist-card-text)",
+                  borderRadius: "var(--artist-field-radius, 22px)",
                 }}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -129,7 +132,9 @@ export function BodyPlacementSelector({
         className="rounded-[22px] border p-4 sm:rounded-[24px]"
         style={{
           borderColor: "var(--artist-border)",
-          backgroundColor: "rgba(0,0,0,0.12)",
+          backgroundColor: "var(--artist-section-surface-strong)",
+          borderRadius: "var(--artist-card-radius, 24px)",
+          boxShadow: "var(--artist-card-shadow)",
         }}
       >
         <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
@@ -159,11 +164,12 @@ export function BodyPlacementSelector({
                   }
                   className="w-full max-w-full rounded-[18px] border px-4 py-3 text-left text-sm transition sm:rounded-[20px]"
                   style={{
-                    borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                    borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
                     backgroundColor: active
-                      ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                      : "rgba(0,0,0,0.12)",
+                      ? "var(--artist-selected-surface)"
+                      : "var(--artist-section-surface)",
                     color: "var(--artist-card-text)",
+                    borderRadius: "var(--artist-field-radius, 18px)",
                   }}
                 >
                   <span className="flex items-center justify-between gap-3">
@@ -175,7 +181,7 @@ export function BodyPlacementSelector({
             })}
           </div>
         ) : (
-          <div className="mt-4 rounded-[18px] border border-dashed border-white/10 bg-black/10 px-4 py-5 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+          <div className="mt-4 rounded-[18px] border border-dashed px-4 py-5 text-sm" style={{ color: "var(--artist-card-muted)", borderColor: "var(--artist-border)", backgroundColor: "var(--artist-section-surface)" }}>
             {copy.selectPlacementHelp}
           </div>
         )}

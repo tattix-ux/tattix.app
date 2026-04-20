@@ -39,14 +39,13 @@ const fontOptions = [
   { value: "manrope", labelTr: "Manrope", labelEn: "Manrope" },
   { value: "dm-sans", labelTr: "DM Sans", labelEn: "DM Sans" },
   { value: "general-sans", labelTr: "General Sans", labelEn: "General Sans" },
-  { value: "satoshi", labelTr: "Satoshi", labelEn: "Satoshi" },
 ] as const;
 
 const quickCustomPresets = [
-  { key: "soft-minimal", labelTr: "Yumuşak", labelEn: "Soft" },
-  { key: "dark-studio", labelTr: "Stüdyo", labelEn: "Studio" },
-  { key: "bold-contrast", labelTr: "Güçlü", labelEn: "Bold" },
-  { key: "natural-stone", labelTr: "Doğal", labelEn: "Natural" },
+  { key: "soft-editorial", labelTr: "Editoryal", labelEn: "Editorial" },
+  { key: "warm-studio", labelTr: "Sıcak", labelEn: "Warm" },
+  { key: "graphite-pro", labelTr: "Grafit", labelEn: "Graphite" },
+  { key: "night-luxury", labelTr: "Gece", labelEn: "Night" },
 ] as const;
 
 const headingPreviewFonts = {
@@ -54,7 +53,6 @@ const headingPreviewFonts = {
   manrope: '"Manrope", "Inter", sans-serif',
   "dm-sans": '"DM Sans", "Inter", sans-serif',
   "general-sans": '"Manrope", "Inter", sans-serif',
-  satoshi: '"Inter", "Helvetica Neue", sans-serif',
 } as const;
 
 const previewHeadingFontMap = {
@@ -62,7 +60,6 @@ const previewHeadingFontMap = {
   manrope: headingPreviewFonts.manrope,
   "dm-sans": headingPreviewFonts["dm-sans"],
   "general-sans": headingPreviewFonts["general-sans"],
-  satoshi: headingPreviewFonts.satoshi,
 } as const;
 
 const previewBodyFonts = {
@@ -70,7 +67,6 @@ const previewBodyFonts = {
   manrope: '"Manrope", "Inter", sans-serif',
   "dm-sans": '"DM Sans", "Inter", sans-serif',
   "general-sans": '"Manrope", "Inter", sans-serif',
-  satoshi: '"Inter", "Helvetica Neue", sans-serif',
 } as const;
 
 function ThemeSelectionBadge({ label }: { label: string }) {
@@ -565,28 +561,23 @@ export function CustomizePageForm({
   const presetDescriptions =
     locale === "tr"
       ? {
-          "soft-minimal": "Açık, sakin ve davetkar",
-          "dark-studio": "Koyu, rafine ve stüdyo hissi güçlü",
-          "editorial-clean": "Ferah, net ve yapısal",
-          "bold-contrast": "Daha güçlü marka hissi ve net vurgu",
-          "natural-stone": "Toprak tonlu, sakin ve daha insani",
-          "monochrome-luxury": "Siyah-beyaz, kontrollü ve pahalı hisli",
+          "soft-editorial": "Açık, ferah ve daha yapısal",
+          "warm-studio": "Sıcak, sakin ve daha insani",
+          "graphite-pro": "Koyu, net ve operasyon odaklı",
+          "night-luxury": "Dramatik, markalı ve daha atmosferik",
         }
       : {
-          "soft-minimal": "Bright, calm, and welcoming",
-          "dark-studio": "Dark, refined, and studio-led",
-          "editorial-clean": "Airy, crisp, and structured",
-          "bold-contrast": "Stronger brand presence and emphasis",
-          "natural-stone": "Earth-toned, calm, and more human",
-          "monochrome-luxury": "Black, white, and deliberately premium",
+          "soft-editorial": "Bright, airy, and more structured",
+          "warm-studio": "Warm, calm, and more human",
+          "graphite-pro": "Dark, crisp, and operational",
+          "night-luxury": "Atmospheric, branded, and premium",
         };
 
   const unifiedFontMap = {
-    inter: { headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-balanced" },
-    manrope: { headingFont: "manrope", bodyFont: "inter", fontPairingPreset: "manrope-refined" },
+    inter: { headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-compact" },
+    manrope: { headingFont: "manrope", bodyFont: "inter", fontPairingPreset: "manrope-display" },
     "dm-sans": { headingFont: "dm-sans", bodyFont: "inter", fontPairingPreset: "dm-sans-editorial" },
-    "general-sans": { headingFont: "general-sans", bodyFont: "inter", fontPairingPreset: "general-clean" },
-    satoshi: { headingFont: "satoshi", bodyFont: "inter", fontPairingPreset: "satoshi-neutral" },
+    "general-sans": { headingFont: "general-sans", bodyFont: "inter", fontPairingPreset: "general-sans-soft" },
   } as const;
 
   const inferFontStyle = (headingFont: string) => {
@@ -598,9 +589,6 @@ export function CustomizePageForm({
     }
     if (headingFont === "general-sans") {
       return "general-sans";
-    }
-    if (headingFont === "satoshi") {
-      return "satoshi";
     }
     return "inter";
   };
@@ -924,7 +912,7 @@ export function CustomizePageForm({
   }
 
   function resetThemeToDefault() {
-    applyPreset("dark-studio");
+    applyPreset("graphite-pro");
     form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
     form.setValue("customWelcomeTitle", "", { shouldDirty: true, shouldValidate: true });
     form.setValue("customIntroText", "", { shouldDirty: true, shouldValidate: true });
@@ -1354,13 +1342,9 @@ export function CustomizePageForm({
                                           ? locale === "tr"
                                             ? "Sakin ve çağdaş"
                                             : "Calm and contemporary"
-                                          : option.value === "satoshi"
-                                            ? locale === "tr"
-                                              ? "Nötr ve lüks"
-                                              : "Neutral and elevated"
-                                            : locale === "tr"
-                                              ? "Temiz ve dengeli"
-                                              : "Clean and balanced"}
+                                          : locale === "tr"
+                                            ? "Temiz ve dengeli"
+                                            : "Clean and balanced"}
                                   </p>
                                 </button>
                               );

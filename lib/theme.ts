@@ -17,7 +17,6 @@ const headingFontStacks: Record<HeadingFontKey, string> = {
   manrope: 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
   "dm-sans": 'var(--font-dm-sans), "DM Sans", "Segoe UI", sans-serif',
   "general-sans": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
-  satoshi: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
 };
 
 const bodyFontStacks: Record<BodyFontKey, string> = {
@@ -25,19 +24,16 @@ const bodyFontStacks: Record<BodyFontKey, string> = {
   manrope: 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
   "dm-sans": 'var(--font-dm-sans), "DM Sans", "Segoe UI", sans-serif',
   "general-sans": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
-  satoshi: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
 };
 
 const fontPairings: Record<
   FontPairingPreset,
   { headingFont: HeadingFontKey; bodyFont: BodyFontKey }
 > = {
-  "inter-balanced": { headingFont: "inter", bodyFont: "inter" },
-  "manrope-refined": { headingFont: "manrope", bodyFont: "inter" },
   "dm-sans-editorial": { headingFont: "dm-sans", bodyFont: "inter" },
-  "manrope-impact": { headingFont: "manrope", bodyFont: "dm-sans" },
-  "general-clean": { headingFont: "general-sans", bodyFont: "inter" },
-  "satoshi-neutral": { headingFont: "satoshi", bodyFont: "inter" },
+  "general-sans-soft": { headingFont: "general-sans", bodyFont: "inter" },
+  "inter-compact": { headingFont: "inter", bodyFont: "inter" },
+  "manrope-display": { headingFont: "manrope", bodyFont: "inter" },
 };
 
 const radiusMap: Record<RadiusStyle, string> = {
@@ -127,7 +123,7 @@ function enforceReadableForeground(
 }
 
 export function buildDefaultArtistTheme(): ArtistPageTheme {
-  const presetKey: ThemePresetKey = "dark-studio";
+  const presetKey: ThemePresetKey = "graphite-pro";
   const preset = themePresets[presetKey];
 
   return {
@@ -157,11 +153,17 @@ export function buildDefaultArtistTheme(): ArtistPageTheme {
 }
 
 const legacyPresetMap: Record<string, ThemePresetKey> = {
-  "dark-minimal": "dark-studio",
-  "gothic-black": "dark-studio",
-  "soft-neutral": "soft-minimal",
-  "luxury-serif": "monochrome-luxury",
-  "neon-accent": "bold-contrast",
+  "soft-minimal": "soft-editorial",
+  "dark-studio": "graphite-pro",
+  "editorial-clean": "soft-editorial",
+  "bold-contrast": "graphite-pro",
+  "natural-stone": "warm-studio",
+  "monochrome-luxury": "night-luxury",
+  "dark-minimal": "graphite-pro",
+  "gothic-black": "graphite-pro",
+  "soft-neutral": "warm-studio",
+  "luxury-serif": "night-luxury",
+  "neon-accent": "graphite-pro",
 };
 
 const legacyHeadingFontMap: Record<string, HeadingFontKey> = {
@@ -170,6 +172,7 @@ const legacyHeadingFontMap: Record<string, HeadingFontKey> = {
   "gothic-sans": "manrope",
   "editorial-serif": "dm-sans",
   "mono-display": "inter",
+  satoshi: "manrope",
 };
 
 const legacyBodyFontMap: Record<string, BodyFontKey> = {
@@ -177,14 +180,159 @@ const legacyBodyFontMap: Record<string, BodyFontKey> = {
   "neutral-sans": "manrope",
   "editorial-sans": "dm-sans",
   "mono-body": "inter",
+  satoshi: "inter",
 };
 
 const legacyFontPairingMap: Record<string, FontPairingPreset> = {
-  "bold-modern": "inter-balanced",
   "elegant-editorial": "dm-sans-editorial",
-  "minimal-sans": "inter-balanced",
-  "edgy-clean": "manrope-impact",
-  "premium-editorial": "satoshi-neutral",
+  "bold-modern": "inter-compact",
+  "minimal-sans": "inter-compact",
+  "edgy-clean": "manrope-display",
+  "premium-editorial": "manrope-display",
+  "inter-balanced": "inter-compact",
+  "manrope-refined": "manrope-display",
+  "manrope-impact": "manrope-display",
+  "general-clean": "general-sans-soft",
+  "satoshi-neutral": "manrope-display",
+};
+
+const themeRecipes: Record<
+  ThemePresetKey,
+  {
+    shellGlow: string;
+    shellVeil: string;
+    pageTexture: string;
+    cardShadow: string;
+    railSurface: string;
+    flowSurface: string;
+    sectionSurface: string;
+    sectionSurfaceStrong: string;
+    selectedSurface: string;
+    selectedBorder: string;
+    inputSurface: string;
+    inputBorder: string;
+    inputFocusSurface: string;
+    chipSurface: string;
+    chipText: string;
+    divider: string;
+    secondaryButtonSurface: string;
+    secondaryButtonBorder: string;
+    buttonShadow: string;
+    buttonRadius: string;
+    fieldRadius: string;
+    cardRadius: string;
+    densityGap: string;
+    headingScale: string;
+  }
+> = {
+  "soft-editorial": {
+    shellGlow:
+      "radial-gradient(circle_at_top_left, rgba(255,255,255,0.7), transparent 28%), radial-gradient(circle_at_bottom_right, rgba(79,67,56,0.08), transparent 34%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.28) 22%, transparent 78%)",
+    pageTexture: "rgba(17,17,17,0.055)",
+    cardShadow: "0 10px 26px rgba(33,28,22,0.06)",
+    railSurface: "rgba(255,253,249,0.84)",
+    flowSurface: "rgba(255,255,253,0.95)",
+    sectionSurface: "rgba(255,255,255,0.56)",
+    sectionSurfaceStrong: "rgba(255,255,255,0.82)",
+    selectedSurface: "rgba(79,67,56,0.08)",
+    selectedBorder: "rgba(79,67,56,0.22)",
+    inputSurface: "rgba(255,255,255,0.7)",
+    inputBorder: "rgba(28,24,21,0.08)",
+    inputFocusSurface: "rgba(255,255,255,0.92)",
+    chipSurface: "rgba(79,67,56,0.08)",
+    chipText: "#3f352e",
+    divider: "rgba(28,24,21,0.08)",
+    secondaryButtonSurface: "rgba(255,255,255,0.76)",
+    secondaryButtonBorder: "rgba(28,24,21,0.1)",
+    buttonShadow: "0 10px 20px rgba(33,28,22,0.08)",
+    buttonRadius: "999px",
+    fieldRadius: "18px",
+    cardRadius: "22px",
+    densityGap: "1.15",
+    headingScale: "1.06",
+  },
+  "warm-studio": {
+    shellGlow:
+      "radial-gradient(circle_at_top, rgba(255,245,232,0.34), transparent 26%), radial-gradient(circle_at_bottom_right, rgba(127,99,79,0.12), transparent 36%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.18), transparent 22%, transparent 80%, rgba(125,94,72,0.08))",
+    pageTexture: "rgba(47,38,33,0.045)",
+    cardShadow: "0 18px 34px rgba(64,48,34,0.09)",
+    railSurface: "rgba(245,236,223,0.78)",
+    flowSurface: "rgba(245,236,223,0.92)",
+    sectionSurface: "rgba(255,249,241,0.48)",
+    sectionSurfaceStrong: "rgba(255,249,241,0.64)",
+    selectedSurface: "rgba(127,99,79,0.12)",
+    selectedBorder: "rgba(127,99,79,0.24)",
+    inputSurface: "rgba(255,250,243,0.68)",
+    inputBorder: "rgba(68,54,41,0.09)",
+    inputFocusSurface: "rgba(255,251,246,0.88)",
+    chipSurface: "rgba(127,99,79,0.1)",
+    chipText: "#5a4739",
+    divider: "rgba(68,54,41,0.085)",
+    secondaryButtonSurface: "rgba(255,250,243,0.62)",
+    secondaryButtonBorder: "rgba(68,54,41,0.1)",
+    buttonShadow: "0 12px 22px rgba(66,48,31,0.1)",
+    buttonRadius: "18px",
+    fieldRadius: "20px",
+    cardRadius: "28px",
+    densityGap: "0.98",
+    headingScale: "1.02",
+  },
+  "graphite-pro": {
+    shellGlow:
+      "radial-gradient(circle_at_top_left, rgba(216,162,95,0.14), transparent 24%), radial-gradient(circle_at_top, rgba(255,255,255,0.03), transparent 30%), radial-gradient(circle_at_bottom_right, rgba(46,54,64,0.28), transparent 34%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.03), transparent 18%, transparent 82%, rgba(0,0,0,0.14))",
+    pageTexture: "rgba(255,255,255,0.03)",
+    cardShadow: "0 22px 48px rgba(0,0,0,0.24)",
+    railSurface: "rgba(21,27,34,0.82)",
+    flowSurface: "rgba(18,24,31,0.94)",
+    sectionSurface: "rgba(255,255,255,0.03)",
+    sectionSurfaceStrong: "rgba(255,255,255,0.05)",
+    selectedSurface: "linear-gradient(180deg, rgba(216,162,95,0.2), rgba(216,162,95,0.1))",
+    selectedBorder: "rgba(216,162,95,0.38)",
+    inputSurface: "rgba(12,16,21,0.88)",
+    inputBorder: "rgba(255,255,255,0.08)",
+    inputFocusSurface: "rgba(15,20,26,0.98)",
+    chipSurface: "rgba(255,255,255,0.05)",
+    chipText: "#e8e4de",
+    divider: "rgba(255,255,255,0.08)",
+    secondaryButtonSurface: "rgba(255,255,255,0.045)",
+    secondaryButtonBorder: "rgba(255,255,255,0.1)",
+    buttonShadow: "0 16px 30px rgba(0,0,0,0.28)",
+    buttonRadius: "16px",
+    fieldRadius: "16px",
+    cardRadius: "24px",
+    densityGap: "0.92",
+    headingScale: "1",
+  },
+  "night-luxury": {
+    shellGlow:
+      "radial-gradient(circle_at_top, rgba(213,165,116,0.16), transparent 26%), radial-gradient(circle_at_top_right, rgba(255,255,255,0.03), transparent 22%), radial-gradient(circle_at_bottom_left, rgba(79,59,51,0.34), transparent 34%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.035), transparent 20%, transparent 76%, rgba(213,165,116,0.04))",
+    pageTexture: "rgba(255,255,255,0.028)",
+    cardShadow: "0 26px 56px rgba(0,0,0,0.34)",
+    railSurface: "rgba(23,19,23,0.82)",
+    flowSurface: "rgba(18,14,18,0.94)",
+    sectionSurface: "rgba(255,255,255,0.025)",
+    sectionSurfaceStrong: "rgba(255,255,255,0.04)",
+    selectedSurface: "linear-gradient(180deg, rgba(213,165,116,0.18), rgba(213,165,116,0.08))",
+    selectedBorder: "rgba(213,165,116,0.34)",
+    inputSurface: "rgba(15,12,15,0.92)",
+    inputBorder: "rgba(213,165,116,0.12)",
+    inputFocusSurface: "rgba(22,18,21,0.98)",
+    chipSurface: "rgba(213,165,116,0.11)",
+    chipText: "#e5c5a1",
+    divider: "rgba(255,255,255,0.07)",
+    secondaryButtonSurface: "rgba(255,255,255,0.035)",
+    secondaryButtonBorder: "rgba(213,165,116,0.13)",
+    buttonShadow: "0 18px 38px rgba(0,0,0,0.34)",
+    buttonRadius: "18px",
+    fieldRadius: "18px",
+    cardRadius: "28px",
+    densityGap: "1.02",
+    headingScale: "1.05",
+  },
 };
 
 export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): ArtistPageTheme {
@@ -196,7 +344,7 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
       ? (rawPreset as ThemePresetKey)
       : (legacyPresetMap[rawPreset] ?? base.presetTheme);
   }
-  const preset = themePresets[presetKey] ?? themePresets["dark-studio"];
+  const preset = themePresets[presetKey] ?? themePresets["graphite-pro"];
   const rawPairing = typeof theme?.fontPairingPreset === "string" ? theme.fontPairingPreset : undefined;
   let resolvedPairingKey: FontPairingPreset = preset.fontPairingPreset;
   if (rawPairing) {
@@ -295,6 +443,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
       : theme.backgroundType === "gradient"
         ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
         : theme.backgroundColor;
+  const recipe = themeRecipes[theme.presetTheme as ThemePresetKey] ?? themeRecipes["graphite-pro"];
 
   const wrapperStyle = {
     background: backgroundImage,
@@ -319,6 +468,30 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     "--artist-radius": radiusMap[theme.radiusStyle],
     "--artist-heading-font": headingFontStacks[theme.headingFont],
     "--artist-body-font": bodyFontStacks[theme.bodyFont],
+    "--artist-shell-glow": recipe.shellGlow,
+    "--artist-shell-veil": recipe.shellVeil,
+    "--artist-page-texture": recipe.pageTexture,
+    "--artist-card-shadow": recipe.cardShadow,
+    "--artist-rail-surface": recipe.railSurface,
+    "--artist-flow-surface": recipe.flowSurface,
+    "--artist-section-surface": recipe.sectionSurface,
+    "--artist-section-surface-strong": recipe.sectionSurfaceStrong,
+    "--artist-selected-surface": recipe.selectedSurface,
+    "--artist-selected-border": recipe.selectedBorder,
+    "--artist-input-surface": recipe.inputSurface,
+    "--artist-input-border": recipe.inputBorder,
+    "--artist-input-focus-surface": recipe.inputFocusSurface,
+    "--artist-chip-surface": recipe.chipSurface,
+    "--artist-chip-text": recipe.chipText,
+    "--artist-divider": recipe.divider,
+    "--artist-secondary-button-surface": recipe.secondaryButtonSurface,
+    "--artist-secondary-button-border": recipe.secondaryButtonBorder,
+    "--artist-button-shadow": recipe.buttonShadow,
+    "--artist-button-radius": recipe.buttonRadius,
+    "--artist-field-radius": recipe.fieldRadius,
+    "--artist-card-radius": recipe.cardRadius,
+    "--artist-density-gap": recipe.densityGap,
+    "--artist-heading-scale": recipe.headingScale,
   } as CSSProperties;
 
   return {
@@ -338,6 +511,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
           : theme.radiusStyle === "medium"
             ? "rounded-[26px]"
             : "rounded-[32px]",
+      presetKey: theme.presetTheme as ThemePresetKey,
     },
   };
 }

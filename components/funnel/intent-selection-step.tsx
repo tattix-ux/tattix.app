@@ -68,12 +68,14 @@ export function IntentSelectionStep({
           onClick={() => onPricingSourceChange(pricingSource === "custom_request" ? "" : "custom_request")}
           className="rounded-[24px] border px-4 py-4 text-left transition"
           style={{
-            borderColor: pricingSource === "custom_request" ? "var(--artist-primary)" : "var(--artist-border)",
+            borderColor: pricingSource === "custom_request" ? "var(--artist-selected-border)" : "var(--artist-border)",
             backgroundColor:
               pricingSource === "custom_request"
-                ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                : "rgba(0,0,0,0.12)",
+                ? "var(--artist-selected-surface)"
+                : "var(--artist-section-surface)",
             color: "var(--artist-card-text)",
+            borderRadius: "var(--artist-card-radius, 24px)",
+            boxShadow: pricingSource === "custom_request" ? "var(--artist-card-shadow)" : undefined,
           }}
         >
           <div className="flex items-start justify-between gap-3">
@@ -93,12 +95,14 @@ export function IntentSelectionStep({
             onClick={() => onPricingSourceChange(pricingSource === "featured_design" ? "" : "featured_design")}
             className="rounded-[24px] border px-4 py-4 text-left transition"
             style={{
-              borderColor: pricingSource === "featured_design" ? "var(--artist-primary)" : "var(--artist-border)",
+              borderColor: pricingSource === "featured_design" ? "var(--artist-selected-border)" : "var(--artist-border)",
               backgroundColor:
                 pricingSource === "featured_design"
-                  ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                  : "rgba(0,0,0,0.12)",
+                  ? "var(--artist-selected-surface)"
+                  : "var(--artist-section-surface)",
               color: "var(--artist-card-text)",
+              borderRadius: "var(--artist-card-radius, 24px)",
+              boxShadow: pricingSource === "featured_design" ? "var(--artist-card-shadow)" : undefined,
             }}
           >
             <div className="flex items-start justify-between gap-3">
@@ -134,11 +138,12 @@ export function IntentSelectionStep({
                   onClick={() => onAreaScopeChange(active ? "" : option)}
                   className="rounded-[22px] border px-4 py-4 text-left transition"
                   style={{
-                    borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                    borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
                     backgroundColor: active
-                      ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                      : "rgba(0,0,0,0.12)",
+                      ? "var(--artist-selected-surface)"
+                      : "var(--artist-section-surface)",
                     color: "var(--artist-card-text)",
+                    borderRadius: "var(--artist-field-radius, 22px)",
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -175,11 +180,12 @@ export function IntentSelectionStep({
                   onClick={() => onDesignSelect(active ? "" : design.id)}
                   className="overflow-hidden rounded-[24px] border p-4 text-left transition"
                   style={{
-                    borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                    borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
                     backgroundColor: active
-                      ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                      : "rgba(0,0,0,0.12)",
+                      ? "var(--artist-selected-surface)"
+                      : "var(--artist-section-surface)",
                     color: "var(--artist-card-text)",
+                    borderRadius: "var(--artist-card-radius, 24px)",
                   }}
                 >
                   <div className="grid gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">

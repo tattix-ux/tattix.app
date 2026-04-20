@@ -364,7 +364,7 @@ export async function ensureArtistForUser(user: User) {
     ),
     supabase.from("artist_page_themes").upsert({
       artist_id: artist.id,
-      preset_theme: "dark-studio",
+      preset_theme: "graphite-pro",
       background_type: "solid",
       background_color: "#09090b",
       gradient_start: "#111114",
@@ -376,7 +376,7 @@ export async function ensureArtistForUser(user: User) {
       card_opacity: 0.78,
       heading_font: "manrope",
       body_font: "inter",
-      font_pairing_preset: "manrope-refined",
+      font_pairing_preset: "inter-compact",
       radius_style: "large",
       theme_mode: "dark",
       custom_welcome_title: null,

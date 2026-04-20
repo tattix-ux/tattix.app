@@ -60,13 +60,14 @@ export function RequestTypeSelectionStep({
               key={option}
               type="button"
               onClick={() => onRequestTypeChange(option)}
-              className="rounded-[22px] border px-4 py-4 text-left transition"
-              style={{
-                borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+            className="rounded-[22px] border px-4 py-4 text-left transition"
+            style={{
+                borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
                 backgroundColor: active
-                  ? "color-mix(in srgb, var(--artist-primary) 14%, transparent)"
-                  : "rgba(0,0,0,0.12)",
+                  ? "var(--artist-selected-surface)"
+                  : "var(--artist-section-surface)",
                 color: "var(--artist-card-text)",
+                borderRadius: "var(--artist-field-radius, 22px)",
               }}
             >
               <div className="flex items-start justify-between gap-3">

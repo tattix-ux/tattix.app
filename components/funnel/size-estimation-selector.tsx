@@ -90,7 +90,8 @@ export function SizeEstimationSelector({
         className="rounded-[24px] border p-4"
         style={{
           borderColor: "var(--artist-border)",
-          backgroundColor: "rgba(0,0,0,0.12)",
+          backgroundColor: "var(--artist-section-surface-strong)",
+          borderRadius: "var(--artist-card-radius, 24px)",
         }}
       >
         <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
@@ -111,7 +112,9 @@ export function SizeEstimationSelector({
         className="rounded-[22px] border p-4 sm:rounded-[24px]"
         style={{
           borderColor: "var(--artist-border)",
-          backgroundColor: "rgba(0,0,0,0.12)",
+          backgroundColor: "var(--artist-section-surface-strong)",
+          borderRadius: "var(--artist-card-radius, 24px)",
+          boxShadow: "var(--artist-card-shadow)",
         }}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -141,9 +144,9 @@ export function SizeEstimationSelector({
             step={1}
             value={safeCm}
             onChange={(event) => onApproximateSizeChange(Number(event.target.value))}
-            className="h-3 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-[var(--artist-primary)]"
+            className="h-3 w-full cursor-pointer appearance-none rounded-full accent-[var(--artist-primary)]"
             style={{
-              background: `linear-gradient(90deg, var(--artist-primary) 0%, var(--artist-primary) ${((safeCm - constraint.minCm) / (constraint.maxCm - constraint.minCm || 1)) * 100}%, rgba(255,255,255,0.08) ${((safeCm - constraint.minCm) / (constraint.maxCm - constraint.minCm || 1)) * 100}%, rgba(255,255,255,0.08) 100%)`,
+              background: `linear-gradient(90deg, var(--artist-primary) 0%, var(--artist-primary) ${((safeCm - constraint.minCm) / (constraint.maxCm - constraint.minCm || 1)) * 100}%, var(--artist-divider) ${((safeCm - constraint.minCm) / (constraint.maxCm - constraint.minCm || 1)) * 100}%, var(--artist-divider) 100%)`,
             }}
             aria-label="Approximate tattoo size in centimeters"
           />

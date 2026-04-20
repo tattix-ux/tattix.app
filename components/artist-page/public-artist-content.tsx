@@ -17,8 +17,8 @@ export function PublicArtistContent({ artist }: { artist: ArtistPageData }) {
           className="inline-flex w-full max-w-full flex-wrap items-center justify-between gap-2 rounded-[20px] border px-2 py-1.5 sm:w-auto sm:justify-end sm:rounded-[24px] sm:py-2"
           style={{
             borderColor: "var(--artist-border)",
-            backgroundColor:
-              "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+            backgroundColor: "var(--artist-rail-surface)",
+            boxShadow: "var(--artist-card-shadow)",
           }}
         >
               <span className="px-2 text-[10px] uppercase tracking-[0.18em] sm:text-[11px] sm:tracking-[0.2em]" style={{ color: "var(--artist-card-muted)" }}>
@@ -33,8 +33,9 @@ export function PublicArtistContent({ artist }: { artist: ArtistPageData }) {
                 onClick={() => setLocale(item)}
                 className="rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition"
                 style={{
-                  backgroundColor: active ? "var(--artist-primary)" : "transparent",
-                  color: active ? "var(--artist-primary-foreground)" : "var(--artist-card-text)",
+                  backgroundColor: active ? "var(--artist-selected-surface)" : "transparent",
+                  color: active ? "var(--artist-primary)" : "var(--artist-card-text)",
+                  border: active ? "1px solid var(--artist-selected-border)" : "1px solid transparent",
                 }}
               >
                 {item.toUpperCase()}

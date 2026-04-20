@@ -227,7 +227,7 @@ export const demoPricingRules: ArtistPricingRules = {
 export const demoArtistTheme: ArtistPageTheme = {
   ...buildDefaultArtistTheme(),
   artistId: demoArtistId,
-  presetTheme: "dark-studio",
+  presetTheme: "night-luxury",
   backgroundType: "gradient",
   backgroundColor: "#120d11",
   gradientStart: "#241521",
@@ -238,7 +238,7 @@ export const demoArtistTheme: ArtistPageTheme = {
   cardOpacity: 0.82,
   headingFont: "manrope",
   bodyFont: "inter",
-  fontPairingPreset: "manrope-refined",
+  fontPairingPreset: "manrope-display",
   radiusStyle: "large",
   themeMode: "dark",
   customWelcomeTitle: "Ink Atelier Demo",

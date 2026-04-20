@@ -42,9 +42,9 @@ export function FeaturedDesignRail({
             className="w-[85vw] max-w-[270px] flex-none snap-start p-5"
             style={{
               borderColor: "var(--artist-border)",
-              backgroundColor:
-                "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
-              borderRadius: "var(--artist-radius)",
+              backgroundColor: "var(--artist-rail-surface)",
+              borderRadius: "var(--artist-card-radius, var(--artist-radius))",
+              boxShadow: "var(--artist-card-shadow)",
             }}
           >
             <div
