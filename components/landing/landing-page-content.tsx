@@ -35,7 +35,7 @@ export function LandingPageContent() {
     <AppShell>
       <Container className="overflow-x-clip py-5 sm:py-8">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <Logo subtitle={copy.logoSubtitle} />
+          <Logo />
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
             <div className="inline-flex w-full items-center justify-between gap-2 rounded-full border border-white/10 bg-white/6 p-1 sm:w-auto sm:justify-start">
               <span className="px-2 text-[12px] font-medium tracking-[0.04em] text-white/65">
