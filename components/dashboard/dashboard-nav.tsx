@@ -80,7 +80,6 @@ export function DashboardNav({
           <Link
             key={item.href}
             href={item.href}
-            prefetch={false}
             className={cn(
               "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3 lg:py-3 lg:text-sm lg:text-left",
               active
