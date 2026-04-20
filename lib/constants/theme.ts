@@ -9,24 +9,21 @@ export const backgroundTypeOptions = ["solid", "gradient", "image"] as const;
 export const radiusStyleOptions = ["small", "medium", "large"] as const;
 export const themeModeOptions = ["dark", "light"] as const;
 export const fontPairingPresetOptions = [
-  "dm-sans-editorial",
-  "general-sans-soft",
-  "inter-compact",
-  "manrope-display",
+  "inter-neutral",
+  "manrope-refined",
+  "outfit-modern",
 ] as const;
 
 export const headingFontOptions = [
   { value: "inter", label: "Inter" },
   { value: "manrope", label: "Manrope" },
-  { value: "dm-sans", label: "DM Sans" },
-  { value: "general-sans", label: "General Sans" },
+  { value: "outfit", label: "Outfit" },
 ] as const;
 
 export const bodyFontOptions = [
   { value: "inter", label: "Inter" },
   { value: "manrope", label: "Manrope" },
-  { value: "dm-sans", label: "DM Sans" },
-  { value: "general-sans", label: "General Sans" },
+  { value: "outfit", label: "Outfit" },
 ] as const;
 
 export const themePresets = {
@@ -42,9 +39,9 @@ export const themePresets = {
     secondaryColor: "#ece5da",
     cardColor: "#fffdf9",
     cardOpacity: 0.98,
-    headingFont: "dm-sans",
+    headingFont: "manrope",
     bodyFont: "inter",
-    fontPairingPreset: "dm-sans-editorial",
+    fontPairingPreset: "manrope-refined",
     radiusStyle: "small",
   },
   "warm-studio": {
@@ -59,9 +56,9 @@ export const themePresets = {
     secondaryColor: "#cbb39a",
     cardColor: "#f5ecdf",
     cardOpacity: 0.95,
-    headingFont: "general-sans",
+    headingFont: "outfit",
     bodyFont: "inter",
-    fontPairingPreset: "general-sans-soft",
+    fontPairingPreset: "outfit-modern",
     radiusStyle: "large",
   },
   "graphite-pro": {
@@ -78,7 +75,7 @@ export const themePresets = {
     cardOpacity: 0.9,
     headingFont: "inter",
     bodyFont: "inter",
-    fontPairingPreset: "inter-compact",
+    fontPairingPreset: "inter-neutral",
     radiusStyle: "medium",
   },
   "night-luxury": {
@@ -95,7 +92,7 @@ export const themePresets = {
     cardOpacity: 0.9,
     headingFont: "manrope",
     bodyFont: "inter",
-    fontPairingPreset: "manrope-display",
+    fontPairingPreset: "manrope-refined",
     radiusStyle: "large",
   },
 } as const;

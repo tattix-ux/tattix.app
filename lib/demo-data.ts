@@ -238,7 +238,7 @@ export const demoArtistTheme: ArtistPageTheme = {
   cardOpacity: 0.82,
   headingFont: "manrope",
   bodyFont: "inter",
-  fontPairingPreset: "manrope-display",
+  fontPairingPreset: "manrope-refined",
   radiusStyle: "large",
   themeMode: "dark",
   customWelcomeTitle: "Ink Atelier Demo",

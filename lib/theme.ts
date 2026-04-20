@@ -15,25 +15,22 @@ import type { ArtistPageTheme } from "@/lib/types";
 const headingFontStacks: Record<HeadingFontKey, string> = {
   inter: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
   manrope: 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
-  "dm-sans": 'var(--font-dm-sans), "DM Sans", "Segoe UI", sans-serif',
-  "general-sans": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
+  outfit: 'var(--font-outfit), "Outfit", "Segoe UI", sans-serif',
 };
 
 const bodyFontStacks: Record<BodyFontKey, string> = {
   inter: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
   manrope: 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
-  "dm-sans": 'var(--font-dm-sans), "DM Sans", "Segoe UI", sans-serif',
-  "general-sans": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
+  outfit: 'var(--font-outfit), "Outfit", "Segoe UI", sans-serif',
 };
 
 const fontPairings: Record<
   FontPairingPreset,
   { headingFont: HeadingFontKey; bodyFont: BodyFontKey }
 > = {
-  "dm-sans-editorial": { headingFont: "dm-sans", bodyFont: "inter" },
-  "general-sans-soft": { headingFont: "general-sans", bodyFont: "inter" },
-  "inter-compact": { headingFont: "inter", bodyFont: "inter" },
-  "manrope-display": { headingFont: "manrope", bodyFont: "inter" },
+  "inter-neutral": { headingFont: "inter", bodyFont: "inter" },
+  "manrope-refined": { headingFont: "manrope", bodyFont: "inter" },
+  "outfit-modern": { headingFont: "outfit", bodyFont: "inter" },
 };
 
 const radiusMap: Record<RadiusStyle, string> = {
@@ -170,30 +167,38 @@ const legacyHeadingFontMap: Record<string, HeadingFontKey> = {
   "display-serif": "manrope",
   "modern-sans": "inter",
   "gothic-sans": "manrope",
-  "editorial-serif": "dm-sans",
+  "editorial-serif": "outfit",
   "mono-display": "inter",
   satoshi: "manrope",
+  "dm-sans": "outfit",
+  "general-sans": "outfit",
 };
 
 const legacyBodyFontMap: Record<string, BodyFontKey> = {
   "clean-sans": "inter",
   "neutral-sans": "manrope",
-  "editorial-sans": "dm-sans",
+  "editorial-sans": "outfit",
   "mono-body": "inter",
   satoshi: "inter",
+  "dm-sans": "inter",
+  "general-sans": "inter",
 };
 
 const legacyFontPairingMap: Record<string, FontPairingPreset> = {
-  "elegant-editorial": "dm-sans-editorial",
-  "bold-modern": "inter-compact",
-  "minimal-sans": "inter-compact",
-  "edgy-clean": "manrope-display",
-  "premium-editorial": "manrope-display",
-  "inter-balanced": "inter-compact",
-  "manrope-refined": "manrope-display",
-  "manrope-impact": "manrope-display",
-  "general-clean": "general-sans-soft",
-  "satoshi-neutral": "manrope-display",
+  "elegant-editorial": "outfit-modern",
+  "bold-modern": "inter-neutral",
+  "minimal-sans": "inter-neutral",
+  "edgy-clean": "manrope-refined",
+  "premium-editorial": "manrope-refined",
+  "inter-balanced": "inter-neutral",
+  "manrope-refined": "manrope-refined",
+  "manrope-impact": "manrope-refined",
+  "general-clean": "outfit-modern",
+  "satoshi-neutral": "outfit-modern",
+  "dm-sans-editorial": "outfit-modern",
+  "general-sans-soft": "outfit-modern",
+  "inter-compact": "inter-neutral",
+  "manrope-display": "manrope-refined",
 };
 
 const themeRecipes: Record<

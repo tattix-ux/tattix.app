@@ -376,7 +376,7 @@ export async function ensureArtistForUser(user: User) {
       card_opacity: 0.78,
       heading_font: "manrope",
       body_font: "inter",
-      font_pairing_preset: "inter-compact",
+      font_pairing_preset: "inter-neutral",
       radius_style: "large",
       theme_mode: "dark",
       custom_welcome_title: null,

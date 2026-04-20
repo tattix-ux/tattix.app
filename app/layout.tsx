@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Inter, Manrope } from "next/font/google";
+import { Inter, Manrope, Outfit } from "next/font/google";
 import { AuthStateListener } from "@/components/auth/auth-state-listener";
 import "./globals.css";
 
@@ -15,9 +15,9 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -44,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full antialiased ${inter.variable} ${manrope.variable} ${dmSans.variable}`}
+      className={`h-full antialiased ${inter.variable} ${manrope.variable} ${outfit.variable}`}
       style={
         {
           "--font-body": 'var(--font-inter), "Inter", "Segoe UI", sans-serif',

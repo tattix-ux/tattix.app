@@ -35,10 +35,27 @@ const backgroundGradientPresets = [
   { key: "gold-fade", label: "Gold fade", start: "#2b1c16", end: "#0e0b0a" },
 ] as const;
 const fontOptions = [
-  { value: "inter", labelTr: "Inter", labelEn: "Inter" },
-  { value: "manrope", labelTr: "Manrope", labelEn: "Manrope" },
-  { value: "dm-sans", labelTr: "DM Sans", labelEn: "DM Sans" },
-  { value: "general-sans", labelTr: "General Sans", labelEn: "General Sans" },
+  {
+    value: "inter",
+    labelTr: "Inter",
+    labelEn: "Inter",
+    helperTr: "En güvenli seçim",
+    helperEn: "Safest choice",
+  },
+  {
+    value: "manrope",
+    labelTr: "Manrope",
+    labelEn: "Manrope",
+    helperTr: "Daha rafine görünüm",
+    helperEn: "More refined look",
+  },
+  {
+    value: "outfit",
+    labelTr: "Outfit",
+    labelEn: "Outfit",
+    helperTr: "Daha modern görünüm",
+    helperEn: "More modern look",
+  },
 ] as const;
 
 const quickCustomPresets = [
@@ -51,22 +68,19 @@ const quickCustomPresets = [
 const headingPreviewFonts = {
   inter: '"Inter", "Helvetica Neue", sans-serif',
   manrope: '"Manrope", "Inter", sans-serif',
-  "dm-sans": '"DM Sans", "Inter", sans-serif',
-  "general-sans": '"Manrope", "Inter", sans-serif',
+  outfit: '"Outfit", "Inter", sans-serif',
 } as const;
 
 const previewHeadingFontMap = {
   inter: headingPreviewFonts.inter,
   manrope: headingPreviewFonts.manrope,
-  "dm-sans": headingPreviewFonts["dm-sans"],
-  "general-sans": headingPreviewFonts["general-sans"],
+  outfit: headingPreviewFonts.outfit,
 } as const;
 
 const previewBodyFonts = {
   inter: '"Inter", "Helvetica Neue", sans-serif',
   manrope: '"Manrope", "Inter", sans-serif',
-  "dm-sans": '"DM Sans", "Inter", sans-serif',
-  "general-sans": '"Manrope", "Inter", sans-serif',
+  outfit: '"Outfit", "Inter", sans-serif',
 } as const;
 
 function ThemeSelectionBadge({ label }: { label: string }) {
@@ -574,21 +588,17 @@ export function CustomizePageForm({
         };
 
   const unifiedFontMap = {
-    inter: { headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-compact" },
-    manrope: { headingFont: "manrope", bodyFont: "inter", fontPairingPreset: "manrope-display" },
-    "dm-sans": { headingFont: "dm-sans", bodyFont: "inter", fontPairingPreset: "dm-sans-editorial" },
-    "general-sans": { headingFont: "general-sans", bodyFont: "inter", fontPairingPreset: "general-sans-soft" },
+    inter: { headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-neutral" },
+    manrope: { headingFont: "manrope", bodyFont: "inter", fontPairingPreset: "manrope-refined" },
+    outfit: { headingFont: "outfit", bodyFont: "inter", fontPairingPreset: "outfit-modern" },
   } as const;
 
   const inferFontStyle = (headingFont: string) => {
     if (headingFont === "manrope") {
       return "manrope";
     }
-    if (headingFont === "dm-sans") {
-      return "dm-sans";
-    }
-    if (headingFont === "general-sans") {
-      return "general-sans";
+    if (headingFont === "outfit" || headingFont === "dm-sans" || headingFont === "general-sans") {
+      return "outfit";
     }
     return "inter";
   };
@@ -1303,7 +1313,7 @@ export function CustomizePageForm({
                             <h3 className="text-sm font-medium text-white">{copy.fonts}</h3>
                             <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.fontsDescription}</p>
                           </div>
-                          <div className="grid gap-3 md:grid-cols-3">
+                          <div className="grid gap-4 md:grid-cols-3">
                             {fontOptions.map((option) => {
                               const active = currentFontStyle === option.value;
                               return (
@@ -1311,40 +1321,49 @@ export function CustomizePageForm({
                                   key={option.value}
                                   type="button"
                                   onClick={() => setFontStyle(option.value)}
+                                  aria-pressed={active}
                                   className={cn(
-                                    "rounded-[18px] border px-4 py-4 text-left transition",
+                                    "group relative overflow-hidden rounded-[24px] border px-5 py-5 text-left transition duration-200",
                                     active
-                                      ? "border-[var(--accent)]/28 bg-[var(--accent)]/8 shadow-[0_8px_20px_rgba(0,0,0,0.10)]"
-                                      : "border-white/8 bg-white/[0.03] hover:border-white/14 hover:bg-white/[0.045]",
+                                      ? "border-[var(--accent)] bg-[var(--accent)]/12 shadow-[0_14px_32px_rgba(0,0,0,0.18)] ring-1 ring-[var(--accent)]/35"
+                                      : "border-white/8 bg-white/[0.03] hover:border-white/16 hover:bg-white/[0.05]",
                                   )}
                                 >
-                                  <p className="text-sm font-medium text-white">
-                                    {locale === "tr" ? option.labelTr : option.labelEn}
-                                  </p>
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="space-y-1">
+                                      <p className="text-base font-semibold text-white">
+                                        {locale === "tr" ? option.labelTr : option.labelEn}
+                                      </p>
+                                      <p className="text-xs font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]">
+                                        {locale === "tr" ? option.helperTr : option.helperEn}
+                                      </p>
+                                    </div>
+                                    {active ? (
+                                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/45 bg-[var(--accent)]/18 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+                                        <Check className="size-3.5" />
+                                        {locale === "tr" ? "Seçili" : "Selected"}
+                                      </span>
+                                    ) : (
+                                      <span className="mt-0.5 inline-flex size-7 items-center justify-center rounded-full border border-white/10 bg-black/20 text-white/40 transition group-hover:border-white/16 group-hover:text-white/55">
+                                        <Check className="size-3.5" />
+                                      </span>
+                                    )}
+                                  </div>
                                   <p
-                                    className="mt-2 text-lg leading-none"
+                                    className="mt-6 text-[1.7rem] font-semibold leading-none tracking-[-0.03em] text-white sm:text-[1.9rem]"
                                     style={{
                                       fontFamily: headingPreviewFonts[option.value],
                                     }}
                                   >
                                     Aklında ne var?
                                   </p>
-                                  <p className="mt-2 text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
-                                    {option.value === "manrope"
-                                      ? locale === "tr"
-                                        ? "Rafine ve premium"
-                                        : "Refined and premium"
-                                      : option.value === "dm-sans"
-                                        ? locale === "tr"
-                                          ? "Net ve yapısal"
-                                          : "Crisp and structured"
-                                        : option.value === "general-sans"
-                                          ? locale === "tr"
-                                            ? "Sakin ve çağdaş"
-                                            : "Calm and contemporary"
-                                          : locale === "tr"
-                                            ? "Temiz ve dengeli"
-                                            : "Clean and balanced"}
+                                  <p
+                                    className="mt-3 text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]"
+                                    style={{
+                                      fontFamily: previewBodyFonts[option.value],
+                                    }}
+                                  >
+                                    Kısa bir açıklama yaz ve referans görsel ekle.
                                   </p>
                                 </button>
                               );
