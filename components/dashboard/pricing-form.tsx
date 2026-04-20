@@ -76,7 +76,7 @@ function getText(locale: PublicLocale) {
       sizeSeriesTitle: "Aynı tasarım büyüdükçe fiyatın nasıl değişiyor?",
       sizeSeriesDescription: "Burada tasarım aynı kalır; sadece boyut değişir.",
       specialCasesTitle: "Farklı işleri karşılaştıralım",
-      caseTitle: "Müşteriye bu iş için hangi fiyat aralığı gösterilsin?",
+      caseTitle: "",
       largeAreasChoice: "Bu adımı açmak ister misin?",
       largeAreasChoiceDescription: "İstersen büyük alan kaplayan işler için de ayrı başlangıç fiyatları belirleyebilirsin.",
       phaseFiveNote: "Bu adım isteğe bağlıdır. Büyük alan çalışmaları almıyorsan boş bırakabilirsin.",
@@ -88,8 +88,8 @@ function getText(locale: PublicLocale) {
       wideAreaCasesTitle: "Çok geniş alan örnekleri",
       wideAreaCaseTitle: "Müşteriye bu işler için hangi başlangıç fiyatı gösterilsin?",
       startingFrom: "Başlangıç fiyatı",
-      min: "Alt sınır",
-      max: "Üst sınır",
+      min: "Fiyat alt sınırı",
+      max: "Fiyat üst sınırı",
       placeholderAsset: "Örnek görsel alanı",
       placeholderHelp: "Görseli sonra ekleyebilirsin.",
       reviewTitle: "Bu tahmin sana uygun mu?",
@@ -149,7 +149,7 @@ function getText(locale: PublicLocale) {
     sizeSeriesDescription: "The design stays the same here. Only the size changes.",
     specialCasesTitle: "Let’s look at different cases",
     specialCasesDescription: "These examples help us understand your pricing in special situations.",
-    caseTitle: "What price range should the client see for this piece?",
+    caseTitle: "",
     largeAreasChoice: "Do you want to enable this step?",
     largeAreasChoiceDescription: "If you want, we can also set starting levels for bigger pieces.",
     largeAreasOptions: {
@@ -160,8 +160,8 @@ function getText(locale: PublicLocale) {
     wideAreaCasesTitle: "Very wide coverage examples",
     wideAreaCaseTitle: "What starting level should the client see for this kind of piece?",
     startingFrom: "Starting level",
-    min: "Min",
-    max: "Max",
+    min: "Price floor",
+    max: "Price ceiling",
     placeholderAsset: "Example image area",
     placeholderHelp: "You can add the real image later.",
     reviewTitle: "Does this estimate feel right?",
@@ -839,9 +839,6 @@ export function PricingForm({
                               <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                                 {item.metaLine[locale]}
                               </p>
-                              <p className="pt-0.5 text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
-                                {copy.caseTitle}
-                              </p>
                             </div>
                             <div className="grid gap-3 sm:grid-cols-2">
                               <CurrencyInput
@@ -869,9 +866,6 @@ export function PricingForm({
                                 normalizeOnBlur
                               />
                             </div>
-                            <p className="border-t border-white/8 pt-3 text-base font-semibold text-[color:color-mix(in_srgb,var(--foreground-muted)_96%,white_10%)]">
-                              {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
-                            </p>
                           </div>
                         </div>
                       );
@@ -910,9 +904,6 @@ export function PricingForm({
                             <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                               {item.metaLine[locale]}
                             </p>
-                            <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
-                              {copy.caseTitle}
-                            </p>
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">
                             <CurrencyInput
@@ -940,9 +931,6 @@ export function PricingForm({
                               normalizeOnBlur
                             />
                           </div>
-                          <p className="border-t border-white/8 pt-3 text-base font-semibold text-[color:color-mix(in_srgb,var(--foreground-muted)_96%,white_10%)]">
-                            {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
-                          </p>
                         </div>
                       </div>
                     </div>
@@ -1110,10 +1098,7 @@ export function PricingForm({
                                 <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                                   {item.metaLine[locale]}
                                 </p>
-                                <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
-                                  {copy.caseTitle}
-                                </p>
-                              </div>
+                                </div>
                               <div className="grid gap-3 sm:grid-cols-2">
                                 <CurrencyInput
                                   value={currentCase.min}
@@ -1140,9 +1125,6 @@ export function PricingForm({
                                   normalizeOnBlur
                                 />
                               </div>
-                              <p className="border-t border-white/8 pt-3 text-base font-semibold text-[color:color-mix(in_srgb,var(--foreground-muted)_96%,white_10%)]">
-                                {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
-                              </p>
                             </div>
                           </div>
                         </div>
