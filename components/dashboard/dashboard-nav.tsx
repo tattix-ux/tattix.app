@@ -83,8 +83,8 @@ export function DashboardNav({
             className={cn(
               "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3 lg:py-3 lg:text-sm lg:text-left",
               active
-                ? "border-[rgba(247,177,93,0.3)] bg-[linear-gradient(180deg,rgba(247,177,93,0.16),rgba(81,55,41,0.22))] text-white shadow-[0_18px_30px_rgba(0,0,0,0.24)]"
-                : "border-[rgba(214,173,126,0.08)] bg-[linear-gradient(180deg,rgba(255,243,227,0.022),rgba(255,243,227,0.01))] text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_6%)] hover:border-[rgba(214,173,126,0.14)] hover:bg-[linear-gradient(180deg,rgba(255,243,227,0.034),rgba(255,243,227,0.016))] hover:text-white",
+                ? "border-[rgba(247,177,93,0.28)] bg-[linear-gradient(180deg,rgba(255,247,236,0.06),rgba(255,244,228,0.025))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_14px_24px_rgba(0,0,0,0.2)]"
+                : "border-[rgba(214,173,126,0.08)] bg-[linear-gradient(180deg,rgba(255,244,228,0.03),rgba(255,244,228,0.014))] text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_6%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.018)] hover:border-[rgba(214,173,126,0.14)] hover:bg-[linear-gradient(180deg,rgba(255,244,228,0.042),rgba(255,244,228,0.02))] hover:text-white",
             )}
           >
             <Icon className="size-4" />
