@@ -247,7 +247,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: coverUpImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
-    title: { tr: "Küçük cover-up", en: "Small cover-up" },
+    title: { tr: "7 cm küçük cover-up", en: "7 cm small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · küçük dövme kapatma",
       en: "Forearm · mostly black · covering a small existing tattoo",
@@ -330,7 +330,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: coverUpImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
-    title: { tr: "Küçük cover-up", en: "Small cover-up" },
+    title: { tr: "8 cm küçük cover-up", en: "8 cm small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · kapatma",
       en: "Forearm · mostly black · covering a small tattoo",
