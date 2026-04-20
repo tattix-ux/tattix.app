@@ -381,7 +381,7 @@ export function buildCategoryAnchors(
 export function buildCustomRequestSizeFactor(
   requestType: RequestTypeValue,
   sizeCm: number,
-  profile: ArtistPricingV2Profile,
+  profile: Pick<ArtistPricingV2Profile, "inferredSizeProfile">,
 ) {
   // Default job-type behavior stays in place, but the artist's learned size curve
   // gently pulls the final factor toward their own pricing character.
@@ -419,7 +419,7 @@ export function buildCustomRequestSizeFactor(
 export function buildFeaturedDesignSizeFactor(
   sizeCm: number,
   referenceSizeCm: number,
-  profile: ArtistPricingV2Profile,
+  profile: Pick<ArtistPricingV2Profile, "inferredSizeProfile">,
   mode: "size_adjusted" | "size_and_placement_adjusted" | "starting_from",
 ) {
   const ratio = safeRatio(sizeCm, Math.max(referenceSizeCm, 2), 1);
@@ -464,7 +464,7 @@ export function applyMinimumPriceTension(
   minimumJobPrice: number,
   requestType: RequestTypeValue,
   sizeCm: number,
-  profile: ArtistPricingV2Profile,
+  profile: Pick<ArtistPricingV2Profile, "inferredSizeProfile">,
 ) {
   // Small jobs should feel the artist's minimum price more strongly,
   // then release that pressure as size grows.

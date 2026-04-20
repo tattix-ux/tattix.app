@@ -498,6 +498,7 @@ export function PricingForm({
         ...item,
         estimate: estimateCustomRequestPrice(
           {
+            areaScope: "standard_piece",
             requestType: item.requestType,
             placement: item.placementDetail ?? getPlacementDetail(item.placementBucket),
             sizeCm: item.referenceSizeCm,
@@ -505,6 +506,7 @@ export function PricingForm({
             workStyle: item.workStyle,
             hasReferenceImage: true,
             hasReferenceNote: false,
+            coverUp: item.requestType === "cover_up",
           },
           {
             locale,

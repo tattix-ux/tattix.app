@@ -1,14 +1,17 @@
 import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type {
+  AreaScopeValue,
   ArtistFeaturedDesign,
   ArtistPricingRules,
   ArtistPricingV2Profile,
   ColorModeValue,
   EstimateMode,
+  LargeAreaCoverageValue,
   PricingSourceValue,
   RequestTypeValue,
   SubmissionRequest,
+  WideAreaTargetValue,
   WorkStyleValue,
 } from "@/lib/types";
 
@@ -25,13 +28,17 @@ export type PricingV2Output = {
 };
 
 export type CustomRequestPricingInput = {
-  requestType: RequestTypeValue;
+  areaScope: AreaScopeValue;
+  requestType: RequestTypeValue | null;
   placement: BodyAreaDetailValue;
+  largeAreaCoverage?: LargeAreaCoverageValue | null;
+  wideAreaTarget?: WideAreaTargetValue | null;
   sizeCm: number;
   colorMode: ColorModeValue;
   workStyle: WorkStyleValue;
   hasReferenceImage: boolean;
   hasReferenceNote: boolean;
+  coverUp?: boolean | null;
 };
 
 export type FeaturedDesignPricingInput = {

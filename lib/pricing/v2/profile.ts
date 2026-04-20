@@ -3,6 +3,7 @@ import type {
   ArtistPricingV2Profile,
   LeadPreferenceValue,
   PricingV2CaseAnswer,
+  PricingV2SpecialCaseAdjustments,
   PricingV2WideAreaAnswer,
   PricingV2WorkStyleSensitivity,
 } from "@/lib/types";
@@ -15,8 +16,9 @@ import {
   PRICING_V2_WIDE_AREA_CASE_IDS,
   PRICING_V2_WIDE_AREA_CASES,
 } from "./onboarding-cases";
-import { midpoint, roundToFriendlyPrice } from "./helpers";
+import { clamp, midpoint, roundToFriendlyPrice } from "./helpers";
 import {
+  buildCustomRequestSizeFactor,
   buildCategoryAnchors,
   deriveReviewAdjustments,
   deriveSizeProfileFromOnboarding,
@@ -43,6 +45,20 @@ function getDefaultWorkStyleSensitivity(): PricingV2WorkStyleSensitivity {
 
 function getDefaultLeadPreference(): LeadPreferenceValue {
   return "balanced";
+}
+
+function getCaseCenter(
+  cases: Array<{ id: string; min: number; max: number }>,
+  id: string,
+  fallback: number,
+) {
+  const found = cases.find((item) => item.id === id);
+
+  if (!found) {
+    return fallback;
+  }
+
+  return midpoint(found.min, found.max);
 }
 
 function buildRoundedBand(center: number, spreadRatio: number, floor: number) {
@@ -147,6 +163,80 @@ function getRoundedStartingFrom(
   return roundToFriendlyPrice(found?.startingFrom ?? fallback, "up");
 }
 
+function deriveSpecialCaseAdjustments(
+  onboardingCases: Array<{ id: string; min: number; max: number }>,
+  minimumJobPrice: number,
+  categoryAnchors: ArtistPricingV2Profile["categoryAnchors"],
+  inferredSizeProfile: ArtistPricingV2Profile["inferredSizeProfile"],
+): PricingV2SpecialCaseAdjustments {
+  const sizeContext = { inferredSizeProfile };
+  const baselineSingle12 = Math.max(
+    minimumJobPrice,
+    categoryAnchors.singleObject * buildCustomRequestSizeFactor("single_object", 12, sizeContext).factor,
+  );
+  const observedSingleFigure = getCaseCenter(
+    onboardingCases,
+    "single-figure-12cm-upper-arm",
+    baselineSingle12 * 1.16,
+  );
+  const shadedPlusGreyRatio = observedSingleFigure / Math.max(baselineSingle12, 1);
+  const blackGreyFactor = clamp(1 + (shadedPlusGreyRatio - 1) * 0.24, 1.03, 1.11);
+  const shadedDetailedFactor = clamp(shadedPlusGreyRatio / blackGreyFactor, 1.02, 1.22);
+
+  const baselineSingle11 = Math.max(
+    minimumJobPrice,
+    categoryAnchors.singleObject * buildCustomRequestSizeFactor("single_object", 11, sizeContext).factor,
+  );
+  const observedColorPiece = getCaseCenter(
+    onboardingCases,
+    "medium-color-piece",
+    baselineSingle11 * shadedDetailedFactor * 1.1,
+  );
+  const fullColorFactor = clamp(
+    observedColorPiece / Math.max(baselineSingle11 * shadedDetailedFactor, 1),
+    Math.max(blackGreyFactor + 0.04, 1.08),
+    1.24,
+  );
+
+  const baselinePrecisionPiece = Math.max(
+    minimumJobPrice,
+    categoryAnchors.multiElement * buildCustomRequestSizeFactor("multi_element", 8, sizeContext).factor * 1.16,
+  );
+  const observedPrecisionPiece = getCaseCenter(
+    onboardingCases,
+    "ornamental-small-hard",
+    baselinePrecisionPiece * 1.08,
+  );
+  const precisionSymmetricFactor = clamp(
+    observedPrecisionPiece / Math.max(baselinePrecisionPiece, 1),
+    1.02,
+    1.26,
+  );
+
+  const baselineCoverUpComparable = Math.max(
+    minimumJobPrice,
+    categoryAnchors.singleObject * buildCustomRequestSizeFactor("single_object", 7, sizeContext).factor * 1.08,
+  );
+  const observedCoverUpPiece = getCaseCenter(
+    onboardingCases,
+    "small-cover-up",
+    baselineCoverUpComparable * 1.12,
+  );
+  const coverUpPremiumFactor = clamp(
+    observedCoverUpPiece / Math.max(baselineCoverUpComparable, 1),
+    1.04,
+    1.28,
+  );
+
+  return {
+    blackGreyFactor,
+    fullColorFactor,
+    shadedDetailedFactor,
+    precisionSymmetricFactor,
+    coverUpPremiumFactor,
+  };
+}
+
 type SuggestedLargeAreaInput = {
   minimumJobPrice: number;
   onboardingCases: Array<{ id: string; min: number; max: number }>;
@@ -235,6 +325,12 @@ export function buildPricingV2Profile(
     roundToFriendlyPrice(input.textStartingPrice, "up"),
     reviewAdjustments,
   );
+  const specialCaseAdjustments = deriveSpecialCaseAdjustments(
+    onboardingCases,
+    minimumJobPrice,
+    categoryAnchors,
+    inferredSizeProfile,
+  );
   const largeAreaCases = (input.largeAreaCases ?? []).map((item) => ({
     id: item.id,
     min: roundToFriendlyPrice(Math.min(item.min, item.max), "down"),
@@ -264,6 +360,7 @@ export function buildPricingV2Profile(
     inferredSizeProfile,
     reviewAdjustments,
     categoryAnchors,
+    specialCaseAdjustments,
     workStyleSensitivity: getDefaultWorkStyleSensitivity(),
     onboardingCompleted: true,
   };

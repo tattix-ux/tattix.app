@@ -1,52 +1,122 @@
 import type { RequestTypeValue } from "@/lib/constants/options";
-import type { EstimateMode, WorkStyleSensitivityValue } from "@/lib/types";
-import { clamp, roundToFriendlyPrice } from "./helpers";
+import type { AreaScopeValue, EstimateMode } from "@/lib/types";
+import { clamp, midpoint, roundToFriendlyPrice } from "./helpers";
 import { buildDisplayEstimateLabel, buildEstimateSummaryText } from "./output";
 import { resolvePlacementBucket } from "./placement";
-import { getArtistPricingV2Profile, getLeadPreferenceAdjustment } from "./profile";
+import { getArtistPricingV2Profile } from "./profile";
 import { applyMinimumPriceTension, buildCustomRequestSizeFactor } from "./size";
 import type { CustomRequestPricingInput, PricingV2Context, PricingV2Output } from "./types";
 
-function getPlacementFactor(bucket: ReturnType<typeof resolvePlacementBucket>) {
+type PriceRangeLike = {
+  min: number;
+  max: number;
+};
+
+function getPlacementFactor(
+  bucket: ReturnType<typeof resolvePlacementBucket>,
+  intensity = 1,
+) {
   if (bucket === "hard") {
-    return 1.16;
+    return 1 + 0.16 * intensity;
   }
 
   if (bucket === "standard") {
-    return 1.08;
+    return 1 + 0.08 * intensity;
   }
 
   return 1;
 }
 
-function getColorFactor(
-  requestType: RequestTypeValue,
+function getConcreteColorFactor(
   colorMode: CustomRequestPricingInput["colorMode"],
-  preference: PricingV2Context["profile"]["colorImpactPreference"],
+  input: Pick<CustomRequestPricingInput, "requestType">,
+  context: Pick<PricingV2Context["profile"], "specialCaseAdjustments">,
+  intensity = 1,
 ) {
   const base =
-    preference === "low"
-      ? { "black-only": 1, "black-grey": 1.04, "full-color": 1.08 }
-      : preference === "medium"
-        ? { "black-only": 1, "black-grey": 1.08, "full-color": 1.16 }
-        : { "black-only": 1, "black-grey": 1.12, "full-color": 1.24 };
+    colorMode === "black-only"
+      ? 1
+      : colorMode === "black-grey"
+        ? context.specialCaseAdjustments.blackGreyFactor
+        : context.specialCaseAdjustments.fullColorFactor;
+  const requestWeight =
+    input.requestType === "text"
+      ? 0.45
+      : input.requestType === "mini_simple"
+        ? 0.7
+        : input.requestType === "cover_up"
+          ? 0.88
+          : 1;
 
-  const requestFactor = base[colorMode];
+  return 1 + (base - 1) * clamp(intensity * requestWeight, 0.25, 1);
+}
+
+function getWorkStyleWeight(
+  requestType: RequestTypeValue | null,
+  workStyle: CustomRequestPricingInput["workStyle"],
+) {
+  if (workStyle === "unsure") {
+    return 0.32;
+  }
+
+  if (!requestType) {
+    return 1;
+  }
 
   if (requestType === "text") {
-    return 1 + (requestFactor - 1) * 0.45;
+    return workStyle === "shaded_detailed" ? 0.34 : 0.78;
   }
 
   if (requestType === "mini_simple") {
-    return 1 + (requestFactor - 1) * 0.72;
+    return workStyle === "shaded_detailed" ? 0.56 : 0.78;
   }
 
-  return requestFactor;
+  if (requestType === "cover_up") {
+    return workStyle === "clean_line" ? 0.4 : 0.7;
+  }
+
+  if (requestType === "multi_element") {
+    return workStyle === "clean_line" ? 0.72 : 0.94;
+  }
+
+  return 1;
 }
 
-function getMode(requestType: RequestTypeValue, hasReferenceSignal: boolean): EstimateMode {
+function getConcreteWorkStyleFactor(
+  workStyle: CustomRequestPricingInput["workStyle"],
+  input: Pick<CustomRequestPricingInput, "requestType">,
+  context: Pick<PricingV2Context["profile"], "specialCaseAdjustments">,
+  intensity = 1,
+) {
+  if (workStyle === "clean_line") {
+    const softening = input.requestType === "multi_element" || input.requestType === "cover_up" ? 0.025 : 0.01;
+    return 1 - softening * intensity;
+  }
+
+  if (workStyle === "unsure") {
+    return 1.02;
+  }
+
+  const base =
+    workStyle === "precision_symmetric"
+      ? context.specialCaseAdjustments.precisionSymmetricFactor
+      : context.specialCaseAdjustments.shadedDetailedFactor;
+  const requestWeight = getWorkStyleWeight(input.requestType, workStyle);
+
+  return 1 + (base - 1) * clamp(intensity * requestWeight, 0.22, 1);
+}
+
+function getStandardPieceMode(
+  requestType: RequestTypeValue,
+  hasReferenceSignal: boolean,
+  isCautious: boolean,
+): EstimateMode {
   if (requestType === "cover_up") {
     return "starting_from";
+  }
+
+  if (isCautious) {
+    return "soft_range";
   }
 
   if (requestType === "multi_element" || requestType === "unsure") {
@@ -60,81 +130,12 @@ function getMode(requestType: RequestTypeValue, hasReferenceSignal: boolean): Es
   return "range";
 }
 
-function getWorkStyleSensitivityFactor(
-  workStyle: CustomRequestPricingInput["workStyle"],
-  sensitivity: WorkStyleSensitivityValue,
-) {
-  if (workStyle === "clean_line") {
-    if (sensitivity === "high") return 1.08;
-    if (sensitivity === "medium") return 1.04;
-    return 1;
-  }
-
-  if (workStyle === "shaded_detailed") {
-    if (sensitivity === "high") return 1.16;
-    if (sensitivity === "medium") return 1.1;
-    return 1.04;
-  }
-
-  if (workStyle === "precision_symmetric") {
-    if (sensitivity === "high") return 1.17;
-    if (sensitivity === "medium") return 1.11;
-    return 1.05;
-  }
-
-  return 1.01;
-}
-
-function getWorkStyleRequestWeight(
+function getStandardPieceSpread(
   requestType: RequestTypeValue,
-  workStyle: CustomRequestPricingInput["workStyle"],
-) {
-  if (workStyle === "unsure") {
-    return 0.35;
-  }
-
-  if (requestType === "text") {
-    return workStyle === "shaded_detailed" ? 0.35 : 0.82;
-  }
-
-  if (requestType === "mini_simple") {
-    return workStyle === "shaded_detailed" ? 0.58 : 0.8;
-  }
-
-  if (requestType === "cover_up") {
-    return workStyle === "clean_line" ? 0.42 : 0.68;
-  }
-
-  if (requestType === "multi_element") {
-    return workStyle === "clean_line" ? 0.72 : 1;
-  }
-
-  return 1;
-}
-
-function getWorkStyleFactor(
-  input: Pick<CustomRequestPricingInput, "requestType" | "workStyle">,
-  profile: PricingV2Context["profile"],
-) {
-  const sensitivity =
-    input.workStyle === "clean_line"
-      ? profile.workStyleSensitivity.cleanLine
-      : input.workStyle === "shaded_detailed"
-        ? profile.workStyleSensitivity.shadedDetailed
-        : input.workStyle === "precision_symmetric"
-          ? profile.workStyleSensitivity.precisionSymmetric
-          : "medium";
-  const baseFactor = getWorkStyleSensitivityFactor(input.workStyle, sensitivity);
-  const weight = getWorkStyleRequestWeight(input.requestType, input.workStyle);
-
-  return 1 + (baseFactor - 1) * weight;
-}
-
-function getSpread(
-  requestType: RequestTypeValue,
-  mode: EstimateMode,
   input: CustomRequestPricingInput,
   bucket: ReturnType<typeof resolvePlacementBucket>,
+  mode: EstimateMode,
+  isCautious: boolean,
 ) {
   let spread =
     requestType === "text"
@@ -146,8 +147,8 @@ function getSpread(
           : requestType === "multi_element"
             ? 0.22
             : requestType === "cover_up"
-              ? 0.12
-              : 0.2;
+              ? 0.14
+              : 0.18;
 
   if (!input.hasReferenceImage && !input.hasReferenceNote) {
     spread += 0.02;
@@ -165,96 +166,30 @@ function getSpread(
     spread += 0.02;
   }
 
-  return clamp(spread, 0.08, 0.28);
-}
-
-export function estimateCustomRequestPrice(
-  input: CustomRequestPricingInput,
-  context: PricingV2Context,
-): PricingV2Output {
-  const profile = context.profile ?? getArtistPricingV2Profile(context.pricingRules);
-  const categoryAnchor =
-    input.requestType === "text"
-      ? profile.categoryAnchors.text
-      : input.requestType === "mini_simple"
-        ? profile.categoryAnchors.miniSimple
-        : input.requestType === "single_object"
-          ? profile.categoryAnchors.singleObject
-          : input.requestType === "multi_element"
-            ? profile.categoryAnchors.multiElement
-            : input.requestType === "cover_up"
-              ? profile.categoryAnchors.coverUp
-              : profile.categoryAnchors.unsure;
-  const sizeFactorResult = buildCustomRequestSizeFactor(input.requestType, input.sizeCm, profile);
-  const placementBucket = resolvePlacementBucket(input.placement);
-  const placementFactor = getPlacementFactor(placementBucket);
-  const colorFactor = getColorFactor(input.requestType, input.colorMode, profile.colorImpactPreference);
-  const workStyleFactor = getWorkStyleFactor(input, profile);
-  const coverUpFactor =
-    input.requestType === "cover_up"
-      ? profile.coverUpImpactPreference === "high"
-        ? 1.22
-        : profile.coverUpImpactPreference === "medium"
-          ? 1.12
-          : 1.04
-      : 1;
-  const leadPreference = getLeadPreferenceAdjustment(profile.leadPreference);
-  const rawCenter = Math.max(
-    profile.minimumJobPrice,
-    categoryAnchor *
-      sizeFactorResult.factor *
-      placementFactor *
-      colorFactor *
-      workStyleFactor *
-      coverUpFactor *
-      leadPreference.center,
-  );
-  const minimumTension = applyMinimumPriceTension(
-    rawCenter,
-    profile.minimumJobPrice,
-    input.requestType,
-    input.sizeCm,
-    profile,
-  );
-  const center = minimumTension.adjustedCenter;
-  const hasReferenceSignal = input.hasReferenceImage || input.hasReferenceNote;
-  const mode = getMode(input.requestType, hasReferenceSignal);
-  const spread = getSpread(input.requestType, mode, input, placementBucket) * leadPreference.spread;
-
-  if (mode === "starting_from") {
-    const minimum = Math.max(
-      roundToFriendlyPrice(center, "up"),
-      roundToFriendlyPrice(profile.minimumJobPrice, "up"),
-    );
-
-    return {
-      mode,
-      min: minimum,
-      max: null,
-      displayLabel: buildDisplayEstimateLabel(minimum, null, mode, context.locale, context.currency),
-      summaryText: buildEstimateSummaryText(mode, "custom_request", context.locale),
-      internalConfidence: 0.48,
-      internalReasoning: [
-        `requestType:${input.requestType}`,
-        `sizeFactor:${sizeFactorResult.factor.toFixed(3)}`,
-        `defaultSizeFactor:${sizeFactorResult.defaultFactor.toFixed(3)}`,
-        `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
-        `placement:${placementBucket}`,
-        `color:${input.colorMode}`,
-        `workStyle:${input.workStyle}`,
-        `workStyleFactor:${workStyleFactor.toFixed(3)}`,
-        `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
-      ],
-    };
+  if (isCautious) {
+    spread += 0.03;
   }
 
+  return clamp(spread, 0.09, 0.3);
+}
+
+function buildRangeOutput(
+  center: number,
+  spread: number,
+  mode: "range" | "soft_range",
+  context: PricingV2Context,
+  minimumFloor: number,
+  confidence: number,
+  internalReasoning: string[],
+): PricingV2Output {
+  const lowerWeight = mode === "soft_range" ? 0.72 : 0.58;
   const minimum = Math.max(
-    roundToFriendlyPrice(center * (1 - spread / (mode === "soft_range" ? 1 : 1.5)), "down"),
-    roundToFriendlyPrice(profile.minimumJobPrice, "up"),
+    roundToFriendlyPrice(center * (1 - spread * lowerWeight), "down"),
+    roundToFriendlyPrice(minimumFloor, "up"),
   );
   const maximum = Math.max(
-    roundToFriendlyPrice(center * (1 + spread), "up"),
     minimum,
+    roundToFriendlyPrice(center * (1 + spread), "up"),
   );
 
   return {
@@ -263,17 +198,469 @@ export function estimateCustomRequestPrice(
     max: maximum,
     displayLabel: buildDisplayEstimateLabel(minimum, maximum, mode, context.locale, context.currency),
     summaryText: buildEstimateSummaryText(mode, "custom_request", context.locale),
-    internalConfidence: mode === "range" ? 0.74 : 0.58,
-    internalReasoning: [
-      `requestType:${input.requestType}`,
-      `sizeFactor:${sizeFactorResult.factor.toFixed(3)}`,
-      `defaultSizeFactor:${sizeFactorResult.defaultFactor.toFixed(3)}`,
-      `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
+    internalConfidence: confidence,
+    internalReasoning,
+  };
+}
+
+function buildStartingFromOutput(
+  startingFrom: number,
+  context: PricingV2Context,
+  minimumFloor: number,
+  confidence: number,
+  internalReasoning: string[],
+): PricingV2Output {
+  const minimum = Math.max(
+    roundToFriendlyPrice(startingFrom, "up"),
+    roundToFriendlyPrice(minimumFloor, "up"),
+  );
+
+  return {
+    mode: "starting_from",
+    min: minimum,
+    max: null,
+    displayLabel: buildDisplayEstimateLabel(minimum, null, "starting_from", context.locale, context.currency),
+    summaryText: buildEstimateSummaryText("starting_from", "custom_request", context.locale),
+    internalConfidence: confidence,
+    internalReasoning,
+  };
+}
+
+function getCaseRange(
+  cases: Array<{ id: string; min: number; max: number }>,
+  id: string,
+  fallback: PriceRangeLike,
+) {
+  const found = cases.find((item) => item.id === id);
+
+  if (!found) {
+    return fallback;
+  }
+
+  return {
+    min: Math.min(found.min, found.max),
+    max: Math.max(found.min, found.max),
+  };
+}
+
+function getWideAreaStartingPoint(
+  cases: Array<{ id: string; startingFrom: number }>,
+  id: string,
+  fallback: number,
+) {
+  const found = cases.find((item) => item.id === id);
+  return found?.startingFrom ?? fallback;
+}
+
+function resolveStandardRequestType(input: CustomRequestPricingInput) {
+  if (input.requestType) {
+    return input.requestType;
+  }
+
+  if (input.coverUp) {
+    return "cover_up";
+  }
+
+  return "single_object";
+}
+
+function resolveLargeAreaCaseId(placement: CustomRequestPricingInput["placement"]) {
+  if (
+    placement.includes("forearm") ||
+    placement.includes("upper-arm") ||
+    placement.includes("wrist") ||
+    placement.includes("hand") ||
+    placement.includes("elbow")
+  ) {
+    return "forearm-large-coverage";
+  }
+
+  if (
+    placement.includes("calf") ||
+    placement.includes("thigh") ||
+    placement.includes("ankle") ||
+    placement.includes("shin") ||
+    placement.includes("knee") ||
+    placement.includes("foot")
+  ) {
+    return "calf-large-coverage";
+  }
+
+  return "chest-large-coverage";
+}
+
+function resolveWideAreaCaseId(target: NonNullable<CustomRequestPricingInput["wideAreaTarget"]>) {
+  switch (target) {
+    case "half_arm":
+      return "half-sleeve";
+    case "full_arm":
+      return "full-sleeve";
+    case "wide_back":
+      return "back-large-coverage";
+    case "wide_chest":
+      return "back-large-coverage";
+    case "half_leg":
+      return "half-sleeve";
+    case "mostly_leg":
+      return "full-sleeve";
+    case "unsure":
+      return "half-sleeve";
+  }
+}
+
+function getLargeAreaCoverageFactor(value: CustomRequestPricingInput["largeAreaCoverage"]) {
+  switch (value) {
+    case "partial":
+      return 0.88;
+    case "almost_full":
+      return 1.14;
+    case "mostly":
+    default:
+      return 1;
+  }
+}
+
+function getWideAreaTargetFactor(target: NonNullable<CustomRequestPricingInput["wideAreaTarget"]>) {
+  switch (target) {
+    case "wide_chest":
+      return 0.88;
+    case "half_leg":
+      return 1.04;
+    case "mostly_leg":
+      return 1.08;
+    case "unsure":
+      return 1.06;
+    default:
+      return 1;
+  }
+}
+
+function isTorsoOrBackPlacement(placement: CustomRequestPricingInput["placement"]) {
+  return (
+    placement.includes("chest") ||
+    placement.includes("rib") ||
+    placement.includes("abdomen") ||
+    placement.includes("stomach") ||
+    placement.includes("back") ||
+    placement.includes("spine") ||
+    placement.includes("shoulder")
+  );
+}
+
+function isLegPlacement(placement: CustomRequestPricingInput["placement"]) {
+  return (
+    placement.includes("thigh") ||
+    placement.includes("calf") ||
+    placement.includes("shin") ||
+    placement.includes("knee") ||
+    placement.includes("ankle") ||
+    placement.includes("foot")
+  );
+}
+
+function resolveWideAreaTargetFromPlacement(placement: CustomRequestPricingInput["placement"]) {
+  if (placement.includes("back") || placement.includes("spine")) {
+    return "wide_back";
+  }
+
+  if (isTorsoOrBackPlacement(placement)) {
+    return "wide_chest";
+  }
+
+  if (isLegPlacement(placement)) {
+    return "half_leg";
+  }
+
+  return "half_arm";
+}
+
+function getMinimumFloorForAreaScope(
+  areaScope: AreaScopeValue,
+  profile: PricingV2Context["profile"],
+) {
+  if (areaScope === "wide_area") {
+    return profile.minimumJobPrice * 2.8;
+  }
+
+  if (areaScope === "large_single_area") {
+    return profile.minimumJobPrice * 1.6;
+  }
+
+  return profile.minimumJobPrice;
+}
+
+function estimateStandardPiecePrice(
+  input: CustomRequestPricingInput,
+  context: PricingV2Context,
+  profile: PricingV2Context["profile"],
+  options?: {
+    cautious?: boolean;
+    reasoningPrefix?: string;
+  },
+): PricingV2Output {
+  const requestType = resolveStandardRequestType(input);
+  const categoryAnchor =
+    requestType === "text"
+      ? profile.categoryAnchors.text
+      : requestType === "mini_simple"
+        ? profile.categoryAnchors.miniSimple
+        : requestType === "single_object"
+          ? profile.categoryAnchors.singleObject
+          : requestType === "multi_element"
+            ? profile.categoryAnchors.multiElement
+            : requestType === "cover_up"
+              ? profile.categoryAnchors.coverUp
+              : profile.categoryAnchors.unsure;
+  const sizeFactorResult = buildCustomRequestSizeFactor(requestType, input.sizeCm, profile);
+  const placementBucket = resolvePlacementBucket(input.placement);
+  const placementFactor = getPlacementFactor(placementBucket);
+  const colorFactor = getConcreteColorFactor(input.colorMode, { requestType }, profile);
+  const workStyleFactor = getConcreteWorkStyleFactor(input.workStyle, { requestType }, profile);
+  const rawCenter = Math.max(
+    profile.minimumJobPrice,
+    categoryAnchor * sizeFactorResult.factor * placementFactor * colorFactor * workStyleFactor,
+  );
+  const minimumTension = applyMinimumPriceTension(
+    rawCenter,
+    profile.minimumJobPrice,
+    requestType,
+    input.sizeCm,
+    profile,
+  );
+  const center = minimumTension.adjustedCenter * (options?.cautious ? 1.03 : 1);
+  const hasReferenceSignal = input.hasReferenceImage || input.hasReferenceNote;
+  const mode = getStandardPieceMode(requestType, hasReferenceSignal, options?.cautious ?? false);
+  const spread = getStandardPieceSpread(
+    requestType,
+    input,
+    placementBucket,
+    mode,
+    options?.cautious ?? false,
+  );
+  const internalReasoning = [
+    options?.reasoningPrefix ?? `areaScope:${input.areaScope}`,
+    `requestType:${requestType}`,
+    `sizeFactor:${sizeFactorResult.factor.toFixed(3)}`,
+    `defaultSizeFactor:${sizeFactorResult.defaultFactor.toFixed(3)}`,
+    `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
+    `placement:${placementBucket}`,
+    `color:${input.colorMode}`,
+    `workStyle:${input.workStyle}`,
+    `colorFactor:${colorFactor.toFixed(3)}`,
+    `workStyleFactor:${workStyleFactor.toFixed(3)}`,
+    `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
+  ];
+
+  if (mode === "starting_from") {
+    return buildStartingFromOutput(
+      center,
+      context,
+      getMinimumFloorForAreaScope(input.areaScope, profile),
+      options?.cautious ? 0.46 : 0.52,
+      internalReasoning,
+    );
+  }
+
+  return buildRangeOutput(
+    center,
+    spread,
+    mode,
+    context,
+    getMinimumFloorForAreaScope(input.areaScope, profile),
+    mode === "range" ? 0.74 : 0.6,
+    internalReasoning,
+  );
+}
+
+function estimateLargeSingleAreaPrice(
+  input: CustomRequestPricingInput,
+  context: PricingV2Context,
+  profile: PricingV2Context["profile"],
+  options?: {
+    reasoningPrefix?: string;
+    extraCaution?: number;
+  },
+): PricingV2Output {
+  const caseId = resolveLargeAreaCaseId(input.placement);
+  const fallbackCenter = profile.minimumJobPrice * 3;
+  const baseRange = getCaseRange(profile.largeAreaCases, caseId, {
+    min: fallbackCenter * 0.88,
+    max: fallbackCenter * 1.18,
+  });
+  const placementBucket = resolvePlacementBucket(input.placement);
+  const coverageFactor = getLargeAreaCoverageFactor(input.largeAreaCoverage);
+  const placementFactor = getPlacementFactor(placementBucket, 0.55);
+  const colorFactor = getConcreteColorFactor(input.colorMode, { requestType: null }, profile, 0.82);
+  const workStyleFactor = getConcreteWorkStyleFactor(input.workStyle, { requestType: null }, profile, 0.9);
+  const coverUpFactor = input.coverUp
+    ? 1 + (profile.specialCaseAdjustments.coverUpPremiumFactor - 1) * 0.55
+    : 1;
+  const center =
+    midpoint(baseRange.min, baseRange.max) *
+    coverageFactor *
+    placementFactor *
+    colorFactor *
+    workStyleFactor *
+    coverUpFactor *
+    (options?.extraCaution ?? 1);
+  const spread = clamp(
+    0.18 +
+      (!input.hasReferenceImage && !input.hasReferenceNote ? 0.03 : 0) +
+      (placementBucket === "hard" ? 0.02 : 0) +
+      (input.largeAreaCoverage === "almost_full" ? 0.02 : 0),
+    0.16,
+    0.32,
+  );
+
+  return buildRangeOutput(
+    center,
+    spread,
+    "soft_range",
+    context,
+    getMinimumFloorForAreaScope("large_single_area", profile),
+    0.54,
+    [
+      options?.reasoningPrefix ?? "areaScope:large_single_area",
+      `largeAreaCase:${caseId}`,
+      `coverage:${input.largeAreaCoverage ?? "mostly"}`,
       `placement:${placementBucket}`,
       `color:${input.colorMode}`,
       `workStyle:${input.workStyle}`,
+      `coverageFactor:${coverageFactor.toFixed(3)}`,
+      `colorFactor:${colorFactor.toFixed(3)}`,
       `workStyleFactor:${workStyleFactor.toFixed(3)}`,
-      `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
+      `coverUpFactor:${coverUpFactor.toFixed(3)}`,
     ],
-  };
+  );
+}
+
+function estimateWideAreaPrice(
+  input: CustomRequestPricingInput,
+  context: PricingV2Context,
+  profile: PricingV2Context["profile"],
+  options?: {
+    reasoningPrefix?: string;
+    extraCaution?: number;
+  },
+): PricingV2Output {
+  const target = input.wideAreaTarget ?? "unsure";
+  const caseId = resolveWideAreaCaseId(target);
+  const halfSleeve = getWideAreaStartingPoint(profile.wideAreaCases, "half-sleeve", profile.minimumJobPrice * 4.8);
+  const fullSleeve = getWideAreaStartingPoint(profile.wideAreaCases, "full-sleeve", profile.minimumJobPrice * 8.4);
+  const backLarge = getWideAreaStartingPoint(
+    profile.wideAreaCases,
+    "back-large-coverage",
+    profile.minimumJobPrice * 7.2,
+  );
+  const baseStartingFrom = getWideAreaStartingPoint(
+    profile.wideAreaCases,
+    caseId,
+    caseId === "full-sleeve" ? fullSleeve : caseId === "back-large-coverage" ? backLarge : halfSleeve,
+  );
+  const targetFactor =
+    target === "unsure"
+      ? roundToFriendlyPrice((halfSleeve + backLarge) / 2, "up") / Math.max(baseStartingFrom, 1)
+      : getWideAreaTargetFactor(target);
+  const colorFactor = getConcreteColorFactor(input.colorMode, { requestType: null }, profile, 0.72);
+  const workStyleFactor = getConcreteWorkStyleFactor(input.workStyle, { requestType: null }, profile, 0.78);
+  const coverUpFactor = input.coverUp
+    ? 1 + (profile.specialCaseAdjustments.coverUpPremiumFactor - 1) * 0.68
+    : 1;
+  const startingFrom =
+    baseStartingFrom *
+    targetFactor *
+    colorFactor *
+    workStyleFactor *
+    coverUpFactor *
+    (options?.extraCaution ?? 1);
+
+  return buildStartingFromOutput(
+    startingFrom,
+    context,
+    getMinimumFloorForAreaScope("wide_area", profile),
+    0.44,
+    [
+      options?.reasoningPrefix ?? "areaScope:wide_area",
+      `wideAreaCase:${caseId}`,
+      `wideAreaTarget:${target}`,
+      `color:${input.colorMode}`,
+      `workStyle:${input.workStyle}`,
+      `targetFactor:${targetFactor.toFixed(3)}`,
+      `colorFactor:${colorFactor.toFixed(3)}`,
+      `workStyleFactor:${workStyleFactor.toFixed(3)}`,
+      `coverUpFactor:${coverUpFactor.toFixed(3)}`,
+    ],
+  );
+}
+
+function estimateUnsurePrice(
+  input: CustomRequestPricingInput,
+  context: PricingV2Context,
+  profile: PricingV2Context["profile"],
+): PricingV2Output {
+  if (input.coverUp || input.requestType === "cover_up") {
+    return estimateStandardPiecePrice(
+      { ...input, requestType: "cover_up" },
+      context,
+      profile,
+      { cautious: true, reasoningPrefix: "areaScope:unsure->cover_up" },
+    );
+  }
+
+  if (input.sizeCm >= 24) {
+    return estimateWideAreaPrice(
+      {
+        ...input,
+        areaScope: "wide_area",
+        requestType: null,
+        wideAreaTarget: resolveWideAreaTargetFromPlacement(input.placement),
+      },
+      context,
+      profile,
+      { reasoningPrefix: "areaScope:unsure->wide_area", extraCaution: 1.04 },
+    );
+  }
+
+  if (input.sizeCm >= 18 || isTorsoOrBackPlacement(input.placement)) {
+    return estimateLargeSingleAreaPrice(
+      {
+        ...input,
+        areaScope: "large_single_area",
+        requestType: null,
+        largeAreaCoverage: input.largeAreaCoverage ?? "mostly",
+      },
+      context,
+      profile,
+      { reasoningPrefix: "areaScope:unsure->large_single_area", extraCaution: 1.03 },
+    );
+  }
+
+  return estimateStandardPiecePrice(
+    {
+      ...input,
+      requestType: input.requestType ?? "unsure",
+    },
+    context,
+    profile,
+    { cautious: true, reasoningPrefix: "areaScope:unsure->standard_piece" },
+  );
+}
+
+export function estimateCustomRequestPrice(
+  input: CustomRequestPricingInput,
+  context: PricingV2Context,
+): PricingV2Output {
+  const profile = context.profile ?? getArtistPricingV2Profile(context.pricingRules);
+
+  switch (input.areaScope) {
+    case "large_single_area":
+      return estimateLargeSingleAreaPrice(input, context, profile);
+    case "wide_area":
+      return estimateWideAreaPrice(input, context, profile);
+    case "unsure":
+      return estimateUnsurePrice(input, context, profile);
+    case "standard_piece":
+    default:
+      return estimateStandardPiecePrice(input, context, profile);
+  }
 }

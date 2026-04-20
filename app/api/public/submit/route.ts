@@ -5,7 +5,7 @@ import { submissionSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { buildSubmissionMessage, buildWhatsAppLink } from "@/lib/messages";
 import { estimateSubmissionPriceV2 } from "@/lib/pricing/v2";
-import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
+import { getAreaScopeLabel, getRequestTypeLabel, getWideAreaTargetLabel } from "@/lib/pricing/v2/output";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SubmissionRequest } from "@/lib/types";
@@ -56,6 +56,12 @@ export async function POST(request: Request) {
   const requestTypeLabel = estimate.requestType
     ? getRequestTypeLabel(estimate.requestType, locale)
     : null;
+  const areaScopeLabel =
+    submission.areaScope === "wide_area" && submission.wideAreaTarget
+      ? getWideAreaTargetLabel(submission.wideAreaTarget, locale)
+      : submission.areaScope
+        ? getAreaScopeLabel(submission.areaScope, locale)
+        : null;
   const message = buildSubmissionMessage(
     submission,
     {
@@ -146,7 +152,7 @@ export async function POST(request: Request) {
     summary:
       estimate.pricingSource === "featured_design" && selectedDesign
         ? selectedDesign.title
-        : requestTypeLabel ?? "",
+        : requestTypeLabel ?? areaScopeLabel ?? "",
     disclaimer: estimate.summaryText,
     whatsappLink: buildWhatsAppLink(artist.profile.whatsappNumber, message),
     message,

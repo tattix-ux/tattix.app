@@ -210,6 +210,13 @@ export type PricingV2CategoryAnchors = {
   coverUp: number;
   unsure: number;
 };
+export type PricingV2SpecialCaseAdjustments = {
+  blackGreyFactor: number;
+  fullColorFactor: number;
+  shadedDetailedFactor: number;
+  precisionSymmetricFactor: number;
+  coverUpPremiumFactor: number;
+};
 export type PricingV2WorkStyleSensitivity = {
   cleanLine: WorkStyleSensitivityValue;
   shadedDetailed: WorkStyleSensitivityValue;
@@ -231,6 +238,7 @@ export type ArtistPricingV2Profile = {
   inferredSizeProfile: PricingV2SizeProfile;
   reviewAdjustments: PricingV2ReviewAdjustments;
   categoryAnchors: PricingV2CategoryAnchors;
+  specialCaseAdjustments: PricingV2SpecialCaseAdjustments;
   workStyleSensitivity: PricingV2WorkStyleSensitivity;
   onboardingCompleted: boolean;
 };
