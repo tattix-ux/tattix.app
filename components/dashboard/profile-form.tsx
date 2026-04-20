@@ -31,23 +31,29 @@ export type ProfilePreviewDraft = {
 
 const profileCopy = {
   en: {
-    sectionTitle: "Profile settings",
-    artistName: "Name",
-    upperLabel: "Top label (optional)",
+    sectionTitle: "Profile details",
+    artistName: "Name shown on profile",
+    upperLabel: "Short label (optional)",
+    upperLabelDescription: "Appears as a small label above your name.",
+    upperLabelPlaceholder: "My tattoo studio",
     profileImage: "Profile photo",
     coverImage: "Cover image",
     noImage: "No image selected yet",
     upload: "Upload image",
     remove: "Remove image",
     shortBio: "Short description",
-    shortBioPlaceholder: "Minimal and fine line tattoos. Small and medium-size pieces.",
-    welcomeHeadline: "Heading (optional)",
-    welcomeHeadlinePlaceholder: "Heading",
-    linkSection: "Your page link",
+    shortBioDescription: "This is where clients get to know you at a glance. Describe your work in 1–2 sentences.",
+    shortBioPlaceholder: "I create fine line, minimal, and mostly blackwork tattoos. Available for small and medium-size pieces.",
+    welcomeHeadline: "Short heading (optional)",
+    welcomeHeadlineDescription: "Appears below your name. This is often the first thing your client reads.",
+    welcomeHeadlinePlaceholder: "What do you have in mind?",
+    linkSection: "Profile link",
+    linkSectionDescription: "You can add this link to your Instagram profile, stories, or messages.",
     copyLink: "Copy",
     copied: "Copied",
     whatsapp: "WhatsApp number",
     instagram: "Instagram username",
+    contactSection: "Contact details",
     saving: "Saving",
     saved: "Saved",
     demoSaved: "Demo data refreshed.",
@@ -59,23 +65,29 @@ const profileCopy = {
     saveFailed: "Unable to save profile.",
   },
   tr: {
-    sectionTitle: "Profil ayarları",
-    artistName: "İsim",
-    upperLabel: "Üst etiket (opsiyonel)",
+    sectionTitle: "Profil bilgileri",
+    artistName: "Profilde görünen isim",
+    upperLabel: "Kısa etiket (opsiyonel)",
+    upperLabelDescription: "İsminin üstünde küçük bir etiket olarak görünür.",
+    upperLabelPlaceholder: "My tattoo studio",
     profileImage: "Profil fotoğrafı",
     coverImage: "Kapak görseli",
     noImage: "Henüz görsel seçilmedi",
     upload: "Görsel yükle",
     remove: "Görseli kaldır",
     shortBio: "Kısa açıklama",
-    shortBioPlaceholder: "Minimal ve ince çizgi dövmeler. Küçük ve orta boy çalışmalar.",
-    welcomeHeadline: "Başlık (opsiyonel)",
-    welcomeHeadlinePlaceholder: "Başlık",
-    linkSection: "Sayfa linkin",
+    shortBioDescription: "Müşteri seni ilk bakışta burada tanır. Ne tarz çalıştığını 1–2 cümleyle yaz.",
+    shortBioPlaceholder: "İnce çizgi, minimal ve siyah ağırlıklı dövmeler yapıyorum. Küçük ve orta boy çalışmalar için uygunum.",
+    welcomeHeadline: "Kısa başlık (opsiyonel)",
+    welcomeHeadlineDescription: "İsminin altında görünür. Müşterin ilk burayı okuyacaktır.",
+    welcomeHeadlinePlaceholder: "Aklında ne var?",
+    linkSection: "Profil linkin",
+    linkSectionDescription: "Bu linki Instagram sayfana, storylerine veya mesajlarına ekleyebilirsin.",
     copyLink: "Kopyala",
     copied: "Kopyalandı",
     whatsapp: "WhatsApp numarası",
     instagram: "Instagram kullanıcı adı",
+    contactSection: "İletişim bilgileri",
     saving: "Kaydediliyor",
     saved: "Kaydedildi",
     demoSaved: "Demo verisi güncellendi.",
@@ -372,16 +384,28 @@ export function ProfileForm({
             <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
               <Input {...form.register("artistName")} />
             </Field>
-            <Field label={copy.upperLabel} error={form.formState.errors.upperLabel?.message}>
-              <Input {...form.register("upperLabel")} />
+            <Field
+              label={copy.upperLabel}
+              description={copy.upperLabelDescription}
+              error={form.formState.errors.upperLabel?.message}
+            >
+              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} />
             </Field>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-2">
-            <Field label={copy.welcomeHeadline} error={form.formState.errors.welcomeHeadline?.message}>
+            <Field
+              label={copy.welcomeHeadline}
+              description={copy.welcomeHeadlineDescription}
+              error={form.formState.errors.welcomeHeadline?.message}
+            >
               <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
             </Field>
-            <Field label={copy.shortBio} error={form.formState.errors.shortBio?.message}>
+            <Field
+              label={copy.shortBio}
+              description={copy.shortBioDescription}
+              error={form.formState.errors.shortBio?.message}
+            >
               <Textarea
                 {...form.register("shortBio")}
                 placeholder={copy.shortBioPlaceholder}
@@ -393,6 +417,7 @@ export function ProfileForm({
           <Card className="surface-border">
             <CardHeader className="pb-3">
               <CardTitle>{copy.linkSection}</CardTitle>
+              <p className="text-sm leading-6 text-[var(--foreground-muted)]">{copy.linkSectionDescription}</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -418,7 +443,7 @@ export function ProfileForm({
 
           <Card className="surface-border">
             <CardHeader className="pb-3">
-              <CardTitle>{locale === "tr" ? "İletişim" : "Contact"}</CardTitle>
+              <CardTitle>{copy.contactSection}</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-5 lg:grid-cols-2">
               <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
@@ -459,7 +484,7 @@ export function ProfilePreviewCard({
   return (
     <Card className="surface-border overflow-hidden xl:sticky xl:top-6 xl:self-start">
       <CardHeader className="pb-3">
-        <CardTitle>{locale === "tr" ? "Canlı görünüm" : "Live preview"}</CardTitle>
+        <CardTitle>{locale === "tr" ? "Sayfa önizlemesi" : "Page preview"}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="mx-auto max-w-[320px]">

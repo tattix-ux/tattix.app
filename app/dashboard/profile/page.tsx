@@ -18,7 +18,11 @@ export default async function DashboardProfilePage() {
         <SectionHeading
           eyebrow={isTurkish ? "Profil" : "Profile"}
           title={isTurkish ? "Profilin" : "Your profile"}
-          description={isTurkish ? "Bu sayfa müşterilerin gördüğü profil." : "This is the profile clients see."}
+          description={
+            isTurkish
+              ? "Profil sayfan, müşterinin seninle ilk karşılaştığı yer. Fotoğrafların, açıklaman ve iletişim bilgilerin burada görünür."
+              : "Your profile page is where clients first meet you. Your photos, description, and contact details appear here."
+          }
         />
       </div>
       <ProfilePageContent

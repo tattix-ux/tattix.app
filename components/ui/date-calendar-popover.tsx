@@ -172,7 +172,7 @@ export function DateCalendarPopover({
         ? formatLongDate(selectedDate, locale)
         : emptyLabel
       : selectedDates.length > 0
-        ? `${selectedDates.length} ${locale === "tr" ? "tarih seçildi" : "dates selected"}`
+        ? `${selectedDates.length} ${locale === "tr" ? "gün seçildi" : "days selected"}`
         : emptyLabel;
 
   return (

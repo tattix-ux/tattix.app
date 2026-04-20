@@ -28,15 +28,15 @@ export function PublicRouteCard({
   return (
     <div className="w-full rounded-[22px] border border-white/8 bg-black/20 p-4 sm:rounded-[24px] sm:p-4">
       <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-        {locale === "tr" ? "Yayın linki" : "Public link"}
+        {locale === "tr" ? "Profil linkin" : "Profile link"}
       </p>
       <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="truncate text-sm text-white">{fallbackHref}</p>
           <p className="mt-1 text-xs text-[var(--foreground-muted)]">
             {locale === "tr"
-              ? "Instagram profilindeki linkten açılan sanatçı sayfası."
-              : "This is the artist page clients open from your bio."}
+              ? "Bu link, müşteriyi doğrudan profil sayfana götürür."
+              : "This link takes clients directly to your profile page."}
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -47,7 +47,7 @@ export function PublicRouteCard({
           <Button type="button" size="sm" asChild>
             <a href={fallbackHref} target="_blank" rel="noreferrer">
               <ExternalLink className="size-4" />
-              {locale === "tr" ? "Aç" : "Open"}
+              {locale === "tr" ? "Profili aç" : "Open profile"}
             </a>
           </Button>
         </div>
