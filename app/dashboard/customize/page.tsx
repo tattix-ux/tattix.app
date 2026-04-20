@@ -13,16 +13,12 @@ export default async function DashboardCustomizePage() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        eyebrow={isTurkish ? "Sayfa görünümü" : "Customize Page"}
-        title={
-          isTurkish
-            ? "Sayfa görünümü"
-            : "Page appearance"
-        }
+        eyebrow={isTurkish ? "GÖRÜNÜM" : "APPEARANCE"}
+        title={isTurkish ? "Görünüm" : "Appearance"}
         description={
           isTurkish
-            ? "Bir tema seç veya renkleri kendine göre düzenle."
-            : "Pick a theme or adjust the colors to fit your style."
+            ? "Profil sayfanın görünümünü seç. Hazır bir görünüm kullanabilir ya da kendi görünümünü oluşturabilirsin."
+            : "Choose how your profile page looks. Use a ready-made look or build your own."
         }
       />
       {hasProAccess(data.profile) ? (

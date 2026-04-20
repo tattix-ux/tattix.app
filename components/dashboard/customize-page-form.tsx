@@ -1,24 +1,31 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ImagePlus, LoaderCircle, Pencil, RotateCcw, Save, Trash2, Upload, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  Palette,
+  RotateCcw,
+  Save,
+  Sparkles,
+  SwatchBook,
+  Type,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
-import { ArtistPagePreview } from "@/components/artist-page/artist-page-preview";
 import { Field } from "@/components/shared/field";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-import { Textarea } from "@/components/ui/textarea";
-import { themePresetOptions, themePresets } from "@/lib/constants/theme";
+import { themePresetOptions, themePresets, type ThemePresetKey } from "@/lib/constants/theme";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
-import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import { resolveArtistTheme } from "@/lib/theme";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistFunnelSettings, ArtistPageTheme, ArtistProfile, ArtistSavedTheme } from "@/lib/types";
@@ -26,48 +33,116 @@ import { cn } from "@/lib/utils";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
+type PreviewMode = "welcome" | "designs" | "result";
+type BackgroundStyleChoice = "solid" | "soft-gradient" | "deep-gradient";
+
 type CustomizePageArtist = {
   profile: ArtistProfile;
   funnelSettings: ArtistFunnelSettings;
 };
 
-const colorSwatches = ["#f7b15d", "#ffffff", "#54f0dd", "#dc5c5c", "#b899ff", "#88cfa5"] as const;
-const backgroundSolidSwatches = ["#09090b", "#0e131a", "#131116", "#16100e"] as const;
-const backgroundGradientPresets = [
-  { key: "dark-fade", label: "Dark fade", start: "#17181d", end: "#09090b" },
-  { key: "blue-fade", label: "Blue fade", start: "#12253a", end: "#090d14" },
-  { key: "gold-fade", label: "Gold fade", start: "#2b1c16", end: "#0e0b0a" },
-] as const;
-const fontOptions = [
+const accentSwatches = ["#A86E45", "#8E5F41", "#D6A574", "#C87856", "#8D7AE6", "#4D98C7", "#79A979", "#D35F6A"] as const;
+const solidSwatches = ["#F6F1E8", "#E8DCCF", "#EDE4D8", "#161922", "#0B0D11", "#132030"] as const;
+const neutralSurfaceSwatches = ["#FFFDF8", "#F7EFE6", "#12161C", "#161B22"] as const;
+
+const backgroundPalettePresets = [
   {
-    value: "inter",
-    labelTr: "Inter",
-    labelEn: "Inter",
-    helperTr: "En güvenli seçim",
-    helperEn: "Safest choice",
+    key: "graphite",
+    labelTr: "Graphite",
+    labelEn: "Graphite",
+    style: "deep-gradient" as const,
+    mode: "dark" as const,
+    start: "#1A212A",
+    end: "#0A0D12",
   },
   {
-    value: "manrope",
-    labelTr: "Manrope",
-    labelEn: "Manrope",
-    helperTr: "Daha rafine görünüm",
-    helperEn: "More refined look",
+    key: "sand",
+    labelTr: "Sand",
+    labelEn: "Sand",
+    style: "soft-gradient" as const,
+    mode: "light" as const,
+    start: "#F3ECE3",
+    end: "#E6D7C7",
   },
   {
-    value: "outfit",
-    labelTr: "Outfit",
-    labelEn: "Outfit",
-    helperTr: "Daha modern görünüm",
-    helperEn: "More modern look",
+    key: "midnight",
+    labelTr: "Midnight",
+    labelEn: "Midnight",
+    style: "deep-gradient" as const,
+    mode: "dark" as const,
+    start: "#151922",
+    end: "#07090C",
+  },
+  {
+    key: "ink-blue",
+    labelTr: "Ink blue",
+    labelEn: "Ink blue",
+    style: "soft-gradient" as const,
+    mode: "dark" as const,
+    start: "#1B2B41",
+    end: "#0C1119",
   },
 ] as const;
 
-const quickCustomPresets = [
-  { key: "soft-editorial", labelTr: "Editoryal", labelEn: "Editorial" },
-  { key: "warm-studio", labelTr: "Sıcak", labelEn: "Warm" },
-  { key: "graphite-pro", labelTr: "Grafit", labelEn: "Graphite" },
-  { key: "night-luxury", labelTr: "Gece", labelEn: "Night" },
+const fontOptions = [
+  {
+    value: "inter",
+    label: "Inter",
+    helperTr: "Temiz ve dengeli",
+    helperEn: "Clean and balanced",
+  },
+  {
+    value: "manrope",
+    label: "Manrope",
+    helperTr: "Yumuşak ve çağdaş",
+    helperEn: "Soft and contemporary",
+  },
+  {
+    value: "outfit",
+    label: "Outfit",
+    helperTr: "Net ve daha karakterli",
+    helperEn: "Crisp and more distinctive",
+  },
 ] as const;
+
+const previewModeOptions = [
+  { value: "welcome" as const, labelTr: "Karşılama", labelEn: "Welcome" },
+  { value: "designs" as const, labelTr: "Tasarım listesi", labelEn: "Design list" },
+  { value: "result" as const, labelTr: "Sonuç", labelEn: "Result" },
+] as const;
+
+const presetMeta: Record<
+  ThemePresetKey,
+  {
+    title: string;
+    descriptionTr: string;
+    descriptionEn: string;
+    chipsTr: string[];
+    chipsEn: string[];
+  }
+> = {
+  "studio-light": {
+    title: "Studio Light",
+    descriptionTr: "Açık, temiz ve editoryal",
+    descriptionEn: "Bright, clean, and editorial",
+    chipsTr: ["Açık", "Editoryal", "Temiz"],
+    chipsEn: ["Light", "Editorial", "Clean"],
+  },
+  "warm-canvas": {
+    title: "Warm Canvas",
+    descriptionTr: "Sıcak, yumuşak ve daha butik",
+    descriptionEn: "Warm, soft, and more boutique",
+    chipsTr: ["Sıcak", "Yumuşak", "Butik"],
+    chipsEn: ["Warm", "Soft", "Boutique"],
+  },
+  "midnight-ink": {
+    title: "Midnight Ink",
+    descriptionTr: "Koyu, net ve premium",
+    descriptionEn: "Dark, sharp, and premium",
+    chipsTr: ["Koyu", "Net", "Premium"],
+    chipsEn: ["Dark", "Sharp", "Premium"],
+  },
+};
 
 const headingPreviewFonts = {
   inter: '"Inter", "Helvetica Neue", sans-serif',
@@ -75,367 +150,485 @@ const headingPreviewFonts = {
   outfit: '"Outfit", "Inter", sans-serif',
 } as const;
 
-const previewHeadingFontMap = {
-  inter: headingPreviewFonts.inter,
-  manrope: headingPreviewFonts.manrope,
-  outfit: headingPreviewFonts.outfit,
-} as const;
-
-const previewBodyFonts = {
+const bodyPreviewFonts = {
   inter: '"Inter", "Helvetica Neue", sans-serif',
   manrope: '"Manrope", "Inter", sans-serif',
   outfit: '"Outfit", "Inter", sans-serif',
 } as const;
 
-function ThemeSelectionBadge({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/14 bg-black/24 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-white/90">
-      <Check className="size-3" />
-      {label}
-    </span>
-  );
+function hexToRgb(hex: string) {
+  const raw = hex.replace("#", "");
+  const normalized =
+    raw.length === 3
+      ? raw
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : raw;
+  const parsed = Number.parseInt(normalized, 16);
+
+  return {
+    r: (parsed >> 16) & 255,
+    g: (parsed >> 8) & 255,
+    b: parsed & 255,
+  };
 }
 
-function ColorField({
-  label,
-  value,
-  onChange,
-  swatches,
-  customLabel,
-}: {
-  label: string;
-  value: string;
-  onChange: (nextValue: string) => void;
-  swatches: readonly string[];
-  customLabel: string;
-}) {
-  const activeSwatch = swatches.find((swatch) => value.toLowerCase() === swatch.toLowerCase()) ?? value;
-
-  return (
-    <div className="space-y-4 rounded-[20px] border border-white/8 bg-white/[0.025] p-4">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-medium text-white">{label}</p>
-        <div className="flex items-center gap-3 rounded-full border border-white/10 bg-black/16 px-3 py-2">
-          <span
-            className="size-9 rounded-full border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
-            style={{ backgroundColor: activeSwatch }}
-          />
-          <span className="text-xs font-medium uppercase tracking-[0.14em] text-white/70">{value}</span>
-        </div>
-      </div>
-      <div className="grid grid-cols-6 gap-2.5">
-        {swatches.map((swatch) => {
-          const active = value.toLowerCase() === swatch.toLowerCase();
-
-          return (
-            <button
-              key={swatch}
-              type="button"
-              onClick={() => onChange(swatch)}
-              className={cn(
-                "size-11 rounded-full border transition duration-150",
-                active
-                  ? "scale-[1.06] border-white/70 shadow-[0_0_0_4px_rgba(255,255,255,0.06)]"
-                  : "border-white/10 hover:border-white/24 hover:scale-[1.02]",
-              )}
-              style={{ backgroundColor: swatch }}
-              aria-label={swatch}
-            />
-          );
-        })}
-      </div>
-      <div className="flex items-center gap-3 rounded-[18px] border border-white/8 bg-black/14 p-2">
-        <input
-          type="color"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-10 w-12 rounded-xl border border-white/10 bg-transparent"
-        />
-        <Input
-          aria-label={customLabel}
-          className="h-10 border-0 bg-transparent px-2 text-sm text-white/80 focus:border-0 focus:ring-0"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      </div>
-    </div>
-  );
+function toRgba(hex: string, alpha: number) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function ThemeCardPreview({
-  artist,
-  theme,
-  variant = "card",
+function buildFormValues(source: ArtistPageTheme): ThemeValues {
+  return {
+    presetTheme: source.presetTheme,
+    backgroundType: source.backgroundType,
+    backgroundColor: source.backgroundColor,
+    gradientStart: source.gradientStart,
+    gradientEnd: source.gradientEnd,
+    backgroundImageUrl: source.backgroundImageUrl ?? "",
+    textColor: source.textColor,
+    primaryColor: source.primaryColor,
+    secondaryColor: source.secondaryColor,
+    cardColor: source.cardColor,
+    cardOpacity: source.cardOpacity,
+    headingFont: source.headingFont,
+    bodyFont: source.bodyFont,
+    fontPairingPreset: source.fontPairingPreset,
+    radiusStyle: source.radiusStyle,
+    themeMode: source.themeMode,
+    customWelcomeTitle: source.customWelcomeTitle ?? "",
+    customIntroText: source.customIntroText ?? "",
+    customCtaLabel: source.customCtaLabel ?? "",
+    featuredSectionLabel1: source.featuredSectionLabel1 ?? "",
+    featuredSectionLabel2: source.featuredSectionLabel2 ?? "",
+  };
+}
+
+function inferFontStyle(headingFont: string) {
+  if (headingFont === "manrope") {
+    return "manrope";
+  }
+  if (headingFont === "outfit" || headingFont === "dm-sans" || headingFont === "general-sans") {
+    return "outfit";
+  }
+  return "inter";
+}
+
+function inferBackgroundStyle(backgroundType: string, themeMode: string): BackgroundStyleChoice {
+  if (backgroundType === "solid") {
+    return "solid";
+  }
+  return themeMode === "light" ? "soft-gradient" : "deep-gradient";
+}
+
+function SectionCard({
+  title,
+  description,
+  children,
+  icon,
 }: {
-  artist: CustomizePageArtist;
-  theme: ArtistPageTheme;
-  variant?: "card" | "panel";
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  icon?: React.ReactNode;
 }) {
-  const title = theme.customWelcomeTitle?.trim() || artist.profile.welcomeHeadline?.trim() || "";
-  const intro = theme.customIntroText?.trim() || artist.profile.shortBio?.trim() || "";
-  const cta = theme.customCtaLabel || "Fiyat tahmini al";
-  const isPanel = variant === "panel";
-  const headingColor =
-    theme.themeMode === "light"
-      ? "color-mix(in srgb, var(--artist-card-text, #1f1814) 94%, transparent)"
-      : "var(--artist-card-text, #f8f5ef)";
-  const bodyColor =
-    theme.themeMode === "light"
-      ? "color-mix(in srgb, var(--artist-card-muted, #5b5147) 96%, transparent)"
-      : "var(--artist-card-muted, #d4ccc2)";
-  const background =
-    theme.backgroundType === "image" && theme.backgroundImageUrl
-      ? `linear-gradient(180deg, rgba(0,0,0,0.16), rgba(0,0,0,0.48)), url(${theme.backgroundImageUrl})`
-      : theme.backgroundType === "gradient"
-        ? `linear-gradient(180deg, ${theme.gradientStart}, ${theme.gradientEnd})`
-        : theme.backgroundColor;
-  const outerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.58)" : "rgba(255,255,255,0.05)";
-  const innerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.88)" : "rgba(9,9,12,0.94)";
-  const bodyFont = previewBodyFonts[theme.bodyFont] ?? previewBodyFonts.inter;
-
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-[26px] border border-white/8 bg-white/[0.02]",
-        isPanel ? "min-h-[660px] p-5 sm:p-6" : "min-h-[430px] p-3.5",
-      )}
-      style={{
-        boxShadow:
-          theme.themeMode === "light"
-            ? "inset 0 1px 0 rgba(255,255,255,0.55), 0 12px 28px rgba(9,10,14,0.06)"
-            : "inset 0 1px 0 rgba(255,255,255,0.03), 0 14px 32px rgba(0,0,0,0.18)",
-        backgroundColor:
-          theme.themeMode === "light"
-            ? "color-mix(in srgb, white 88%, var(--background) 12%)"
-            : "color-mix(in srgb, var(--background) 92%, white 3%)",
-      }}
-    >
-      <div className="relative flex h-full items-center justify-center">
-        <div className={cn("relative w-full", isPanel ? "max-w-[376px]" : "max-w-[312px]")}>
-          <div
-            className={cn(
-              "relative overflow-hidden border",
-              isPanel ? "rounded-[36px] p-2.5" : "rounded-[32px] p-2.5",
-            )}
-            style={{
-              borderColor: "color-mix(in srgb, white 12%, transparent)",
-              backgroundColor: outerShell,
-              boxShadow:
-                theme.themeMode === "light"
-                  ? "0 18px 44px rgba(20,22,27,0.11)"
-                  : "0 20px 48px rgba(0,0,0,0.28)",
-            }}
-          >
-            <div
-              className={cn(
-                "overflow-hidden border",
-                isPanel ? "rounded-[30px]" : "rounded-[26px]",
-              )}
-              style={{
-                borderColor: "color-mix(in srgb, white 6%, transparent)",
-                backgroundColor: innerShell,
-              }}
-            >
-              <div
-                className="overflow-hidden"
-                style={{
-                  background,
-                  backgroundSize: theme.backgroundType === "image" ? "cover" : undefined,
-                  backgroundPosition: theme.backgroundType === "image" ? "center" : undefined,
-                }}
-              >
-                <div className={cn("space-y-4", isPanel ? "p-5" : "p-4")}>
-                    <div
-                      className={cn(
-                        "relative overflow-hidden rounded-[20px] border border-white/10 bg-black/15",
-                        isPanel ? "h-28" : "h-[92px]",
-                      )}
-                    >
-                    {artist.profile.coverImageUrl ? (
-                      <img
-                        src={artist.profile.coverImageUrl}
-                        alt={artist.profile.artistName}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : null}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/20 to-black/45" />
-                  </div>
-                    <div className={cn("flex items-end gap-3", isPanel ? "-mt-12" : "-mt-10")}>
-                    <div
-                      className={cn(
-                        "relative overflow-hidden rounded-[18px] border border-white/12 bg-black/30 shadow-[0_10px_25px_rgba(0,0,0,0.28)]",
-                        isPanel ? "size-14" : "size-12",
-                      )}
-                    >
-                      {artist.profile.profileImageUrl ? (
-                        <img
-                          src={artist.profile.profileImageUrl}
-                          alt={artist.profile.artistName}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : null}
-                    </div>
-                    <div className="min-w-0 pb-0.5">
-                      <p
-                      className={cn("truncate font-medium", isPanel ? "text-[15px]" : "text-[13px]")}
-                        style={{ color: headingColor, fontFamily: bodyFont }}
-                      >
-                        {artist.profile.artistName}
-                      </p>
-                      <div
-                        className="mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
-                        style={{
-                          backgroundColor: "color-mix(in srgb, white 10%, transparent)",
-                          color: bodyColor,
-                        }}
-                      >
-                        {artist.profile.instagramHandle ? `@${artist.profile.instagramHandle}` : artist.profile.artistName.toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    {artist.funnelSettings.introEyebrow?.trim() ? (
-                      <div
-                        className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium"
-                        style={{
-                          backgroundColor: "color-mix(in srgb, white 10%, transparent)",
-                          color: bodyColor,
-                        }}
-                      >
-                        {artist.funnelSettings.introEyebrow}
-                      </div>
-                    ) : null}
-                    {title ? (
-                      <p
-                        className={cn("leading-tight tracking-[-0.02em]", isPanel ? "text-[1.75rem]" : "text-[1.36rem]")}
-                        style={{
-                          fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.inter,
-                          color: headingColor,
-                        }}
-                      >
-                        {title}
-                      </p>
-                    ) : null}
-                    {intro ? (
-                      <p className={cn(isPanel ? "text-[13px] leading-5" : "text-[11px] leading-[1.45]")} style={{ color: bodyColor, fontFamily: bodyFont }}>
-                        {intro}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div
-                    className={cn("inline-flex rounded-full font-medium", isPanel ? "px-4 py-2 text-xs" : "px-3 py-1.5 text-[11px]")}
-                    style={{
-                      backgroundColor: theme.primaryColor,
-                      color: theme.themeMode === "light" ? "#1b120f" : "#0b0b0c",
-                    }}
-                  >
-                    {cta}
-                  </div>
-
-                  <div
-                    className={cn("border", isPanel ? "rounded-[22px] p-3.5" : "rounded-[18px] p-3.5")}
-                    style={{
-                      borderColor: "color-mix(in srgb, white 8%, transparent)",
-                      backgroundColor:
-                        theme.themeMode === "light"
-                          ? "color-mix(in srgb, white 78%, transparent)"
-                          : "color-mix(in srgb, black 18%, transparent)",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-medium" style={{ color: headingColor, fontFamily: bodyFont }}>
-                          Aklında ne var?
-                        </p>
-                        <p className="mt-1 text-[11px]" style={{ color: bodyColor, fontFamily: bodyFont }}>
-                          Talep türünü seç.
-                        </p>
-                      </div>
-                      <span
-                        className="rounded-full px-2.5 py-1 text-[10px] font-medium"
-                        style={{
-                          backgroundColor: theme.secondaryColor,
-                          color: theme.textColor,
-                        }}
-                      >
-                        STEP 1
-                      </span>
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <div
-                        className="rounded-[16px] border border-white/10 px-3 py-2.5 text-xs"
-                        style={{
-                          color: headingColor,
-                          backgroundColor: theme.themeMode === "light" ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.14)",
-                        }}
-                      >
-                        Özel tasarım dövme
-                      </div>
-                      <div
-                        className="rounded-[16px] border border-white/10 px-3 py-2.5 text-xs"
-                        style={{
-                          color: bodyColor,
-                          backgroundColor: theme.themeMode === "light" ? "rgba(255,255,255,0.36)" : "rgba(0,0,0,0.08)",
-                        }}
-                      >
-                        Flash tasarım
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    <Card className="surface-border border-white/8 bg-white/[0.02] shadow-[0_12px_28px_rgba(0,0,0,0.14)]">
+      <CardHeader className="pb-4">
+        <div className="flex items-start gap-3">
+          {icon ? (
+            <div className="mt-0.5 inline-flex size-10 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.04] text-[var(--accent)]">
+              {icon}
             </div>
+          ) : null}
+          <div className="min-w-0">
+            <CardTitle className="text-[1.02rem] tracking-[-0.02em]">{title}</CardTitle>
+            {description ? <CardDescription className="mt-1">{description}</CardDescription> : null}
           </div>
         </div>
+      </CardHeader>
+      <CardContent className="pt-0">{children}</CardContent>
+    </Card>
+  );
+}
+
+function SelectionPill({
+  active,
+  onClick,
+  children,
+  className,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-4 py-2.5 text-sm font-medium transition",
+        active
+          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_18%,transparent)] text-white shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
+          : "border-white/10 bg-white/[0.03] text-[var(--foreground-muted)] hover:border-white/18 hover:bg-white/[0.05] hover:text-white",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ColorDot({
+  active,
+  color,
+  onClick,
+}: {
+  active: boolean;
+  color: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={color}
+      className={cn(
+        "size-10 rounded-full border transition",
+        active
+          ? "scale-[1.05] border-white/70 shadow-[0_0_0_4px_rgba(255,255,255,0.07)]"
+          : "border-white/10 hover:scale-[1.02] hover:border-white/20",
+      )}
+      style={{ backgroundColor: color }}
+    />
+  );
+}
+
+function CollapsibleHeader({
+  title,
+  description,
+  summary,
+  open,
+  onToggle,
+}: {
+  title: string;
+  description: string;
+  summary: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full items-center justify-between gap-4 rounded-[22px] border border-white/8 bg-white/[0.02] px-4 py-4 text-left transition hover:border-white/12 hover:bg-white/[0.035]"
+    >
+      <div>
+        <p className="text-sm font-medium text-white">{title}</p>
+        <p className="mt-1 text-sm text-[var(--foreground-muted)]">{description}</p>
       </div>
+      <div className="flex items-center gap-3">
+        <span className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-[var(--foreground-muted)]">{summary}</span>
+        <ChevronDown className={cn("size-4 text-[var(--foreground-muted)] transition", open && "rotate-180")} />
+      </div>
+    </button>
+  );
+}
+
+function ThemeMiniPalette({ theme }: { theme: ArtistPageTheme }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="size-3 rounded-full border border-white/10" style={{ backgroundColor: theme.backgroundColor }} />
+      <span className="size-3 rounded-full border border-white/10" style={{ backgroundColor: theme.cardColor }} />
+      <span className="size-3 rounded-full border border-white/10" style={{ backgroundColor: theme.primaryColor }} />
     </div>
   );
 }
 
 function ThemePresetCard({
+  active,
   title,
   description,
-  active,
+  chips,
   onSelect,
-  artist,
   theme,
-  selectedLabel,
 }: {
+  active: boolean;
   title: string;
   description: string;
-  active: boolean;
+  chips: string[];
   onSelect: () => void;
-  artist: CustomizePageArtist;
   theme: ArtistPageTheme;
-  selectedLabel: string;
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
-        "group relative overflow-hidden rounded-[26px] border p-3.5 text-left transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-0 sm:p-4",
+        "rounded-[28px] border p-4 text-left transition",
         active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_66%,white)] bg-white/[0.045] shadow-[0_16px_34px_rgba(0,0,0,0.18)]"
-          : "border-white/10 bg-white/[0.02] shadow-[0_10px_24px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 hover:border-white/16 hover:bg-white/[0.03]",
+          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_16px_34px_rgba(0,0,0,0.16)]"
+          : "border-white/8 bg-white/[0.02] hover:border-white/14 hover:bg-white/[0.04]",
       )}
     >
-      <div className="relative">
-        <div className="absolute right-2 top-2 z-10">{active ? <ThemeSelectionBadge label={selectedLabel} /> : null}</div>
-        <ThemeCardPreview artist={artist} theme={theme} />
+      <div
+        className="relative overflow-hidden rounded-[22px] border border-white/8 p-4"
+        style={{
+          background:
+            theme.backgroundType === "gradient"
+              ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
+              : theme.backgroundColor,
+          color: theme.textColor,
+        }}
+      >
+        <div
+          className="absolute inset-x-0 top-0 h-20 opacity-80"
+          style={{
+            background: `radial-gradient(circle_at_top_left, ${toRgba(theme.primaryColor, 0.22)}, transparent 64%)`,
+          }}
+        />
+        <div className="relative space-y-4">
+          <div className="flex items-center justify-between">
+            <ThemeMiniPalette theme={theme} />
+            {active ? (
+              <span className="rounded-full border border-white/18 bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
+                Seçili
+              </span>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <div
+              className="h-3 rounded-full"
+              style={{ width: "58%", backgroundColor: toRgba(theme.textColor, 0.9) }}
+            />
+            <div
+              className="h-2 rounded-full"
+              style={{ width: "82%", backgroundColor: toRgba(theme.textColor, 0.36) }}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div
+              className="rounded-[18px] border p-3"
+              style={{
+                borderColor: toRgba(theme.textColor, 0.08),
+                backgroundColor: toRgba(theme.cardColor, theme.cardOpacity),
+              }}
+            >
+              <div className="h-2.5 w-10 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.82) }} />
+              <div className="mt-2 h-2 w-16 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.24) }} />
+            </div>
+            <div
+              className="rounded-[18px] border p-3"
+              style={{
+                borderColor: toRgba(theme.textColor, 0.08),
+                backgroundColor: toRgba(theme.cardColor, theme.cardOpacity),
+              }}
+            >
+              <div className="h-2.5 w-9 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.82) }} />
+              <div
+                className="mt-3 inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium"
+                style={{ backgroundColor: theme.primaryColor, color: theme.themeMode === "light" ? "#1B1511" : "#0b0d11" }}
+              >
+                CTA
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="relative mt-3 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">{title}</p>
-          <p className="mt-1.5 max-w-[30ch] text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-            {description}
-          </p>
+      <div className="mt-4">
+        <p className="text-base font-semibold text-white">{title}</p>
+        <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">{description}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {chips.map((chip) => (
+            <span key={chip} className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-[var(--foreground-muted)]">
+              {chip}
+            </span>
+          ))}
         </div>
       </div>
     </button>
+  );
+}
+
+function AppearancePreview({
+  artist,
+  theme,
+  mode,
+  locale,
+}: {
+  artist: CustomizePageArtist;
+  theme: ArtistPageTheme;
+  mode: PreviewMode;
+  locale: PublicLocale;
+}) {
+  const headingColor = theme.textColor;
+  const mutedColor = theme.themeMode === "light" ? toRgba(theme.textColor, 0.64) : toRgba(theme.textColor, 0.7);
+  const shellBackground =
+    theme.backgroundType === "gradient"
+      ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
+      : theme.backgroundColor;
+  const cardBackground = toRgba(theme.cardColor, theme.cardOpacity);
+  const cardBorder = toRgba(theme.textColor, theme.themeMode === "light" ? 0.08 : 0.1);
+  const accentForeground = theme.themeMode === "light" ? "#1B1511" : "#0b0d11";
+  const title = artist.profile.welcomeHeadline?.trim() || (locale === "tr" ? "Aklında ne var?" : "What do you have in mind?");
+  const intro =
+    artist.profile.shortBio?.trim() ||
+    (locale === "tr"
+      ? "Müşteri sana yazmadan önce temel detayları burada paylaşır."
+      : "Clients share the key details here before they message you.");
+
+  return (
+    <div className="relative overflow-hidden rounded-[30px] border border-white/8 bg-white/[0.02] p-4 shadow-[0_20px_46px_rgba(0,0,0,0.2)] sm:p-5">
+      <div className="mx-auto max-w-[420px]">
+        <div className="rounded-[34px] border border-white/10 bg-black/10 p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.22)]">
+          <div
+            className="overflow-hidden rounded-[28px] border"
+            style={{
+              borderColor: cardBorder,
+              background: shellBackground,
+            }}
+          >
+            <div className="p-4 sm:p-5">
+              <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.28) }}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-11 rounded-[16px] border border-white/12 bg-white/10" />
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: headingColor, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
+                        {artist.profile.artistName}
+                      </p>
+                      <p className="text-xs" style={{ color: mutedColor }}>
+                        {artist.profile.instagramHandle ? `@${artist.profile.instagramHandle}` : "tattix"}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className="rounded-full px-3 py-1 text-[11px] font-medium"
+                    style={{ backgroundColor: toRgba(theme.primaryColor, 0.18), color: headingColor }}
+                  >
+                    {locale === "tr" ? "Profil" : "Profile"}
+                  </span>
+                </div>
+              </div>
+
+              {mode === "welcome" ? (
+                <div className="mt-4 space-y-4 rounded-[28px] border p-5" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
+                  <div className="inline-flex rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16), color: headingColor }}>
+                    {artist.funnelSettings.introEyebrow || (locale === "tr" ? "Talep formu" : "Request form")}
+                  </div>
+                  <div>
+                    <p
+                      className="text-[1.7rem] font-semibold leading-tight tracking-[-0.03em]"
+                      style={{ color: headingColor, fontFamily: headingPreviewFonts[theme.headingFont] }}
+                    >
+                      {title}
+                    </p>
+                    <p className="mt-3 text-sm leading-6" style={{ color: mutedColor, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
+                      {intro}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full border px-3 py-1 text-xs" style={{ borderColor: cardBorder, color: mutedColor }}>
+                      {locale === "tr" ? "Hızlı form" : "Quick form"}
+                    </span>
+                    <span className="rounded-full border px-3 py-1 text-xs" style={{ borderColor: cardBorder, color: mutedColor }}>
+                      {locale === "tr" ? "Fiyat tahmini" : "Estimate"}
+                    </span>
+                  </div>
+                  <div
+                    className="inline-flex rounded-full px-4 py-2 text-sm font-medium"
+                    style={{ backgroundColor: theme.primaryColor, color: accentForeground }}
+                  >
+                    {locale === "tr" ? "Fiyat tahmini al" : "Start estimate"}
+                  </div>
+                </div>
+              ) : null}
+
+              {mode === "designs" ? (
+                <div className="mt-4 space-y-3 rounded-[28px] border p-5" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[1.05rem] font-semibold" style={{ color: headingColor, fontFamily: headingPreviewFonts[theme.headingFont] }}>
+                        {locale === "tr" ? "Hazır tasarımlar" : "Ready-made designs"}
+                      </p>
+                      <p className="mt-1 text-sm" style={{ color: mutedColor }}>
+                        {locale === "tr" ? "Müşteri buradan seçim yapabilir." : "Clients can choose from here."}
+                      </p>
+                    </div>
+                    <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16), color: headingColor }}>
+                      {locale === "tr" ? "Önizleme" : "Preview"}
+                    </span>
+                  </div>
+                  {[
+                    {
+                      title: locale === "tr" ? "Dagger" : "Dagger",
+                      meta: locale === "tr" ? "Flash tasarım • 10 cm" : "Flash design • 10 cm",
+                      price: "₺8.000–₺10.000",
+                    },
+                    {
+                      title: locale === "tr" ? "Cherry blossom" : "Cherry blossom",
+                      meta: locale === "tr" ? "Renkli parça • 12 cm" : "Color piece • 12 cm",
+                      price: "₺10.000–₺12.000",
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="flex items-center gap-3 rounded-[22px] border p-3.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
+                      <div className="size-14 rounded-[18px] border border-white/10 bg-white/10" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold" style={{ color: headingColor }}>
+                          {item.title}
+                        </p>
+                        <p className="mt-1 text-xs" style={{ color: mutedColor }}>
+                          {item.meta}
+                        </p>
+                      </div>
+                      <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16), color: headingColor }}>
+                        {item.price}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {mode === "result" ? (
+                <div className="mt-4 space-y-4 rounded-[28px] border p-5" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
+                  <div>
+                    <p className="text-[1.05rem] font-semibold" style={{ color: headingColor, fontFamily: headingPreviewFonts[theme.headingFont] }}>
+                      {locale === "tr" ? "Tahmini fiyat aralığın" : "Your estimated price range"}
+                    </p>
+                    <p className="mt-2 text-sm leading-6" style={{ color: mutedColor }}>
+                      {locale === "tr"
+                        ? "Seçtiklerine göre çoğu durumda başlangıç seviyesi bu aralıkta olur."
+                        : "Based on the choices, most requests start around this range."}
+                    </p>
+                  </div>
+                  <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.54) }}>
+                    <p className="text-[1.7rem] font-semibold tracking-[-0.03em]" style={{ color: headingColor }}>
+                      ₺8.000 – ₺10.500
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="rounded-full border px-3 py-1 text-xs" style={{ borderColor: cardBorder, color: mutedColor }}>
+                        {locale === "tr" ? "İç kol" : "Inner arm"}
+                      </span>
+                      <span className="rounded-full border px-3 py-1 text-xs" style={{ borderColor: cardBorder, color: mutedColor }}>
+                        {locale === "tr" ? "Orta • 10–14 cm" : "Medium • 10–14 cm"}
+                      </span>
+                      <span className="rounded-full border px-3 py-1 text-xs" style={{ borderColor: cardBorder, color: mutedColor }}>
+                        {locale === "tr" ? "Siyah-gri" : "Black-grey"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="inline-flex rounded-full px-4 py-2 text-sm font-medium" style={{ backgroundColor: theme.primaryColor, color: accentForeground }}>
+                    {locale === "tr" ? "WhatsApp’tan gönder" : "Send with WhatsApp"}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -456,201 +649,164 @@ export function CustomizePageForm({
   const copy =
     locale === "tr"
       ? {
-          presetTitle: "Hazır temalar",
-          presetDescription: "Hazır bir tema seç ve hemen uygula.",
-          presetHint: "En hızlı yol hazır temalardan birini seçmek.",
-          presetMode: "Hazır tema kullan",
-          customMode: "Kendi stilini oluştur",
-          previewTitle: "Canlı önizleme",
-          previewDescription: "Seçtiğin görünüm müşteri sayfanda böyle görünür.",
-          stickyApplyHint: "Seçtiğin görünüm müşteri sayfanda görünür.",
-          unsaved: "Kaydedilmemiş değişiklikler var",
-          savedState: "Görünüm güncel",
-          customTitle: "Gelişmiş ayarlar",
-          customDescription: "Renkleri kendine göre düzenle.",
-          quickPresets: "Hızlı seçimler",
-          quickPresetsDescription: "Tek tıkla temel görünümü değiştir.",
-          colors: "Renkler",
-          colorsDescription: "Sadece ana vurgu rengini seç.",
-          textSection: "Metinler",
-          textSectionDescription: "Müşteri sayfasında görünen başlık ve karşılama metnini buradan düzenle.",
-          welcomeTitleLabel: "Başlık",
-          welcomeTitlePlaceholder: "Örn. Aklında ne var?",
-          introTextLabel: "Karşılama metni (müşteri sayfasında başlığın altında görünür)",
-          introTextPlaceholder: "Örn. Dövme fikrini birkaç adımda netleştir.",
-          primaryColor: "Ana renk",
-          customColor: "Detaylı renk seç",
-          backgrounds: "Arka plan",
-          backgroundsDescription: "Düz veya degrade bir arka plan seç.",
-          solid: "Düz renk",
-          gradient: "Degrade",
-          image: "Görsel",
-          backgroundType: "Arka plan türü",
-          backgroundColor: "Arka plan rengi",
-          gradientStart: "Başlangıç rengi",
-          gradientEnd: "Bitiş rengi",
-          backgroundImage: "Arka plan görseli",
-          backgroundImageHelp: "Sadece görsel yükle. Mobil için dikey 1080 × 1920'e yakın bir görsel en iyi sonucu verir.",
-          noBackground: "Henüz arka plan görseli seçilmedi",
-          uploadImage: "Görsel yükle",
-          removeImage: "Görseli kaldır",
-          fonts: "Font",
-          fontsDescription: "Sayfanın genel yazı karakterini seç.",
-          fontLabel: "Font stili",
-          saveTheme: "Bu görünümü kaydet",
-          saveThemeDescription: "Bu ayarları tekrar kullanmak için kaydedebilirsin.",
-          presetName: "Tema adı",
-          presetNamePlaceholder: "Örn. Gece altını",
-          savePreset: "Temayı kaydet",
-          savedThemes: "Kaydedilen temalar",
-          savedThemesDescription: "Daha önce kaydettiğin stilleri buradan tekrar uygulayabilirsin.",
+          presetMode: "Hazır görünümler",
+          customMode: "Kendi görünümün",
+          previewTitle: "Önizleme",
+          previewDescription: "Değişiklikler burada anlık görünür.",
+          previewToggleOpen: "Önizlemeyi göster",
+          previewToggleClose: "Önizlemeyi gizle",
+          presetSectionTitle: "Hazır görünümler",
+          presetSectionDescription: "Tek tıkla görünümü değiştir. Renk, yüzey ve yazı stili birlikte uygulanır.",
+          compactAction: "Bir tasarım değil, sadece görünüm seçiyorsun. Hazır bir görünümle başla ya da kendi görünümünü oluştur.",
+          customTitle: "Kendi görünümün",
+          customDescription: "Vurgu rengi, arka plan ve yazı stilini seç.",
+          baseLookTitle: "Başlangıç görünümü",
+          baseLookDescription: "Önce bir temel görünüm seç, sonra istersen ince ayar yap.",
+          accentTitle: "Vurgu rengi",
+          accentDescription: "Butonlar, etiketler ve seçili alanlar bu renge göre görünür.",
+          customColorLabel: "Renk kodunu elle gir",
+          backgroundTitle: "Arka plan stili",
+          backgroundDescription: "Sayfanın genel yüzey hissini belirle.",
+          backgroundSolid: "Düz",
+          backgroundSoft: "Yumuşak degrade",
+          backgroundDeep: "Derin degrade",
+          fontTitle: "Yazı stili",
+          fontDescription: "Sayfanın genel tonunu belirler.",
+          fineTitle: "İnce ayarlar (opsiyonel)",
+          fineDescription: "İstersen yüzey ve metin renklerini de ayarlayabilirsin.",
+          fineSummary: "İsteğe bağlı",
+          saveLookTrigger: "Bu ayarı görünüm olarak kaydet",
+          saveLookDescription: "Aynı ayarı sonra tekrar kullanmak istersen isim verip kaydedebilirsin.",
+          presetName: "Görünüm adı",
+          presetNamePlaceholder: "Örn. Gece bakırı",
+          savePreset: "Görünümü kaydet",
+          resetDefaults: "Varsayılana dön",
+          savedLooks: "Kaydedilen görünümler",
           applyTheme: "Uygula",
           renameTheme: "Yeniden adlandır",
           deleteTheme: "Sil",
-          renamePrompt: "Tema için yeni adı gir",
-          resetDefaults: "Varsayılana dön",
+          renamePrompt: "Görünüm için yeni adı yaz",
           save: "Görünümü uygula",
-          saveHelp: "Seçtiğin tema müşteri sayfanda görünür.",
+          cancel: "Vazgeç",
+          stickyHint: "Önizleme anlık güncellenir. Kaydettiğinde profil sayfanda görünür.",
           saving: "Kaydediliyor",
           demo: "Demo modunda yalnızca önizleme",
-          selected: "Seçildi",
+          selected: "Seçili",
+          savedToast: "Görünüm güncellendi",
+          presetSavedToast: "Görünüm kaydedildi",
+          noSavedLooks: "Henüz kaydedilmiş görünüm yok.",
+          advancedTextColor: "Metin rengi",
+          advancedCardColor: "Kart yüzeyi",
+          advancedSecondary: "İkincil yüzey",
+          usingGeneralPreset: "Hazır görünüm üzerinden devam ediyorsun",
         }
       : {
-          presetTitle: "Preset themes",
-          presetDescription: "Pick a theme and apply it right away.",
-          presetHint: "The fastest path is choosing one of the preset themes.",
-          presetMode: "Use preset theme",
-          customMode: "Build your own style",
-          previewTitle: "Live preview",
-          previewDescription: "This is how the selected look appears on the client page.",
-          stickyApplyHint: "The selected look will show on your client page.",
-          unsaved: "You have unsaved changes",
-          savedState: "Appearance is up to date",
-          customTitle: "Advanced settings",
-          customDescription: "Adjust the colors to fit your style.",
-          quickPresets: "Quick presets",
-          quickPresetsDescription: "Change the overall mood in one click.",
-          colors: "Colors",
-          colorsDescription: "Pick the main accent color.",
-          textSection: "Texts",
-          textSectionDescription: "Adjust the heading and welcome copy shown on the client page.",
-          welcomeTitleLabel: "Heading",
-          welcomeTitlePlaceholder: "e.g. What's on your mind?",
-          introTextLabel: "Welcome text (shown under the heading on the client page)",
-          introTextPlaceholder: "e.g. Clarify your tattoo idea in a few quick steps.",
-          primaryColor: "Primary color",
-          customColor: "Fine tune color",
-          backgrounds: "Background",
-          backgroundsDescription: "Choose a solid or gradient background.",
-          solid: "Solid",
-          gradient: "Gradient",
-          image: "Image",
-          backgroundType: "Background type",
-          backgroundColor: "Background color",
-          gradientStart: "Start color",
-          gradientEnd: "End color",
-          backgroundImage: "Background image",
-          backgroundImageHelp: "Upload only. A vertical image close to 1080 × 1920 works best on mobile.",
-          noBackground: "No background image selected",
-          uploadImage: "Upload image",
-          removeImage: "Remove image",
-          fonts: "Font",
-          fontsDescription: "Pick the font feel for the whole page.",
-          fontLabel: "Font style",
-          saveTheme: "Save this look",
-          saveThemeDescription: "Save these settings if you want to reuse them.",
-          presetName: "Theme name",
-          presetNamePlaceholder: "e.g. Night gold",
-          savePreset: "Save theme",
-          savedThemes: "Saved themes",
-          savedThemesDescription: "Reuse your saved styles from here.",
+          presetMode: "Ready-made looks",
+          customMode: "Your look",
+          previewTitle: "Preview",
+          previewDescription: "Changes appear here instantly.",
+          previewToggleOpen: "Show preview",
+          previewToggleClose: "Hide preview",
+          presetSectionTitle: "Ready-made looks",
+          presetSectionDescription: "Change the look in one click. Color, surfaces, and type style apply together.",
+          compactAction: "This tab is only for appearance. Start with a ready-made look or build your own.",
+          customTitle: "Your look",
+          customDescription: "Pick the accent color, background, and type style.",
+          baseLookTitle: "Starting look",
+          baseLookDescription: "Pick a base look first, then fine-tune it if you want.",
+          accentTitle: "Accent color",
+          accentDescription: "Buttons, tags, and selected areas follow this color.",
+          customColorLabel: "Enter color code manually",
+          backgroundTitle: "Background style",
+          backgroundDescription: "Sets the overall surface feel of the page.",
+          backgroundSolid: "Solid",
+          backgroundSoft: "Soft gradient",
+          backgroundDeep: "Deep gradient",
+          fontTitle: "Type style",
+          fontDescription: "Sets the overall tone of the page.",
+          fineTitle: "Fine settings (optional)",
+          fineDescription: "Open this if you want to adjust surfaces and text colors too.",
+          fineSummary: "Optional",
+          saveLookTrigger: "Save this setup as a look",
+          saveLookDescription: "If you want to reuse this setup later, give it a name and save it.",
+          presetName: "Look name",
+          presetNamePlaceholder: "e.g. Midnight copper",
+          savePreset: "Save look",
+          resetDefaults: "Reset to default",
+          savedLooks: "Saved looks",
           applyTheme: "Apply",
           renameTheme: "Rename",
           deleteTheme: "Delete",
-          renamePrompt: "Enter a new name for this theme",
-          resetDefaults: "Reset to default",
+          renamePrompt: "Enter a new name for this look",
           save: "Apply look",
-          saveHelp: "The selected look will show on your client page.",
+          cancel: "Discard",
+          stickyHint: "The preview updates instantly. It appears on your profile page after you save.",
           saving: "Saving",
           demo: "Preview only in demo mode",
           selected: "Selected",
+          savedToast: "Appearance updated",
+          presetSavedToast: "Look saved",
+          noSavedLooks: "No saved looks yet.",
+          advancedTextColor: "Text color",
+          advancedCardColor: "Card surface",
+          advancedSecondary: "Secondary surface",
+          usingGeneralPreset: "You are building from a ready-made look",
         };
-
-  const presetDescriptions =
-    locale === "tr"
-      ? {
-          "soft-editorial": "Açık, ferah ve daha yapısal",
-          "warm-studio": "Sıcak, sakin ve daha insani",
-          "graphite-pro": "Koyu, net ve operasyon odaklı",
-          "night-luxury": "Dramatik, markalı ve daha atmosferik",
-        }
-      : {
-          "soft-editorial": "Bright, airy, and more structured",
-          "warm-studio": "Warm, calm, and more human",
-          "graphite-pro": "Dark, crisp, and operational",
-          "night-luxury": "Atmospheric, branded, and premium",
-        };
-
-  const unifiedFontMap = {
-    inter: { headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-neutral" },
-    manrope: { headingFont: "manrope", bodyFont: "inter", fontPairingPreset: "manrope-refined" },
-    outfit: { headingFont: "outfit", bodyFont: "inter", fontPairingPreset: "outfit-modern" },
-  } as const;
-
-  const inferFontStyle = (headingFont: string) => {
-    if (headingFont === "manrope") {
-      return "manrope";
-    }
-    if (headingFont === "outfit" || headingFont === "dm-sans" || headingFont === "general-sans") {
-      return "outfit";
-    }
-    return "inter";
-  };
-
-  const [presetName, setPresetName] = useState("");
-  const [customizeMode, setCustomizeMode] = useState<"preset" | "custom">("preset");
 
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
     resolver: zodResolver(pageThemeSchema),
-    defaultValues: {
-      presetTheme: theme.presetTheme,
-      backgroundType: theme.backgroundType,
-      backgroundColor: theme.backgroundColor,
-      gradientStart: theme.gradientStart,
-      gradientEnd: theme.gradientEnd,
-      backgroundImageUrl: theme.backgroundImageUrl ?? "",
-      textColor: theme.textColor,
-      primaryColor: theme.primaryColor,
-      secondaryColor: theme.secondaryColor,
-      cardColor: theme.cardColor,
-      cardOpacity: theme.cardOpacity,
-      headingFont: theme.headingFont,
-      bodyFont: theme.bodyFont,
-      fontPairingPreset: theme.fontPairingPreset,
-      radiusStyle: theme.radiusStyle,
-      themeMode: theme.themeMode,
-      customWelcomeTitle: theme.customWelcomeTitle ?? "",
-      customIntroText: theme.customIntroText ?? "",
-      customCtaLabel: theme.customCtaLabel ?? "",
-      featuredSectionLabel1: theme.featuredSectionLabel1 ?? "",
-      featuredSectionLabel2: theme.featuredSectionLabel2 ?? "",
-    },
+    defaultValues: buildFormValues(theme),
   });
 
   const watchedValues = useWatch({ control: form.control });
   const currentPreset = watchedValues.presetTheme ?? theme.presetTheme;
+  const currentBackgroundType = watchedValues.backgroundType ?? theme.backgroundType;
   const currentBackgroundColor = watchedValues.backgroundColor ?? theme.backgroundColor;
-  const currentTextColor = watchedValues.textColor ?? theme.textColor;
+  const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
+  const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
   const currentPrimaryColor = watchedValues.primaryColor ?? theme.primaryColor;
   const currentSecondaryColor = watchedValues.secondaryColor ?? theme.secondaryColor;
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
-  const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
-  const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
-  const currentBackgroundType = watchedValues.backgroundType ?? theme.backgroundType;
+  const currentTextColor = watchedValues.textColor ?? theme.textColor;
   const currentCardOpacity =
     typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
+  const currentThemeMode = watchedValues.themeMode ?? theme.themeMode;
   const currentFontStyle = inferFontStyle(watchedValues.headingFont ?? theme.headingFont);
-  const actionStatus = form.formState.errors.root?.message ?? (form.formState.isDirty ? copy.unsaved : copy.savedState);
+  const currentBackgroundStyle = inferBackgroundStyle(currentBackgroundType, currentThemeMode);
+
+  const [customizeMode, setCustomizeMode] = useState<"preset" | "custom">("preset");
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("welcome");
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [showManualAccent, setShowManualAccent] = useState(false);
+  const [showFineSettings, setShowFineSettings] = useState(false);
+  const [showSaveLook, setShowSaveLook] = useState(false);
+  const [presetName, setPresetName] = useState("");
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!flashMessage) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setFlashMessage(null);
+    }, 2400);
+
+    return () => window.clearTimeout(timeout);
+  }, [flashMessage]);
+
+  useEffect(() => {
+    if (!demoMode) {
+      return;
+    }
+
+    const storedTheme = loadDemoTheme();
+    if (!storedTheme) {
+      return;
+    }
+
+    form.reset(buildFormValues(storedTheme));
+  }, [demoMode, form]);
 
   const previewTheme = useMemo(
     () =>
@@ -671,7 +827,7 @@ export function CustomizePageForm({
         bodyFont: watchedValues.bodyFont ?? theme.bodyFont,
         fontPairingPreset: watchedValues.fontPairingPreset ?? theme.fontPairingPreset,
         radiusStyle: watchedValues.radiusStyle ?? theme.radiusStyle,
-        themeMode: watchedValues.themeMode ?? theme.themeMode,
+        themeMode: currentThemeMode,
         customWelcomeTitle: watchedValues.customWelcomeTitle || null,
         customIntroText: watchedValues.customIntroText || null,
         customCtaLabel: watchedValues.customCtaLabel || null,
@@ -687,14 +843,15 @@ export function CustomizePageForm({
       currentGradientEnd,
       currentGradientStart,
       currentPreset,
-      currentTextColor,
       currentPrimaryColor,
       currentSecondaryColor,
+      currentTextColor,
+      currentThemeMode,
       theme.bodyFont,
-      watchedValues.backgroundImageUrl,
       theme.fontPairingPreset,
       theme.headingFont,
       theme.radiusStyle,
+      watchedValues.backgroundImageUrl,
       watchedValues.bodyFont,
       watchedValues.customCtaLabel,
       watchedValues.customIntroText,
@@ -707,118 +864,11 @@ export function CustomizePageForm({
     ],
   );
 
-  const previewArtist = useMemo(
-    () => ({
-      ...artist,
-      pageTheme: previewTheme,
-    }),
-    [artist, previewTheme],
-  );
-
-  useEffect(() => {
-    if (!demoMode) {
-      return;
-    }
-
-    const storedTheme = loadDemoTheme();
-
-    if (!storedTheme) {
-      return;
-    }
-
-    form.reset({
-      presetTheme: storedTheme.presetTheme,
-      backgroundType: storedTheme.backgroundType,
-      backgroundColor: storedTheme.backgroundColor,
-      gradientStart: storedTheme.gradientStart,
-      gradientEnd: storedTheme.gradientEnd,
-      backgroundImageUrl: storedTheme.backgroundImageUrl ?? "",
-      textColor: storedTheme.textColor,
-      primaryColor: storedTheme.primaryColor,
-      secondaryColor: storedTheme.secondaryColor,
-      cardColor: storedTheme.cardColor,
-      cardOpacity: storedTheme.cardOpacity,
-      headingFont: storedTheme.headingFont,
-      bodyFont: storedTheme.bodyFont,
-      fontPairingPreset: storedTheme.fontPairingPreset,
-      radiusStyle: storedTheme.radiusStyle,
-      themeMode: storedTheme.themeMode,
-      customWelcomeTitle: storedTheme.customWelcomeTitle ?? "",
-      customIntroText: storedTheme.customIntroText ?? "",
-      customCtaLabel: storedTheme.customCtaLabel ?? "",
-      featuredSectionLabel1: storedTheme.featuredSectionLabel1 ?? "",
-      featuredSectionLabel2: storedTheme.featuredSectionLabel2 ?? "",
-    });
-  }, [demoMode, form]);
-
-  async function onSubmit(values: ThemeValues) {
-    await saveTheme(values, false);
-  }
-
-  async function handleBackgroundUpload(file: File) {
-    if (demoMode) {
-      form.setError("root", { message: locale === "tr" ? "Demo modunda arka plan görseli yüklenemez." : "Background upload is unavailable in demo mode." });
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      form.setError("root", { message: locale === "tr" ? "Yalnızca görsel dosyaları yükleyebilirsin." : "Only image files are allowed." });
-      return;
-    }
-
-    if (file.size > 8 * 1024 * 1024) {
-      form.setError("root", { message: locale === "tr" ? "Görseller en fazla 8 MB olabilir." : "Background images must be 8 MB or smaller." });
-      return;
-    }
-
-    const previousUrl = form.getValues("backgroundImageUrl");
-
-    try {
-      const uploaded = await uploadArtistAsset(file, {
-        artistId: artist.profile.id,
-        bucket: "artist-assets",
-        prefix: "page-background",
-      });
-
-      if (previousUrl?.includes("/storage/v1/object/public/artist-assets/")) {
-        const previousPath = previousUrl.split("/artist-assets/")[1];
-        if (previousPath) {
-          await removeArtistAsset(previousPath, { bucket: "artist-assets" }).catch(() => undefined);
-        }
-      }
-
-      form.setValue("backgroundImageUrl", uploaded.publicUrl, { shouldDirty: true, shouldValidate: true });
-      form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true });
-      form.setError("root", { message: locale === "tr" ? "Arka plan görseli yüklendi." : "Background image uploaded." });
-    } catch (error) {
-      form.setError("root", {
-        message: error instanceof Error ? error.message : locale === "tr" ? "Arka plan görseli yüklenemedi." : "Unable to upload background image.",
-      });
-    }
-  }
-
-  async function handleBackgroundRemove() {
-    const currentUrl = form.getValues("backgroundImageUrl");
-
-    if (!demoMode && currentUrl?.includes("/storage/v1/object/public/artist-assets/")) {
-      const currentPath = currentUrl.split("/artist-assets/")[1];
-      if (currentPath) {
-        await removeArtistAsset(currentPath, { bucket: "artist-assets" }).catch(() => undefined);
-      }
-    }
-
-    form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
-    if (form.getValues("backgroundType") === "image") {
-      form.setValue("backgroundType", "gradient", { shouldDirty: true, shouldValidate: true });
-    }
-  }
-
   function normalizeThemeValues(values: ThemeValues): ThemeValues {
     const resolved = resolveArtistTheme({
       artistId: artist.profile.id,
       ...values,
       backgroundImageUrl: values.backgroundImageUrl || null,
-      themeMode: values.themeMode,
       customWelcomeTitle: values.customWelcomeTitle || null,
       customIntroText: values.customIntroText || null,
       customCtaLabel: values.customCtaLabel || null,
@@ -826,48 +876,163 @@ export function CustomizePageForm({
       featuredSectionLabel2: values.featuredSectionLabel2 || null,
     });
 
-    return {
-      presetTheme: resolved.presetTheme,
-      backgroundType: resolved.backgroundType,
-      backgroundColor: resolved.backgroundColor,
-      gradientStart: resolved.gradientStart,
-      gradientEnd: resolved.gradientEnd,
-      backgroundImageUrl: resolved.backgroundImageUrl,
-      textColor: resolved.textColor,
-      primaryColor: resolved.primaryColor,
-      secondaryColor: resolved.secondaryColor,
-      cardColor: resolved.cardColor,
-      cardOpacity: resolved.cardOpacity,
-      headingFont: resolved.headingFont,
-      bodyFont: resolved.bodyFont,
-      fontPairingPreset: resolved.fontPairingPreset,
-      radiusStyle: resolved.radiusStyle,
-      themeMode: resolved.themeMode,
-      customWelcomeTitle: resolved.customWelcomeTitle,
-      customIntroText: resolved.customIntroText,
-      customCtaLabel: resolved.customCtaLabel,
-      featuredSectionLabel1: resolved.featuredSectionLabel1,
-      featuredSectionLabel2: resolved.featuredSectionLabel2,
-    };
+    return buildFormValues(resolved);
   }
 
-  async function saveTheme(values: ThemeValues, savePreset: boolean) {
+  function applyPreset(presetKey: ThemePresetKey) {
+    const preset = themePresets[presetKey];
+    form.setValue("presetTheme", presetKey, { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundType", preset.backgroundType, { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundColor", preset.backgroundColor, { shouldDirty: true, shouldValidate: true });
+    form.setValue("gradientStart", preset.gradientStart, { shouldDirty: true, shouldValidate: true });
+    form.setValue("gradientEnd", preset.gradientEnd, { shouldDirty: true, shouldValidate: true });
+    form.setValue("textColor", preset.textColor, { shouldDirty: true, shouldValidate: true });
+    form.setValue("primaryColor", preset.primaryColor, { shouldDirty: true, shouldValidate: true });
+    form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true, shouldValidate: true });
+    form.setValue("cardColor", preset.cardColor, { shouldDirty: true, shouldValidate: true });
+    form.setValue("cardOpacity", preset.cardOpacity, { shouldDirty: true, shouldValidate: true });
+    form.setValue("headingFont", preset.headingFont, { shouldDirty: true, shouldValidate: true });
+    form.setValue("bodyFont", preset.bodyFont, { shouldDirty: true, shouldValidate: true });
+    form.setValue("fontPairingPreset", preset.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
+    form.setValue("radiusStyle", preset.radiusStyle, { shouldDirty: true, shouldValidate: true });
+    form.setValue("themeMode", preset.themeMode, { shouldDirty: true, shouldValidate: true });
+  }
+
+  function resetThemeToCurrent() {
+    form.reset(buildFormValues(theme));
+    form.clearErrors("root");
+  }
+
+  function resetThemeToDefault() {
+    const defaultTheme = resolveArtistTheme({ presetTheme: "midnight-ink", artistId: artist.profile.id });
+    form.reset(buildFormValues(defaultTheme));
+    form.clearErrors("root");
+  }
+
+  function setFontStyle(next: (typeof fontOptions)[number]["value"]) {
+    const mapped =
+      next === "manrope"
+        ? ({ headingFont: "manrope", bodyFont: "manrope", fontPairingPreset: "manrope-refined" } as const)
+        : next === "outfit"
+          ? ({ headingFont: "outfit", bodyFont: "inter", fontPairingPreset: "outfit-modern" } as const)
+          : ({ headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-neutral" } as const);
+
+    form.setValue("headingFont", mapped.headingFont, { shouldDirty: true, shouldValidate: true });
+    form.setValue("bodyFont", mapped.bodyFont, { shouldDirty: true, shouldValidate: true });
+    form.setValue("fontPairingPreset", mapped.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
+  }
+
+  function setBackgroundStyle(next: BackgroundStyleChoice) {
+    if (next === "solid") {
+      const solidColor =
+        currentThemeMode === "light"
+          ? themePresets["studio-light"].backgroundColor
+          : themePresets["midnight-ink"].backgroundColor;
+      form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
+      form.setValue("backgroundColor", solidColor, { shouldDirty: true, shouldValidate: true });
+      return;
+    }
+
+    const preset =
+      next === "soft-gradient"
+        ? currentThemeMode === "light"
+          ? backgroundPalettePresets[1]
+          : backgroundPalettePresets[3]
+        : currentThemeMode === "light"
+          ? backgroundPalettePresets[1]
+          : backgroundPalettePresets[2];
+
+    applyBackgroundPalette(preset.key);
+  }
+
+  function applyBackgroundPalette(paletteKey: (typeof backgroundPalettePresets)[number]["key"]) {
+    const palette = backgroundPalettePresets.find((item) => item.key === paletteKey);
+    if (!palette) {
+      return;
+    }
+
+    form.setValue("backgroundType", "gradient", {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    form.setValue("themeMode", palette.mode, { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundColor", palette.start, { shouldDirty: true, shouldValidate: true });
+    form.setValue("gradientStart", palette.start, { shouldDirty: true, shouldValidate: true });
+    form.setValue("gradientEnd", palette.end, { shouldDirty: true, shouldValidate: true });
+
+    if (palette.mode === "light") {
+      form.setValue("textColor", themePresets["studio-light"].textColor, { shouldDirty: true, shouldValidate: true });
+      form.setValue("cardColor", themePresets["studio-light"].cardColor, { shouldDirty: true, shouldValidate: true });
+      form.setValue("secondaryColor", themePresets["studio-light"].secondaryColor, { shouldDirty: true, shouldValidate: true });
+    } else {
+      form.setValue("textColor", themePresets["midnight-ink"].textColor, { shouldDirty: true, shouldValidate: true });
+      form.setValue("cardColor", themePresets["midnight-ink"].cardColor, { shouldDirty: true, shouldValidate: true });
+      form.setValue("secondaryColor", themePresets["midnight-ink"].secondaryColor, { shouldDirty: true, shouldValidate: true });
+    }
+  }
+
+  function applySavedTheme(savedTheme: ArtistSavedTheme) {
+    form.reset(buildFormValues(savedTheme.theme));
+    form.clearErrors("root");
+  }
+
+  async function renameSavedTheme(themeId: string, currentName: string) {
+    const nextName = window.prompt(copy.renamePrompt, currentName)?.trim();
+    if (!nextName || nextName === currentName) {
+      return;
+    }
+
+    const response = await fetch(`/api/dashboard/customize/saved-themes/${themeId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: nextName }),
+    });
+    const payload = (await response.json()) as { message?: string };
+
+    if (!response.ok) {
+      form.setError("root", { message: payload.message ?? "Unable to rename theme." });
+      return;
+    }
+
+    form.clearErrors("root");
+    setFlashMessage(copy.presetSavedToast);
+    router.refresh();
+  }
+
+  async function deleteSavedTheme(themeId: string) {
+    const response = await fetch(`/api/dashboard/customize/saved-themes/${themeId}`, {
+      method: "DELETE",
+    });
+    const payload = (await response.json()) as { message?: string };
+
+    if (!response.ok) {
+      form.setError("root", { message: payload.message ?? "Unable to delete theme." });
+      return;
+    }
+
+    form.clearErrors("root");
+    setFlashMessage(copy.presetSavedToast);
+    router.refresh();
+  }
+
+  async function saveTheme(values: ThemeValues, savePreset = false) {
     const normalizedValues = normalizeThemeValues(values);
 
     if (demoMode) {
-      saveDemoTheme({
-        ...resolveArtistTheme({
+      saveDemoTheme(
+        resolveArtistTheme({
           artistId: artist.profile.id,
           ...normalizedValues,
+          backgroundImageUrl: normalizedValues.backgroundImageUrl || null,
         }),
-        artistId: artist.profile.id,
-      });
-      form.setError("root", {
-        message:
-          locale === "tr"
-            ? "Demo görünümü yerel olarak kaydedildi."
-            : "Demo theme saved locally.",
-      });
+      );
+      form.reset(normalizedValues);
+      form.clearErrors("root");
+      setFlashMessage(savePreset ? copy.presetSavedToast : copy.savedToast);
+      if (savePreset) {
+        setPresetName("");
+        setShowSaveLook(false);
+      }
       return;
     }
 
@@ -884,7 +1049,6 @@ export function CustomizePageForm({
     });
 
     const payload = (await response.json()) as { message?: string };
-
     if (!response.ok) {
       form.setError("root", {
         message: payload.message ?? (locale === "tr" ? "Görünüm kaydedilemedi." : "Unable to save appearance."),
@@ -892,630 +1056,527 @@ export function CustomizePageForm({
       return;
     }
 
-    form.setError("root", {
-      message:
-        payload.message ?? (locale === "tr" ? "Görünüm kaydedildi." : "Appearance saved."),
-    });
+    form.reset(normalizedValues);
+    form.clearErrors("root");
+    setFlashMessage(savePreset ? copy.presetSavedToast : copy.savedToast);
     if (savePreset) {
       setPresetName("");
+      setShowSaveLook(false);
     }
     router.refresh();
   }
 
-  function applyPreset(presetKey: ThemeFormInput["presetTheme"]) {
-    const preset = themePresets[presetKey];
-    form.setValue("presetTheme", presetKey, { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundType", preset.backgroundType, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-    form.setValue("backgroundColor", preset.backgroundColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientStart", preset.gradientStart, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientEnd", preset.gradientEnd, { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("textColor", preset.textColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("primaryColor", preset.primaryColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("cardColor", preset.cardColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("cardOpacity", preset.cardOpacity, { shouldDirty: true, shouldValidate: true });
-    form.setValue("headingFont", preset.headingFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("bodyFont", preset.bodyFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("fontPairingPreset", preset.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
-    form.setValue("radiusStyle", preset.radiusStyle, { shouldDirty: true, shouldValidate: true });
-    form.setValue("themeMode", preset.themeMode, { shouldDirty: true, shouldValidate: true });
-  }
-
-  function resetThemeToDefault() {
-    applyPreset("graphite-pro");
-    form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("customWelcomeTitle", "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("customIntroText", "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("customCtaLabel", "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("featuredSectionLabel1", "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("featuredSectionLabel2", "", { shouldDirty: true, shouldValidate: true });
-  }
-
-  function applySavedTheme(savedTheme: ArtistSavedTheme) {
-    const values = savedTheme.theme;
-    form.setValue("presetTheme", values.presetTheme, { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundType", values.backgroundType, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-    form.setValue("backgroundColor", values.backgroundColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientStart", values.gradientStart, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientEnd", values.gradientEnd, { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundImageUrl", values.backgroundImageUrl ?? "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("textColor", values.textColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("primaryColor", values.primaryColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("secondaryColor", values.secondaryColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("cardColor", values.cardColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("cardOpacity", values.cardOpacity, { shouldDirty: true, shouldValidate: true });
-    form.setValue("headingFont", values.headingFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("bodyFont", values.bodyFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("fontPairingPreset", values.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
-    form.setValue("radiusStyle", values.radiusStyle, { shouldDirty: true, shouldValidate: true });
-    form.setValue("themeMode", values.themeMode, { shouldDirty: true, shouldValidate: true });
-    form.setValue("customWelcomeTitle", values.customWelcomeTitle ?? "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("customIntroText", values.customIntroText ?? "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("customCtaLabel", values.customCtaLabel ?? "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("featuredSectionLabel1", values.featuredSectionLabel1 ?? "", {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-    form.setValue("featuredSectionLabel2", values.featuredSectionLabel2 ?? "", {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  }
-
-  async function renameSavedTheme(themeId: string, currentName: string) {
-    const nextName = window.prompt(copy.renamePrompt, currentName)?.trim();
-
-    if (!nextName || nextName === currentName) {
-      return;
-    }
-
-    const response = await fetch(`/api/dashboard/customize/saved-themes/${themeId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name: nextName }),
-    });
-
-    const payload = (await response.json()) as { message?: string };
-    form.setError("root", {
-      message: payload.message ?? (response.ok ? "Theme renamed." : "Unable to rename theme."),
-    });
-
-    if (response.ok) {
-      router.refresh();
-    }
-  }
-
-  async function deleteSavedTheme(themeId: string) {
-    const response = await fetch(`/api/dashboard/customize/saved-themes/${themeId}`, {
-      method: "DELETE",
-    });
-
-    const payload = (await response.json()) as { message?: string };
-    form.setError("root", {
-      message: payload.message ?? (response.ok ? "Theme deleted." : "Unable to delete theme."),
-    });
-
-    if (response.ok) {
-      router.refresh();
-    }
-  }
-
-  function setFontStyle(next: keyof typeof unifiedFontMap) {
-    const mapped = unifiedFontMap[next];
-    form.setValue("headingFont", mapped.headingFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("bodyFont", mapped.bodyFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("fontPairingPreset", mapped.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
-  }
-
-  function applyBackgroundPreset(preset: (typeof backgroundGradientPresets)[number]) {
-    form.setValue("backgroundType", "gradient", { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientStart", preset.start, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientEnd", preset.end, { shouldDirty: true, shouldValidate: true });
+  async function onSubmit(values: ThemeValues) {
+    await saveTheme(values, false);
   }
 
   return (
     <div className="space-y-6">
-      <form className="space-y-7" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="inline-flex flex-wrap rounded-full border border-white/10 bg-white/[0.02] p-1">
-          <Button
-            type="button"
-            size="sm"
-            variant={customizeMode === "preset" ? "secondary" : "ghost"}
-            className={cn(
-              "rounded-full",
-              customizeMode === "preset" ? "shadow-[0_12px_30px_rgba(0,0,0,0.18)]" : "text-[var(--foreground-muted)]",
-            )}
-            onClick={() => setCustomizeMode("preset")}
-          >
-            {copy.presetMode}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={customizeMode === "custom" ? "secondary" : "ghost"}
-            className={cn(
-              "rounded-full",
-              customizeMode === "custom" ? "shadow-[0_12px_30px_rgba(0,0,0,0.18)]" : "text-[var(--foreground-muted)]",
-            )}
-            onClick={() => setCustomizeMode("custom")}
-          >
-            {copy.customMode}
-          </Button>
+      {flashMessage ? (
+        <div className="fixed right-4 top-4 z-30 rounded-full border border-white/10 bg-[rgba(12,12,14,0.94)] px-4 py-2 text-sm text-white shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
+          {flashMessage}
+        </div>
+      ) : null}
+
+      <form
+        className="space-y-6"
+        onSubmit={form.handleSubmit(onSubmit)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
+            event.preventDefault();
+          }
+          if (event.key === "Escape") {
+            event.preventDefault();
+            resetThemeToCurrent();
+          }
+        }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-white/8 bg-white/[0.02] p-1.5">
+          <div className="inline-flex flex-wrap gap-1.5">
+            <SelectionPill active={customizeMode === "preset"} onClick={() => setCustomizeMode("preset")}>
+              {copy.presetMode}
+            </SelectionPill>
+            <SelectionPill active={customizeMode === "custom"} onClick={() => setCustomizeMode("custom")}>
+              {copy.customMode}
+            </SelectionPill>
+          </div>
+          <p className="px-3 text-sm text-[var(--foreground-muted)]">{copy.compactAction}</p>
         </div>
 
-        <div
-          className={cn(
-            "grid gap-7 xl:items-start",
-            customizeMode === "custom" ? "xl:grid-cols-[minmax(0,1fr)_440px]" : "xl:grid-cols-1",
-          )}
-        >
-          <div className="space-y-6">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_460px] xl:items-start">
+          <div className="space-y-5">
             {customizeMode === "preset" ? (
-              <Card className="surface-border overflow-hidden border-white/8 bg-white/[0.02] shadow-[0_14px_32px_rgba(0,0,0,0.14)]">
-                <CardHeader className="pb-3">
-                  <CardTitle className="relative text-[1.2rem] tracking-[-0.02em]">{copy.presetTitle}</CardTitle>
-                  <CardDescription className="relative max-w-[56ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-                    {copy.presetDescription}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-0">
-                  <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
-                    {copy.presetHint}
-                  </p>
-                  <div className="grid gap-5 xl:grid-cols-2">
-                    {themePresetOptions.map((presetKey) => {
-                      const preset = themePresets[presetKey];
-                      const active = currentPreset === presetKey;
-                      const presetTheme = resolveArtistTheme({
-                        artistId: artist.profile.id,
-                        presetTheme: presetKey,
-                        backgroundType: preset.backgroundType,
-                        backgroundColor: preset.backgroundColor,
-                        gradientStart: preset.gradientStart,
-                        gradientEnd: preset.gradientEnd,
-                        backgroundImageUrl: null,
-                        primaryColor: preset.primaryColor,
-                        secondaryColor: preset.secondaryColor,
-                        cardColor: preset.cardColor,
-                        cardOpacity: preset.cardOpacity,
-                        headingFont: preset.headingFont,
-                        bodyFont: preset.bodyFont,
-                        fontPairingPreset: preset.fontPairingPreset,
-                        radiusStyle: preset.radiusStyle,
-                        themeMode: preset.themeMode,
-                        customWelcomeTitle: artist.profile.welcomeHeadline,
-                        customIntroText: artist.profile.shortBio || null,
-                        customCtaLabel: locale === "tr" ? "Fiyat tahmini al" : "Start estimate",
-                        featuredSectionLabel1: null,
-                        featuredSectionLabel2: null,
-                      });
-                      const presetArtist = {
-                        ...artist,
-                        pageTheme: presetTheme,
-                      };
+              <SectionCard
+                title={copy.presetSectionTitle}
+                description={copy.presetSectionDescription}
+                icon={<Sparkles className="size-4" />}
+              >
+                <div className="grid gap-4 lg:grid-cols-3">
+                  {themePresetOptions.map((presetKey) => {
+                    const preset = themePresets[presetKey];
+                    const meta = presetMeta[presetKey];
+                    const resolvedTheme = resolveArtistTheme({
+                      artistId: artist.profile.id,
+                      presetTheme: presetKey,
+                      backgroundType: preset.backgroundType,
+                      backgroundColor: preset.backgroundColor,
+                      gradientStart: preset.gradientStart,
+                      gradientEnd: preset.gradientEnd,
+                      primaryColor: preset.primaryColor,
+                      secondaryColor: preset.secondaryColor,
+                      cardColor: preset.cardColor,
+                      cardOpacity: preset.cardOpacity,
+                      headingFont: preset.headingFont,
+                      bodyFont: preset.bodyFont,
+                      fontPairingPreset: preset.fontPairingPreset,
+                      radiusStyle: preset.radiusStyle,
+                      themeMode: preset.themeMode,
+                    });
 
-                      return (
-                        <ThemePresetCard
-                          key={presetKey}
-                          title={preset.label}
-                          description={presetDescriptions[presetKey]}
-                          active={active}
-                          onSelect={() => applyPreset(presetKey)}
-                          artist={presetArtist}
-                          theme={presetTheme}
-                          selectedLabel={copy.selected}
-                        />
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
+                    return (
+                      <ThemePresetCard
+                        key={presetKey}
+                        active={currentPreset === presetKey}
+                        title={meta.title}
+                        description={locale === "tr" ? meta.descriptionTr : meta.descriptionEn}
+                        chips={locale === "tr" ? meta.chipsTr : meta.chipsEn}
+                        onSelect={() => applyPreset(presetKey)}
+                        theme={resolvedTheme}
+                      />
+                    );
+                  })}
+                </div>
+              </SectionCard>
+            ) : (
+              <div className="space-y-5">
+                <SectionCard title={copy.customTitle} description={copy.customDescription} icon={<SwatchBook className="size-4" />}>
+                  <div className="space-y-5">
+                    <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
+                      <div className="mb-4">
+                        <p className="text-sm font-medium text-white">{copy.baseLookTitle}</p>
+                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.baseLookDescription}</p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        {themePresetOptions.map((presetKey) => {
+                          const meta = presetMeta[presetKey];
+                          const active = currentPreset === presetKey;
+                          return (
+                            <button
+                              key={presetKey}
+                              type="button"
+                              onClick={() => applyPreset(presetKey)}
+                              className={cn(
+                                "rounded-[22px] border p-4 text-left transition",
+                                active
+                                  ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]"
+                                  : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
+                              )}
+                            >
+                              <p className="text-sm font-semibold text-white">{meta.title}</p>
+                              <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                                {locale === "tr" ? meta.descriptionTr : meta.descriptionEn}
+                              </p>
+                              <div className="mt-3 flex items-center gap-2">
+                                <ThemeMiniPalette theme={resolveArtistTheme({ presetTheme: presetKey, artistId: artist.profile.id })} />
+                                {active ? (
+                                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-white">
+                                    {copy.selected}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
 
-            {customizeMode === "custom" ? (
-              <Card className="surface-border overflow-hidden border-white/8 bg-white/[0.02] shadow-[0_14px_32px_rgba(0,0,0,0.14)]">
-                <CardHeader className="pb-3">
-                  <CardTitle className="relative text-[1.2rem] tracking-[-0.02em]">{copy.customTitle}</CardTitle>
-                  <CardDescription className="relative max-w-[56ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-                    {copy.customDescription}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-8">
-                        <div className="space-y-4 rounded-[22px] bg-white/[0.02] p-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-white">{copy.quickPresets}</h3>
-                            <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.quickPresetsDescription}</p>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {quickCustomPresets.map((preset) => (
-                              <Button
-                                key={preset.key}
-                                type="button"
-                                variant={currentPreset === preset.key ? "secondary" : "outline"}
-                                size="sm"
-                                className={cn(
-                                  "rounded-full",
-                                  currentPreset === preset.key && "shadow-[0_14px_30px_rgba(0,0,0,0.18)]",
-                                )}
-                                onClick={() => applyPreset(preset.key)}
-                              >
-                                {locale === "tr" ? preset.labelTr : preset.labelEn}
-                              </Button>
+                    <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
+                      <div className="mb-4">
+                        <p className="text-sm font-medium text-white">{copy.accentTitle}</p>
+                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.accentDescription}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        {accentSwatches.map((swatch) => (
+                          <ColorDot
+                            key={swatch}
+                            color={swatch}
+                            active={currentPrimaryColor.toLowerCase() === swatch.toLowerCase()}
+                            onClick={() => form.setValue("primaryColor", swatch, { shouldDirty: true, shouldValidate: true })}
+                          />
+                        ))}
+                      </div>
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.04] px-3 py-2 text-sm text-white">
+                          <span className="size-3 rounded-full" style={{ backgroundColor: currentPrimaryColor }} />
+                          {currentPrimaryColor}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowManualAccent((current) => !current)}
+                          className="text-sm text-[var(--foreground-muted)] underline decoration-white/10 underline-offset-4 transition hover:text-white"
+                        >
+                          {copy.customColorLabel}
+                        </button>
+                      </div>
+                      {showManualAccent ? (
+                        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                          <input
+                            type="color"
+                            value={currentPrimaryColor}
+                            onChange={(event) => form.setValue("primaryColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                            className="h-11 w-full rounded-[18px] border border-white/10 bg-transparent sm:w-16"
+                          />
+                          <Input
+                            value={currentPrimaryColor}
+                            onChange={(event) => form.setValue("primaryColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
+                      <div className="mb-4">
+                        <p className="text-sm font-medium text-white">{copy.backgroundTitle}</p>
+                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.backgroundDescription}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <SelectionPill active={currentBackgroundStyle === "solid"} onClick={() => setBackgroundStyle("solid")}>
+                          {copy.backgroundSolid}
+                        </SelectionPill>
+                        <SelectionPill active={currentBackgroundStyle === "soft-gradient"} onClick={() => setBackgroundStyle("soft-gradient")}>
+                          {copy.backgroundSoft}
+                        </SelectionPill>
+                        <SelectionPill active={currentBackgroundStyle === "deep-gradient"} onClick={() => setBackgroundStyle("deep-gradient")}>
+                          {copy.backgroundDeep}
+                        </SelectionPill>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {backgroundPalettePresets.map((preset) => (
+                          <button
+                            key={preset.key}
+                            type="button"
+                            onClick={() => applyBackgroundPalette(preset.key)}
+                            className="rounded-full border border-white/8 px-3.5 py-2 text-sm text-white transition hover:border-white/14 hover:bg-white/[0.05]"
+                          >
+                            {locale === "tr" ? preset.labelTr : preset.labelEn}
+                          </button>
+                        ))}
+                      </div>
+
+                      {currentBackgroundStyle === "solid" ? (
+                        <div className="mt-4">
+                          <div className="flex flex-wrap gap-3">
+                            {solidSwatches.map((swatch) => (
+                              <ColorDot
+                                key={swatch}
+                                color={swatch}
+                                active={currentBackgroundColor.toLowerCase() === swatch.toLowerCase()}
+                                onClick={() => form.setValue("backgroundColor", swatch, { shouldDirty: true, shouldValidate: true })}
+                              />
                             ))}
                           </div>
                         </div>
-
-                        <div className="space-y-4 rounded-[22px] bg-white/[0.02] p-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-white">{copy.textSection}</h3>
-                            <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.textSectionDescription}</p>
-                          </div>
-                          <div className="grid gap-4">
-                            <Field label={copy.welcomeTitleLabel}>
+                      ) : (
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                          <Field label={locale === "tr" ? "Başlangıç rengi" : "Start color"}>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                value={currentGradientStart}
+                                onChange={(event) => form.setValue("gradientStart", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                                className="h-11 w-14 rounded-[18px] border border-white/10 bg-transparent"
+                              />
                               <Input
-                                value={watchedValues.customWelcomeTitle ?? ""}
-                                onChange={(event) =>
-                                  form.setValue("customWelcomeTitle", event.target.value, {
-                                    shouldDirty: true,
-                                    shouldValidate: true,
-                                  })
-                                }
-                                placeholder={copy.welcomeTitlePlaceholder}
+                                value={currentGradientStart}
+                                onChange={(event) => form.setValue("gradientStart", event.target.value, { shouldDirty: true, shouldValidate: true })}
                               />
-                            </Field>
-                            <Field label={copy.introTextLabel}>
-                              <Textarea
-                                value={watchedValues.customIntroText ?? ""}
-                                onChange={(event) =>
-                                  form.setValue("customIntroText", event.target.value, {
-                                    shouldDirty: true,
-                                    shouldValidate: true,
-                                  })
-                                }
-                                placeholder={copy.introTextPlaceholder}
-                                className="min-h-[108px]"
-                              />
-                            </Field>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4 rounded-[22px] bg-white/[0.02] p-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-white">{copy.colors}</h3>
-                            <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.colorsDescription}</p>
-                          </div>
-                          <div className="grid gap-4 lg:grid-cols-1">
-                            <ColorField
-                              label={copy.primaryColor}
-                              value={currentPrimaryColor}
-                              onChange={(value) => form.setValue("primaryColor", value, { shouldDirty: true, shouldValidate: true })}
-                              swatches={colorSwatches}
-                              customLabel={copy.customColor}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-4 rounded-[22px] bg-white/[0.02] p-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-white">{copy.backgrounds}</h3>
-                            <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.backgroundsDescription}</p>
-                          </div>
-                          <Field label={copy.backgroundType}>
-                            <NativeSelect
-                              value={currentBackgroundType}
-                              onChange={(event) =>
-                                form.setValue("backgroundType", event.target.value as "solid" | "gradient" | "image", {
-                                  shouldDirty: true,
-                                  shouldValidate: true,
-                                })
-                              }
-                            >
-                              <option value="solid">{copy.solid}</option>
-                              <option value="gradient">{copy.gradient}</option>
-                              <option value="image">{copy.image}</option>
-                            </NativeSelect>
-                          </Field>
-                          {currentBackgroundType === "solid" ? (
-                            <ColorField
-                              label={copy.backgroundColor}
-                              value={currentBackgroundColor}
-                              onChange={(value) => form.setValue("backgroundColor", value, { shouldDirty: true, shouldValidate: true })}
-                              swatches={backgroundSolidSwatches}
-                              customLabel={copy.customColor}
-                            />
-                          ) : null}
-                          {currentBackgroundType === "gradient" ? (
-                            <>
-                              <div className="flex flex-wrap gap-2">
-                                {backgroundGradientPresets.map((preset) => (
-                                  <button
-                                    key={preset.key}
-                                    type="button"
-                                    onClick={() => applyBackgroundPreset(preset)}
-                                    className="rounded-full border border-white/10 px-4 py-2 text-sm text-white transition hover:border-white/16 hover:bg-white/[0.05]"
-                                  >
-                                    {preset.label}
-                                  </button>
-                                ))}
-                              </div>
-                              <div className="grid gap-4 lg:grid-cols-2">
-                                <ColorField
-                                  label={copy.gradientStart}
-                                  value={currentGradientStart}
-                                  onChange={(value) => form.setValue("gradientStart", value, { shouldDirty: true, shouldValidate: true })}
-                                  swatches={backgroundSolidSwatches}
-                                  customLabel={copy.customColor}
-                                />
-                                <ColorField
-                                  label={copy.gradientEnd}
-                                  value={currentGradientEnd}
-                                  onChange={(value) => form.setValue("gradientEnd", value, { shouldDirty: true, shouldValidate: true })}
-                                  swatches={backgroundSolidSwatches}
-                                  customLabel={copy.customColor}
-                                />
-                              </div>
-                            </>
-                          ) : null}
-                          {currentBackgroundType === "image" ? (
-                            <Field label={copy.backgroundImage} description={copy.backgroundImageHelp}>
-                              <div className="space-y-3">
-                                <div className="relative flex min-h-[180px] items-center justify-center overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.03]">
-                                  {watchedValues.backgroundImageUrl ? (
-                                    <img
-                                      src={watchedValues.backgroundImageUrl}
-                                      alt="Background preview"
-                                      className="absolute inset-0 h-full w-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="flex flex-col items-center gap-2 px-6 text-center text-sm text-[var(--foreground-muted)]">
-                                      <ImagePlus className="size-6" />
-                                      <span>{copy.noBackground}</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-white transition hover:bg-white/[0.08]">
-                                    <Upload className="size-4" />
-                                    {copy.uploadImage}
-                                    <input
-                                      type="file"
-                                      accept="image/png,image/jpeg,image/webp,image/gif"
-                                      className="hidden"
-                                      onChange={(event) => {
-                                        const file = event.target.files?.[0];
-                                        if (file) {
-                                          void handleBackgroundUpload(file);
-                                        }
-                                        event.currentTarget.value = "";
-                                      }}
-                                    />
-                                  </label>
-                                  {watchedValues.backgroundImageUrl ? (
-                                    <Button type="button" variant="ghost" size="sm" onClick={() => void handleBackgroundRemove()}>
-                                      <X className="size-4" />
-                                      {copy.removeImage}
-                                    </Button>
-                                  ) : null}
-                                </div>
-                              </div>
-                            </Field>
-                          ) : null}
-                        </div>
-
-                        <div className="space-y-4 rounded-[22px] bg-white/[0.02] p-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-white">{copy.fonts}</h3>
-                            <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.fontsDescription}</p>
-                          </div>
-                          <div className="grid gap-4 md:grid-cols-3">
-                            {fontOptions.map((option) => {
-                              const active = currentFontStyle === option.value;
-                              return (
-                                <button
-                                  key={option.value}
-                                  type="button"
-                                  onClick={() => setFontStyle(option.value)}
-                                  aria-pressed={active}
-                                  className={cn(
-                                    "group relative overflow-hidden rounded-[24px] border px-5 py-5 text-left transition duration-200",
-                                    active
-                                      ? "border-[var(--accent)] bg-[var(--accent)]/12 shadow-[0_14px_32px_rgba(0,0,0,0.18)] ring-1 ring-[var(--accent)]/35"
-                                      : "border-white/8 bg-white/[0.03] hover:border-white/16 hover:bg-white/[0.05]",
-                                  )}
-                                >
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="space-y-1">
-                                      <p className="text-base font-semibold text-white">
-                                        {locale === "tr" ? option.labelTr : option.labelEn}
-                                      </p>
-                                      <p className="text-xs font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]">
-                                        {locale === "tr" ? option.helperTr : option.helperEn}
-                                      </p>
-                                    </div>
-                                    {active ? (
-                                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--accent)]/45 bg-[var(--accent)]/18 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                                        <Check className="size-3.5" />
-                                        {locale === "tr" ? "Seçili" : "Selected"}
-                                      </span>
-                                    ) : (
-                                      <span className="mt-0.5 inline-flex size-7 items-center justify-center rounded-full border border-white/10 bg-black/20 text-white/40 transition group-hover:border-white/16 group-hover:text-white/55">
-                                        <Check className="size-3.5" />
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p
-                                    className="mt-6 text-[1.7rem] font-semibold leading-none tracking-[-0.03em] text-white sm:text-[1.9rem]"
-                                    style={{
-                                      fontFamily: headingPreviewFonts[option.value],
-                                    }}
-                                  >
-                                    Aklında ne var?
-                                  </p>
-                                  <p
-                                    className="mt-3 text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]"
-                                    style={{
-                                      fontFamily: previewBodyFonts[option.value],
-                                    }}
-                                  >
-                                    Kısa bir açıklama yaz ve referans görsel ekle.
-                                  </p>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                        <Card className="surface-border border-white/8 bg-white/[0.02] shadow-none">
-                          <CardHeader>
-                            <CardTitle>{copy.saveTheme}</CardTitle>
-                            <CardDescription>{copy.saveThemeDescription}</CardDescription>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                              <div className="min-w-0 flex-1">
-                                <Field label={copy.presetName}>
-                                  <Input
-                                    className="bg-white/[0.03]"
-                                    value={presetName}
-                                    onChange={(event) => setPresetName(event.target.value)}
-                                    placeholder={copy.presetNamePlaceholder}
-                                  />
-                                </Field>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                disabled={form.formState.isSubmitting}
-                                onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
-                              >
-                                <Save className="size-4" />
-                                {copy.savePreset}
-                              </Button>
-                              <Button type="button" variant="ghost" onClick={resetThemeToDefault}>
-                                <RotateCcw className="size-4" />
-                                {copy.resetDefaults}
-                              </Button>
                             </div>
+                          </Field>
+                          <Field label={locale === "tr" ? "Bitiş rengi" : "End color"}>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                value={currentGradientEnd}
+                                onChange={(event) => form.setValue("gradientEnd", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                                className="h-11 w-14 rounded-[18px] border border-white/10 bg-transparent"
+                              />
+                              <Input
+                                value={currentGradientEnd}
+                                onChange={(event) => form.setValue("gradientEnd", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                              />
+                            </div>
+                          </Field>
+                        </div>
+                      )}
+                    </div>
 
-                            {savedThemes.length ? (
-                              <div className="grid gap-3 lg:grid-cols-2">
-                                {savedThemes.map((savedTheme) => (
-                                  <div key={savedTheme.id} className="rounded-[22px] border border-white/8 bg-white/[0.025] p-4">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div>
-                                        <p className="font-medium text-white">{savedTheme.name}</p>
-                                        <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.savedThemesDescription}</p>
-                                      </div>
-                                      <div className="flex gap-2">
-                                        <span
-                                          className="size-4 rounded-full border border-white/10"
-                                          style={{ backgroundColor: savedTheme.theme.primaryColor }}
-                                        />
-                                        <span
-                                          className="size-4 rounded-full border border-white/10"
-                                          style={{ backgroundColor: savedTheme.theme.cardColor }}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                      <Button type="button" size="sm" variant="secondary" onClick={() => applySavedTheme(savedTheme)}>
-                                        {copy.applyTheme}
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => void renameSavedTheme(savedTheme.id, savedTheme.name)}
-                                      >
-                                        <Pencil className="size-4" />
-                                        {copy.renameTheme}
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => void deleteSavedTheme(savedTheme.id)}
-                                      >
-                                        <Trash2 className="size-4" />
-                                        {copy.deleteTheme}
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ))}
+                    <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
+                      <div className="mb-4">
+                        <p className="text-sm font-medium text-white">{copy.fontTitle}</p>
+                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.fontDescription}</p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        {fontOptions.map((option) => {
+                          const active = currentFontStyle === option.value;
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setFontStyle(option.value)}
+                              className={cn(
+                                "rounded-[22px] border p-4 text-left transition",
+                                active
+                                  ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]"
+                                  : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
+                              )}
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-semibold text-white">{option.label}</p>
+                                  <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                                    {locale === "tr" ? option.helperTr : option.helperEn}
+                                  </p>
+                                </div>
+                                {active ? <Check className="size-4 text-[var(--accent)]" /> : null}
                               </div>
-                            ) : null}
-                          </CardContent>
-                        </Card>
+                              <p
+                                className="mt-4 text-lg font-semibold tracking-[-0.03em] text-white"
+                                style={{ fontFamily: headingPreviewFonts[option.value] }}
+                              >
+                                Aklında ne var?
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <CollapsibleHeader
+                        title={copy.fineTitle}
+                        description={copy.fineDescription}
+                        summary={copy.fineSummary}
+                        open={showFineSettings}
+                        onToggle={() => setShowFineSettings((current) => !current)}
+                      />
+                      {showFineSettings ? (
+                        <div className="grid gap-4 rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:grid-cols-3">
+                          <Field label={copy.advancedTextColor}>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                value={currentTextColor}
+                                onChange={(event) => form.setValue("textColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                                className="h-11 w-14 rounded-[18px] border border-white/10 bg-transparent"
+                              />
+                              <Input
+                                value={currentTextColor}
+                                onChange={(event) => form.setValue("textColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                              />
+                            </div>
+                          </Field>
+                          <Field label={copy.advancedCardColor}>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                value={currentCardColor}
+                                onChange={(event) => form.setValue("cardColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                                className="h-11 w-14 rounded-[18px] border border-white/10 bg-transparent"
+                              />
+                              <Input
+                                value={currentCardColor}
+                                onChange={(event) => form.setValue("cardColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                              />
+                            </div>
+                          </Field>
+                          <Field label={copy.advancedSecondary}>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                value={currentSecondaryColor}
+                                onChange={(event) => form.setValue("secondaryColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                                className="h-11 w-14 rounded-[18px] border border-white/10 bg-transparent"
+                              />
+                              <Input
+                                value={currentSecondaryColor}
+                                onChange={(event) => form.setValue("secondaryColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                              />
+                            </div>
+                          </Field>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowSaveLook((current) => !current)}
+                          className="text-sm font-medium text-white underline decoration-white/12 underline-offset-4 transition hover:text-[var(--accent)]"
+                        >
+                          {copy.saveLookTrigger}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetThemeToDefault}
+                          className="text-sm text-[var(--foreground-muted)] underline decoration-white/10 underline-offset-4 transition hover:text-white"
+                        >
+                          {copy.resetDefaults}
+                        </button>
+                      </div>
+                      {showSaveLook ? (
+                        <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
+                          <p className="text-sm text-[var(--foreground-muted)]">{copy.saveLookDescription}</p>
+                          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                            <div className="min-w-0 flex-1">
+                              <Field label={copy.presetName}>
+                                <Input
+                                  value={presetName}
+                                  onChange={(event) => setPresetName(event.target.value)}
+                                  placeholder={copy.presetNamePlaceholder}
+                                />
+                              </Field>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              disabled={form.formState.isSubmitting || !presetName.trim()}
+                              onClick={() => void form.handleSubmit((values) => saveTheme(values, true))()}
+                            >
+                              <Save className="size-4" />
+                              {copy.savePreset}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                </SectionCard>
+
+                <SectionCard title={copy.savedLooks} description={copy.usingGeneralPreset} icon={<Palette className="size-4" />}>
+                  {savedThemes.length ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {savedThemes.map((savedTheme) => (
+                        <div key={savedTheme.id} className="rounded-[24px] border border-white/8 bg-white/[0.025] p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-white">{savedTheme.name}</p>
+                              <p className="mt-1 text-sm text-[var(--foreground-muted)]">{savedTheme.theme.presetTheme}</p>
+                            </div>
+                            <ThemeMiniPalette theme={savedTheme.theme} />
+                          </div>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <Button type="button" size="sm" variant="secondary" onClick={() => applySavedTheme(savedTheme)}>
+                              {copy.applyTheme}
+                            </Button>
+                            <Button type="button" size="sm" variant="outline" onClick={() => void renameSavedTheme(savedTheme.id, savedTheme.name)}>
+                              {copy.renameTheme}
+                            </Button>
+                            <Button type="button" size="sm" variant="ghost" onClick={() => void deleteSavedTheme(savedTheme.id)}>
+                              {copy.deleteTheme}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[var(--foreground-muted)]">{copy.noSavedLooks}</p>
+                  )}
+                </SectionCard>
+              </div>
+            )}
+
+            {form.formState.errors.root?.message ? (
+              <div className="rounded-[22px] border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+                {form.formState.errors.root.message}
+              </div>
             ) : null}
           </div>
 
-          {customizeMode === "custom" ? (
-            <Card className="surface-border overflow-hidden border-white/8 bg-white/[0.02] shadow-[0_14px_32px_rgba(0,0,0,0.16)] xl:sticky xl:top-6">
-              <CardHeader>
-                <CardTitle className="relative text-[1.15rem] tracking-[-0.02em]">{copy.previewTitle}</CardTitle>
-                <CardDescription className="relative text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-                  {copy.previewDescription}
-                </CardDescription>
+          <div className="space-y-4 xl:sticky xl:top-6">
+            <div className="xl:hidden">
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={() => setShowMobilePreview((current) => !current)}
+              >
+                {showMobilePreview ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {showMobilePreview ? copy.previewToggleClose : copy.previewToggleOpen}
+              </Button>
+            </div>
+
+            <Card
+              className={cn(
+                "surface-border border-white/8 bg-white/[0.02] shadow-[0_16px_34px_rgba(0,0,0,0.16)]",
+                !showMobilePreview && "hidden xl:block",
+              )}
+            >
+              <CardHeader className="pb-4">
+                <CardTitle className="text-[1.06rem] tracking-[-0.02em]">{copy.previewTitle}</CardTitle>
+                <CardDescription>{copy.previewDescription}</CardDescription>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {previewModeOptions.map((option) => (
+                    <SelectionPill
+                      key={option.value}
+                      active={previewMode === option.value}
+                      onClick={() => setPreviewMode(option.value)}
+                      className="text-xs"
+                    >
+                      {locale === "tr" ? option.labelTr : option.labelEn}
+                    </SelectionPill>
+                  ))}
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4 pt-0">
-                <ThemeCardPreview artist={previewArtist} theme={previewTheme} variant="panel" />
+              <CardContent className="pt-0">
+                <AppearancePreview artist={artist} theme={previewTheme} mode={previewMode} locale={locale} />
               </CardContent>
             </Card>
-          ) : null}
+          </div>
         </div>
 
-          <div className="sticky bottom-4 z-20 pt-1">
-          <div className="rounded-[18px] border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_90%,black)]/92 px-4 py-2.5 shadow-[0_10px_22px_rgba(0,0,0,0.16)] backdrop-blur-md sm:px-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-white">{actionStatus}</p>
-                <p className="mt-1 text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">{copy.stickyApplyHint}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                {demoMode ? <Badge variant="accent">{copy.demo}</Badge> : null}
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <LoaderCircle className="size-4 animate-spin" />
-                      {copy.saving}
-                    </>
-                  ) : (
-                    <>
-                      <Save className="size-4" />
-                      {copy.save}
-                    </>
-                  )}
-                </Button>
+        {form.formState.isDirty ? (
+          <div className="sticky bottom-4 z-20">
+            <div className="rounded-[22px] border border-white/8 bg-[rgba(11,12,16,0.94)] px-4 py-3 shadow-[0_18px_40px_rgba(0,0,0,0.24)] backdrop-blur-md sm:px-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm text-[var(--foreground-muted)]">{copy.stickyHint}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {demoMode ? <span className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-[var(--foreground-muted)]">{copy.demo}</span> : null}
+                  <Button type="button" variant="ghost" onClick={resetThemeToCurrent}>
+                    {copy.cancel}
+                  </Button>
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <LoaderCircle className="size-4 animate-spin" />
+                        {copy.saving}
+                      </>
+                    ) : (
+                      <>
+                        <Save className="size-4" />
+                        {copy.save}
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : null}
 
         <input type="hidden" {...form.register("bodyFont")} />
         <input type="hidden" {...form.register("fontPairingPreset")} />
         <input type="hidden" {...form.register("backgroundImageUrl")} />
-        <input type="hidden" {...form.register("textColor")} />
         <input type="hidden" {...form.register("cardOpacity")} value={String(currentCardOpacity)} />
         <input type="hidden" {...form.register("radiusStyle")} />
-        <input type="hidden" {...form.register("themeMode")} value={watchedValues.themeMode ?? theme.themeMode} />
+        <input type="hidden" {...form.register("themeMode")} value={currentThemeMode} />
         <input type="hidden" {...form.register("customWelcomeTitle")} />
         <input type="hidden" {...form.register("customIntroText")} />
         <input type="hidden" {...form.register("customCtaLabel")} />
         <input type="hidden" {...form.register("featuredSectionLabel1")} />
         <input type="hidden" {...form.register("featuredSectionLabel2")} />
-
       </form>
     </div>
   );
