@@ -66,6 +66,8 @@ function getCopy(locale: PublicLocale) {
       heroCta: "Fiyat tahmini al",
       introTitle: "Aklındaki dövmeyi birkaç adımda netleştirelim",
       introDescription: "Seçtiklerine göre sana yaklaşık bir başlangıç fiyatı göstereceğiz.",
+      startTitle: "Nasıl ilerlemek istersin?",
+      startDescription: "Kendi talebini anlatabilir ya da hazır tasarımlardan birini seçebilirsin.",
       featuredFlowTitle: "Tasarımlardan birini seç, kalanını birlikte netleştirelim",
       featuredFlowDescription: "Seçtiğin tasarıma göre yaklaşık başlangıç fiyatını gösterelim.",
       areaScopeTitle: "Yaklaşık ne kadar alan kaplayacak?",
@@ -228,6 +230,8 @@ function getCopy(locale: PublicLocale) {
     heroCta: "Get estimate",
     introTitle: "Let’s clarify the tattoo you have in mind in a few steps",
     introDescription: "Based on your choices, we’ll show you an approximate starting price.",
+    startTitle: "How would you like to continue?",
+    startDescription: "You can describe your idea or pick one of the ready-made designs.",
     featuredFlowTitle: "Pick one of the designs and let’s clarify the rest together",
     featuredFlowDescription: "We’ll show you an approximate starting price based on the design you choose.",
     areaScopeTitle: "About how much area will it cover?",
@@ -522,9 +526,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const currentFlowStep = step < resultStep ? flowSteps[step - 1] : null;
   const currentTitle =
     currentFlowStep === "start"
-      ? draft.pricingSource === "featured_design"
-        ? copy.featuredFlowTitle
-        : copy.areaScopeTitle
+      ? copy.startTitle
       : currentFlowStep === "request_type"
         ? copy.requestTypeTitle
         : currentFlowStep === "placement"
@@ -546,9 +548,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     : copy.stepTitles[6];
   const currentDescription =
     currentFlowStep === "start"
-      ? draft.pricingSource === "featured_design"
-        ? copy.featuredFlowDescription
-        : copy.areaScopeDescription
+      ? copy.startDescription
       : currentFlowStep === "request_type"
         ? copy.requestTypeDescription
         : currentFlowStep === "placement"
