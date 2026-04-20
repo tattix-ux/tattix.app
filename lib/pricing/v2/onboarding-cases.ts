@@ -24,6 +24,12 @@ export type PricingReviewCase = {
   metaLine: Record<PublicLocale, string>;
 };
 
+export const PRICING_V2_SIZE_SERIES_CASE_IDS = [
+  "object-6cm-forearm",
+  "object-10cm-forearm",
+  "object-16cm-forearm",
+] as const;
+
 export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
   {
     id: "text-4cm-wrist",
@@ -52,42 +58,42 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     },
   },
   {
-    id: "object-8cm-forearm",
+    id: "object-6cm-forearm",
     requestType: "single_object",
-    referenceSizeCm: 8,
+    referenceSizeCm: 6,
     placementBucket: "easy",
     colorMode: "black-only",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/object-8cm-forearm.png",
-    title: { tr: "8 cm tek obje", en: "8 cm single object" },
+    imageSlot: "sample-tattoos/pricing-v2/onboarding/object-6cm-forearm.png",
+    title: { tr: "6 cm tek obje", en: "6 cm single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
       en: "Forearm · black only · simple linework",
     },
   },
   {
-    id: "figure-12cm-upper-arm",
+    id: "object-10cm-forearm",
     requestType: "single_object",
-    referenceSizeCm: 12,
+    referenceSizeCm: 10,
     placementBucket: "easy",
-    colorMode: "black-grey",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/figure-12cm-upper-arm.png",
-    title: { tr: "12 cm tek figür", en: "12 cm single figure" },
+    colorMode: "black-only",
+    imageSlot: "sample-tattoos/pricing-v2/onboarding/object-10cm-forearm.png",
+    title: { tr: "10 cm tek obje", en: "10 cm single object" },
     metaLine: {
-      tr: "Üst kol · siyah-gri · orta yoğunluk",
-      en: "Upper arm · black and grey · medium density",
+      tr: "Ön kol · sadece siyah · sade çizgisel",
+      en: "Forearm · black only · simple linework",
     },
   },
   {
-    id: "multi-15cm-calf",
-    requestType: "multi_element",
-    referenceSizeCm: 15,
-    placementBucket: "standard",
+    id: "object-16cm-forearm",
+    requestType: "single_object",
+    referenceSizeCm: 16,
+    placementBucket: "easy",
     colorMode: "black-only",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/multi-15cm-calf.png",
-    title: { tr: "15 cm çok öğeli tasarım", en: "15 cm multi-element design" },
+    imageSlot: "sample-tattoos/pricing-v2/onboarding/object-16cm-forearm.png",
+    title: { tr: "16 cm tek obje", en: "16 cm single object" },
     metaLine: {
-      tr: "Baldır · sadece siyah · orta yoğunluk kompozisyon",
-      en: "Calf · black only · medium-density composition",
+      tr: "Ön kol · sadece siyah · sade çizgisel",
+      en: "Forearm · black only · simple linework",
     },
   },
   {
@@ -159,13 +165,13 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     },
   },
   {
-    id: "review-single",
+    id: "review-single-large",
     requestType: "single_object",
-    referenceSizeCm: 11,
+    referenceSizeCm: 16,
     placementBucket: "easy",
     colorMode: "black-only",
-    imageSlot: "sample-tattoos/pricing-v2/review/review-single.png",
-    title: { tr: "Tek obje", en: "Single object" },
+    imageSlot: "sample-tattoos/pricing-v2/review/review-single-large.png",
+    title: { tr: "16 cm tek obje", en: "16 cm single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
       en: "Forearm · black only · simple linework",

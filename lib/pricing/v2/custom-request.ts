@@ -3,59 +3,9 @@ import type { EstimateMode } from "@/lib/types";
 import { clamp, roundToFriendlyPrice } from "./helpers";
 import { buildDisplayEstimateLabel, buildEstimateSummaryText } from "./output";
 import { resolvePlacementBucket } from "./placement";
-import { getArtistPricingV2Profile, getLeadPreferenceAdjustment, getOnboardingCaseMidpoint } from "./profile";
+import { getArtistPricingV2Profile, getLeadPreferenceAdjustment } from "./profile";
+import { applyMinimumPriceTension, buildCustomRequestSizeFactor } from "./size";
 import type { CustomRequestPricingInput, PricingV2Context, PricingV2Output } from "./types";
-
-function getReferenceCaseId(requestType: RequestTypeValue) {
-  switch (requestType) {
-    case "text":
-      return "text-4cm-wrist";
-    case "mini_simple":
-      return "symbol-4cm-ankle";
-    case "single_object":
-      return "figure-12cm-upper-arm";
-    case "multi_element":
-      return "multi-15cm-calf";
-    case "cover_up":
-      return "small-cover-up";
-    case "unsure":
-      return "object-8cm-forearm";
-  }
-}
-
-function getReferenceSizeCm(requestType: RequestTypeValue) {
-  switch (requestType) {
-    case "text":
-      return 4;
-    case "mini_simple":
-      return 4;
-    case "single_object":
-      return 12;
-    case "multi_element":
-      return 15;
-    case "cover_up":
-      return 7;
-    case "unsure":
-      return 10;
-  }
-}
-
-function getSizeExponent(requestType: RequestTypeValue) {
-  switch (requestType) {
-    case "text":
-      return 0.34;
-    case "mini_simple":
-      return 0.42;
-    case "single_object":
-      return 0.58;
-    case "multi_element":
-      return 0.72;
-    case "cover_up":
-      return 0.54;
-    case "unsure":
-      return 0.5;
-  }
-}
 
 function getPlacementFactor(bucket: ReturnType<typeof resolvePlacementBucket>) {
   if (bucket === "hard") {
@@ -153,14 +103,19 @@ export function estimateCustomRequestPrice(
   context: PricingV2Context,
 ): PricingV2Output {
   const profile = context.profile ?? getArtistPricingV2Profile(context.pricingRules);
-  const fallbackBase = Math.max(profile.minimumJobPrice, context.pricingRules.minimumCharge);
-  const caseMidpoint = getOnboardingCaseMidpoint(profile, getReferenceCaseId(input.requestType), fallbackBase);
-  const referenceSizeCm = getReferenceSizeCm(input.requestType);
-  const sizeFactor = clamp(
-    Math.pow(Math.max(input.sizeCm, 2) / referenceSizeCm, getSizeExponent(input.requestType)),
-    0.82,
-    input.requestType === "multi_element" ? 1.9 : 1.65,
-  );
+  const categoryAnchor =
+    input.requestType === "text"
+      ? profile.categoryAnchors.text
+      : input.requestType === "mini_simple"
+        ? profile.categoryAnchors.miniSimple
+        : input.requestType === "single_object"
+          ? profile.categoryAnchors.singleObject
+          : input.requestType === "multi_element"
+            ? profile.categoryAnchors.multiElement
+            : input.requestType === "cover_up"
+              ? profile.categoryAnchors.coverUp
+              : profile.categoryAnchors.unsure;
+  const sizeFactorResult = buildCustomRequestSizeFactor(input.requestType, input.sizeCm, profile);
   const placementBucket = resolvePlacementBucket(input.placement);
   const placementFactor = getPlacementFactor(placementBucket);
   const colorFactor = getColorFactor(input.requestType, input.colorMode, profile.colorImpactPreference);
@@ -171,10 +126,23 @@ export function estimateCustomRequestPrice(
         : 1.12
       : 1;
   const leadPreference = getLeadPreferenceAdjustment(profile.leadPreference);
-  const center = Math.max(
+  const rawCenter = Math.max(
     profile.minimumJobPrice,
-    caseMidpoint * sizeFactor * placementFactor * colorFactor * coverUpFactor * leadPreference.center,
+    categoryAnchor *
+      sizeFactorResult.factor *
+      placementFactor *
+      colorFactor *
+      coverUpFactor *
+      leadPreference.center,
   );
+  const minimumTension = applyMinimumPriceTension(
+    rawCenter,
+    profile.minimumJobPrice,
+    input.requestType,
+    input.sizeCm,
+    profile,
+  );
+  const center = minimumTension.adjustedCenter;
   const hasReferenceSignal = input.hasReferenceImage || input.hasReferenceNote;
   const mode = getMode(input.requestType, hasReferenceSignal);
   const spread = getSpread(input.requestType, mode, input, placementBucket) * leadPreference.spread;
@@ -194,9 +162,12 @@ export function estimateCustomRequestPrice(
       internalConfidence: 0.48,
       internalReasoning: [
         `requestType:${input.requestType}`,
-        `sizeFactor:${sizeFactor.toFixed(3)}`,
+        `sizeFactor:${sizeFactorResult.factor.toFixed(3)}`,
+        `defaultSizeFactor:${sizeFactorResult.defaultFactor.toFixed(3)}`,
+        `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
         `placement:${placementBucket}`,
         `color:${input.colorMode}`,
+        `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
       ],
     };
   }
@@ -219,9 +190,12 @@ export function estimateCustomRequestPrice(
     internalConfidence: mode === "range" ? 0.74 : 0.58,
     internalReasoning: [
       `requestType:${input.requestType}`,
-      `sizeFactor:${sizeFactor.toFixed(3)}`,
+      `sizeFactor:${sizeFactorResult.factor.toFixed(3)}`,
+      `defaultSizeFactor:${sizeFactorResult.defaultFactor.toFixed(3)}`,
+      `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
       `placement:${placementBucket}`,
       `color:${input.colorMode}`,
+      `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
     ],
   };
 }

@@ -159,6 +159,46 @@ export type PricingV2ReviewAnswer = {
   id: string;
   verdict: PricingValidationFeedback;
 };
+export type PricingV2SizeSeries = {
+  object6cm: number;
+  object10cm: number;
+  object16cm: number;
+};
+export type PricingV2SizeProfile = {
+  anchorSizeCm: number;
+  anchorPrice: number;
+  series: PricingV2SizeSeries;
+  normalizedRatios: {
+    object6To10: number;
+    object10To16: number;
+    object6To16: number;
+  };
+  growth: {
+    lowerSlope: number;
+    upperSlope: number;
+    overallSlope: number;
+  };
+  inferredExponentOffset: number;
+  minimumTension: number;
+  artistBlendWeight: number;
+};
+export type PricingV2ReviewAdjustments = {
+  globalBias: number;
+  textBias: number;
+  miniSimpleBias: number;
+  singleObjectBias: number;
+  largeSizeBias: number;
+  multiElementBias: number;
+  coverUpBias: number;
+};
+export type PricingV2CategoryAnchors = {
+  text: number;
+  miniSimple: number;
+  singleObject: number;
+  multiElement: number;
+  coverUp: number;
+  unsure: number;
+};
 export type ArtistPricingV2Profile = {
   version: 2;
   leadPreference: LeadPreferenceValue;
@@ -168,6 +208,10 @@ export type ArtistPricingV2Profile = {
   coverUpImpactPreference: CoverUpImpactPreferenceValue;
   onboardingCases: PricingV2CaseAnswer[];
   reviewCases: PricingV2ReviewAnswer[];
+  sizeSeries: PricingV2SizeSeries;
+  inferredSizeProfile: PricingV2SizeProfile;
+  reviewAdjustments: PricingV2ReviewAdjustments;
+  categoryAnchors: PricingV2CategoryAnchors;
   onboardingCompleted: boolean;
 };
 export type PricingProfile = {

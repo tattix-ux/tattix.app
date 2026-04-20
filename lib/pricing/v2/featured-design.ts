@@ -1,7 +1,8 @@
-import { dampedPowerScale, getColorImpactFactor, roundToFriendlyPrice } from "./helpers";
+import { getColorImpactFactor, roundToFriendlyPrice } from "./helpers";
 import { buildDisplayEstimateLabel, buildEstimateSummaryText } from "./output";
 import { resolvePlacementBucket } from "./placement";
 import { getArtistPricingV2Profile } from "./profile";
+import { buildFeaturedDesignSizeFactor } from "./size";
 import type { FeaturedDesignPricingInput, PricingV2Context, PricingV2Output } from "./types";
 import type { ArtistFeaturedDesign, ColorImpactPreferenceValue } from "@/lib/types";
 
@@ -55,17 +56,22 @@ export function estimateFeaturedDesignPrice(
     pricingMode === "size_and_placement_adjusted"
       ? getPlacementFactor(resolvePlacementBucket(input.placement))
       : 1;
-  const sizeFactor =
+  const sizeFactorResult =
     pricingMode === "fixed_range"
-      ? 1
-      : dampedPowerScale(input.sizeCm / Math.max(referenceSizeCm, 2), 0.45, 0.9, 1.42);
+      ? { factor: 1, defaultFactor: 1, artistFactor: 1, blendWeight: 0 }
+      : buildFeaturedDesignSizeFactor(
+          input.sizeCm,
+          referenceSizeCm,
+          profile,
+          pricingMode === "starting_from" ? "starting_from" : pricingMode,
+        );
   const adjustedMin = Math.max(
     roundToFriendlyPrice(profile.minimumJobPrice, "up"),
-    roundToFriendlyPrice(referenceRange.min * sizeFactor * placementFactor * colorFactor, "down"),
+    roundToFriendlyPrice(referenceRange.min * sizeFactorResult.factor * placementFactor * colorFactor, "down"),
   );
   const adjustedMax = Math.max(
     adjustedMin,
-    roundToFriendlyPrice(referenceRange.max * sizeFactor * placementFactor * colorFactor, "up"),
+    roundToFriendlyPrice(referenceRange.max * sizeFactorResult.factor * placementFactor * colorFactor, "up"),
   );
 
   if (pricingMode === "starting_from") {
@@ -80,7 +86,9 @@ export function estimateFeaturedDesignPrice(
       internalConfidence: 0.72,
       internalReasoning: [
         `pricingMode:${pricingMode}`,
-        `sizeFactor:${sizeFactor.toFixed(3)}`,
+        `sizeFactor:${sizeFactorResult.factor.toFixed(3)}`,
+        `defaultSizeFactor:${sizeFactorResult.defaultFactor.toFixed(3)}`,
+        `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
         `placementFactor:${placementFactor.toFixed(3)}`,
         `colorFactor:${colorFactor.toFixed(3)}`,
       ],
@@ -106,7 +114,9 @@ export function estimateFeaturedDesignPrice(
     internalConfidence: pricingMode === "fixed_range" ? 0.84 : 0.7,
     internalReasoning: [
       `pricingMode:${pricingMode}`,
-      `sizeFactor:${sizeFactor.toFixed(3)}`,
+      `sizeFactor:${sizeFactorResult.factor.toFixed(3)}`,
+      `defaultSizeFactor:${sizeFactorResult.defaultFactor.toFixed(3)}`,
+      `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
       `placementFactor:${placementFactor.toFixed(3)}`,
       `colorFactor:${colorFactor.toFixed(3)}`,
     ],
