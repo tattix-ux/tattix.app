@@ -20,8 +20,8 @@ export function IntentSelectionStep({
   selectedDesignId: string;
   pricingSource: PricingSourceValue | "";
   areaScope: AreaScopeValue | "";
-  onPricingSourceChange: (value: PricingSourceValue) => void;
-  onAreaScopeChange: (value: AreaScopeValue) => void;
+  onPricingSourceChange: (value: PricingSourceValue | "") => void;
+  onAreaScopeChange: (value: AreaScopeValue | "") => void;
   onDesignSelect: (designId: string) => void;
 }) {
   const hasDesigns = designs.length > 0;
@@ -65,7 +65,7 @@ export function IntentSelectionStep({
       <div className="grid gap-3 sm:grid-cols-2">
         <button
           type="button"
-          onClick={() => onPricingSourceChange("custom_request")}
+          onClick={() => onPricingSourceChange(pricingSource === "custom_request" ? "" : "custom_request")}
           className="rounded-[24px] border px-4 py-4 text-left transition"
           style={{
             borderColor: pricingSource === "custom_request" ? "var(--artist-primary)" : "var(--artist-border)",
@@ -82,15 +82,15 @@ export function IntentSelectionStep({
           </div>
           <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
             {locale === "tr"
-              ? "Sana en yakın alan tipini seçip devam edebilirsin."
-              : "Choose the closest area type and continue."}
+              ? "Aklındaki tasarımı bize anlatabilirsin."
+              : "You can tell us about the tattoo you have in mind."}
           </p>
         </button>
 
         {hasDesigns ? (
           <button
             type="button"
-            onClick={() => onPricingSourceChange("featured_design")}
+            onClick={() => onPricingSourceChange(pricingSource === "featured_design" ? "" : "featured_design")}
             className="rounded-[24px] border px-4 py-4 text-left transition"
             style={{
               borderColor: pricingSource === "featured_design" ? "var(--artist-primary)" : "var(--artist-border)",
@@ -131,7 +131,7 @@ export function IntentSelectionStep({
                 <button
                   key={option}
                   type="button"
-                  onClick={() => onAreaScopeChange(option)}
+                  onClick={() => onAreaScopeChange(active ? "" : option)}
                   className="rounded-[22px] border px-4 py-4 text-left transition"
                   style={{
                     borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -172,7 +172,7 @@ export function IntentSelectionStep({
                 <button
                   key={design.id}
                   type="button"
-                  onClick={() => onDesignSelect(design.id)}
+                  onClick={() => onDesignSelect(active ? "" : design.id)}
                   className="overflow-hidden rounded-[24px] border p-4 text-left transition"
                   style={{
                     borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",

@@ -1008,6 +1008,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   }
                 }}
                 onDesignSelect={(designId) => {
+                  if (!designId) {
+                    setField("pricingSource", "featured_design");
+                    setField("selectedDesignId", "");
+                    setField("colorMode", "");
+                    return;
+                  }
                   const design = activeDesigns.find((item) => item.id === designId) ?? null;
                   setField("pricingSource", "featured_design");
                   setField("areaScope", "");
