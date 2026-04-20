@@ -484,7 +484,7 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
     id: "forearm-large-coverage",
     imageSlot: BROAD_AREA_IMAGE_SLOTS.forearmLargeCoverage,
     imagePresentation: IMAGE_PRESENTATIONS.broadAreaPortrait,
-    cardLayoutClassName: "md:grid-cols-[240px_minmax(0,1fr)]",
+    cardLayoutClassName: "lg:grid-cols-[196px_minmax(0,1fr)]",
     title: { tr: "Ön kolun büyük kısmını kaplayan iş", en: "Piece covering most of the forearm" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -495,7 +495,7 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
     id: "calf-large-coverage",
     imageSlot: BROAD_AREA_IMAGE_SLOTS.calfLargeCoverage,
     imagePresentation: IMAGE_PRESENTATIONS.broadAreaPortrait,
-    cardLayoutClassName: "md:grid-cols-[240px_minmax(0,1fr)]",
+    cardLayoutClassName: "lg:grid-cols-[196px_minmax(0,1fr)]",
     title: { tr: "Baldırın büyük kısmını kaplayan iş", en: "Piece covering most of the calf" },
     metaLine: {
       tr: "Sadece siyah · daha düzenli, simetrik",
@@ -506,7 +506,7 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
     id: "chest-large-coverage",
     imageSlot: BROAD_AREA_IMAGE_SLOTS.chestLargeCoverage,
     imagePresentation: IMAGE_PRESENTATIONS.broadAreaLandscape,
-    cardLayoutClassName: "md:grid-cols-[320px_minmax(0,1fr)]",
+    cardLayoutClassName: "lg:grid-cols-[260px_minmax(0,1fr)]",
     title: { tr: "Göğüste geniş alan kaplayan iş", en: "Wide coverage piece on the chest" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -520,7 +520,7 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
     id: "half-sleeve",
     imageSlot: BROAD_AREA_IMAGE_SLOTS.halfSleeve,
     imagePresentation: IMAGE_PRESENTATIONS.broadAreaLandscape,
-    cardLayoutClassName: "md:grid-cols-[320px_minmax(0,1fr)]",
+    cardLayoutClassName: "lg:grid-cols-[260px_minmax(0,1fr)]",
     title: { tr: "Kolun yarısını kaplayan iş", en: "Piece covering half the arm" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -531,7 +531,7 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
     id: "full-sleeve",
     imageSlot: BROAD_AREA_IMAGE_SLOTS.fullSleeve,
     imagePresentation: IMAGE_PRESENTATIONS.broadAreaSquare,
-    cardLayoutClassName: "md:grid-cols-[272px_minmax(0,1fr)]",
+    cardLayoutClassName: "lg:grid-cols-[220px_minmax(0,1fr)]",
     title: { tr: "Tüm kolu kaplayan iş", en: "Piece covering the full arm" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -542,7 +542,7 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
     id: "back-large-coverage",
     imageSlot: BROAD_AREA_IMAGE_SLOTS.backLargeCoverage,
     imagePresentation: IMAGE_PRESENTATIONS.broadAreaLandscape,
-    cardLayoutClassName: "md:grid-cols-[320px_minmax(0,1fr)]",
+    cardLayoutClassName: "lg:grid-cols-[260px_minmax(0,1fr)]",
     title: { tr: "Sırtta geniş alan kaplayan iş", en: "Large coverage piece on the back" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",

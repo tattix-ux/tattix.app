@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageIcon, LoaderCircle } from "lucide-react";
+import { Expand, ImageIcon, LoaderCircle, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -40,6 +40,12 @@ type ReviewCaseDraft = {
   reason: PricingV2ReviewReason | "";
   adjustmentBias: number;
   iterationCount: number;
+};
+
+type PricingPreviewItem = {
+  imageSlot: string;
+  title: string;
+  metaLine?: string;
 };
 
 function getText(locale: PublicLocale) {
@@ -85,7 +91,6 @@ function getText(locale: PublicLocale) {
       },
       largeAreaCasesTitle: "Tek bölgede geniş alan örnekleri",
       wideAreaCasesTitle: "Çok geniş alan örnekleri",
-      wideAreaCaseTitle: "Müşteriye bu işler için hangi başlangıç fiyatı gösterilsin?",
       startingFrom: "Başlangıç fiyatı",
       min: "Fiyat alt sınırı",
       max: "Fiyat üst sınırı",
@@ -109,6 +114,9 @@ function getText(locale: PublicLocale) {
       saved: "Fiyat ayarların kaydedildi.",
       failed: "Ayarlar kaydedilirken bir sorun oluştu. Tekrar dene.",
       estimate: "Müşteriye gösterilecek fiyat tahmini",
+      previewImage: "Büyüt",
+      previewTitle: "Görsel önizleme",
+      closePreview: "Kapat",
       currency: "TL",
       optionalSinglePriceHint: "Bu işler için tek bir başlangıç fiyatı göstermek çoğu zaman daha uygundur.",
     };
@@ -154,7 +162,6 @@ function getText(locale: PublicLocale) {
     },
     largeAreaCasesTitle: "Large coverage examples for a single area",
     wideAreaCasesTitle: "Very wide coverage examples",
-    wideAreaCaseTitle: "What starting level should the client see for this kind of piece?",
     startingFrom: "Starting level",
     min: "Price floor",
     max: "Price ceiling",
@@ -172,11 +179,14 @@ function getText(locale: PublicLocale) {
     },
     back: "Back",
     next: "Next",
-    save: "Save pricing settings",
-    saving: "Saving",
-    saved: "Your pricing settings are saved.",
-    failed: "Something went wrong while saving. Try again.",
+      save: "Save pricing settings",
+      saving: "Saving",
+      saved: "Your pricing settings are saved.",
+      failed: "Something went wrong while saving. Try again.",
       estimate: "The price estimate shown to the client",
+      previewImage: "Expand",
+      previewTitle: "Image preview",
+      closePreview: "Close",
       currency: "TRY",
       phaseOneNote: "The range shown to the client is an approximate price.",
       reviewNote: "These choices help pull the system estimates closer to your pricing.",
@@ -444,6 +454,8 @@ function ImageSlotPreview({
   placeholderAsset,
   placeholderHelp,
   variant = "case",
+  onPreview,
+  previewLabel = "Expand",
 }: {
   imageSlot: string;
   imagePresentation?: {
@@ -455,6 +467,8 @@ function ImageSlotPreview({
   placeholderAsset: string;
   placeholderHelp: string;
   variant?: "case" | "review" | "showcase";
+  onPreview?: (() => void) | undefined;
+  previewLabel?: string;
 }) {
   const [hasError, setHasError] = useState(false);
   const frameClassName =
@@ -482,11 +496,32 @@ function ImageSlotPreview({
     );
   }
 
-  return (
+  return onPreview ? (
+    <button
+      type="button"
+      onClick={onPreview}
+      className="group relative block w-full overflow-hidden rounded-[22px] text-left transition hover:-translate-y-0.5"
+    >
       <div className={cn("overflow-hidden rounded-[22px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", sizeClassName)}>
-        <div className={cn("flex h-full w-full items-center justify-center", frameClassName)}>
+        <div className={cn("relative flex h-full w-full items-center justify-center", frameClassName)}>
           <img
             src={imageSlot}
+            alt=""
+            className={cn("h-full w-full transition duration-200 group-hover:scale-[1.02]", fitClassName, imagePresentation?.imageClassName)}
+            onError={() => setHasError(true)}
+          />
+          <span className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-black/8 bg-white/92 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-black/72 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
+            <Expand className="size-3" />
+            {previewLabel}
+          </span>
+        </div>
+      </div>
+    </button>
+  ) : (
+    <div className={cn("overflow-hidden rounded-[22px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", sizeClassName)}>
+      <div className={cn("flex h-full w-full items-center justify-center", frameClassName)}>
+        <img
+          src={imageSlot}
           alt=""
           className={cn("h-full w-full", fitClassName, imagePresentation?.imageClassName)}
           onError={() => setHasError(true)}
@@ -508,6 +543,7 @@ export function PricingForm({
   const initialProfile = useMemo(() => getArtistPricingV2Profile(pricingRules), [pricingRules]);
   const [phase, setPhase] = useState<Phase>(1);
   const currentPhaseCopy = copy.phases[phase - 1];
+  const [previewItem, setPreviewItem] = useState<PricingPreviewItem | null>(null);
   const [minimumJobPrice, setMinimumJobPrice] = useState(String(initialProfile.minimumJobPrice));
   const [textStartingPrice, setTextStartingPrice] = useState(String(initialProfile.textStartingPrice));
   const [largeAreaChoice, setLargeAreaChoice] = useState<LargeAreaChoice>(
@@ -586,6 +622,21 @@ export function PricingForm({
   );
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!previewItem) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPreviewItem(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [previewItem]);
 
   useEffect(() => {
     if (hasEditedCaseRanges) {
@@ -854,6 +905,7 @@ export function PricingForm({
   }
 
   return (
+    <>
     <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_20px_52px_rgba(0,0,0,0.18)]">
       <CardHeader className="pb-3">
         <div>
@@ -925,6 +977,14 @@ export function PricingForm({
                       placeholderAsset={copy.placeholderAsset}
                       placeholderHelp={copy.placeholderHelp}
                       variant="showcase"
+                      previewLabel={copy.previewImage}
+                      onPreview={() =>
+                        setPreviewItem({
+                          imageSlot: sharedSizeSeriesImage.imageSlot,
+                          title: sharedSizeSeriesImage.title[locale],
+                          metaLine: sharedSizeSeriesImage.metaLine[locale],
+                        })
+                      }
                     />
                   ) : null}
                   <div className="space-y-3">
@@ -939,7 +999,7 @@ export function PricingForm({
                         <div key={item.id} className="rounded-[22px] border border-white/8 bg-white/[0.02] p-4">
                           <div className="space-y-3">
                             <div className="space-y-1.5">
-                              <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                              <p className="text-[15px] font-semibold leading-snug text-white">{item.title[locale]}</p>
                               <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
                                 {getSizeLabel(item.referenceSizeCm, locale)}
                               </p>
@@ -987,7 +1047,7 @@ export function PricingForm({
         {phase === 2 ? (
           <div className="space-y-6">
             <div className="space-y-3">
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="grid gap-4 2xl:grid-cols-2">
                 {specialCases.map((item) => {
                   const currentCase = onboardingCases.find((entry) => entry.id === item.id);
 
@@ -997,28 +1057,31 @@ export function PricingForm({
 
                   return (
                     <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                      <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
+                      <div className="grid gap-5 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
                         <ImageSlotPreview
                           imageSlot={item.imageSlot}
                           imagePresentation={item.imagePresentation}
                           placeholderAsset={copy.placeholderAsset}
                           placeholderHelp={copy.placeholderHelp}
                           variant="case"
+                          previewLabel={copy.previewImage}
+                          onPreview={() =>
+                            setPreviewItem({
+                              imageSlot: item.imageSlot,
+                              title: item.title[locale],
+                              metaLine: [getSizeLabel(item.referenceSizeCm, locale), item.metaLine[locale]].join(" · "),
+                            })
+                          }
                         />
-                        <div className="space-y-4 md:pt-1">
+                        <div className="space-y-4 lg:pt-1">
                           <div className="space-y-2">
-                            <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                            <p className="text-[15px] font-semibold leading-snug text-white">{item.title[locale]}</p>
                             <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
                               {getSizeLabel(item.referenceSizeCm, locale)}
                             </p>
                             <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                               {item.metaLine[locale]}
                             </p>
-                            {item.description ? (
-                              <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_7%)]">
-                                {item.description[locale]}
-                              </p>
-                            ) : null}
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">
                             <CurrencyInput
@@ -1061,7 +1124,7 @@ export function PricingForm({
             <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
               {copy.reviewNote}
             </p>
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid gap-4 2xl:grid-cols-2">
             {reviewEstimates.map((item) => {
               const reviewCase = reviewCases[item.id] ?? createDefaultReviewCase();
               const needsReason = Boolean(
@@ -1070,17 +1133,25 @@ export function PricingForm({
 
               return (
                 <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                  <div className="grid gap-5 md:grid-cols-[224px_minmax(0,1fr)] md:items-start">
+                  <div className="grid gap-5 lg:grid-cols-[224px_minmax(0,1fr)] lg:items-start">
                     <ImageSlotPreview
                       imageSlot={item.imageSlot}
                       imagePresentation={item.imagePresentation}
                       placeholderAsset={copy.placeholderAsset}
                       placeholderHelp={copy.placeholderHelp}
                       variant="review"
+                      previewLabel={copy.previewImage}
+                      onPreview={() =>
+                        setPreviewItem({
+                          imageSlot: item.imageSlot,
+                          title: item.title[locale],
+                          metaLine: [getSizeLabel(item.referenceSizeCm, locale), item.metaLine[locale]].join(" · "),
+                        })
+                      }
                     />
-                    <div className="space-y-4 md:pt-1">
+                    <div className="space-y-4 lg:pt-1">
                       <div className="space-y-2">
-                        <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                        <p className="text-[15px] font-semibold leading-snug text-white">{item.title[locale]}</p>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
                           {getSizeLabel(item.referenceSizeCm, locale)}
                         </p>
@@ -1181,7 +1252,7 @@ export function PricingForm({
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-white">{copy.largeAreaCasesTitle}</p>
                   </div>
-                  <div className="grid gap-4 xl:grid-cols-2">
+                  <div className="grid gap-4 2xl:grid-cols-2">
                     {largeAreaDisplayCases.map((item) => {
                       const currentCase = largeAreaCases.find((entry) => entry.id === item.id);
 
@@ -1193,8 +1264,8 @@ export function PricingForm({
                         <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
                           <div
                             className={cn(
-                              "grid gap-5 md:items-start",
-                              item.cardLayoutClassName ?? "md:grid-cols-[252px_minmax(0,1fr)]",
+                              "grid gap-5 lg:items-start",
+                              item.cardLayoutClassName ?? "lg:grid-cols-[216px_minmax(0,1fr)]",
                             )}
                           >
                             <ImageSlotPreview
@@ -1203,10 +1274,18 @@ export function PricingForm({
                               placeholderAsset={copy.placeholderAsset}
                               placeholderHelp={copy.placeholderHelp}
                               variant="case"
+                              previewLabel={copy.previewImage}
+                              onPreview={() =>
+                                setPreviewItem({
+                                  imageSlot: item.imageSlot,
+                                  title: item.title[locale],
+                                  metaLine: item.metaLine[locale],
+                                })
+                              }
                             />
-                            <div className="space-y-4 md:pt-1">
+                            <div className="space-y-4 lg:pt-1">
                               <div className="space-y-2">
-                                <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                                <p className="text-[15px] font-semibold leading-snug text-white">{item.title[locale]}</p>
                                 <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                                   {item.metaLine[locale]}
                                 </p>
@@ -1252,7 +1331,7 @@ export function PricingForm({
                       {copy.optionalSinglePriceHint}
                     </p>
                   </div>
-                  <div className="grid gap-4 xl:grid-cols-2">
+                  <div className="grid gap-4 2xl:grid-cols-2">
                     {wideAreaDisplayCases.map((item) => {
                       const currentCase = wideAreaCases.find((entry) => entry.id === item.id);
 
@@ -1264,8 +1343,8 @@ export function PricingForm({
                         <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
                           <div
                             className={cn(
-                              "grid gap-5 md:items-start",
-                              item.cardLayoutClassName ?? "md:grid-cols-[252px_minmax(0,1fr)]",
+                              "grid gap-5 lg:items-start",
+                              item.cardLayoutClassName ?? "lg:grid-cols-[216px_minmax(0,1fr)]",
                             )}
                           >
                             <ImageSlotPreview
@@ -1274,15 +1353,20 @@ export function PricingForm({
                               placeholderAsset={copy.placeholderAsset}
                               placeholderHelp={copy.placeholderHelp}
                               variant="case"
+                              previewLabel={copy.previewImage}
+                              onPreview={() =>
+                                setPreviewItem({
+                                  imageSlot: item.imageSlot,
+                                  title: item.title[locale],
+                                  metaLine: item.metaLine[locale],
+                                })
+                              }
                             />
-                            <div className="space-y-4 md:pt-1">
+                            <div className="space-y-4 lg:pt-1">
                               <div className="space-y-2">
-                                <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                                <p className="text-[15px] font-semibold leading-snug text-white">{item.title[locale]}</p>
                                 <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                                   {item.metaLine[locale]}
-                                </p>
-                                <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
-                                  {copy.wideAreaCaseTitle}
                                 </p>
                               </div>
                               <div className="max-w-xs">
@@ -1357,5 +1441,38 @@ export function PricingForm({
         </div>
       </CardContent>
     </Card>
+    {previewItem ? (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-4 backdrop-blur-sm"
+        onClick={() => setPreviewItem(null)}
+      >
+        <div
+          className="w-full max-w-5xl rounded-[28px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_92%,black_6%)] p-4 shadow-[0_28px_70px_rgba(0,0,0,0.4)] sm:p-5"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-base font-semibold text-white">{previewItem.title}</p>
+              {previewItem.metaLine ? (
+                <p className="mt-1 text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                  {previewItem.metaLine}
+                </p>
+              ) : null}
+            </div>
+            <Button type="button" variant="ghost" size="icon" onClick={() => setPreviewItem(null)} aria-label={copy.closePreview}>
+              <X className="size-4" />
+            </Button>
+          </div>
+          <div className="overflow-hidden rounded-[24px] border border-white/8 bg-white/[0.98] p-4 sm:p-6">
+            <img
+              src={previewItem.imageSlot}
+              alt={previewItem.title}
+              className="h-[72vh] w-full object-contain"
+            />
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }
