@@ -6,6 +6,7 @@ import {
   featuredDesignCategories,
   intentOptions,
   largeAreaCoverageOptions,
+  layoutStyleOptions,
   realismLevelOptions,
   requestTypeOptions,
   sizeOptions,
@@ -39,6 +40,7 @@ const requestTypeValues = requestTypeOptions.map((requestType) => requestType.va
 const sizeValues = sizeOptions.map((size) => size.value);
 const workStyleValues = workStyleOptions.map((item) => item.value);
 const realismLevelValues = realismLevelOptions.map((item) => item.value);
+const layoutStyleValues = layoutStyleOptions.map((item) => item.value);
 const areaScopeValues = areaScopeOptions.map((item) => item.value);
 const largeAreaCoverageValues = largeAreaCoverageOptions.map((item) => item.value);
 const wideAreaTargetValues = wideAreaTargetOptions.map((item) => item.value);
@@ -578,6 +580,7 @@ export const submissionSchema = z.object({
   ageRange: z.enum(["18-24", "25-34", "35-44", "45+"]).nullable().optional(),
   workStyle: z.enum(workStyleValues as [string, ...string[]]).nullable().optional(),
   realismLevel: z.enum(realismLevelValues as [string, ...string[]]).nullable().optional(),
+  layoutStyle: z.enum(layoutStyleValues as [string, ...string[]]).nullable().optional(),
   bodyAreaGroup: z.enum(groupValues as [string, ...string[]]),
   bodyAreaDetail: z.enum(detailValues as [string, ...string[]]),
   sizeMode: z.enum(["quick", "visual"]),

@@ -26,20 +26,20 @@ export function RequestTypeSelectionStep({
   const requestTypeDescriptions: Record<RequestTypeValue, string> =
     locale === "tr"
       ? {
-          text: "Kelime, tarih veya kısa yazı",
-          mini_simple: "Sembol, küçük ikon, mini tasarım",
-          single_object: "Tek bir çiçek, kuş, hançer, kelebek gibi",
-          multi_element: "Birden fazla parçadan oluşan kompozisyon",
-          cover_up: "Var olan bir dövmeyi kapatmak veya dönüştürmek",
-          unsure: "Karar veremiyorsan bunu seçebilirsin",
+          text: "Kelime, tarih, kısa yazı",
+          mini_simple: "Sembol, küçük ikon",
+          single_object: "Tek bir figür veya obje",
+          multi_element: "Birden fazla parçalı tasarım",
+          cover_up: "Eski dövmeyi kapatma",
+          unsure: "",
         }
       : {
-          text: "A word, date, or short text",
-          mini_simple: "A symbol, small icon, or mini design",
-          single_object: "A single flower, bird, dagger, butterfly, or similar",
-          multi_element: "A composition made of more than one element",
-          cover_up: "Covering or transforming an existing tattoo",
-          unsure: "Choose this if you are not sure yet",
+          text: "Word, date, short text",
+          mini_simple: "Symbol, small icon",
+          single_object: "One figure or object",
+          multi_element: "Multi-part design",
+          cover_up: "Covering an old tattoo",
+          unsure: "",
         };
 
   return (
@@ -49,7 +49,7 @@ export function RequestTypeSelectionStep({
           {locale === "tr" ? "Ne yaptırmak istiyorsun?" : "What do you want to get?"}
         </p>
         <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-          {locale === "tr" ? "Sana en yakın olan seçeneği işaretle." : "Pick the option that feels closest."}
+          {locale === "tr" ? "Sana en yakın olanı seç." : "Choose the closest option."}
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -74,9 +74,11 @@ export function RequestTypeSelectionStep({
                 <p className="font-medium">{getRequestTypeLabel(option, locale)}</p>
                 {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
               </div>
-              <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                {requestTypeDescriptions[option]}
-              </p>
+              {requestTypeDescriptions[option] ? (
+                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                  {requestTypeDescriptions[option]}
+                </p>
+              ) : null}
             </button>
           );
         })}

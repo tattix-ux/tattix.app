@@ -113,6 +113,7 @@ export function estimateSubmissionPriceV2(
       colorMode,
       workStyle: submission.workStyle ?? "unsure",
       realismLevel,
+      layoutStyle: submission.layoutStyle ?? null,
       hasReferenceImage: Boolean(submission.referenceImage?.trim()),
       hasReferenceNote: Boolean(submission.referenceDescription?.trim() || submission.notes?.trim()),
       coverUp: submission.coverUp ?? null,

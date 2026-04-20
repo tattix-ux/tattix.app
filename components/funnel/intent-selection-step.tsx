@@ -40,14 +40,14 @@ export function IntentSelectionStep({
   const areaScopeLabels: Record<AreaScopeValue, string> =
     locale === "tr"
       ? {
-          standard_piece: "Küçük / orta bir alan",
-          large_single_area: "Tek bölgede büyük bir alan",
-          wide_area: "Çok geniş bir alan",
+          standard_piece: "Küçük / orta",
+          large_single_area: "Tek bölgede büyük",
+          wide_area: "Çok geniş",
           unsure: "Emin değilim",
         }
       : {
           standard_piece: "Small / medium area",
-          large_single_area: "Large area in one placement",
+          large_single_area: "Large in one area",
           wide_area: "Very wide area",
           unsure: "Not sure",
         };
@@ -55,14 +55,14 @@ export function IntentSelectionStep({
     locale === "tr"
       ? {
           standard_piece: "Yazı, sembol, tek parça işler gibi",
-          large_single_area: "Ön kolun, baldırın veya göğsün büyük kısmı gibi",
-          wide_area: "Kolun yarısı, tüm kol, sırt, göğüs veya bacağın büyük kısmı gibi",
+          large_single_area: "Ön kol, baldır, göğüs gibi",
+          wide_area: "Yarım kol, tüm kol, sırt gibi",
           unsure: "Karar veremiyorsan bunu seçebilirsin",
         }
       : {
           standard_piece: "Like text, symbols, or single-piece work",
-          large_single_area: "Like a large part of the forearm, calf, or chest",
-          wide_area: "Like half an arm, full arm, back, chest, or most of a leg",
+          large_single_area: "Like forearm, calf, or chest",
+          wide_area: "Like half arm, full arm, or back",
           unsure: "Choose this if you are not sure yet",
         };
   const designCategories = useMemo(
@@ -101,13 +101,13 @@ export function IntentSelectionStep({
           }}
         >
           <div className="flex items-start justify-between gap-3">
-            <p className="font-medium">{locale === "tr" ? "Kendi talebimi anlatacağım" : "I want to describe my idea"}</p>
+            <p className="font-medium">{locale === "tr" ? "Talebimi anlatacağım" : "I’ll describe my request"}</p>
             {pricingSource === "custom_request" ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
           </div>
           <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
             {locale === "tr"
-              ? "Aklındaki tasarımı bize anlatabilirsin."
-              : "You can tell us about the tattoo you have in mind."}
+              ? "Fikrini birkaç adımda anlatabilirsin."
+              : "You can describe your idea in a few steps."}
           </p>
         </button>
 
@@ -128,12 +128,12 @@ export function IntentSelectionStep({
             }}
           >
             <div className="flex items-start justify-between gap-3">
-              <p className="font-medium">{locale === "tr" ? "Hazır tasarım seçeceğim" : "I want to pick a ready-made design"}</p>
+              <p className="font-medium">{locale === "tr" ? "Hazır tasarım seçeceğim" : "I’ll pick a ready-made design"}</p>
               {pricingSource === "featured_design" ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
             </div>
             <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
               {locale === "tr"
-                ? "Dövmecinin yüklediği tasarımlardan birini seçebilirsin."
+                ? "Hazır tasarımlar arasından seçebilirsin."
                 : "Choose one of the uploaded designs."}
             </p>
           </button>
@@ -144,7 +144,7 @@ export function IntentSelectionStep({
         <div className="space-y-3">
           <div>
             <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
-              {locale === "tr" ? "Yaklaşık ne kadar alan kaplayacak?" : "About how much area will it cover?"}
+              {locale === "tr" ? "Yaklaşık ne kadar alan?" : "About how much area?"}
             </p>
             <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
               {locale === "tr" ? "Sana en yakın seçeneği seç." : "Choose the option that feels closest."}

@@ -37,6 +37,7 @@ const initialDraft: SubmissionDraft = {
   ageRange: "",
   workStyle: "",
   realismLevel: "",
+  layoutStyle: "",
   bodyAreaGroup: "",
   bodyAreaDetail: "",
   sizeMode: "quick",

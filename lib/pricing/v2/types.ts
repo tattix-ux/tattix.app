@@ -7,6 +7,7 @@ import type {
   ArtistPricingV2Profile,
   ColorModeValue,
   EstimateMode,
+  LayoutStyleValue,
   LargeAreaCoverageValue,
   PricingSourceValue,
   RealismLevelValue,
@@ -38,6 +39,7 @@ export type CustomRequestPricingInput = {
   colorMode: ColorModeValue;
   workStyle: WorkStyleValue;
   realismLevel?: RealismLevelValue | null;
+  layoutStyle?: LayoutStyleValue | null;
   hasReferenceImage: boolean;
   hasReferenceNote: boolean;
   coverUp?: boolean | null;

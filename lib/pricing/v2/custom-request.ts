@@ -128,6 +128,48 @@ function getAdvancedRealismRequestWeight(requestType: RequestTypeValue | null) {
   return 0;
 }
 
+function getLayoutStyleRequestWeight(requestType: RequestTypeValue | null) {
+  if (requestType === "text") {
+    return 0.3;
+  }
+
+  if (requestType === "mini_simple") {
+    return 0.42;
+  }
+
+  if (requestType === "cover_up") {
+    return 0.48;
+  }
+
+  if (requestType === "multi_element") {
+    return 0.9;
+  }
+
+  if (requestType === null) {
+    return 0.84;
+  }
+
+  return 0.76;
+}
+
+function getLayoutStyleFactor(
+  input: Pick<CustomRequestPricingInput, "layoutStyle">,
+  context: Pick<PricingV2Context["profile"], "specialCaseAdjustments">,
+  requestType: RequestTypeValue | null,
+  intensity = 1,
+) {
+  if (input.layoutStyle !== "precision") {
+    return 1;
+  }
+
+  const requestWeight = getLayoutStyleRequestWeight(requestType);
+  return (
+    1 +
+    (context.specialCaseAdjustments.precisionSymmetricFactor - 1) *
+      clamp(requestWeight * intensity, 0.18, 0.92)
+  );
+}
+
 function getAdvancedRealismFactor(
   input: Pick<CustomRequestPricingInput, "colorMode" | "workStyle" | "realismLevel" | "coverUp">,
   context: Pick<PricingV2Context["profile"], "specialCaseAdjustments">,
@@ -493,10 +535,17 @@ function estimateStandardPiecePrice(
   const placementFactor = getPlacementFactor(placementBucket) * profile.reviewAdjustments.placementBias;
   const colorFactor = getConcreteColorFactor(input.colorMode, { requestType }, profile);
   const workStyleFactor = getConcreteWorkStyleFactor(input.workStyle, { requestType }, profile);
+  const layoutStyleFactor = getLayoutStyleFactor(input, profile, requestType);
   const advancedRealismFactor = getAdvancedRealismFactor(input, profile, requestType);
   const rawCenter = Math.max(
     profile.minimumJobPrice,
-    categoryAnchor * sizeFactorResult.factor * placementFactor * colorFactor * workStyleFactor * advancedRealismFactor,
+    categoryAnchor *
+      sizeFactorResult.factor *
+      placementFactor *
+      colorFactor *
+      workStyleFactor *
+      layoutStyleFactor *
+      advancedRealismFactor,
   );
   const minimumTension = applyMinimumPriceTension(
     rawCenter,
@@ -526,8 +575,10 @@ function estimateStandardPiecePrice(
     `color:${input.colorMode}`,
     `workStyle:${input.workStyle}`,
     `realismLevel:${input.realismLevel ?? "standard"}`,
+    `layoutStyle:${input.layoutStyle ?? "organic"}`,
     `colorFactor:${colorFactor.toFixed(3)}`,
     `workStyleFactor:${workStyleFactor.toFixed(3)}`,
+    `layoutStyleFactor:${layoutStyleFactor.toFixed(3)}`,
     `advancedRealismFactor:${advancedRealismFactor.toFixed(3)}`,
     `reviewCalibration:${reviewCalibrationFactor.toFixed(3)}`,
     `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
@@ -574,6 +625,7 @@ function estimateLargeSingleAreaPrice(
   const placementFactor = getPlacementFactor(placementBucket, 0.55);
   const colorFactor = getConcreteColorFactor(input.colorMode, { requestType: null }, profile, 0.82);
   const workStyleFactor = getConcreteWorkStyleFactor(input.workStyle, { requestType: null }, profile, 0.9);
+  const layoutStyleFactor = getLayoutStyleFactor(input, profile, null, 0.9);
   const advancedRealismFactor = getAdvancedRealismFactor(input, profile, null, 0.86);
   const coverUpFactor = input.coverUp
     ? 1 + (profile.specialCaseAdjustments.coverUpPremiumFactor - 1) * 0.55
@@ -584,6 +636,7 @@ function estimateLargeSingleAreaPrice(
     placementFactor *
     colorFactor *
     workStyleFactor *
+    layoutStyleFactor *
     advancedRealismFactor *
     coverUpFactor *
     (options?.extraCaution ?? 1);
@@ -611,9 +664,11 @@ function estimateLargeSingleAreaPrice(
       `color:${input.colorMode}`,
       `workStyle:${input.workStyle}`,
       `realismLevel:${input.realismLevel ?? "standard"}`,
+      `layoutStyle:${input.layoutStyle ?? "organic"}`,
       `coverageFactor:${coverageFactor.toFixed(3)}`,
       `colorFactor:${colorFactor.toFixed(3)}`,
       `workStyleFactor:${workStyleFactor.toFixed(3)}`,
+      `layoutStyleFactor:${layoutStyleFactor.toFixed(3)}`,
       `advancedRealismFactor:${advancedRealismFactor.toFixed(3)}`,
       `coverUpFactor:${coverUpFactor.toFixed(3)}`,
     ],
@@ -649,6 +704,7 @@ function estimateWideAreaPrice(
       : getWideAreaTargetFactor(target);
   const colorFactor = getConcreteColorFactor(input.colorMode, { requestType: null }, profile, 0.72);
   const workStyleFactor = getConcreteWorkStyleFactor(input.workStyle, { requestType: null }, profile, 0.78);
+  const layoutStyleFactor = getLayoutStyleFactor(input, profile, null, 0.76);
   const advancedRealismFactor = getAdvancedRealismFactor(input, profile, null, 0.78);
   const coverUpFactor = input.coverUp
     ? 1 + (profile.specialCaseAdjustments.coverUpPremiumFactor - 1) * 0.68
@@ -658,6 +714,7 @@ function estimateWideAreaPrice(
     targetFactor *
     colorFactor *
     workStyleFactor *
+    layoutStyleFactor *
     advancedRealismFactor *
     coverUpFactor *
     (options?.extraCaution ?? 1);
@@ -674,9 +731,11 @@ function estimateWideAreaPrice(
       `color:${input.colorMode}`,
       `workStyle:${input.workStyle}`,
       `realismLevel:${input.realismLevel ?? "standard"}`,
+      `layoutStyle:${input.layoutStyle ?? "organic"}`,
       `targetFactor:${targetFactor.toFixed(3)}`,
       `colorFactor:${colorFactor.toFixed(3)}`,
       `workStyleFactor:${workStyleFactor.toFixed(3)}`,
+      `layoutStyleFactor:${layoutStyleFactor.toFixed(3)}`,
       `advancedRealismFactor:${advancedRealismFactor.toFixed(3)}`,
       `coverUpFactor:${coverUpFactor.toFixed(3)}`,
     ],

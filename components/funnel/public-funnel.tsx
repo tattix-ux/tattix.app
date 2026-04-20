@@ -19,6 +19,7 @@ import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/cons
 import { getPlacementDetailLocaleLabel, type PublicLocale } from "@/lib/i18n/public";
 import {
   getAreaScopeLabel,
+  getLayoutStyleLabel,
   getLargeAreaCoverageLabel,
   getRequestTypeLabel,
   getWideAreaTargetLabel,
@@ -33,6 +34,7 @@ import type {
   LargeAreaCoverageValue,
   PricingSourceValue,
   RealismLevelValue,
+  LayoutStyleValue,
   WideAreaTargetValue,
   WorkStyleValue,
 } from "@/lib/types";
@@ -68,25 +70,25 @@ function getCopy(locale: PublicLocale) {
       introTitle: "Aklındaki dövmeyi birkaç adımda netleştirelim",
       introDescription: "Seçtiklerine göre sana yaklaşık bir başlangıç fiyatı göstereceğiz.",
       startTitle: "Nasıl ilerlemek istersin?",
-      startDescription: "Kendi talebini anlatabilir ya da hazır tasarımlardan birini seçebilirsin.",
+      startDescription: "İstersen fikrini anlat, istersen hazır tasarımlardan seç.",
       featuredFlowTitle: "Tasarımlardan birini seç, kalanını birlikte netleştirelim",
       featuredFlowDescription: "Seçtiğin tasarıma göre yaklaşık başlangıç fiyatını gösterelim.",
-      areaScopeTitle: "Yaklaşık ne kadar alan kaplayacak?",
+      areaScopeTitle: "Yaklaşık ne kadar alan?",
       areaScopeDescription: "Sana en yakın seçeneği seç.",
       areaScopes: {
-        standard_piece: "Küçük / orta bir alan",
-        large_single_area: "Tek bölgede büyük bir alan",
-        wide_area: "Çok geniş bir alan",
+        standard_piece: "Küçük / orta",
+        large_single_area: "Tek bölgede büyük",
+        wide_area: "Çok geniş",
         unsure: "Emin değilim",
       },
       areaScopeDescriptions: {
-        standard_piece: "Yazı, sembol, tek parça işler gibi",
-        large_single_area: "Ön kolun, baldırın veya göğsün büyük kısmı gibi",
-        wide_area: "Kolun yarısı, tüm kol, sırt, göğüs veya bacağın büyük kısmı gibi",
+        standard_piece: "Yazı, sembol, tek parça",
+        large_single_area: "Ön kol, baldır, göğüs gibi",
+        wide_area: "Yarım kol, tüm kol, sırt gibi",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
       requestTypeTitle: "Ne yaptırmak istiyorsun?",
-      requestTypeDescription: "Sana en yakın olan seçeneği işaretle.",
+      requestTypeDescription: "Sana en yakın olanı seç.",
       placementTitle: "Nereye yaptırmak istiyorsun?",
       placementDescription: "En yakın bölgeyi seç.",
       sizeTitle: "Yaklaşık boyut kaç cm olsun?",
@@ -125,33 +127,35 @@ function getCopy(locale: PublicLocale) {
         5: "Varsa ekleyebilirsin. Yoksa bu adımı geçebilirsin.",
         6: "",
       },
-      colorTitleCustom: "Renk olacak mı?",
+      colorTitleCustom: "Nasıl bir tarz?",
       colorTitleFeatured: "Renk aynı mı kalsın?",
-      colorDescriptionCustom: "Dövmenin genel görünümüne en yakın seçeneği seç.",
+      colorDescriptionCustom: "Renk ve detay seviyesini seç.",
       colorDescriptionFeatured: "Tasarıma en yakın görünümü seç.",
-      workStyleTitle: "Bu iş daha çok nasıl bir şey?",
-      workStyleDescription: "Sana en yakın olan seçeneği seç.",
-      workStyles: {
-        clean_line: "Daha sade çizgili",
-        shaded_detailed: "Daha dolu / gölgeli",
-        precision_symmetric: "Daha düzenli / simetrik",
+      intensityTitle: "Ne kadar detaylı?",
+      intensityDescription: "Sana en yakın olanı seç.",
+      intensityStyles: {
+        clean_line: "Sade / çizgisel",
+        shaded_detailed: "Gölgeli / detaylı",
+        advanced: "Çok yoğun / gerçekçi",
         unsure: "Emin değilim",
       },
-      workStyleDescriptions: {
-        clean_line: "Temiz çizgiler, daha sade görünüm",
-        shaded_detailed: "Daha dolu, gölgeli veya emek isteyen görünüm",
-        precision_symmetric: "Daha dikkatli ve kontrollü çalışma isteyen görünüm",
+      intensityDescriptions: {
+        clean_line: "Temiz çizgiler, az detay",
+        shaded_detailed: "Daha dolu, gölgeli görünüm",
+        advanced: "Yüksek detay, gerçekçi görünüm",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
-      realismLevelTitle: "Bu işin yoğunluğu hangisine daha yakın?",
-      realismLevelDescription: "Standart gölgeli bir iş mi, yoksa çok yoğun realistik bir iş mi seç.",
-      realismLevels: {
-        standard: "Gölgeli / detaylı",
-        advanced: "Çok yoğun realistik",
+      layoutTitle: "Daha çok nasıl bir düzen?",
+      layoutDescription: "İstersen bunu da seçebilirsin.",
+      layoutStyles: {
+        organic: "Serbest / doğal akış",
+        precision: "Daha düzenli / simetrik",
+        unsure: "Emin değilim",
       },
-      realismLevelDescriptions: {
-        standard: "Daha klasik gölgeli ve detaylı işler",
-        advanced: "Yoğun siyah-gri, daha realistik ve teknik işler",
+      layoutDescriptions: {
+        organic: "",
+        precision: "",
+        unsure: "",
       },
       colorModes: {
         "black-only": "Sadece siyah",
@@ -225,6 +229,7 @@ function getCopy(locale: PublicLocale) {
         size: "Boyut",
         color: "Renk",
         workStyle: "İşin karakteri",
+        layoutStyle: "Düzen",
         coverUp: "Kapatma durumu",
       },
       sendWhatsapp: "WhatsApp'tan gönder",
@@ -242,25 +247,25 @@ function getCopy(locale: PublicLocale) {
     introTitle: "Let’s clarify the tattoo you have in mind in a few steps",
     introDescription: "Based on your choices, we’ll show you an approximate starting price.",
     startTitle: "How would you like to continue?",
-    startDescription: "You can describe your idea or pick one of the ready-made designs.",
+    startDescription: "Describe your idea or choose from ready-made designs.",
     featuredFlowTitle: "Pick one of the designs and let’s clarify the rest together",
     featuredFlowDescription: "We’ll show you an approximate starting price based on the design you choose.",
-    areaScopeTitle: "About how much area will it cover?",
+    areaScopeTitle: "About how much area?",
     areaScopeDescription: "Choose the option that feels closest.",
     areaScopes: {
-      standard_piece: "Small / medium area",
-      large_single_area: "Large area in one placement",
+      standard_piece: "Small / medium",
+      large_single_area: "Large in one area",
       wide_area: "Very wide area",
       unsure: "Not sure",
     },
     areaScopeDescriptions: {
-      standard_piece: "Like text, symbols, or single-piece work",
-      large_single_area: "Like a large part of the forearm, calf, or chest",
-      wide_area: "Like half an arm, full arm, back, chest, or most of a leg",
+      standard_piece: "Like text, symbols, or a single piece",
+      large_single_area: "Like forearm, calf, or chest",
+      wide_area: "Like half arm, full arm, or back",
       unsure: "Choose this if you’re not sure yet",
     },
     requestTypeTitle: "What do you want to get?",
-    requestTypeDescription: "Pick the option that feels closest.",
+    requestTypeDescription: "Choose the closest option.",
     placementTitle: "Where do you want to get it?",
     placementDescription: "Choose the closest area.",
     sizeTitle: "About how many cm should it be?",
@@ -299,33 +304,35 @@ function getCopy(locale: PublicLocale) {
       5: "You can add it if you want. If not, you can skip this step.",
       6: "",
     },
-    colorTitleCustom: "Will there be color?",
+    colorTitleCustom: "What kind of style?",
     colorTitleFeatured: "Will the color stay the same?",
-    colorDescriptionCustom: "Choose the option closest to the overall look of the tattoo.",
+    colorDescriptionCustom: "Choose the color and detail level.",
     colorDescriptionFeatured: "Choose the look that feels closest to the design.",
-    workStyleTitle: "What is this piece more like?",
-    workStyleDescription: "Choose the option that feels closest.",
-    workStyles: {
-      clean_line: "More line-based",
-      shaded_detailed: "More filled / shaded",
-      precision_symmetric: "More orderly / symmetric",
+    intensityTitle: "How detailed is it?",
+    intensityDescription: "Choose the closest option.",
+    intensityStyles: {
+      clean_line: "Simple / line-based",
+      shaded_detailed: "Shaded / detailed",
+      advanced: "Very dense / realistic",
       unsure: "Not sure",
     },
-    workStyleDescriptions: {
-      clean_line: "Cleaner lines and a simpler look",
-      shaded_detailed: "A fuller, shaded, or more worked look",
-      precision_symmetric: "A more controlled and symmetry-led look",
+    intensityDescriptions: {
+      clean_line: "Clean lines, low detail",
+      shaded_detailed: "A fuller, shaded look",
+      advanced: "High detail, realistic look",
       unsure: "Choose this if you’re not sure yet",
     },
-    realismLevelTitle: "Which side is this closer to?",
-    realismLevelDescription: "Choose whether it feels more like a standard shaded piece or a very dense realistic one.",
-    realismLevels: {
-      standard: "Shaded / detailed",
-      advanced: "Very dense realistic",
+    layoutTitle: "What kind of layout?",
+    layoutDescription: "You can skip this if you want.",
+    layoutStyles: {
+      organic: "Free / natural flow",
+      precision: "More ordered / symmetric",
+      unsure: "Not sure",
     },
-    realismLevelDescriptions: {
-      standard: "A more standard shaded and detailed look",
-      advanced: "Dense black-grey work with a more realistic technical feel",
+    layoutDescriptions: {
+      organic: "",
+      precision: "",
+      unsure: "",
     },
     colorModes: {
       "black-only": "Black only",
@@ -399,6 +406,7 @@ function getCopy(locale: PublicLocale) {
       size: "Size",
       color: "Color",
       workStyle: "Character of the piece",
+      layoutStyle: "Layout",
       coverUp: "Cover-up",
     },
     sendWhatsapp: "Send on WhatsApp",
@@ -598,15 +606,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           { key: "black-grey", value: "black-grey" as ColorModeValue, labelKey: "black-grey" as const },
           { key: "full-color", value: "full-color" as ColorModeValue, labelKey: "full-color" as const },
         ];
-  const workStyleChoices: Array<{ value: WorkStyleValue; label: string }> = [
-    { value: "clean_line", label: copy.workStyles.clean_line },
-    { value: "shaded_detailed", label: copy.workStyles.shaded_detailed },
-    { value: "precision_symmetric", label: copy.workStyles.precision_symmetric },
-    { value: "unsure", label: copy.workStyles.unsure },
+  const intensityChoices: Array<{
+    value: "clean_line" | "shaded_detailed" | "advanced" | "unsure";
+    label: string;
+  }> = [
+    { value: "clean_line", label: copy.intensityStyles.clean_line },
+    { value: "shaded_detailed", label: copy.intensityStyles.shaded_detailed },
+    { value: "advanced", label: copy.intensityStyles.advanced },
+    { value: "unsure", label: copy.intensityStyles.unsure },
   ];
-  const realismLevelChoices: Array<{ value: RealismLevelValue; label: string }> = [
-    { value: "standard", label: copy.realismLevels.standard },
-    { value: "advanced", label: copy.realismLevels.advanced },
+  const layoutChoices: Array<{ value: LayoutStyleValue; label: string }> = [
+    { value: "organic", label: copy.layoutStyles.organic },
+    { value: "precision", label: copy.layoutStyles.precision },
+    { value: "unsure", label: copy.layoutStyles.unsure },
   ];
   const largeAreaCoverageChoices: Array<{ value: LargeAreaCoverageValue; label: string }> = [
     { value: "partial", label: copy.largeAreaCoverageOptions.partial },
@@ -641,13 +653,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 ? Boolean(draft.wideAreaTarget)
                 : currentFlowStep === "color_only"
                   ? Boolean(draft.colorMode)
-                  : currentFlowStep === "color_character"
-                    ? Boolean(
+                : currentFlowStep === "color_character"
+                  ? Boolean(
                         draft.colorMode &&
-                          draft.workStyle &&
-                          (draft.workStyle !== "shaded_detailed" ||
-                            draft.colorMode !== "black-grey" ||
-                            draft.realismLevel),
+                          draft.workStyle,
                       )
                     : true;
   const canSubmit =
@@ -710,7 +719,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     if (draft.pricingSource === "custom_request" && draft.workStyle) {
       items.push({
         label: copy.summaryLabels.workStyle,
-        value: getWorkStyleLabel(draft.workStyle, locale),
+        value: getWorkStyleLabel(draft.workStyle, locale, draft.realismLevel || null),
+      });
+    }
+
+    if (draft.pricingSource === "custom_request" && draft.layoutStyle) {
+      items.push({
+        label: copy.summaryLabels.layoutStyle,
+        value: getLayoutStyleLabel(draft.layoutStyle, locale),
       });
     }
 
@@ -726,7 +742,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     }
 
     return items;
-  }, [copy.colorModes, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.coverUp, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.coverUp, draft.largeAreaCoverage, draft.pricingSource, draft.requestType, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
+  }, [copy.colorModes, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.coverUp, copy.summaryLabels.layoutStyle, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.coverUp, draft.largeAreaCoverage, draft.layoutStyle, draft.pricingSource, draft.realismLevel, draft.requestType, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
 
   function resetCustomPathState(nextAreaScope?: AreaScopeValue | "") {
     setField("requestType", "");
@@ -739,6 +755,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("colorMode", "");
     setField("workStyle", "");
     setField("realismLevel", "");
+    setField("layoutStyle", "");
     setField("coverUp", nextAreaScope === "wide_area" || nextAreaScope === "large_single_area" ? null : false);
   }
 
@@ -833,9 +850,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           ? draft.workStyle || undefined
           : undefined,
       realismLevel:
-        draft.pricingSource === "custom_request" && draft.workStyle === "shaded_detailed"
+        draft.pricingSource === "custom_request" && draft.realismLevel === "advanced"
           ? draft.realismLevel || undefined
           : undefined,
+      layoutStyle: draft.pricingSource === "custom_request" ? draft.layoutStyle || undefined : undefined,
       notes: draft.notes || undefined,
       coverUp:
         draft.pricingSource === "custom_request" && (draft.areaScope === "large_single_area" || draft.areaScope === "wide_area")
@@ -1034,6 +1052,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     setField("colorMode", "");
                     setField("workStyle", "");
                     setField("realismLevel", "");
+                    setField("layoutStyle", "");
                     setField("coverUp", null);
                   }
                 }}
@@ -1075,6 +1094,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("colorMode", design?.referenceColorMode ?? "black-only");
                   setField("workStyle", "");
                   setField("realismLevel", "");
+                  setField("layoutStyle", "");
                   setField("coverUp", null);
                 }}
               />
@@ -1249,13 +1269,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           type="button"
                           onClick={() => {
                             setField("colorMode", option.value);
-
-                            if (option.value === "black-grey" && draft.workStyle === "shaded_detailed") {
-                              setField("realismLevel", draft.realismLevel || "standard");
-                              return;
+                            if (option.value !== "black-grey" && draft.realismLevel === "advanced") {
+                              setField("realismLevel", "");
                             }
-
-                            setField("realismLevel", "");
                           }}
                           className="rounded-[22px] border px-4 py-4 text-left transition"
                           style={{
@@ -1281,106 +1297,112 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 </div>
 
                 {currentFlowStep === "color_character" && draft.pricingSource === "custom_request" ? (
-                  <div
-                    className="rounded-[24px] border p-4"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "var(--artist-section-surface-strong)",
-                    }}
-                  >
-                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {copy.workStyleTitle}
-                    </p>
-                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.workStyleDescription}
-                    </p>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {workStyleChoices.map((option) => {
-                        const active = draft.workStyle === option.value;
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => {
-                              setField("workStyle", option.value);
+                  <>
+                    <div
+                      className="rounded-[24px] border p-4"
+                      style={{
+                        borderColor: "var(--artist-border)",
+                        backgroundColor: "var(--artist-section-surface-strong)",
+                      }}
+                    >
+                      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                        {copy.intensityTitle}
+                      </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.intensityDescription}
+                      </p>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {intensityChoices.map((option) => {
+                          const isAdvanced = option.value === "advanced";
+                          const disabled = isAdvanced && draft.colorMode !== "black-grey";
+                          const active =
+                            option.value === "advanced"
+                              ? draft.workStyle === "shaded_detailed" && draft.realismLevel === "advanced"
+                              : draft.workStyle === option.value && draft.realismLevel !== "advanced";
 
-                              if (option.value === "shaded_detailed" && draft.colorMode === "black-grey") {
-                                setField("realismLevel", draft.realismLevel || "standard");
-                                return;
-                              }
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => {
+                                if (disabled) {
+                                  return;
+                                }
 
-                              setField("realismLevel", "");
-                            }}
-                            className="rounded-[22px] border px-4 py-4 text-left transition"
-                            style={{
-                              borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                              backgroundColor: active
-                                ? "var(--artist-selected-surface)"
-                                : "var(--artist-section-surface)",
-                              color: tokens.cardText,
-                            }}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="font-medium">{option.label}</p>
-                                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                                  {copy.workStyleDescriptions[option.value]}
-                                </p>
+                                if (option.value === "advanced") {
+                                  setField("workStyle", "shaded_detailed");
+                                  setField("realismLevel", "advanced");
+                                  return;
+                                }
+
+                                setField("workStyle", option.value);
+                                setField("realismLevel", "");
+                              }}
+                              disabled={disabled}
+                              className="rounded-[22px] border px-4 py-4 text-left transition disabled:cursor-not-allowed disabled:opacity-55"
+                              style={{
+                                borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                                backgroundColor: active
+                                  ? "var(--artist-selected-surface)"
+                                  : "var(--artist-section-surface)",
+                                color: tokens.cardText,
+                              }}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="font-medium">{option.label}</p>
+                                  <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                    {copy.intensityDescriptions[option.value]}
+                                  </p>
+                                </div>
+                                {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                               </div>
-                              {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
-                            </div>
-                          </button>
-                        );
-                      })}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
-                    {draft.workStyle === "shaded_detailed" && draft.colorMode === "black-grey" ? (
-                      <div
-                        className="mt-4 rounded-[22px] border px-4 py-4"
-                        style={{
-                          borderColor: "var(--artist-border)",
-                          backgroundColor: "var(--artist-section-surface)",
-                        }}
-                      >
-                        <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                          {copy.realismLevelTitle}
-                        </p>
-                        <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                          {copy.realismLevelDescription}
-                        </p>
-                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                          {realismLevelChoices.map((option) => {
-                            const active = draft.realismLevel === option.value;
-                            return (
-                              <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => setField("realismLevel", option.value)}
-                                className="rounded-[22px] border px-4 py-4 text-left transition"
-                                style={{
-                                  borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                                  backgroundColor: active
-                                    ? "var(--artist-selected-surface)"
-                                    : "var(--artist-section-surface-strong)",
-                                  color: tokens.cardText,
-                                }}
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <p className="font-medium">{option.label}</p>
-                                    <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                                      {copy.realismLevelDescriptions[option.value]}
-                                    </p>
-                                  </div>
-                                  {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
+                    <div
+                      className="rounded-[24px] border p-4"
+                      style={{
+                        borderColor: "var(--artist-border)",
+                        backgroundColor: "var(--artist-section-surface-strong)",
+                      }}
+                    >
+                      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                        {copy.layoutTitle}
+                      </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.layoutDescription}
+                      </p>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        {layoutChoices.map((option) => {
+                          const active = draft.layoutStyle === option.value;
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setField("layoutStyle", option.value)}
+                              className="rounded-[22px] border px-4 py-4 text-left transition"
+                              style={{
+                                borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                                backgroundColor: active
+                                  ? "var(--artist-selected-surface)"
+                                  : "var(--artist-section-surface)",
+                                color: tokens.cardText,
+                              }}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <p className="font-medium">{option.label}</p>
+                                {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
-                    ) : null}
-                  </div>
+                    </div>
+                  </>
                 ) : null}
               </div>
             ) : null}

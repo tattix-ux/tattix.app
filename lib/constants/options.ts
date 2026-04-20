@@ -52,6 +52,12 @@ export const realismLevelOptions = [
   { value: "advanced", label: "Advanced" },
 ] as const;
 
+export const layoutStyleOptions = [
+  { value: "organic", label: "Organic" },
+  { value: "precision", label: "Precision" },
+  { value: "unsure", label: "Unsure" },
+] as const;
+
 export const areaScopeOptions = [
   { value: "standard_piece", label: "Standard piece" },
   { value: "large_single_area", label: "Large single area" },
@@ -92,6 +98,7 @@ export type SizeValue = (typeof sizeOptions)[number]["value"];
 export type StyleValue = string;
 export type WorkStyleValue = (typeof workStyleOptions)[number]["value"];
 export type RealismLevelValue = (typeof realismLevelOptions)[number]["value"];
+export type LayoutStyleValue = (typeof layoutStyleOptions)[number]["value"];
 export type AreaScopeValue = (typeof areaScopeOptions)[number]["value"];
 export type LargeAreaCoverageValue = (typeof largeAreaCoverageOptions)[number]["value"];
 export type WideAreaTargetValue = (typeof wideAreaTargetOptions)[number]["value"];

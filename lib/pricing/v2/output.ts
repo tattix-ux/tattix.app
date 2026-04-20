@@ -2,6 +2,7 @@ import type { PublicLocale } from "@/lib/i18n/public";
 import type {
   AreaScopeValue,
   EstimateMode,
+  LayoutStyleValue,
   LargeAreaCoverageValue,
   PricingSourceValue,
   RequestTypeValue,
@@ -59,11 +60,11 @@ export function getRequestTypeLabel(
       case "mini_simple":
         return "Küçük basit dövme";
       case "single_object":
-        return "Tek figür / tek obje";
+        return "Tek parça";
       case "multi_element":
-        return "Birden fazla öğeli tasarım";
+        return "Birden fazla öğe";
       case "cover_up":
-        return "Kapatma / eski dövme üstü";
+        return "Kapatma";
       case "unsure":
         return "Emin değilim";
     }
@@ -75,9 +76,9 @@ export function getRequestTypeLabel(
     case "mini_simple":
       return "Small simple tattoo";
     case "single_object":
-      return "Single figure / single object";
+      return "Single piece";
     case "multi_element":
-      return "Multi-element design";
+      return "Multiple elements";
     case "cover_up":
       return "Cover-up";
     case "unsure":
@@ -88,13 +89,18 @@ export function getRequestTypeLabel(
 export function getWorkStyleLabel(
   workStyle: WorkStyleValue,
   locale: PublicLocale,
+  realismLevel?: "standard" | "advanced" | null,
 ) {
   if (locale === "tr") {
+    if (workStyle === "shaded_detailed" && realismLevel === "advanced") {
+      return "Çok yoğun / gerçekçi";
+    }
+
     switch (workStyle) {
       case "clean_line":
-        return "Daha sade çizgili";
+        return "Sade / çizgisel";
       case "shaded_detailed":
-        return "Daha dolu / gölgeli";
+        return "Gölgeli / detaylı";
       case "precision_symmetric":
         return "Daha düzenli / simetrik";
       case "unsure":
@@ -102,11 +108,15 @@ export function getWorkStyleLabel(
     }
   }
 
+  if (workStyle === "shaded_detailed" && realismLevel === "advanced") {
+    return "Very dense / realistic";
+  }
+
   switch (workStyle) {
     case "clean_line":
-      return "More line-based";
+      return "Simple / line-based";
     case "shaded_detailed":
-      return "More filled / shaded";
+      return "Shaded / detailed";
     case "precision_symmetric":
       return "More orderly / symmetric";
     case "unsure":
@@ -118,11 +128,11 @@ export function getAreaScopeLabel(areaScope: AreaScopeValue, locale: PublicLocal
   if (locale === "tr") {
     switch (areaScope) {
       case "standard_piece":
-        return "Küçük / orta bir alan";
+        return "Küçük / orta";
       case "large_single_area":
-        return "Tek bölgede büyük bir alan";
+        return "Tek bölgede büyük";
       case "wide_area":
-        return "Çok geniş bir alan";
+        return "Çok geniş";
       case "unsure":
         return "Emin değilim";
     }
@@ -132,9 +142,31 @@ export function getAreaScopeLabel(areaScope: AreaScopeValue, locale: PublicLocal
     case "standard_piece":
       return "Small / medium area";
     case "large_single_area":
-      return "Large single area";
+      return "Large in one area";
     case "wide_area":
       return "Very wide area";
+    case "unsure":
+      return "Not sure";
+  }
+}
+
+export function getLayoutStyleLabel(value: LayoutStyleValue, locale: PublicLocale) {
+  if (locale === "tr") {
+    switch (value) {
+      case "organic":
+        return "Serbest / doğal akış";
+      case "precision":
+        return "Daha düzenli / simetrik";
+      case "unsure":
+        return "Emin değilim";
+    }
+  }
+
+  switch (value) {
+    case "organic":
+      return "Free / natural flow";
+    case "precision":
+      return "More ordered / symmetric";
     case "unsure":
       return "Not sure";
   }

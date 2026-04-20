@@ -7,7 +7,6 @@ import {
   Copy,
   ImagePlus,
   LoaderCircle,
-  MoreHorizontal,
   PencilLine,
   Plus,
   Save,
@@ -15,7 +14,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { Field } from "@/components/shared/field";
@@ -55,6 +54,13 @@ type PartialDesignDraft = {
 type PricingModeValue = NonNullable<DesignDraft["pricingMode"]>;
 type ColorModeValue = NonNullable<DesignDraft["referenceColorMode"]>;
 type ColorImpactValue = NonNullable<DesignDraft["colorImpactPreference"]>;
+type PendingRemoval = { designId: string; title: string } | null;
+type PendingOpenState = { designId: string; isNew: boolean; focusTitle: boolean } | null;
+type EditingSnapshot = {
+  designId: string;
+  values: DesignDraft;
+  isNew: boolean;
+};
 
 function EditorSection({
   title,
@@ -174,8 +180,8 @@ const copy = {
     saved: "Saved",
     introDescription:
       "These designs appear on your profile page. Clients can send a request from the design they like.",
-    introHint: "To add a new design, image, name, size, and price are enough.",
-    introSteps: ["Upload image", "Name it", "Set price"],
+    introHint: "To add a design, image, name, size, and price are enough.",
+    introSteps: ["Upload image", "Add a name", "Set price"],
     addDesign: "Add new design",
     emptyTitle: "Add your first design",
     emptyDescription: "Start with an image, a name, and an approximate price.",
@@ -185,6 +191,9 @@ const copy = {
     duplicate: "Duplicate",
     remove: "Delete",
     removeConfirm: "Delete this design?",
+    removeDescription: "This design will be removed from your profile page.",
+    removeCancel: "Cancel",
+    removeConfirmAction: "Delete",
     liveOn: "Live",
     liveOff: "Draft",
     image: "Design image",
@@ -193,7 +202,7 @@ const copy = {
     replaceImage: "Change image",
     removeImage: "Remove",
     detailsTitle: "Required info",
-    detailsDescription: "These are enough to get started.",
+    detailsDescription: "",
     titleLabel: "Design name",
     titlePlaceholder: "e.g. Fine line rose",
     sizeLabel: "Approximate size",
@@ -204,7 +213,7 @@ const copy = {
     priceMax: "Upper price",
     optionalTitle: "Extra info (optional)",
     optionalDescription: "If you want, you can add a short note and a category.",
-    optionalSummary: "Can be left blank",
+    optionalSummary: "Empty",
     category: "Category (optional)",
     customCategory: "Custom category",
     customCategoryPlaceholder: "e.g. Floral",
@@ -260,8 +269,8 @@ const copy = {
     saved: "Kaydedildi",
     introDescription:
       "Buradaki tasarımlar profil sayfanda görünür. Müşteri beğendiği tasarımdan talep gönderebilir.",
-    introHint: "Yeni tasarım eklemek için görsel, ad, boyut ve fiyat yeterli.",
-    introSteps: ["Görsel yükle", "Ad ver", "Fiyat gir"],
+    introHint: "Bir tasarım eklemek için görsel, isim, boyut ve fiyat yeterli.",
+    introSteps: ["Görsel ekle", "Tasarım adını yaz", "Fiyat gir"],
     addDesign: "Yeni tasarım ekle",
     emptyTitle: "İlk tasarımını ekle",
     emptyDescription: "Görsel, ad ve yaklaşık fiyat girerek başlayabilirsin.",
@@ -270,7 +279,10 @@ const copy = {
     edit: "Düzenle",
     duplicate: "Çoğalt",
     remove: "Sil",
-    removeConfirm: "Bu tasarımı silmek istiyor musun?",
+    removeConfirm: "Tasarımı silmek istiyor musun?",
+    removeDescription: "Bu tasarım profil sayfandan kaldırılır.",
+    removeCancel: "İptal",
+    removeConfirmAction: "Sil",
     liveOn: "Yayında",
     liveOff: "Taslak",
     image: "Tasarım görseli",
@@ -279,7 +291,7 @@ const copy = {
     replaceImage: "Görsel değiştir",
     removeImage: "Kaldır",
     detailsTitle: "Gerekli bilgiler",
-    detailsDescription: "Başlamak için bu alanlar yeterli.",
+    detailsDescription: "",
     titleLabel: "Tasarım adı",
     titlePlaceholder: "Örn: Minimal gül",
     sizeLabel: "Yaklaşık boyut",
@@ -290,7 +302,7 @@ const copy = {
     priceMax: "Üst fiyat",
     optionalTitle: "Ek bilgiler (opsiyonel)",
     optionalDescription: "İstersen kısa not ve kategori ekleyebilirsin.",
-    optionalSummary: "Boş bırakılabilir",
+    optionalSummary: "Boş",
     category: "Kategori (opsiyonel)",
     customCategory: "Özel kategori",
     customCategoryPlaceholder: "Örn: Floral",
@@ -467,44 +479,140 @@ export function FeaturedDesignsForm({
     defaultValue: form.getValues("designs"),
   });
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [pendingOpenMode, setPendingOpenMode] = useState<"new" | "duplicate" | null>(null);
+  const [editingDesignId, setEditingDesignId] = useState<string | null>(null);
+  const [pendingOpen, setPendingOpen] = useState<PendingOpenState>(null);
   const [optionalOpen, setOptionalOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [useGeneralPricing, setUseGeneralPricing] = useState(true);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval>(null);
+  const [focusTitleOnOpen, setFocusTitleOnOpen] = useState(false);
+  const editingSnapshotRef = useRef<EditingSnapshot | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
 
-  const editingIndex = editingId
-    ? designsFieldArray.fields.findIndex((field) => field.id === editingId)
+  const currentDesigns = watchedDesigns ?? [];
+  const editingIndex = editingDesignId
+    ? currentDesigns.findIndex((design) => design?.id === editingDesignId)
     : -1;
-  const editingDesign = editingIndex >= 0 ? watchedDesigns?.[editingIndex] : null;
+  const editingDesign = editingIndex >= 0 ? currentDesigns[editingIndex] : null;
 
-  useEffect(() => {
-    if (!pendingOpenMode) {
-      return;
-    }
+  function getCurrentDesigns() {
+    return (form.getValues("designs") ?? []).map((design, index) =>
+      normalizeDesign(design as PartialDesignDraft, index),
+    );
+  }
 
-    const latestField = designsFieldArray.fields.at(-1);
-    if (!latestField) {
-      return;
-    }
-
-    setEditingId(latestField.id);
-    setPendingOpenMode(null);
-  }, [designsFieldArray.fields, pendingOpenMode]);
-
-  useEffect(() => {
-    if (!editingDesign) {
+  function syncEditorState(design: PartialDesignDraft | null | undefined) {
+    if (!design) {
       setOptionalOpen(false);
       setAdvancedOpen(false);
       setUseGeneralPricing(true);
       return;
     }
 
-    setOptionalOpen(Boolean(editingDesign.shortDescription?.trim()) || !featuredDesignCategories.some((item) => item.value === editingDesign.category));
+    setOptionalOpen(
+      Boolean(design.shortDescription?.trim()) ||
+        !featuredDesignCategories.some((item) => item.value === design.category),
+    );
     setAdvancedOpen(false);
-    setUseGeneralPricing(isUsingGeneralPricing(editingDesign as PartialDesignDraft));
-  }, [editingDesign?.id]);
+    setUseGeneralPricing(isUsingGeneralPricing(design));
+  }
+
+  function resetEditorState() {
+    editingSnapshotRef.current = null;
+    setEditingDesignId(null);
+    setOptionalOpen(false);
+    setAdvancedOpen(false);
+    setUseGeneralPricing(true);
+    setFocusTitleOnOpen(false);
+  }
+
+  function beginEditing(designId: string, options?: { isNew?: boolean; focusTitle?: boolean }) {
+    const design = getCurrentDesigns().find((item) => item.id === designId);
+
+    if (!design) {
+      return;
+    }
+
+    editingSnapshotRef.current = {
+      designId,
+      values: structuredClone(design),
+      isNew: options?.isNew ?? false,
+    };
+    setEditingDesignId(designId);
+    syncEditorState(design);
+    setFocusTitleOnOpen(Boolean(options?.focusTitle));
+  }
+
+  function cancelEditing() {
+    const snapshot = editingSnapshotRef.current;
+
+    if (!snapshot) {
+      resetEditorState();
+      return;
+    }
+
+    const current = getCurrentDesigns();
+    const nextDesigns = snapshot.isNew
+      ? current.filter((design) => design.id !== snapshot.designId)
+      : current.map((design) => (design.id === snapshot.designId ? snapshot.values : design));
+
+    form.reset({
+      designs: nextDesigns.map((design, index) => ({
+        ...design,
+        sortOrder: index,
+      })),
+    });
+    form.clearErrors("root");
+    resetEditorState();
+  }
+
+  function openDesign(designId: string, options?: { isNew?: boolean; focusTitle?: boolean }) {
+    if (editingSnapshotRef.current?.designId && editingSnapshotRef.current.designId !== designId) {
+      cancelEditing();
+    }
+
+    beginEditing(designId, options);
+  }
+
+  function addDesign(source?: PartialDesignDraft) {
+    if (editingSnapshotRef.current) {
+      cancelEditing();
+    }
+
+    const nextDesign = source
+      ? cloneDesign(source, designsFieldArray.fields.length)
+      : createEmptyDesign(designsFieldArray.fields.length);
+    const designId = nextDesign.id ?? crypto.randomUUID();
+    nextDesign.id = designId;
+
+    designsFieldArray.prepend(nextDesign);
+    setPendingOpen({
+      designId,
+      isNew: true,
+      focusTitle: true,
+    });
+  }
+
+  useEffect(() => {
+    if (!pendingOpen) {
+      return;
+    }
+
+    const designExists = (form.getValues("designs") ?? []).some(
+      (design) => design.id === pendingOpen.designId,
+    );
+
+    if (!designExists) {
+      return;
+    }
+
+    beginEditing(pendingOpen.designId, {
+      isNew: pendingOpen.isNew,
+      focusTitle: pendingOpen.focusTitle,
+    });
+    setPendingOpen(null);
+  }, [form, pendingOpen, watchedDesigns]);
 
   useEffect(() => {
     if (!flashMessage) {
@@ -514,6 +622,20 @@ export function FeaturedDesignsForm({
     const timeout = window.setTimeout(() => setFlashMessage(null), 2200);
     return () => window.clearTimeout(timeout);
   }, [flashMessage]);
+
+  useEffect(() => {
+    if (!focusTitleOnOpen || !editingDesignId) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      titleInputRef.current?.focus();
+      titleInputRef.current?.select();
+      setFocusTitleOnOpen(false);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [editingDesignId, focusTitleOnOpen]);
 
   function getCategorySelectValue(category: string) {
     return featuredDesignCategories.some((item) => item.value === category) ? category : "__custom__";
@@ -594,26 +716,54 @@ export function FeaturedDesignsForm({
     form.setValue(`designs.${index}.imagePath`, "", { shouldDirty: true });
   }
 
-  function handleRemove(index: number) {
-    if (typeof window !== "undefined" && !window.confirm(labels.removeConfirm)) {
+  function handleRemove(designId: string) {
+    const design = getCurrentDesigns().find((item) => item.id === designId);
+
+    if (!design) {
       return;
     }
 
-    const currentId = designsFieldArray.fields[index]?.id;
-    designsFieldArray.remove(index);
+    setPendingRemoval({
+      designId,
+      title: design.title?.trim() || labels.newItem,
+    });
+  }
 
-    if (currentId && currentId === editingId) {
-      setEditingId(null);
+  function confirmRemoval() {
+    if (!pendingRemoval) {
+      return;
     }
+
+    const nextDesigns = getCurrentDesigns().filter((design) => design.id !== pendingRemoval.designId);
+    form.reset({
+      designs: nextDesigns.map((design, index) => ({
+        ...design,
+        sortOrder: index,
+      })),
+    });
+
+    if (editingSnapshotRef.current?.designId === pendingRemoval.designId) {
+      resetEditorState();
+    }
+
+    setPendingRemoval(null);
+    form.clearErrors("root");
   }
 
   async function onSubmit(values: FeaturedDesignValues) {
+    const normalizedValues: FeaturedDesignValues = {
+      designs: values.designs.map((design, index) => ({
+        ...design,
+        sortOrder: index,
+      })),
+    };
+
     const response = await fetch("/api/dashboard/designs", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(values),
+      body: JSON.stringify(normalizedValues),
     });
     await response.json().catch(() => null);
 
@@ -622,23 +772,56 @@ export function FeaturedDesignsForm({
       return;
     }
 
-    form.reset(values);
+    form.reset(normalizedValues);
     form.clearErrors("root");
     setFlashMessage(labels.saved);
+
+    if (editingDesignId) {
+      const savedDesign = normalizedValues.designs.find((design) => design.id === editingDesignId);
+
+      if (savedDesign) {
+        const savedDesignId = savedDesign.id ?? editingDesignId;
+        editingSnapshotRef.current = {
+          designId: savedDesignId,
+          values: structuredClone({ ...savedDesign, id: savedDesignId }),
+          isNew: false,
+        };
+        syncEditorState({ ...savedDesign, id: savedDesignId });
+      }
+    }
   }
 
   const statusMessage = form.formState.errors.root?.message ?? null;
 
   return (
-    <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+    <form
+      className="space-y-6"
+      onSubmit={form.handleSubmit(onSubmit)}
+      onKeyDown={(event) => {
+        const target = event.target as HTMLElement;
+        const tagName = target.tagName;
+        const isTextarea = tagName === "TEXTAREA";
+        const isButton = tagName === "BUTTON";
+
+        if (event.key === "Escape" && editingDesignId) {
+          event.preventDefault();
+          cancelEditing();
+          return;
+        }
+
+        if (event.key === "Enter" && !event.shiftKey && !isTextarea && !isButton) {
+          event.preventDefault();
+        }
+      }}
+    >
       {flashMessage ? (
         <div className="fixed right-5 top-5 z-[70] rounded-full border border-[var(--accent)]/20 bg-[color:color-mix(in_srgb,var(--background)_82%,black_18%)] px-4 py-2 text-sm text-[var(--accent-soft)] shadow-[0_18px_36px_rgba(0,0,0,0.28)]">
           {flashMessage}
         </div>
       ) : null}
       <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <div className="min-w-0 space-y-2">
+        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+          <div className="min-w-0 space-y-1.5">
             <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]">
               {labels.introHint}
             </p>
@@ -658,10 +841,7 @@ export function FeaturedDesignsForm({
           <div className="shrink-0">
             <Button
               type="button"
-              onClick={() => {
-                designsFieldArray.append(createEmptyDesign(designsFieldArray.fields.length));
-                setPendingOpenMode("new");
-              }}
+              onClick={() => addDesign()}
             >
               <Plus className="size-4" />
               {labels.addDesign}
@@ -684,10 +864,7 @@ export function FeaturedDesignsForm({
             </div>
             <Button
               type="button"
-              onClick={() => {
-                designsFieldArray.append(createEmptyDesign(0));
-                setPendingOpenMode("new");
-              }}
+              onClick={() => addDesign()}
             >
               <Plus className="size-4" />
               {labels.addDesign}
@@ -706,399 +883,270 @@ export function FeaturedDesignsForm({
             const max = formatCurrency(locale, toNullableNumber(design?.referencePriceMax));
             const priceText = min && max ? `${min} – ${max}` : min ?? max ?? "—";
             const metaText = [category, size].filter(Boolean).join(" • ");
-            const isEditing = editingId === field.id;
+            const designId = design?.id || field.id;
+            const isEditing = editingDesignId === designId;
+            const usingGeneralPricing = isUsingGeneralPricing(design as PartialDesignDraft);
 
             return (
               <Card
                 key={field.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setEditingId(field.id)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setEditingId(field.id);
-                  }
-                }}
                 className={cn(
-                  "surface-border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_14px_32px_rgba(0,0,0,0.1)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35",
-                  isEditing ? "border-[var(--accent)]/24 shadow-[0_18px_42px_rgba(0,0,0,0.16)]" : "",
+                  "surface-border overflow-hidden border-white/8 shadow-[0_14px_32px_rgba(0,0,0,0.1)] transition",
+                  isEditing
+                    ? "border-[var(--accent)]/28 bg-[color:color-mix(in_srgb,var(--background)_88%,white_5%)] shadow-[0_20px_42px_rgba(0,0,0,0.2)]"
+                    : "bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)]",
                 )}
               >
-                <CardContent className="flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
-                  <button
-                    type="button"
-                    onClick={() => setEditingId(field.id)}
-                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                <CardContent className={cn("p-3.5 sm:p-4", isEditing ? "space-y-5" : "")}>
+                  <div
+                    role={isEditing ? undefined : "button"}
+                    tabIndex={isEditing ? -1 : 0}
+                    onClick={() => {
+                      if (!isEditing) {
+                        openDesign(designId);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (isEditing) {
+                        return;
+                      }
+
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openDesign(designId);
+                      }
+                    }}
+                    className={cn(
+                      "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+                      isEditing ? "rounded-[22px] border border-white/8 bg-white/[0.02] px-4 py-4" : "",
+                    )}
                   >
-                    <div className="relative size-14 shrink-0 overflow-hidden rounded-[16px] border border-white/8 bg-white/[0.03]">
-                      {design?.imageUrl ? (
-                        <img
-                          src={design.imageUrl}
-                          alt={design.title || title}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[var(--foreground-muted)]">
-                          <ImagePlus className="size-5" />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 space-y-2">
-                      <div className="space-y-1">
-                        <p className="truncate text-[1.02rem] font-semibold tracking-[-0.02em] text-white">
-                          {title}
-                        </p>
-                        <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
-                          {metaText || "—"}
-                        </p>
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className="relative size-14 shrink-0 overflow-hidden rounded-[16px] border border-white/8 bg-white/[0.03]">
+                        {design?.imageUrl ? (
+                          <img
+                            src={design.imageUrl}
+                            alt={design.title || title}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[var(--foreground-muted)]">
+                            <ImagePlus className="size-5" />
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/88">
-                          {priceText}
-                        </span>
-                        <span
-                          className={cn(
-                            "rounded-full border px-2.5 py-1 text-[11px] font-medium",
-                            design?.active
-                              ? "border-[var(--accent)]/22 bg-[var(--accent)]/10 text-[var(--accent-soft)]"
-                              : "border-white/8 bg-white/[0.03] text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_10%)]",
+                      <div className="min-w-0 space-y-2">
+                        <div className="space-y-1">
+                          {isEditing ? (
+                            <div className="space-y-1">
+                              <p className="text-xs uppercase tracking-[0.16em] text-[color:color-mix(in_srgb,var(--foreground-muted)_72%,white_10%)]">
+                                {labels.drawerTitle}
+                              </p>
+                              <p className="truncate text-[1.05rem] font-semibold tracking-[-0.02em] text-white">
+                                {title}
+                              </p>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="truncate text-[1.02rem] font-semibold tracking-[-0.02em] text-white">
+                                {title}
+                              </p>
+                              <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
+                                {metaText || "—"}
+                              </p>
+                            </>
                           )}
-                        >
-                          {design?.active ? labels.liveOn : labels.liveOff}
-                        </span>
+                        </div>
+
+                        {!isEditing ? (
+                          <div className="flex flex-wrap gap-2">
+                            <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/88">
+                              {priceText}
+                            </span>
+                            <span
+                              className={cn(
+                                "rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                                design?.active
+                                  ? "border-[var(--accent)]/22 bg-[var(--accent)]/10 text-[var(--accent-soft)]"
+                                  : "border-white/8 bg-white/[0.03] text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_10%)]",
+                              )}
+                            >
+                              {design?.active ? labels.liveOn : labels.liveOff}
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
+                            {metaText || "—"}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  </button>
 
-                  <div className="flex items-center gap-2 sm:shrink-0" onClick={(event) => event.stopPropagation()}>
-                    <Button type="button" variant="secondary" onClick={() => setEditingId(field.id)}>
-                      <PencilLine className="size-4" />
-                      {labels.edit}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-white/82 hover:text-white"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        designsFieldArray.append(
-                          cloneDesign(
-                            form.getValues(`designs.${index}`) as PartialDesignDraft,
-                            designsFieldArray.fields.length,
-                          ),
-                        );
-                        setPendingOpenMode("duplicate");
-                      }}
-                    >
-                      <Copy className="size-4" />
-                      {labels.duplicate}
-                    </Button>
-                    <details
-                      className="relative [&_summary::-webkit-details-marker]:hidden"
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <summary
-                        aria-label={labels.remove}
-                        className="flex size-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/8 bg-white/[0.03] text-[var(--foreground-muted)] transition hover:border-white/12 hover:bg-white/[0.05] hover:text-white"
+                    {isEditing ? (
+                      <div className="sticky top-3 z-10 flex flex-col gap-3 self-start rounded-[20px] bg-[color:color-mix(in_srgb,var(--background)_92%,black_8%)] sm:ml-4 sm:min-w-[320px] sm:border sm:border-white/8 sm:p-3">
+                        <div className="flex items-start justify-between gap-3 rounded-[18px] border border-white/8 bg-white/[0.03] px-3 py-3">
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium text-white">{labels.statusLabel}</p>
+                            <p className="text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]">
+                              {labels.statusHelp}
+                            </p>
+                          </div>
+                          <label className="relative mt-0.5 inline-flex items-center">
+                            <input
+                              type="checkbox"
+                              className="peer sr-only"
+                              {...form.register(`designs.${editingIndex}.active`)}
+                            />
+                            <span className="h-7 w-12 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
+                            <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
+                          </label>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <Button type="button" variant="secondary" onClick={cancelEditing}>
+                            {labels.cancel}
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={form.formState.isSubmitting || !form.formState.isDirty}
+                          >
+                            {form.formState.isSubmitting ? (
+                              <>
+                                <LoaderCircle className="size-4 animate-spin" />
+                                {labels.saving}
+                              </>
+                            ) : (
+                              <>
+                                <Save className="size-4" />
+                                {labels.save}
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="flex flex-wrap items-center gap-2 sm:shrink-0"
+                        onClick={(event) => event.stopPropagation()}
                       >
-                        <MoreHorizontal className="size-4" />
-                      </summary>
-                      <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[140px] rounded-[18px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_92%,black_8%)] p-1.5 shadow-[0_18px_32px_rgba(0,0,0,0.26)]">
-                        <button
+                        <Button type="button" variant="secondary" onClick={() => openDesign(designId)}>
+                          <PencilLine className="size-4" />
+                          {labels.edit}
+                        </Button>
+                        <Button
                           type="button"
-                          className="flex w-full items-center gap-2 rounded-[14px] px-3 py-2 text-sm text-red-200 transition hover:bg-white/[0.05] hover:text-red-100"
-                          onClick={() => handleRemove(index)}
+                          variant="ghost"
+                          className="text-white/82 hover:text-white"
+                          onClick={() =>
+                            addDesign(form.getValues(`designs.${index}`) as PartialDesignDraft)
+                          }
+                        >
+                          <Copy className="size-4" />
+                          {labels.duplicate}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="text-red-200 hover:text-red-100"
+                          onClick={() => handleRemove(designId)}
                         >
                           <Trash2 className="size-4" />
                           {labels.remove}
-                        </button>
+                        </Button>
                       </div>
-                    </details>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  {isEditing ? (
+                    <>
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.id`)} />
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.imagePath`)} />
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.imageUrl`)} />
 
-      {editingDesign ? (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/55 backdrop-blur-sm"
-            onClick={() => setEditingId(null)}
-          />
-          <aside className="fixed inset-0 z-50 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[min(560px,100vw)]">
-            <div className="flex h-full flex-col bg-[color:color-mix(in_srgb,var(--background)_96%,black_6%)] sm:border-l sm:border-white/8 sm:shadow-[-24px_0_48px_rgba(0,0,0,0.28)]">
-              <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-5 sm:px-6">
-                <div className="min-w-0 space-y-1.5">
-                  <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_8%)]">
-                    {labels.drawerTitle}
-                  </p>
-                  <h3 className="truncate text-xl font-semibold tracking-[-0.02em] text-white">
-                    {editingDesign.title?.trim() || labels.newItem}
-                  </h3>
-                </div>
+                      {statusMessage ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
 
-                <div className="flex items-start gap-4">
-                  <div className="space-y-1 text-right">
-                    <p className="text-sm font-medium text-white">{labels.statusLabel}</p>
-                    <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_8%)]">
-                      {labels.statusHelp}
-                    </p>
-                  </div>
-                  <label className="relative mt-0.5 inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      className="peer sr-only"
-                      {...form.register(`designs.${editingIndex}.active`)}
-                    />
-                    <span className="h-7 w-12 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
-                    <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
-                  </label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    aria-label={labels.cancel}
-                    onClick={() => setEditingId(null)}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-                <div className="space-y-4">
-                  <input type="hidden" {...form.register(`designs.${editingIndex}.id`)} />
-                  <input type="hidden" {...form.register(`designs.${editingIndex}.imagePath`)} />
-                  <input type="hidden" {...form.register(`designs.${editingIndex}.imageUrl`)} />
-
-                  <EditorSection title={labels.detailsTitle} description={labels.detailsDescription}>
-                    <div className="space-y-4">
-                      <Field label={labels.image}>
-                        <div className="space-y-3">
-                          <div className="relative flex h-[176px] items-center justify-center overflow-hidden rounded-[20px] border border-white/8 bg-white/[0.03]">
-                            {editingDesign.imageUrl ? (
-                              <img
-                                src={editingDesign.imageUrl}
-                                alt={editingDesign.title || labels.newItem}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <div className="space-y-2 text-center text-[var(--foreground-muted)]">
-                                <div className="mx-auto flex size-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.03]">
-                                  <ImagePlus className="size-5" />
-                                </div>
-                                <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]">
-                                  {labels.noImage}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
-                              <Upload className="size-4" />
-                              {editingDesign.imageUrl ? labels.replaceImage : labels.uploadImage}
-                              <input
-                                type="file"
-                                accept="image/png,image/jpeg,image/webp,image/gif"
-                                className="hidden"
-                                onChange={(event) => {
-                                  const file = event.target.files?.[0];
-                                  if (file) {
-                                    void handleImageUpload(editingIndex, file);
-                                  }
-                                  event.currentTarget.value = "";
-                                }}
-                              />
-                            </label>
-                            {editingDesign.imageUrl ? (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="text-white/74 hover:text-white"
-                                onClick={() => void handleImageRemove(editingIndex)}
-                              >
-                                <X className="size-4" />
-                                {labels.removeImage}
-                              </Button>
-                            ) : null}
-                          </div>
-                        </div>
-                      </Field>
-
-                      <Field
-                        label={labels.titleLabel}
-                        error={form.formState.errors.designs?.[editingIndex]?.title?.message}
-                      >
-                        <Input
-                          className="h-12 rounded-[18px] bg-white/[0.03]"
-                          placeholder={labels.titlePlaceholder}
-                          {...form.register(`designs.${editingIndex}.title`)}
-                        />
-                      </Field>
-
-                      <Field
-                        label={labels.sizeLabel}
-                        error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
-                      >
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
-                            placeholder={labels.sizePlaceholder}
-                            {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
-                          />
-                          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-                            cm
-                          </span>
-                        </div>
-                      </Field>
-
-                      <Field label={labels.priceLabel} description={labels.priceHelp}>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <Field
-                            label={labels.priceMin}
-                            className="gap-2"
-                            error={form.formState.errors.designs?.[editingIndex]?.referencePriceMin?.message}
-                          >
-                            <Input
-                              type="number"
-                              className="h-12 rounded-[18px] bg-white/[0.03]"
-                              placeholder="6000"
-                              {...form.register(`designs.${editingIndex}.referencePriceMin`)}
-                            />
-                          </Field>
-                          <Field
-                            label={labels.priceMax}
-                            className="gap-2"
-                            error={form.formState.errors.designs?.[editingIndex]?.referencePriceMax?.message}
-                          >
-                            <Input
-                              type="number"
-                              className="h-12 rounded-[18px] bg-white/[0.03]"
-                              placeholder="8500"
-                              {...form.register(`designs.${editingIndex}.referencePriceMax`)}
-                            />
-                          </Field>
-                        </div>
-                      </Field>
-                    </div>
-                  </EditorSection>
-
-                  <CollapsibleSection
-                    title={labels.optionalTitle}
-                    description={labels.optionalDescription}
-                    summary={optionalOpen ? undefined : labels.optionalSummary}
-                    open={optionalOpen}
-                    onToggle={() => setOptionalOpen((current) => !current)}
-                  >
-                    <div className="space-y-4">
-                      <Field label={labels.category}>
-                        <NativeSelect
-                          className="h-12 rounded-[18px] bg-white/[0.03]"
-                          value={getCategorySelectValue(editingDesign.category || "")}
-                          onChange={(event) =>
-                            form.setValue(
-                              `designs.${editingIndex}.category`,
-                              event.target.value === "__custom__" ? "" : event.target.value,
-                              { shouldDirty: true, shouldValidate: true },
-                            )
-                          }
-                        >
-                          <option value="flash-designs">{labels.flash}</option>
-                          <option value="discounted-designs">{labels.discounted}</option>
-                          <option value="__custom__">{labels.customOption}</option>
-                        </NativeSelect>
-                      </Field>
-
-                      {getCategorySelectValue(editingDesign.category || "") === "__custom__" ? (
-                        <Field label={labels.customCategory}>
-                          <Input
-                            className="h-12 rounded-[18px] bg-white/[0.03]"
-                            placeholder={labels.customCategoryPlaceholder}
-                            value={editingDesign.category || ""}
-                            onChange={(event) =>
-                              form.setValue(`designs.${editingIndex}.category`, event.target.value, {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              })
-                            }
-                          />
-                        </Field>
-                      ) : null}
-
-                      <Field label={labels.shortDescription} description={labels.shortDescriptionHelp}>
-                        <Textarea
-                          className="min-h-[132px] rounded-[18px] bg-white/[0.03]"
-                          placeholder={labels.shortDescriptionPlaceholder}
-                          {...form.register(`designs.${editingIndex}.shortDescription`)}
-                        />
-                      </Field>
-                    </div>
-                  </CollapsibleSection>
-
-                  <CollapsibleSection
-                    title={labels.advancedTitle}
-                    description={labels.advancedDescription}
-                    summary={
-                      advancedOpen
-                        ? undefined
-                        : useGeneralPricing
-                          ? labels.advancedSummaryDefault
-                          : labels.advancedSummaryCustom
-                    }
-                    open={advancedOpen}
-                    onToggle={() => setAdvancedOpen((current) => !current)}
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-start justify-between gap-4 rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-4">
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium text-white">{labels.useGeneralPricing}</p>
-                          <p className="text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]">
-                            {labels.useGeneralPricingHelp}
-                          </p>
-                        </div>
-                        <label className="relative inline-flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={useGeneralPricing}
-                            onChange={(event) => {
-                              const checked = event.target.checked;
-                              setUseGeneralPricing(checked);
-
-                              if (checked) {
-                                form.setValue(`designs.${editingIndex}.pricingMode`, DEFAULT_PRICING_MODE, {
-                                  shouldDirty: true,
-                                  shouldValidate: true,
-                                });
-                                form.setValue(
-                                  `designs.${editingIndex}.referenceColorMode`,
-                                  DEFAULT_COLOR_MODE,
-                                  { shouldDirty: true, shouldValidate: true },
-                                );
-                                form.setValue(
-                                  `designs.${editingIndex}.colorImpactPreference`,
-                                  DEFAULT_COLOR_IMPACT,
-                                  { shouldDirty: true, shouldValidate: true },
-                                );
-                              }
-                            }}
-                            className="peer sr-only"
-                          />
-                          <span className="h-7 w-12 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
-                          <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
-                        </label>
-                      </div>
-
-                      {!useGeneralPricing ? (
+                      <EditorSection title={labels.detailsTitle} description={labels.detailsDescription}>
                         <div className="space-y-4">
-                          <Field label={labels.advancedSize} description={labels.advancedSizeHelp}>
+                          <Field label={labels.image}>
+                            <div className="space-y-3">
+                              <div className="relative flex h-[180px] items-center justify-center overflow-hidden rounded-[20px] border border-white/8 bg-white/[0.03]">
+                                {editingDesign?.imageUrl ? (
+                                  <img
+                                    src={editingDesign.imageUrl}
+                                    alt={editingDesign.title || labels.newItem}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="space-y-2 text-center text-[var(--foreground-muted)]">
+                                    <div className="mx-auto flex size-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.03]">
+                                      <ImagePlus className="size-5" />
+                                    </div>
+                                    <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]">
+                                      {labels.noImage}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
+                                  <Upload className="size-4" />
+                                  {editingDesign?.imageUrl ? labels.replaceImage : labels.uploadImage}
+                                  <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
+                                    className="hidden"
+                                    onChange={(event) => {
+                                      const file = event.target.files?.[0];
+                                      if (file) {
+                                        void handleImageUpload(editingIndex, file);
+                                      }
+                                      event.currentTarget.value = "";
+                                    }}
+                                  />
+                                </label>
+                                {editingDesign?.imageUrl ? (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-white/74 hover:text-white"
+                                    onClick={() => void handleImageRemove(editingIndex)}
+                                  >
+                                    <X className="size-4" />
+                                    {labels.removeImage}
+                                  </Button>
+                                ) : null}
+                              </div>
+                            </div>
+                          </Field>
+
+                          <Field
+                            label={labels.titleLabel}
+                            error={form.formState.errors.designs?.[editingIndex]?.title?.message}
+                          >
+                            {(() => {
+                              const titleRegistration = form.register(`designs.${editingIndex}.title`);
+
+                              return (
+                                <Input
+                                  ref={(node) => {
+                                    titleRegistration.ref(node);
+                                    titleInputRef.current = node;
+                                  }}
+                                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                                  placeholder={labels.titlePlaceholder}
+                                  name={titleRegistration.name}
+                                  onBlur={titleRegistration.onBlur}
+                                  onChange={titleRegistration.onChange}
+                                />
+                              );
+                            })()}
+                          </Field>
+
+                          <Field
+                            label={labels.sizeLabel}
+                            error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
+                          >
                             <div className="relative">
                               <Input
                                 type="number"
@@ -1112,98 +1160,222 @@ export function FeaturedDesignsForm({
                             </div>
                           </Field>
 
-                          <Field label={labels.advancedPricingMode}>
-                            <SegmentedControl<PricingModeValue>
-                              value={(editingDesign.pricingMode ?? DEFAULT_PRICING_MODE) as PricingModeValue}
-                              options={[
-                                { value: "fixed_range", label: labels.pricingModes.fixed_range },
-                                { value: "size_adjusted", label: labels.pricingModes.size_adjusted },
-                                {
-                                  value: "size_and_placement_adjusted",
-                                  label: labels.pricingModes.size_and_placement_adjusted,
-                                },
-                              ]}
-                              onChange={(value) =>
-                                form.setValue(`designs.${editingIndex}.pricingMode`, value, {
-                                  shouldDirty: true,
-                                  shouldValidate: true,
-                                })
+                          <Field label={labels.priceLabel} description={labels.priceHelp}>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <Field
+                                label={labels.priceMin}
+                                className="gap-2"
+                                error={form.formState.errors.designs?.[editingIndex]?.referencePriceMin?.message}
+                              >
+                                <Input
+                                  type="number"
+                                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                                  placeholder="6000"
+                                  {...form.register(`designs.${editingIndex}.referencePriceMin`)}
+                                />
+                              </Field>
+                              <Field
+                                label={labels.priceMax}
+                                className="gap-2"
+                                error={form.formState.errors.designs?.[editingIndex]?.referencePriceMax?.message}
+                              >
+                                <Input
+                                  type="number"
+                                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                                  placeholder="8500"
+                                  {...form.register(`designs.${editingIndex}.referencePriceMax`)}
+                                />
+                              </Field>
+                            </div>
+                          </Field>
+                        </div>
+                      </EditorSection>
+
+                      <CollapsibleSection
+                        title={labels.optionalTitle}
+                        description={labels.optionalDescription}
+                        summary={
+                          optionalOpen
+                            ? undefined
+                            : editingDesign?.shortDescription?.trim() ||
+                                !featuredDesignCategories.some((item) => item.value === editingDesign?.category)
+                              ? undefined
+                              : labels.optionalSummary
+                        }
+                        open={optionalOpen}
+                        onToggle={() => setOptionalOpen((current) => !current)}
+                      >
+                        <div className="space-y-4">
+                          <Field label={labels.category}>
+                            <NativeSelect
+                              className="h-12 rounded-[18px] bg-white/[0.03]"
+                              value={getCategorySelectValue(editingDesign?.category || "")}
+                              onChange={(event) =>
+                                form.setValue(
+                                  `designs.${editingIndex}.category`,
+                                  event.target.value === "__custom__" ? "" : event.target.value,
+                                  { shouldDirty: true, shouldValidate: true },
+                                )
                               }
-                            />
+                            >
+                              <option value="flash-designs">{labels.flash}</option>
+                              <option value="discounted-designs">{labels.discounted}</option>
+                              <option value="__custom__">{labels.customOption}</option>
+                            </NativeSelect>
                           </Field>
 
-                          <Field label={labels.advancedColorMode}>
-                            <SegmentedControl<ColorModeValue>
-                              value={(editingDesign.referenceColorMode ?? DEFAULT_COLOR_MODE) as ColorModeValue}
-                              options={[
-                                { value: "black-only", label: labels.referenceColorModes["black-only"] },
-                                { value: "black-grey", label: labels.referenceColorModes["black-grey"] },
-                                { value: "full-color", label: labels.referenceColorModes["full-color"] },
-                              ]}
-                              onChange={(value) =>
-                                form.setValue(`designs.${editingIndex}.referenceColorMode`, value, {
-                                  shouldDirty: true,
-                                  shouldValidate: true,
-                                })
-                              }
-                            />
-                          </Field>
+                          {getCategorySelectValue(editingDesign?.category || "") === "__custom__" ? (
+                            <Field label={labels.customCategory}>
+                              <Input
+                                className="h-12 rounded-[18px] bg-white/[0.03]"
+                                placeholder={labels.customCategoryPlaceholder}
+                                value={editingDesign?.category || ""}
+                                onChange={(event) =>
+                                  form.setValue(`designs.${editingIndex}.category`, event.target.value, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                  })
+                                }
+                              />
+                            </Field>
+                          ) : null}
 
-                          <Field label={labels.advancedColorImpact}>
-                            <SegmentedControl<ColorImpactValue>
-                              value={
-                                (editingDesign.colorImpactPreference ?? DEFAULT_COLOR_IMPACT) as ColorImpactValue
-                              }
-                              options={[
-                                { value: "low", label: labels.colorImpactOptions.low },
-                                { value: "medium", label: labels.colorImpactOptions.medium },
-                                { value: "high", label: labels.colorImpactOptions.high },
-                              ]}
-                              onChange={(value) =>
-                                form.setValue(`designs.${editingIndex}.colorImpactPreference`, value, {
-                                  shouldDirty: true,
-                                  shouldValidate: true,
-                                })
-                              }
+                          <Field label={labels.shortDescription} description={labels.shortDescriptionHelp}>
+                            <Textarea
+                              className="min-h-[120px] rounded-[18px] bg-white/[0.03]"
+                              placeholder={labels.shortDescriptionPlaceholder}
+                              {...form.register(`designs.${editingIndex}.shortDescription`)}
                             />
                           </Field>
                         </div>
-                      ) : (
-                        <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
-                          {labels.advancedDefaultNote}
-                        </p>
-                      )}
-                    </div>
-                  </CollapsibleSection>
-                </div>
-              </div>
+                      </CollapsibleSection>
 
-              <div className="border-t border-white/8 px-5 py-4 sm:px-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  {statusMessage ? <p className="text-sm text-red-300">{statusMessage}</p> : <span />}
-                  <div className="flex flex-wrap gap-2 sm:justify-end">
-                    <Button type="button" variant="secondary" onClick={() => setEditingId(null)}>
-                      {labels.cancel}
-                    </Button>
-                    <Button type="submit" disabled={form.formState.isSubmitting || !form.formState.isDirty}>
-                      {form.formState.isSubmitting ? (
-                        <>
-                          <LoaderCircle className="size-4 animate-spin" />
-                          {labels.saving}
-                        </>
-                      ) : (
-                        <>
-                          <Save className="size-4" />
-                          {labels.save}
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
+                      <CollapsibleSection
+                        title={labels.advancedTitle}
+                        description={labels.advancedDescription}
+                        summary={advancedOpen ? undefined : useGeneralPricing ? labels.advancedSummaryDefault : labels.advancedSummaryCustom}
+                        open={advancedOpen}
+                        onToggle={() => setAdvancedOpen((current) => !current)}
+                      >
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between gap-4 rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-4">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-white">{labels.useGeneralPricing}</p>
+                              <p className="text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]">
+                                {labels.useGeneralPricingHelp}
+                              </p>
+                            </div>
+                            <label className="relative inline-flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={useGeneralPricing}
+                                onChange={(event) => {
+                                  const checked = event.target.checked;
+                                  setUseGeneralPricing(checked);
+
+                                  if (checked) {
+                                    form.setValue(`designs.${editingIndex}.pricingMode`, DEFAULT_PRICING_MODE, {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    });
+                                    form.setValue(
+                                      `designs.${editingIndex}.referenceColorMode`,
+                                      DEFAULT_COLOR_MODE,
+                                      { shouldDirty: true, shouldValidate: true },
+                                    );
+                                    form.setValue(
+                                      `designs.${editingIndex}.colorImpactPreference`,
+                                      DEFAULT_COLOR_IMPACT,
+                                      { shouldDirty: true, shouldValidate: true },
+                                    );
+                                  }
+                                }}
+                                className="peer sr-only"
+                              />
+                              <span className="h-7 w-12 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
+                              <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
+                            </label>
+                          </div>
+
+                          {!useGeneralPricing ? (
+                            <div className="space-y-4">
+                              <Field label={labels.advancedPricingMode}>
+                                <SegmentedControl<PricingModeValue>
+                                  value={(editingDesign?.pricingMode ?? DEFAULT_PRICING_MODE) as PricingModeValue}
+                                  options={[
+                                    { value: "fixed_range", label: labels.pricingModes.fixed_range },
+                                    { value: "size_adjusted", label: labels.pricingModes.size_adjusted },
+                                    {
+                                      value: "size_and_placement_adjusted",
+                                      label: labels.pricingModes.size_and_placement_adjusted,
+                                    },
+                                  ]}
+                                  onChange={(value) =>
+                                    form.setValue(`designs.${editingIndex}.pricingMode`, value, {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    })
+                                  }
+                                />
+                              </Field>
+
+                              <Field label={labels.advancedColorImpact}>
+                                <SegmentedControl<ColorImpactValue>
+                                  value={
+                                    (editingDesign?.colorImpactPreference ?? DEFAULT_COLOR_IMPACT) as ColorImpactValue
+                                  }
+                                  options={[
+                                    { value: "low", label: labels.colorImpactOptions.low },
+                                    { value: "medium", label: labels.colorImpactOptions.medium },
+                                    { value: "high", label: labels.colorImpactOptions.high },
+                                  ]}
+                                  onChange={(value) =>
+                                    form.setValue(`designs.${editingIndex}.colorImpactPreference`, value, {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    })
+                                  }
+                                />
+                              </Field>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
+                              {labels.advancedDefaultNote}
+                            </p>
+                          )}
+                        </div>
+                      </CollapsibleSection>
+                    </>
+                  ) : null}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {pendingRemoval ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+          <Card className="surface-border w-full max-w-md border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,black_6%)] shadow-[0_24px_64px_rgba(0,0,0,0.32)]">
+            <CardContent className="space-y-5 p-5">
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold tracking-[-0.02em] text-white">{labels.removeConfirm}</h3>
+                <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
+                  {labels.removeDescription}
+                </p>
               </div>
-            </div>
-          </aside>
-        </>
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button type="button" variant="secondary" onClick={() => setPendingRemoval(null)}>
+                  {labels.removeCancel}
+                </Button>
+                <Button type="button" variant="ghost" className="text-red-200 hover:text-red-100" onClick={confirmRemoval}>
+                  <Trash2 className="size-4" />
+                  {labels.removeConfirmAction}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       ) : null}
     </form>
   );

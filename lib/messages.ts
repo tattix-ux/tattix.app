@@ -7,6 +7,7 @@ import {
 } from "@/lib/i18n/public";
 import {
   getAreaScopeLabel,
+  getLayoutStyleLabel,
   getLargeAreaCoverageLabel,
   getWideAreaTargetLabel,
   getWorkStyleLabel,
@@ -175,7 +176,15 @@ export function buildSubmissionMessage(
   }
 
   if (pricingSource === "custom_request" && submission.workStyle) {
-    lines.push(`${locale === "tr" ? "İşin karakteri" : "Character of the piece"}: ${getWorkStyleLabel(submission.workStyle, locale)}`);
+    lines.push(
+      `${locale === "tr" ? "İşin karakteri" : "Character of the piece"}: ${getWorkStyleLabel(submission.workStyle, locale, submission.realismLevel)}`,
+    );
+  }
+
+  if (pricingSource === "custom_request" && submission.layoutStyle) {
+    lines.push(
+      `${locale === "tr" ? "Düzen" : "Layout"}: ${getLayoutStyleLabel(submission.layoutStyle, locale)}`,
+    );
   }
 
   const coverUpLabel = getCoverUpLabel(submission.coverUp, locale);
