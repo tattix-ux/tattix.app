@@ -5,6 +5,7 @@ import {
   getSizeLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
+import { getWorkStyleLabel } from "@/lib/pricing/v2/output";
 import type { PricingSourceValue, RequestTypeValue, SubmissionRequest } from "@/lib/types";
 import { sanitizePhoneNumber } from "@/lib/utils";
 
@@ -109,6 +110,10 @@ export function buildSubmissionMessage(
     `${labels.placement}: ${getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale)}`,
     `${labels.size}: ${sizeLabel}${manualSize && manualSize !== sizeLabel ? ` (${manualSize})` : ""}`,
   );
+
+  if (pricingSource === "custom_request" && submission.workStyle) {
+    lines.push(`${locale === "tr" ? "İşçilik karakteri" : "Work style"}: ${getWorkStyleLabel(submission.workStyle, locale)}`);
+  }
 
   if (submission.referenceImage) {
     lines.push(`${labels.referenceImage}: ${getReferenceUploadLine(locale, true)}`);

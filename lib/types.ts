@@ -6,8 +6,10 @@ import type {
   FeaturedCategoryValue,
   IntentValue,
   SizeValue,
+  WorkStyleValue,
 } from "@/lib/constants/options";
 export type { RequestTypeValue } from "@/lib/constants/options";
+export type { WorkStyleValue } from "@/lib/constants/options";
 import type { RequestTypeValue } from "@/lib/constants/options";
 import type { SizeMode } from "@/lib/constants/size-estimation";
 import type { PublicLocale } from "@/lib/i18n/public";
@@ -31,6 +33,7 @@ export type EstimateMode = "range" | "soft_range" | "starting_from";
 export type LeadPreferenceValue = "lead_friendly" | "balanced" | "filtered";
 export type ColorImpactPreferenceValue = "low" | "medium" | "high";
 export type CoverUpImpactPreferenceValue = "medium" | "high";
+export type WorkStyleSensitivityValue = "low" | "medium" | "high";
 export type FeaturedDesignPricingMode =
   | "fixed_range"
   | "size_adjusted"
@@ -199,6 +202,11 @@ export type PricingV2CategoryAnchors = {
   coverUp: number;
   unsure: number;
 };
+export type PricingV2WorkStyleSensitivity = {
+  cleanLine: WorkStyleSensitivityValue;
+  shadedDetailed: WorkStyleSensitivityValue;
+  precisionSymmetric: WorkStyleSensitivityValue;
+};
 export type ArtistPricingV2Profile = {
   version: 2;
   leadPreference: LeadPreferenceValue;
@@ -212,6 +220,7 @@ export type ArtistPricingV2Profile = {
   inferredSizeProfile: PricingV2SizeProfile;
   reviewAdjustments: PricingV2ReviewAdjustments;
   categoryAnchors: PricingV2CategoryAnchors;
+  workStyleSensitivity: PricingV2WorkStyleSensitivity;
   onboardingCompleted: boolean;
 };
 export type PricingProfile = {
@@ -433,6 +442,7 @@ export type ClientSubmission = {
   preferredEndDate: string | null;
   gender: CustomerGenderValue | null;
   ageRange: CustomerAgeRangeValue | null;
+  workStyle: WorkStyleValue | null;
   style: string;
   notes: string | null;
   estimatedMin: number;
@@ -459,6 +469,7 @@ export type SubmissionDraft = {
   preferredEndDate: string;
   gender: CustomerGenderValue | "";
   ageRange: CustomerAgeRangeValue | "";
+  workStyle: WorkStyleValue | "";
   bodyAreaGroup: BodyAreaGroupValue | "";
   bodyAreaDetail: BodyAreaDetailValue | "";
   sizeMode: SizeMode;
@@ -535,6 +546,7 @@ export type SubmissionRequest = {
   preferredEndDate?: string | null;
   gender?: CustomerGenderValue | null;
   ageRange?: CustomerAgeRangeValue | null;
+  workStyle?: WorkStyleValue | null;
   bodyAreaGroup: BodyAreaGroupValue;
   bodyAreaDetail: BodyAreaDetailValue;
   sizeMode: SizeMode;

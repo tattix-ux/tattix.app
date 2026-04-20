@@ -9,6 +9,7 @@ import type {
   PricingSourceValue,
   RequestTypeValue,
   SubmissionRequest,
+  WorkStyleValue,
 } from "@/lib/types";
 
 export type PlacementBucket = "easy" | "standard" | "hard";
@@ -28,6 +29,7 @@ export type CustomRequestPricingInput = {
   placement: BodyAreaDetailValue;
   sizeCm: number;
   colorMode: ColorModeValue;
+  workStyle: WorkStyleValue;
   hasReferenceImage: boolean;
   hasReferenceNote: boolean;
 };

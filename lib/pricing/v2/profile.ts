@@ -1,4 +1,11 @@
-import type { ArtistPricingRules, ArtistPricingV2Profile, ColorImpactPreferenceValue, CoverUpImpactPreferenceValue, LeadPreferenceValue } from "@/lib/types";
+import type {
+  ArtistPricingRules,
+  ArtistPricingV2Profile,
+  ColorImpactPreferenceValue,
+  CoverUpImpactPreferenceValue,
+  LeadPreferenceValue,
+  PricingV2WorkStyleSensitivity,
+} from "@/lib/types";
 import { PRICING_V2_ONBOARDING_CASES } from "./onboarding-cases";
 import { midpoint, roundToFriendlyPrice } from "./helpers";
 import {
@@ -13,10 +20,23 @@ type BuildPricingV2ProfileInput = {
   textStartingPrice: number;
   colorImpactPreference: ColorImpactPreferenceValue;
   coverUpImpactPreference: CoverUpImpactPreferenceValue;
+  workStyleSensitivity: {
+    clean_line: PricingV2WorkStyleSensitivity["cleanLine"];
+    shaded_detailed: PricingV2WorkStyleSensitivity["shadedDetailed"];
+    precision_symmetric: PricingV2WorkStyleSensitivity["precisionSymmetric"];
+  };
   leadPreference: LeadPreferenceValue;
   onboardingCases: Array<{ id: string; min: number; max: number }>;
   reviewCases?: Array<{ id: string; verdict: "looks-right" | "slightly-low" | "slightly-high" }>;
 };
+
+function getDefaultWorkStyleSensitivity(): PricingV2WorkStyleSensitivity {
+  return {
+    cleanLine: "medium",
+    shadedDetailed: "medium",
+    precisionSymmetric: "medium",
+  };
+}
 
 function deriveColorImpactPreference(rules: ArtistPricingRules): ColorImpactPreferenceValue {
   const black = rules.calibrationExamples.colorMode["black-only"] ?? rules.minimumCharge;
@@ -60,6 +80,7 @@ type SuggestedCaseInput = {
   textStartingPrice: number;
   colorImpactPreference: ColorImpactPreferenceValue;
   coverUpImpactPreference: CoverUpImpactPreferenceValue;
+  workStyleSensitivity: BuildPricingV2ProfileInput["workStyleSensitivity"];
 };
 
 export function buildSuggestedOnboardingCases(input: SuggestedCaseInput) {
@@ -72,18 +93,36 @@ export function buildSuggestedOnboardingCases(input: SuggestedCaseInput) {
         ? 1.16
         : 1.22;
   const coverUpMultiplier = input.coverUpImpactPreference === "high" ? 1.34 : 1.2;
+  const cleanLineMultiplier =
+    input.workStyleSensitivity.clean_line === "low"
+      ? 0.98
+      : input.workStyleSensitivity.clean_line === "medium"
+        ? 1.02
+        : 1.06;
+  const shadedMultiplier =
+    input.workStyleSensitivity.shaded_detailed === "low"
+      ? 1.02
+      : input.workStyleSensitivity.shaded_detailed === "medium"
+        ? 1.08
+        : 1.14;
+  const precisionMultiplier =
+    input.workStyleSensitivity.precision_symmetric === "low"
+      ? 1.02
+      : input.workStyleSensitivity.precision_symmetric === "medium"
+        ? 1.08
+        : 1.15;
   const singleAnchor10 = Math.max(minimum * 1.34, textBase * 1.2);
   const single6 = singleAnchor10 * Math.pow(6 / 10, 0.58);
   const single16 = singleAnchor10 * Math.pow(16 / 10, 0.62);
 
   const centers: Record<string, number> = {
-    "text-4cm-wrist": Math.max(textBase, minimum * 0.96),
-    "symbol-4cm-ankle": Math.max(minimum, textBase * 1.04),
-    "object-6cm-forearm": Math.max(minimum * 1.14, single6),
-    "object-10cm-forearm": singleAnchor10,
-    "object-16cm-forearm": Math.max(singleAnchor10 * 1.42, single16),
-    "ornamental-small-hard": Math.max(minimum * 1.54, textBase * 1.42),
-    "medium-color-piece": Math.max(singleAnchor10 * 1.12, minimum * 1.56) * colorMultiplier,
+    "text-4cm-wrist": Math.max(textBase, minimum * 0.96) * cleanLineMultiplier,
+    "symbol-4cm-ankle": Math.max(minimum, textBase * 1.04) * cleanLineMultiplier,
+    "object-6cm-forearm": Math.max(minimum * 1.14, single6) * cleanLineMultiplier,
+    "object-10cm-forearm": singleAnchor10 * cleanLineMultiplier,
+    "object-16cm-forearm": Math.max(singleAnchor10 * 1.42, single16) * cleanLineMultiplier,
+    "ornamental-small-hard": Math.max(minimum * 1.54, textBase * 1.42) * precisionMultiplier,
+    "medium-color-piece": Math.max(singleAnchor10 * 1.12, minimum * 1.56) * colorMultiplier * shadedMultiplier,
     "small-cover-up": Math.max(minimum * 1.36, textBase * 1.12) * coverUpMultiplier,
   };
 
@@ -121,6 +160,11 @@ function buildFallbackCases(rules: ArtistPricingRules) {
     textStartingPrice,
     colorImpactPreference: deriveColorImpactPreference(rules),
     coverUpImpactPreference: deriveCoverUpImpactPreference(rules),
+    workStyleSensitivity: {
+      clean_line: "medium",
+      shaded_detailed: "medium",
+      precision_symmetric: "medium",
+    },
   });
 }
 
@@ -137,6 +181,11 @@ export function buildPricingV2Profile(
   const sizeSeries = deriveSizeSeriesFromOnboarding(onboardingCases, minimumJobPrice, reviewAdjustments);
   const inferredSizeProfile = deriveSizeProfileFromOnboarding(onboardingCases, minimumJobPrice, reviewAdjustments);
   const categoryAnchors = buildCategoryAnchors(onboardingCases, minimumJobPrice, reviewAdjustments);
+  const workStyleSensitivity: PricingV2WorkStyleSensitivity = {
+    cleanLine: input.workStyleSensitivity.clean_line,
+    shadedDetailed: input.workStyleSensitivity.shaded_detailed,
+    precisionSymmetric: input.workStyleSensitivity.precision_symmetric,
+  };
 
   return {
     version: 2,
@@ -154,6 +203,7 @@ export function buildPricingV2Profile(
     inferredSizeProfile,
     reviewAdjustments,
     categoryAnchors,
+    workStyleSensitivity,
     onboardingCompleted: true,
   };
 }
@@ -167,11 +217,18 @@ export function getArtistPricingV2Profile(rules: ArtistPricingRules): ArtistPric
       return found ?? fallbackCase;
     });
 
+    const workStyleSensitivity = storedProfile.workStyleSensitivity ?? getDefaultWorkStyleSensitivity();
+
     return buildPricingV2Profile({
       minimumJobPrice: storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
       textStartingPrice: storedProfile.textStartingPrice ?? storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
       colorImpactPreference: storedProfile.colorImpactPreference ?? deriveColorImpactPreference(rules),
       coverUpImpactPreference: storedProfile.coverUpImpactPreference ?? deriveCoverUpImpactPreference(rules),
+      workStyleSensitivity: {
+        clean_line: workStyleSensitivity.cleanLine,
+        shaded_detailed: workStyleSensitivity.shadedDetailed,
+        precision_symmetric: workStyleSensitivity.precisionSymmetric,
+      },
       leadPreference: storedProfile.leadPreference ?? "balanced",
       onboardingCases: mergedCases,
       reviewCases: storedProfile.reviewCases ?? [],
@@ -191,6 +248,11 @@ export function getArtistPricingV2Profile(rules: ArtistPricingRules): ArtistPric
     textStartingPrice,
     colorImpactPreference: deriveColorImpactPreference(rules),
     coverUpImpactPreference: deriveCoverUpImpactPreference(rules),
+    workStyleSensitivity: {
+      clean_line: "medium",
+      shaded_detailed: "medium",
+      precision_symmetric: "medium",
+    },
     leadPreference,
     onboardingCases: fallbackCases,
     reviewCases: [],

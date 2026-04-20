@@ -68,6 +68,7 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     preferredEndDate: row.preferred_end_date ? String(row.preferred_end_date) : null,
     gender: row.customer_gender ? String(row.customer_gender) as ClientSubmission["gender"] : null,
     ageRange: row.customer_age_range ? String(row.customer_age_range) as ClientSubmission["ageRange"] : null,
+    workStyle: row.work_style ? String(row.work_style) as ClientSubmission["workStyle"] : null,
     style: String(row.style) as ClientSubmission["style"],
     notes: row.notes ? String(row.notes) : null,
     estimatedMin: Number(row.estimated_min),
@@ -277,6 +278,11 @@ export async function ensureArtistForUser(user: User) {
           textStartingPrice: 1500,
           colorImpactPreference: "medium",
           coverUpImpactPreference: "medium",
+          workStyleSensitivity: {
+            clean_line: "medium",
+            shaded_detailed: "medium",
+            precision_symmetric: "medium",
+          },
           leadPreference: "balanced",
           onboardingCases: [
             { id: "text-4cm-wrist", min: 1500, max: 1800 },

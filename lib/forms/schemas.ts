@@ -6,6 +6,7 @@ import {
   intentOptions,
   requestTypeOptions,
   sizeOptions,
+  workStyleOptions,
 } from "@/lib/constants/options";
 import {
   backgroundTypeOptions,
@@ -32,6 +33,7 @@ const detailValues = bodyPlacementGroups.flatMap((group) =>
 const intentValues = intentOptions.map((intent) => intent.value);
 const requestTypeValues = requestTypeOptions.map((requestType) => requestType.value);
 const sizeValues = sizeOptions.map((size) => size.value);
+const workStyleValues = workStyleOptions.map((item) => item.value);
 const categoryValues = featuredDesignCategories.map((item) => item.value);
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -303,6 +305,11 @@ export const pricingOnboardingSchema = z.object({
   textStartingPrice: z.coerce.number().gt(0),
   colorImpactPreference: z.enum(["low", "medium", "high"]),
   coverUpImpactPreference: z.enum(["medium", "high"]),
+  workStyleSensitivity: z.object({
+    clean_line: z.enum(["low", "medium", "high"]),
+    shaded_detailed: z.enum(["low", "medium", "high"]),
+    precision_symmetric: z.enum(["low", "medium", "high"]),
+  }),
   leadPreference: z.enum(["lead_friendly", "balanced", "filtered"]),
   onboardingCases: z.array(
     z.object({
@@ -544,6 +551,7 @@ export const submissionSchema = z.object({
   preferredEndDate: z.string().max(20).optional(),
   gender: z.enum(["female", "male", "prefer_not_to_say"]).nullable().optional(),
   ageRange: z.enum(["18-24", "25-34", "35-44", "45+"]).nullable().optional(),
+  workStyle: z.enum(workStyleValues as [string, ...string[]]).nullable().optional(),
   bodyAreaGroup: z.enum(groupValues as [string, ...string[]]),
   bodyAreaDetail: z.enum(detailValues as [string, ...string[]]),
   sizeMode: z.enum(["quick", "visual"]),

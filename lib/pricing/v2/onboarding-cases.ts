@@ -1,5 +1,6 @@
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { RequestTypeValue } from "@/lib/constants/options";
+import type { WorkStyleValue } from "@/lib/types";
 import type { PlacementBucket } from "./types";
 
 export type PricingOnboardingCase = {
@@ -8,6 +9,7 @@ export type PricingOnboardingCase = {
   referenceSizeCm: number;
   placementBucket: PlacementBucket;
   colorMode: "black-only" | "black-grey" | "full-color";
+  workStyle: WorkStyleValue;
   imageSlot: string;
   title: Record<PublicLocale, string>;
   metaLine: Record<PublicLocale, string>;
@@ -19,6 +21,7 @@ export type PricingReviewCase = {
   referenceSizeCm: number;
   placementBucket: PlacementBucket;
   colorMode: "black-only" | "black-grey" | "full-color";
+  workStyle: WorkStyleValue;
   imageSlot: string;
   title: Record<PublicLocale, string>;
   metaLine: Record<PublicLocale, string>;
@@ -37,6 +40,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 4,
     placementBucket: "standard",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/text-4cm-wrist.png",
     title: { tr: "4 cm tek kelime yazı", en: "4 cm single word" },
     metaLine: {
@@ -50,6 +54,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 4,
     placementBucket: "standard",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/symbol-4cm-ankle.png",
     title: { tr: "4 cm küçük sembol", en: "4 cm small symbol" },
     metaLine: {
@@ -63,6 +68,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 6,
     placementBucket: "easy",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/object-6cm-forearm.png",
     title: { tr: "6 cm tek obje", en: "6 cm single object" },
     metaLine: {
@@ -76,6 +82,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 10,
     placementBucket: "easy",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/object-10cm-forearm.png",
     title: { tr: "10 cm tek obje", en: "10 cm single object" },
     metaLine: {
@@ -89,6 +96,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 16,
     placementBucket: "easy",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/object-16cm-forearm.png",
     title: { tr: "16 cm tek obje", en: "16 cm single object" },
     metaLine: {
@@ -102,6 +110,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 8,
     placementBucket: "hard",
     colorMode: "black-only",
+    workStyle: "precision_symmetric",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/ornamental-small-hard.png",
     title: { tr: "Küçük ornamental parça", en: "Small ornamental piece" },
     metaLine: {
@@ -115,6 +124,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 11,
     placementBucket: "easy",
     colorMode: "full-color",
+    workStyle: "shaded_detailed",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/medium-color-piece.png",
     title: { tr: "10–12 cm renkli parça", en: "10–12 cm color piece" },
     metaLine: {
@@ -128,6 +138,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     referenceSizeCm: 7,
     placementBucket: "standard",
     colorMode: "black-only",
+    workStyle: "shaded_detailed",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/small-cover-up.png",
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
@@ -144,6 +155,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     referenceSizeCm: 5,
     placementBucket: "standard",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/review/review-text.png",
     title: { tr: "Kısa yazı", en: "Short text" },
     metaLine: {
@@ -157,6 +169,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     referenceSizeCm: 5,
     placementBucket: "easy",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/review/review-mini.png",
     title: { tr: "Minimal sembol", en: "Minimal symbol" },
     metaLine: {
@@ -170,6 +183,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     referenceSizeCm: 16,
     placementBucket: "easy",
     colorMode: "black-only",
+    workStyle: "clean_line",
     imageSlot: "sample-tattoos/pricing-v2/review/review-single-large.png",
     title: { tr: "16 cm tek obje", en: "16 cm single object" },
     metaLine: {
@@ -183,6 +197,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     referenceSizeCm: 16,
     placementBucket: "standard",
     colorMode: "black-only",
+    workStyle: "shaded_detailed",
     imageSlot: "sample-tattoos/pricing-v2/review/review-multi.png",
     title: { tr: "Birden fazla öğeli iş", en: "Multi-element piece" },
     metaLine: {
@@ -196,6 +211,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     referenceSizeCm: 8,
     placementBucket: "standard",
     colorMode: "black-only",
+    workStyle: "shaded_detailed",
     imageSlot: "sample-tattoos/pricing-v2/review/review-cover.png",
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {

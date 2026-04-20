@@ -140,6 +140,11 @@ export const demoPricingRules: ArtistPricingRules = {
       textStartingPrice: 1500,
       colorImpactPreference: "medium",
       coverUpImpactPreference: "medium",
+      workStyleSensitivity: {
+        clean_line: "medium",
+        shaded_detailed: "medium",
+        precision_symmetric: "medium",
+      },
       leadPreference: "balanced",
       onboardingCases: [
         { id: "text-4cm-wrist", min: 1500, max: 1800 },
@@ -338,6 +343,7 @@ export const demoLeads: ClientSubmission[] = [
     preferredEndDate: null,
     gender: null,
     ageRange: null,
+    workStyle: "clean_line",
     style: "fine-line",
     notes: "Botanical flow with soft leaves and a hidden crescent moon.",
     estimatedMin: 3000,
@@ -376,6 +382,7 @@ export const demoLeads: ClientSubmission[] = [
     preferredEndDate: null,
     gender: null,
     ageRange: null,
+    workStyle: null,
     style: "ornamental",
     notes: "Looking for a small mirrored ankle motif.",
     estimatedMin: 1600,

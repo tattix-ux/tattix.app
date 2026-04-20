@@ -40,6 +40,13 @@ export const styleOptions = [
   { value: "custom", label: "Custom" },
 ] as const;
 
+export const workStyleOptions = [
+  { value: "clean_line", label: "Clean line" },
+  { value: "shaded_detailed", label: "Shaded detailed" },
+  { value: "precision_symmetric", label: "Precision symmetric" },
+  { value: "unsure", label: "Unsure" },
+] as const;
+
 export const featuredDesignCategories = [
   { value: "discounted-designs", label: "Discounted designs" },
   { value: "flash-designs", label: "Flash designs" },
@@ -55,4 +62,5 @@ export type IntentValue = (typeof intentOptions)[number]["value"];
 export type RequestTypeValue = (typeof requestTypeOptions)[number]["value"];
 export type SizeValue = (typeof sizeOptions)[number]["value"];
 export type StyleValue = string;
+export type WorkStyleValue = (typeof workStyleOptions)[number]["value"];
 export type FeaturedCategoryValue = string;

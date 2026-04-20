@@ -15,10 +15,10 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import { getPlacementDetailLocaleLabel, type PublicLocale } from "@/lib/i18n/public";
-import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
+import { getRequestTypeLabel, getWorkStyleLabel } from "@/lib/pricing/v2/output";
 import { uploadPublicReferenceImage } from "@/lib/supabase/storage";
 import { buildThemeStyles } from "@/lib/theme";
-import type { ArtistPageData, ColorModeValue, PricingSourceValue } from "@/lib/types";
+import type { ArtistPageData, ColorModeValue, PricingSourceValue, WorkStyleValue } from "@/lib/types";
 import { useFunnelStore } from "@/store/funnel-store";
 
 type SubmissionResponse = {
@@ -41,7 +41,7 @@ function getCopy(locale: PublicLocale) {
         1: "Ne yaptırmak istiyorsun?",
         2: "Nereye yapılacak?",
         3: "Yaklaşık boyut kaç cm?",
-        4: "Renk olacak mı?",
+        4: "Renk ve işin havası",
         5: "Birkaç son bilgi",
         6: "Tahminin hazır",
       },
@@ -49,7 +49,7 @@ function getCopy(locale: PublicLocale) {
         1: "Sana en yakın seçeneği işaretle.",
         2: "Önce genel bölgeyi, sonra tam yeri seç.",
         3: "Yaklaşık boyutu cm olarak seç.",
-        4: "Fiyatı etkileyen renk yapısını seç.",
+        4: "Rengi seç, sonra işin genel karakterini işaretle.",
         5: "İstersen görsel, kısa not, şehir ve zamanı ekle.",
         6: "",
       },
@@ -57,6 +57,14 @@ function getCopy(locale: PublicLocale) {
       colorTitleFeatured: "Renk aynı mı kalsın?",
       colorDescriptionCustom: "Bu seçim başlangıç fiyatını etkiler.",
       colorDescriptionFeatured: "Özel değişiklik gerekiyorsa bunu dövmeciyle daha sonra konuşabilirsin.",
+      workStyleTitle: "Bu iş daha çok nasıl bir şey?",
+      workStyleDescription: "Yaklaşık işçiliği anlatan en yakın seçeneği işaretle.",
+      workStyles: {
+        clean_line: "Sade çizgisel",
+        shaded_detailed: "Daha işçilikli / gölgeli",
+        precision_symmetric: "Hassas / simetrik",
+        unsure: "Emin değilim",
+      },
       colorModes: {
         "black-only": "Sadece siyah",
         "black-grey": "Siyah-gri",
@@ -111,6 +119,7 @@ function getCopy(locale: PublicLocale) {
         placement: "Yerleşim",
         size: "Boyut",
         color: "Renk",
+        workStyle: "İşçilik karakteri",
       },
       sendWhatsapp: "WhatsApp ile gönder",
       copyMessage: "Mesajı kopyala",
@@ -128,7 +137,7 @@ function getCopy(locale: PublicLocale) {
       1: "What do you want to get?",
       2: "Where will it go?",
       3: "About how many cm?",
-      4: "Will there be color?",
+      4: "Color and overall feel",
       5: "A few final details",
       6: "Your estimate is ready",
     },
@@ -136,7 +145,7 @@ function getCopy(locale: PublicLocale) {
       1: "Pick the option that feels closest.",
       2: "Choose the general area first, then the exact spot.",
       3: "Choose the approximate size in cm.",
-      4: "Pick the color direction that affects the starting price.",
+      4: "Pick the color direction, then the closest overall feel.",
       5: "You can add a reference, a short note, city, and timing.",
       6: "",
     },
@@ -144,6 +153,14 @@ function getCopy(locale: PublicLocale) {
     colorTitleFeatured: "Will the color stay the same?",
     colorDescriptionCustom: "This helps shape the starting estimate.",
     colorDescriptionFeatured: "If you want a custom change, you can discuss it with the artist later.",
+    workStyleTitle: "What does this piece feel more like?",
+    workStyleDescription: "Pick the closest option for the overall workmanship.",
+    workStyles: {
+      clean_line: "Clean line",
+      shaded_detailed: "More worked / shaded",
+      precision_symmetric: "Precise / symmetric",
+      unsure: "Not sure",
+    },
     colorModes: {
       "black-only": "Black only",
       "black-grey": "Black and grey",
@@ -198,6 +215,7 @@ function getCopy(locale: PublicLocale) {
       placement: "Placement",
       size: "Size",
       color: "Color",
+      workStyle: "Work style",
     },
     sendWhatsapp: "Send via WhatsApp",
     copyMessage: "Copy message",
@@ -299,6 +317,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           { key: "black-grey", value: "black-grey" as ColorModeValue, labelKey: "black-grey" as const },
           { key: "full-color", value: "full-color" as ColorModeValue, labelKey: "full-color" as const },
         ];
+  const workStyleChoices: Array<{ value: WorkStyleValue; label: string }> = [
+    { value: "clean_line", label: copy.workStyles.clean_line },
+    { value: "shaded_detailed", label: copy.workStyles.shaded_detailed },
+    { value: "precision_symmetric", label: copy.workStyles.precision_symmetric },
+    { value: "unsure", label: copy.workStyles.unsure },
+  ];
 
   const canAdvance =
     (step === 1 &&
@@ -308,7 +332,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       )) ||
     (step === 2 && Boolean(draft.bodyAreaGroup && draft.bodyAreaDetail)) ||
     (step === 3 && Boolean(draft.approximateSizeCm && draft.sizeCategory)) ||
-    (step === 4 && Boolean(draft.colorMode)) ||
+    (step === 4 &&
+      Boolean(
+        draft.colorMode &&
+          (draft.pricingSource === "featured_design" || draft.workStyle),
+      )) ||
     step === 5;
 
   const resultSummaryItems = useMemo(() => {
@@ -345,8 +373,15 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       items.push({ label: copy.summaryLabels.color, value: colorLabel });
     }
 
+    if (draft.pricingSource === "custom_request" && draft.workStyle) {
+      items.push({
+        label: copy.summaryLabels.workStyle,
+        value: getWorkStyleLabel(draft.workStyle, locale),
+      });
+    }
+
     return items;
-  }, [copy.colorModes, copy.summaryLabels.color, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, draft.approximateSizeCm, draft.bodyAreaDetail, draft.colorMode, draft.pricingSource, draft.requestType, locale, selectedDesign]);
+  }, [copy.colorModes, copy.summaryLabels.color, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.bodyAreaDetail, draft.colorMode, draft.pricingSource, draft.requestType, draft.workStyle, locale, selectedDesign]);
 
   async function handleReferenceUpload(file: File) {
     if (!file.type.startsWith("image/")) {
@@ -416,6 +451,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       preferredEndDate: bookingMode === "range" ? draft.preferredEndDate || undefined : undefined,
       gender: draft.gender || undefined,
       ageRange: draft.ageRange || undefined,
+      workStyle:
+        draft.pricingSource === "custom_request"
+          ? draft.workStyle || undefined
+          : undefined,
       style: "custom",
       notes: draft.notes || undefined,
       coverUp: draft.requestType === "cover_up",
@@ -597,6 +636,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("selectedDesignId", "");
                   setField("requestType", "");
                   setField("colorMode", "");
+                  setField("workStyle", "");
                 }}
                 onRequestTypeChange={(value) => {
                   setField("requestType", value);
@@ -608,6 +648,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("selectedDesignId", designId);
                   setField("requestType", "");
                   setField("colorMode", design?.referenceColorMode ?? "black-only");
+                  setField("workStyle", "");
                 }}
               />
             ) : null}
@@ -647,44 +688,88 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             ) : null}
 
             {step === 4 ? (
-              <div
-                className="rounded-[24px] border p-4"
-                style={{
-                  borderColor: "var(--artist-border)",
-                  backgroundColor: "rgba(0,0,0,0.12)",
-                }}
-              >
-                <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                  {draft.pricingSource === "featured_design" ? copy.colorTitleFeatured : copy.colorTitleCustom}
-                </p>
-                <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                  {draft.pricingSource === "featured_design" ? copy.colorDescriptionFeatured : copy.colorDescriptionCustom}
-                </p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  {colorChoices.map((option) => {
-                    const active = draft.colorMode === option.value;
-                    return (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => setField("colorMode", option.value)}
-                        className="rounded-[22px] border px-4 py-4 text-left transition"
-                        style={{
-                          borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
-                          backgroundColor: active
-                            ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
-                            : "rgba(0,0,0,0.12)",
-                          color: tokens.cardText,
-                        }}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="font-medium">{copy.colorModes[option.labelKey]}</p>
-                          {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
-                        </div>
-                      </button>
-                    );
-                  })}
+              <div className="space-y-3">
+                <div
+                  className="rounded-[24px] border p-4"
+                  style={{
+                    borderColor: "var(--artist-border)",
+                    backgroundColor: "rgba(0,0,0,0.12)",
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                    {draft.pricingSource === "featured_design" ? copy.colorTitleFeatured : copy.colorTitleCustom}
+                  </p>
+                  <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                    {draft.pricingSource === "featured_design" ? copy.colorDescriptionFeatured : copy.colorDescriptionCustom}
+                  </p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    {colorChoices.map((option) => {
+                      const active = draft.colorMode === option.value;
+                      return (
+                        <button
+                          key={option.key}
+                          type="button"
+                          onClick={() => setField("colorMode", option.value)}
+                          className="rounded-[22px] border px-4 py-4 text-left transition"
+                          style={{
+                            borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                            backgroundColor: active
+                              ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                              : "rgba(0,0,0,0.12)",
+                            color: tokens.cardText,
+                          }}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="font-medium">{copy.colorModes[option.labelKey]}</p>
+                            {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
+                {draft.pricingSource === "custom_request" ? (
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.workStyleTitle}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.workStyleDescription}
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {workStyleChoices.map((option) => {
+                        const active = draft.workStyle === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setField("workStyle", option.value)}
+                            className="rounded-[22px] border px-4 py-4 text-left transition"
+                            style={{
+                              borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                              backgroundColor: active
+                                ? "color-mix(in srgb, var(--artist-primary) 16%, transparent)"
+                                : "rgba(0,0,0,0.12)",
+                              color: tokens.cardText,
+                            }}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <p className="font-medium">{option.label}</p>
+                              {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
 

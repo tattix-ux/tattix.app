@@ -35,6 +35,12 @@ function getText(locale: PublicLocale) {
       textStartingPrice: "Yazı gibi çok basit işlerde çoğu zaman başladığın fiyat",
       colorImpact: "Renkli işler genelde fiyatı ne kadar etkiler?",
       coverUpImpact: "Kapatma işleri genelde nasıl olur?",
+      workStyleTitle: "Bazı işlerde fiyatın biraz daha değişebilir. Kısaca bunu da tanıyalım.",
+      workStyleFields: {
+        clean_line: "Sade çizgisel işler",
+        shaded_detailed: "Daha işçilikli / gölgeli işler",
+        precision_symmetric: "Hassas / simetrik işler",
+      },
       leadPreference: "Sistemin nasıl çalışmasını istersin?",
       colorOptions: {
         low: "Pek etkilemez",
@@ -84,6 +90,12 @@ function getText(locale: PublicLocale) {
     textStartingPrice: "Where do very simple text jobs usually start?",
     colorImpact: "How much do color jobs usually affect the price?",
     coverUpImpact: "How do cover-up jobs usually feel?",
+    workStyleTitle: "Some jobs may shift your pricing a bit more. Let’s quickly learn that too.",
+    workStyleFields: {
+      clean_line: "Clean line pieces",
+      shaded_detailed: "More worked / shaded pieces",
+      precision_symmetric: "Precise / symmetric pieces",
+    },
     leadPreference: "How do you want the system to behave?",
     colorOptions: {
       low: "Barely changes it",
@@ -235,6 +247,11 @@ export function PricingForm({
   const [textStartingPrice, setTextStartingPrice] = useState(String(initialProfile.textStartingPrice));
   const [colorImpactPreference, setColorImpactPreference] = useState(initialProfile.colorImpactPreference);
   const [coverUpImpactPreference, setCoverUpImpactPreference] = useState(initialProfile.coverUpImpactPreference);
+  const [workStyleSensitivity, setWorkStyleSensitivity] = useState({
+    clean_line: initialProfile.workStyleSensitivity.cleanLine,
+    shaded_detailed: initialProfile.workStyleSensitivity.shadedDetailed,
+    precision_symmetric: initialProfile.workStyleSensitivity.precisionSymmetric,
+  });
   const [leadPreference, setLeadPreference] = useState(initialProfile.leadPreference);
   const [hasEditedCaseRanges, setHasEditedCaseRanges] = useState(false);
   const [statusTone, setStatusTone] = useState<StatusTone>(null);
@@ -245,6 +262,7 @@ export function PricingForm({
         textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
         colorImpactPreference,
         coverUpImpactPreference,
+        workStyleSensitivity,
       }),
     [
       colorImpactPreference,
@@ -253,6 +271,7 @@ export function PricingForm({
       initialProfile.textStartingPrice,
       minimumJobPrice,
       textStartingPrice,
+      workStyleSensitivity,
     ],
   );
   const [onboardingCases, setOnboardingCases] = useState(
@@ -292,6 +311,7 @@ export function PricingForm({
         textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
         colorImpactPreference,
         coverUpImpactPreference,
+        workStyleSensitivity,
         leadPreference,
         onboardingCases: onboardingCases.map((item) => ({
           id: item.id,
@@ -310,6 +330,7 @@ export function PricingForm({
       onboardingCases,
       reviewCases,
       textStartingPrice,
+      workStyleSensitivity,
     ],
   );
 
@@ -323,6 +344,7 @@ export function PricingForm({
             placement: getPlacementDetail(item.placementBucket),
             sizeCm: item.referenceSizeCm,
             colorMode: item.colorMode,
+            workStyle: item.workStyle,
             hasReferenceImage: true,
             hasReferenceNote: false,
           },
@@ -355,6 +377,7 @@ export function PricingForm({
           textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
           colorImpactPreference,
           coverUpImpactPreference,
+          workStyleSensitivity,
           leadPreference,
           onboardingCases: onboardingCases.map((item) => ({
             id: item.id,
@@ -457,6 +480,37 @@ export function PricingForm({
                 ]}
               />
             </Field>
+            <div className="space-y-3 rounded-[24px] border border-white/8 bg-white/[0.02] p-4 lg:col-span-2">
+              <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                {copy.workStyleTitle}
+              </p>
+              <div className="space-y-4">
+                {(
+                  [
+                    ["clean_line", copy.workStyleFields.clean_line],
+                    ["shaded_detailed", copy.workStyleFields.shaded_detailed],
+                    ["precision_symmetric", copy.workStyleFields.precision_symmetric],
+                  ] as const
+                ).map(([key, label]) => (
+                  <Field key={key} label={label}>
+                    <ChoiceGroup
+                      value={workStyleSensitivity[key]}
+                      onChange={(value) =>
+                        setWorkStyleSensitivity((current) => ({
+                          ...current,
+                          [key]: value,
+                        }))
+                      }
+                      options={[
+                        { value: "low", label: copy.colorOptions.low },
+                        { value: "medium", label: copy.colorOptions.medium },
+                        { value: "high", label: copy.colorOptions.high },
+                      ]}
+                    />
+                  </Field>
+                ))}
+              </div>
+            </div>
             <Field label={copy.leadPreference} className="lg:col-span-2">
               <ChoiceGroup
                 value={leadPreference}

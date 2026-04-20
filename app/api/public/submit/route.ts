@@ -93,6 +93,7 @@ export async function POST(request: Request) {
       preferred_end_date: bookingCities.length > 0 ? null : submission.preferredEndDate || null,
       customer_gender: submission.gender ?? null,
       customer_age_range: submission.ageRange ?? null,
+      work_style: submission.workStyle ?? null,
       style: submission.style,
       notes: combinedNotes || null,
       estimated_min: estimate.min,
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
       (error.message.toLowerCase().includes("status") ||
         error.message.toLowerCase().includes("customer_gender") ||
         error.message.toLowerCase().includes("customer_age_range") ||
+        error.message.toLowerCase().includes("work_style") ||
         error.message.toLowerCase().includes("pricing_version") ||
         error.message.toLowerCase().includes("pricing_source") ||
         error.message.toLowerCase().includes("estimate_mode") ||
@@ -123,6 +125,7 @@ export async function POST(request: Request) {
         status: _status,
         customer_gender: _customerGender,
         customer_age_range: _customerAgeRange,
+        work_style: _workStyle,
         pricing_version: _pricingVersion,
         pricing_source: _pricingSource,
         request_type: _requestType,

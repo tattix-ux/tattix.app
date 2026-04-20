@@ -1,5 +1,5 @@
 import type { RequestTypeValue } from "@/lib/constants/options";
-import type { EstimateMode } from "@/lib/types";
+import type { EstimateMode, WorkStyleSensitivityValue } from "@/lib/types";
 import { clamp, roundToFriendlyPrice } from "./helpers";
 import { buildDisplayEstimateLabel, buildEstimateSummaryText } from "./output";
 import { resolvePlacementBucket } from "./placement";
@@ -58,6 +58,76 @@ function getMode(requestType: RequestTypeValue, hasReferenceSignal: boolean): Es
   }
 
   return "range";
+}
+
+function getWorkStyleSensitivityFactor(
+  workStyle: CustomRequestPricingInput["workStyle"],
+  sensitivity: WorkStyleSensitivityValue,
+) {
+  if (workStyle === "clean_line") {
+    if (sensitivity === "high") return 1.08;
+    if (sensitivity === "medium") return 1.04;
+    return 1;
+  }
+
+  if (workStyle === "shaded_detailed") {
+    if (sensitivity === "high") return 1.16;
+    if (sensitivity === "medium") return 1.1;
+    return 1.04;
+  }
+
+  if (workStyle === "precision_symmetric") {
+    if (sensitivity === "high") return 1.17;
+    if (sensitivity === "medium") return 1.11;
+    return 1.05;
+  }
+
+  return 1.01;
+}
+
+function getWorkStyleRequestWeight(
+  requestType: RequestTypeValue,
+  workStyle: CustomRequestPricingInput["workStyle"],
+) {
+  if (workStyle === "unsure") {
+    return 0.35;
+  }
+
+  if (requestType === "text") {
+    return workStyle === "shaded_detailed" ? 0.35 : 0.82;
+  }
+
+  if (requestType === "mini_simple") {
+    return workStyle === "shaded_detailed" ? 0.58 : 0.8;
+  }
+
+  if (requestType === "cover_up") {
+    return workStyle === "clean_line" ? 0.42 : 0.68;
+  }
+
+  if (requestType === "multi_element") {
+    return workStyle === "clean_line" ? 0.72 : 1;
+  }
+
+  return 1;
+}
+
+function getWorkStyleFactor(
+  input: Pick<CustomRequestPricingInput, "requestType" | "workStyle">,
+  profile: PricingV2Context["profile"],
+) {
+  const sensitivity =
+    input.workStyle === "clean_line"
+      ? profile.workStyleSensitivity.cleanLine
+      : input.workStyle === "shaded_detailed"
+        ? profile.workStyleSensitivity.shadedDetailed
+        : input.workStyle === "precision_symmetric"
+          ? profile.workStyleSensitivity.precisionSymmetric
+          : "medium";
+  const baseFactor = getWorkStyleSensitivityFactor(input.workStyle, sensitivity);
+  const weight = getWorkStyleRequestWeight(input.requestType, input.workStyle);
+
+  return 1 + (baseFactor - 1) * weight;
 }
 
 function getSpread(
@@ -119,6 +189,7 @@ export function estimateCustomRequestPrice(
   const placementBucket = resolvePlacementBucket(input.placement);
   const placementFactor = getPlacementFactor(placementBucket);
   const colorFactor = getColorFactor(input.requestType, input.colorMode, profile.colorImpactPreference);
+  const workStyleFactor = getWorkStyleFactor(input, profile);
   const coverUpFactor =
     input.requestType === "cover_up"
       ? profile.coverUpImpactPreference === "high"
@@ -132,6 +203,7 @@ export function estimateCustomRequestPrice(
       sizeFactorResult.factor *
       placementFactor *
       colorFactor *
+      workStyleFactor *
       coverUpFactor *
       leadPreference.center,
   );
@@ -167,6 +239,8 @@ export function estimateCustomRequestPrice(
         `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
         `placement:${placementBucket}`,
         `color:${input.colorMode}`,
+        `workStyle:${input.workStyle}`,
+        `workStyleFactor:${workStyleFactor.toFixed(3)}`,
         `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
       ],
     };
@@ -195,6 +269,8 @@ export function estimateCustomRequestPrice(
       `artistSizeFactor:${sizeFactorResult.artistFactor.toFixed(3)}`,
       `placement:${placementBucket}`,
       `color:${input.colorMode}`,
+      `workStyle:${input.workStyle}`,
+      `workStyleFactor:${workStyleFactor.toFixed(3)}`,
       `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
     ],
   };

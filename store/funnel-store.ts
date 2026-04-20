@@ -31,6 +31,7 @@ const initialDraft: SubmissionDraft = {
   preferredEndDate: "",
   gender: "",
   ageRange: "",
+  workStyle: "",
   bodyAreaGroup: "",
   bodyAreaDetail: "",
   sizeMode: "quick",

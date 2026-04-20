@@ -20,7 +20,7 @@ import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/bo
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import { intentOptions, styleOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
-import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
+import { getRequestTypeLabel, getWorkStyleLabel } from "@/lib/pricing/v2/output";
 import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
 import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
@@ -94,6 +94,7 @@ const leadCopy = {
       size: "Size",
       intent: "Request type",
       style: "Style",
+      workStyle: "Work style",
       city: "City",
       timing: "Preferred time",
       notes: "Notes",
@@ -177,6 +178,7 @@ const leadCopy = {
       size: "Yaklaşık boyut",
       intent: "Talep tipi",
       style: "Stil",
+      workStyle: "İşçilik karakteri",
       city: "Şehir",
       timing: "Tercih edilen zaman",
       notes: "Notlar",
@@ -285,6 +287,14 @@ function formatStyle(style: ClientSubmission["style"], locale: PublicLocale) {
   }
 
   return styleOptions.find((item) => item.value === style)?.label ?? style;
+}
+
+function getDisplayedWorkStyle(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.workStyle) {
+    return getWorkStyleLabel(lead.workStyle, locale);
+  }
+
+  return formatStyle(lead.style, locale);
 }
 
 function formatPlacement(detail: ClientSubmission["bodyAreaDetail"], locale: PublicLocale) {
@@ -784,8 +794,10 @@ export function LeadsTable({
               <p className="text-sm text-white">{getSizeLabel(lead, locale)}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.style}</p>
-              <p className="text-sm text-white">{formatStyle(lead.style, locale)}</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                {lead.workStyle ? copy.table.workStyle : copy.table.style}
+              </p>
+              <p className="text-sm text-white">{getDisplayedWorkStyle(lead, locale)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.city}</p>

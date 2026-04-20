@@ -78,6 +78,7 @@ export function estimateSubmissionPriceV2(
       placement: submission.bodyAreaDetail,
       sizeCm,
       colorMode,
+      workStyle: submission.workStyle ?? "unsure",
       hasReferenceImage: Boolean(submission.referenceImage?.trim()),
       hasReferenceNote: Boolean(submission.referenceDescription?.trim() || submission.notes?.trim()),
     },

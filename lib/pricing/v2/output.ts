@@ -1,5 +1,5 @@
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { EstimateMode, PricingSourceValue, RequestTypeValue } from "@/lib/types";
+import type { EstimateMode, PricingSourceValue, RequestTypeValue, WorkStyleValue } from "@/lib/types";
 import { formatEstimateLabel } from "./helpers";
 
 export function buildEstimateSummaryText(
@@ -84,6 +84,35 @@ export function getRequestTypeLabel(
       return "Multi-element design";
     case "cover_up":
       return "Cover-up";
+    case "unsure":
+      return "Not sure";
+  }
+}
+
+export function getWorkStyleLabel(
+  workStyle: WorkStyleValue,
+  locale: PublicLocale,
+) {
+  if (locale === "tr") {
+    switch (workStyle) {
+      case "clean_line":
+        return "Sade çizgisel";
+      case "shaded_detailed":
+        return "Daha işçilikli / gölgeli";
+      case "precision_symmetric":
+        return "Hassas / simetrik";
+      case "unsure":
+        return "Emin değilim";
+    }
+  }
+
+  switch (workStyle) {
+    case "clean_line":
+      return "Clean line";
+    case "shaded_detailed":
+      return "More worked / shaded";
+    case "precision_symmetric":
+      return "Precise / symmetric";
     case "unsure":
       return "Not sure";
   }
