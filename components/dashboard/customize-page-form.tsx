@@ -35,41 +35,42 @@ const backgroundGradientPresets = [
   { key: "gold-fade", label: "Gold fade", start: "#2b1c16", end: "#0e0b0a" },
 ] as const;
 const fontOptions = [
-  { value: "modern", labelTr: "Modern", labelEn: "Modern" },
-  { value: "serif", labelTr: "Serif", labelEn: "Serif" },
-  { value: "editorial", labelTr: "Editoryal", labelEn: "Editorial" },
-  { value: "gothic", labelTr: "Gotik", labelEn: "Gothic" },
-  { value: "minimal", labelTr: "Minimal", labelEn: "Minimal" },
+  { value: "inter", labelTr: "Inter", labelEn: "Inter" },
+  { value: "manrope", labelTr: "Manrope", labelEn: "Manrope" },
+  { value: "dm-sans", labelTr: "DM Sans", labelEn: "DM Sans" },
+  { value: "general-sans", labelTr: "General Sans", labelEn: "General Sans" },
+  { value: "satoshi", labelTr: "Satoshi", labelEn: "Satoshi" },
 ] as const;
 
 const quickCustomPresets = [
-  { key: "dark-minimal", labelTr: "Koyu", labelEn: "Dark" },
-  { key: "soft-neutral", labelTr: "Açık", labelEn: "Light" },
-  { key: "luxury-serif", labelTr: "Altın ton", labelEn: "Gold tone" },
-  { key: "neon-accent", labelTr: "Mavi ton", labelEn: "Blue tone" },
+  { key: "soft-minimal", labelTr: "Yumuşak", labelEn: "Soft" },
+  { key: "dark-studio", labelTr: "Stüdyo", labelEn: "Studio" },
+  { key: "bold-contrast", labelTr: "Güçlü", labelEn: "Bold" },
+  { key: "natural-stone", labelTr: "Doğal", labelEn: "Natural" },
 ] as const;
 
 const headingPreviewFonts = {
-  modern: '"Avenir Next", "Helvetica Neue", sans-serif',
-  serif: '"Baskerville", "Times New Roman", serif',
-  editorial: '"Iowan Old Style", "Palatino Linotype", serif',
-  gothic: '"Arial Narrow", "Helvetica Neue", sans-serif',
-  minimal: '"SFMono-Regular", "Menlo", monospace',
+  inter: '"Inter", "Helvetica Neue", sans-serif',
+  manrope: '"Manrope", "Inter", sans-serif',
+  "dm-sans": '"DM Sans", "Inter", sans-serif',
+  "general-sans": '"Manrope", "Inter", sans-serif',
+  satoshi: '"Inter", "Helvetica Neue", sans-serif',
 } as const;
 
 const previewHeadingFontMap = {
-  "display-serif": headingPreviewFonts.editorial,
-  "modern-sans": headingPreviewFonts.modern,
-  "gothic-sans": headingPreviewFonts.gothic,
-  "editorial-serif": headingPreviewFonts.serif,
-  "mono-display": headingPreviewFonts.minimal,
+  inter: headingPreviewFonts.inter,
+  manrope: headingPreviewFonts.manrope,
+  "dm-sans": headingPreviewFonts["dm-sans"],
+  "general-sans": headingPreviewFonts["general-sans"],
+  satoshi: headingPreviewFonts.satoshi,
 } as const;
 
 const previewBodyFonts = {
-  "clean-sans": '"Inter", "Helvetica Neue", sans-serif',
-  "neutral-sans": '"Avenir Next", "Helvetica Neue", sans-serif',
-  "editorial-sans": '"Optima", "Avenir Next", sans-serif',
-  "mono-body": '"SFMono-Regular", "Menlo", monospace',
+  inter: '"Inter", "Helvetica Neue", sans-serif',
+  manrope: '"Manrope", "Inter", sans-serif',
+  "dm-sans": '"DM Sans", "Inter", sans-serif',
+  "general-sans": '"Manrope", "Inter", sans-serif',
+  satoshi: '"Inter", "Helvetica Neue", sans-serif',
 } as const;
 
 function ThemeSelectionBadge({ label }: { label: string }) {
@@ -176,7 +177,7 @@ function ThemeCardPreview({
         : theme.backgroundColor;
   const outerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.58)" : "rgba(255,255,255,0.05)";
   const innerShell = theme.themeMode === "light" ? "rgba(255,255,255,0.88)" : "rgba(9,9,12,0.94)";
-  const bodyFont = previewBodyFonts[theme.bodyFont] ?? previewBodyFonts["clean-sans"];
+  const bodyFont = previewBodyFonts[theme.bodyFont] ?? previewBodyFonts.inter;
 
   return (
     <div
@@ -295,7 +296,7 @@ function ThemeCardPreview({
                       <p
                         className={cn("leading-tight tracking-[-0.02em]", isPanel ? "text-[1.75rem]" : "text-[1.36rem]")}
                         style={{
-                          fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.modern,
+                          fontFamily: previewHeadingFontMap[theme.headingFont] ?? headingPreviewFonts.inter,
                           color: headingColor,
                         }}
                       >
@@ -564,42 +565,44 @@ export function CustomizePageForm({
   const presetDescriptions =
     locale === "tr"
       ? {
-          "dark-minimal": "Sade ve temiz görünüm",
-          "gothic-black": "Daha sert, soğuk ve dramatik",
-          "soft-neutral": "Açık, yumuşak ve ferah",
-          "luxury-serif": "Daha premium ve klasik",
-          "neon-accent": "Daha serin ve modern",
+          "soft-minimal": "Açık, sakin ve davetkar",
+          "dark-studio": "Koyu, rafine ve stüdyo hissi güçlü",
+          "editorial-clean": "Ferah, net ve yapısal",
+          "bold-contrast": "Daha güçlü marka hissi ve net vurgu",
+          "natural-stone": "Toprak tonlu, sakin ve daha insani",
+          "monochrome-luxury": "Siyah-beyaz, kontrollü ve pahalı hisli",
         }
       : {
-          "dark-minimal": "Clean and minimal",
-          "gothic-black": "Sharper, colder, and more dramatic",
-          "soft-neutral": "Light, soft, and airy",
-          "luxury-serif": "More premium and classic",
-          "neon-accent": "Cool and modern",
+          "soft-minimal": "Bright, calm, and welcoming",
+          "dark-studio": "Dark, refined, and studio-led",
+          "editorial-clean": "Airy, crisp, and structured",
+          "bold-contrast": "Stronger brand presence and emphasis",
+          "natural-stone": "Earth-toned, calm, and more human",
+          "monochrome-luxury": "Black, white, and deliberately premium",
         };
 
   const unifiedFontMap = {
-    modern: { headingFont: "modern-sans", bodyFont: "clean-sans", fontPairingPreset: "bold-modern" },
-    serif: { headingFont: "editorial-serif", bodyFont: "clean-sans", fontPairingPreset: "elegant-editorial" },
-    editorial: { headingFont: "display-serif", bodyFont: "editorial-sans", fontPairingPreset: "premium-editorial" },
-    gothic: { headingFont: "gothic-sans", bodyFont: "neutral-sans", fontPairingPreset: "edgy-clean" },
-    minimal: { headingFont: "mono-display", bodyFont: "mono-body", fontPairingPreset: "minimal-sans" },
+    inter: { headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-balanced" },
+    manrope: { headingFont: "manrope", bodyFont: "inter", fontPairingPreset: "manrope-refined" },
+    "dm-sans": { headingFont: "dm-sans", bodyFont: "inter", fontPairingPreset: "dm-sans-editorial" },
+    "general-sans": { headingFont: "general-sans", bodyFont: "inter", fontPairingPreset: "general-clean" },
+    satoshi: { headingFont: "satoshi", bodyFont: "inter", fontPairingPreset: "satoshi-neutral" },
   } as const;
 
   const inferFontStyle = (headingFont: string) => {
-    if (headingFont === "display-serif") {
-      return "editorial";
+    if (headingFont === "manrope") {
+      return "manrope";
     }
-    if (headingFont === "editorial-serif") {
-      return "serif";
+    if (headingFont === "dm-sans") {
+      return "dm-sans";
     }
-    if (headingFont === "gothic-sans") {
-      return "gothic";
+    if (headingFont === "general-sans") {
+      return "general-sans";
     }
-    if (headingFont === "mono-display") {
-      return "minimal";
+    if (headingFont === "satoshi") {
+      return "satoshi";
     }
-    return "modern";
+    return "inter";
   };
 
   const [presetName, setPresetName] = useState("");
@@ -921,7 +924,7 @@ export function CustomizePageForm({
   }
 
   function resetThemeToDefault() {
-    applyPreset("dark-minimal");
+    applyPreset("dark-studio");
     form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
     form.setValue("customWelcomeTitle", "", { shouldDirty: true, shouldValidate: true });
     form.setValue("customIntroText", "", { shouldDirty: true, shouldValidate: true });
@@ -1339,25 +1342,25 @@ export function CustomizePageForm({
                                     Aklında ne var?
                                   </p>
                                   <p className="mt-2 text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
-                                    {option.value === "serif"
+                                    {option.value === "manrope"
                                       ? locale === "tr"
-                                        ? "Daha klasik ve yumuşak"
-                                        : "More classic and soft"
-                                      : option.value === "editorial"
+                                        ? "Rafine ve premium"
+                                        : "Refined and premium"
+                                      : option.value === "dm-sans"
                                         ? locale === "tr"
-                                          ? "Daha premium ve editoryal"
-                                          : "More premium and editorial"
-                                        : option.value === "gothic"
+                                          ? "Net ve yapısal"
+                                          : "Crisp and structured"
+                                        : option.value === "general-sans"
                                           ? locale === "tr"
-                                            ? "Daha keskin ve kontrastlı"
-                                            : "Sharper and higher contrast"
-                                          : option.value === "minimal"
+                                            ? "Sakin ve çağdaş"
+                                            : "Calm and contemporary"
+                                          : option.value === "satoshi"
                                             ? locale === "tr"
-                                              ? "Daha sade ve teknik"
-                                              : "More minimal and technical"
+                                              ? "Nötr ve lüks"
+                                              : "Neutral and elevated"
                                             : locale === "tr"
-                                              ? "Temiz ve modern"
-                                              : "Clean and modern"}
+                                              ? "Temiz ve dengeli"
+                                              : "Clean and balanced"}
                                   </p>
                                 </button>
                               );

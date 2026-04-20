@@ -43,7 +43,7 @@ body {
   color: var(--foreground);
   font-family:
     var(--font-body),
-    "Avenir Next",
+    "Inter",
     "Segoe UI",
     sans-serif;
 }
@@ -64,9 +64,9 @@ a {
 .font-display {
   font-family:
     var(--font-display),
-    "Iowan Old Style",
-    "Palatino Linotype",
-    serif;
+    "Manrope",
+    "Inter",
+    sans-serif;
 }
 
 .bg-grid {

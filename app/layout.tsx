@@ -1,6 +1,25 @@
 import type { Metadata, Viewport } from "next";
+import { DM_Sans, Inter, Manrope } from "next/font/google";
 import { AuthStateListener } from "@/components/auth/auth-state-listener";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -25,11 +44,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="h-full antialiased"
+      className={`h-full antialiased ${inter.variable} ${manrope.variable} ${dmSans.variable}`}
       style={
         {
-          "--font-body": '"Avenir Next", "Segoe UI", sans-serif',
-          "--font-display": '"Iowan Old Style", "Palatino Linotype", serif',
+          "--font-body": 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
+          "--font-display": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
           "--font-mono": '"SFMono-Regular", "Consolas", monospace',
         } as React.CSSProperties
       }

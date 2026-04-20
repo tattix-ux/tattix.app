@@ -13,29 +13,31 @@ import {
 import type { ArtistPageTheme } from "@/lib/types";
 
 const headingFontStacks: Record<HeadingFontKey, string> = {
-  "display-serif": '"Iowan Old Style", "Palatino Linotype", serif',
-  "modern-sans": '"Avenir Next", "Helvetica Neue", sans-serif',
-  "gothic-sans": '"Arial Narrow", "Helvetica Neue", sans-serif',
-  "editorial-serif": '"Baskerville", "Times New Roman", serif',
-  "mono-display": '"SFMono-Regular", "Menlo", monospace',
+  inter: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
+  manrope: 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
+  "dm-sans": 'var(--font-dm-sans), "DM Sans", "Segoe UI", sans-serif',
+  "general-sans": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
+  satoshi: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
 };
 
 const bodyFontStacks: Record<BodyFontKey, string> = {
-  "clean-sans": '"Avenir Next", "Segoe UI", sans-serif',
-  "neutral-sans": '"Trebuchet MS", "Segoe UI", sans-serif',
-  "editorial-sans": '"Gill Sans", "Segoe UI", sans-serif',
-  "mono-body": '"SFMono-Regular", "Consolas", monospace',
+  inter: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
+  manrope: 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
+  "dm-sans": 'var(--font-dm-sans), "DM Sans", "Segoe UI", sans-serif',
+  "general-sans": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
+  satoshi: 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
 };
 
 const fontPairings: Record<
   FontPairingPreset,
   { headingFont: HeadingFontKey; bodyFont: BodyFontKey }
 > = {
-  "bold-modern": { headingFont: "modern-sans", bodyFont: "clean-sans" },
-  "elegant-editorial": { headingFont: "editorial-serif", bodyFont: "editorial-sans" },
-  "minimal-sans": { headingFont: "modern-sans", bodyFont: "neutral-sans" },
-  "edgy-clean": { headingFont: "gothic-sans", bodyFont: "clean-sans" },
-  "premium-editorial": { headingFont: "display-serif", bodyFont: "clean-sans" },
+  "inter-balanced": { headingFont: "inter", bodyFont: "inter" },
+  "manrope-refined": { headingFont: "manrope", bodyFont: "inter" },
+  "dm-sans-editorial": { headingFont: "dm-sans", bodyFont: "inter" },
+  "manrope-impact": { headingFont: "manrope", bodyFont: "dm-sans" },
+  "general-clean": { headingFont: "general-sans", bodyFont: "inter" },
+  "satoshi-neutral": { headingFont: "satoshi", bodyFont: "inter" },
 };
 
 const radiusMap: Record<RadiusStyle, string> = {
@@ -125,7 +127,7 @@ function enforceReadableForeground(
 }
 
 export function buildDefaultArtistTheme(): ArtistPageTheme {
-  const presetKey: ThemePresetKey = "dark-minimal";
+  const presetKey: ThemePresetKey = "dark-studio";
   const preset = themePresets[presetKey];
 
   return {
@@ -154,13 +156,71 @@ export function buildDefaultArtistTheme(): ArtistPageTheme {
   };
 }
 
+const legacyPresetMap: Record<string, ThemePresetKey> = {
+  "dark-minimal": "dark-studio",
+  "gothic-black": "dark-studio",
+  "soft-neutral": "soft-minimal",
+  "luxury-serif": "monochrome-luxury",
+  "neon-accent": "bold-contrast",
+};
+
+const legacyHeadingFontMap: Record<string, HeadingFontKey> = {
+  "display-serif": "manrope",
+  "modern-sans": "inter",
+  "gothic-sans": "manrope",
+  "editorial-serif": "dm-sans",
+  "mono-display": "inter",
+};
+
+const legacyBodyFontMap: Record<string, BodyFontKey> = {
+  "clean-sans": "inter",
+  "neutral-sans": "manrope",
+  "editorial-sans": "dm-sans",
+  "mono-body": "inter",
+};
+
+const legacyFontPairingMap: Record<string, FontPairingPreset> = {
+  "bold-modern": "inter-balanced",
+  "elegant-editorial": "dm-sans-editorial",
+  "minimal-sans": "inter-balanced",
+  "edgy-clean": "manrope-impact",
+  "premium-editorial": "satoshi-neutral",
+};
+
 export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): ArtistPageTheme {
   const base = buildDefaultArtistTheme();
-  const presetKey = (theme?.presetTheme as ThemePresetKey | undefined) ?? base.presetTheme;
-  const preset = themePresets[presetKey] ?? themePresets["dark-minimal"];
+  const rawPreset = typeof theme?.presetTheme === "string" ? theme.presetTheme : undefined;
+  let presetKey: ThemePresetKey = base.presetTheme;
+  if (rawPreset) {
+    presetKey = (themePresets as Record<string, unknown>)[rawPreset]
+      ? (rawPreset as ThemePresetKey)
+      : (legacyPresetMap[rawPreset] ?? base.presetTheme);
+  }
+  const preset = themePresets[presetKey] ?? themePresets["dark-studio"];
+  const rawPairing = typeof theme?.fontPairingPreset === "string" ? theme.fontPairingPreset : undefined;
+  let resolvedPairingKey: FontPairingPreset = preset.fontPairingPreset;
+  if (rawPairing) {
+    resolvedPairingKey = (fontPairings as Record<string, unknown>)[rawPairing]
+      ? (rawPairing as FontPairingPreset)
+      : (legacyFontPairingMap[rawPairing] ?? preset.fontPairingPreset);
+  }
   const pairing =
-    fontPairings[(theme?.fontPairingPreset as FontPairingPreset | undefined) ?? preset.fontPairingPreset] ??
+    fontPairings[resolvedPairingKey] ??
     fontPairings[preset.fontPairingPreset];
+  const rawHeading = typeof theme?.headingFont === "string" ? theme.headingFont : undefined;
+  let resolvedHeading: HeadingFontKey = pairing.headingFont ?? preset.headingFont;
+  if (rawHeading) {
+    resolvedHeading = (headingFontStacks as Record<string, unknown>)[rawHeading]
+      ? (rawHeading as HeadingFontKey)
+      : (legacyHeadingFontMap[rawHeading] ?? resolvedHeading);
+  }
+  const rawBody = typeof theme?.bodyFont === "string" ? theme.bodyFont : undefined;
+  let resolvedBody: BodyFontKey = pairing.bodyFont ?? preset.bodyFont;
+  if (rawBody) {
+    resolvedBody = (bodyFontStacks as Record<string, unknown>)[rawBody]
+      ? (rawBody as BodyFontKey)
+      : (legacyBodyFontMap[rawBody] ?? resolvedBody);
+  }
 
   return {
     ...base,
@@ -179,14 +239,9 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
       typeof theme?.cardOpacity === "number"
         ? Math.min(Math.max(theme.cardOpacity, 0.45), 0.98)
         : preset.cardOpacity,
-    headingFont:
-      (theme?.headingFont as HeadingFontKey | undefined) ??
-      pairing.headingFont ??
-      preset.headingFont,
-    bodyFont:
-      (theme?.bodyFont as BodyFontKey | undefined) ?? pairing.bodyFont ?? preset.bodyFont,
-    fontPairingPreset:
-      (theme?.fontPairingPreset as FontPairingPreset | undefined) ?? preset.fontPairingPreset,
+    headingFont: resolvedHeading,
+    bodyFont: resolvedBody,
+    fontPairingPreset: resolvedPairingKey,
     radiusStyle:
       (theme?.radiusStyle as RadiusStyle | undefined) ?? preset.radiusStyle,
     themeMode: (theme?.themeMode as ThemeMode | undefined) ?? preset.themeMode,
@@ -244,7 +299,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
   const wrapperStyle = {
     background: backgroundImage,
     color: text,
-    fontFamily: headingFontStacks[theme.headingFont],
+    fontFamily: bodyFontStacks[theme.bodyFont],
     "--accent": theme.primaryColor,
     "--accent-soft": theme.themeMode === "light" ? theme.primaryColor : theme.primaryColor,
     "--accent-foreground": primaryForeground,
@@ -263,6 +318,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     "--artist-border": borderColor,
     "--artist-radius": radiusMap[theme.radiusStyle],
     "--artist-heading-font": headingFontStacks[theme.headingFont],
+    "--artist-body-font": bodyFontStacks[theme.bodyFont],
   } as CSSProperties;
 
   return {
