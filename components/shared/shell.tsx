@@ -16,8 +16,8 @@ export function AppShell({
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(247,177,93,0.1),_transparent_24%),radial-gradient(circle_at_top,_rgba(255,236,214,0.02),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(66,45,36,0.22),_transparent_38%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,244,228,0.018),transparent_18%,transparent_78%,rgba(247,177,93,0.018))]" />
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-[22rem] bg-[linear-gradient(180deg,rgba(255,242,225,0.018),rgba(255,242,225,0.006)_35%,transparent)] opacity-70" />
-    <div className="relative w-full min-w-0 max-w-full overflow-visible">{children}</div>
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-[30rem] bg-[radial-gradient(circle_at_top_left,rgba(255,235,214,0.04),transparent_58%),linear-gradient(90deg,rgba(255,242,225,0.03),rgba(255,242,225,0.012)_48%,rgba(255,242,225,0.004)_68%,transparent_100%)] opacity-75" />
+      <div className="relative w-full min-w-0 max-w-full overflow-visible">{children}</div>
     </div>
   );
 }
