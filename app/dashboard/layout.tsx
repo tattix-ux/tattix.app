@@ -65,14 +65,14 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-4 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-8">
+            <div className="mt-6 grid items-start gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-9">
               <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[230px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                <div className="rounded-[28px] border border-white/7 bg-[linear-gradient(180deg,rgba(32,34,39,0.96),rgba(20,22,27,0.98))] p-4 shadow-[0_24px_56px_rgba(0,0,0,0.26)]">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                     {isTurkish ? "Panel" : "Dashboard"}
                   </p>
-                  <h2 className="mt-2 font-display text-3xl text-white">
+                  <h2 className="mt-2 font-display text-[2rem] font-semibold tracking-[-0.04em] text-white">
                     {dashboardData.profile.artistName}
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">

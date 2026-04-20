@@ -76,7 +76,7 @@ export function DashboardNav({
   }, [items, router]);
 
   return (
-    <nav className="grid grid-cols-3 gap-2 pb-2 lg:flex lg:flex-col lg:overflow-visible">
+    <nav className="grid grid-cols-3 gap-2.5 pb-2 lg:flex lg:flex-col lg:overflow-visible">
       {items.map((item) => {
         const active = pathname === item.href;
         const Icon = item.icon;
@@ -87,10 +87,10 @@ export function DashboardNav({
             href={item.href}
             prefetch
             className={cn(
-              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-2.5 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2 lg:px-2.5 lg:py-2.5 lg:text-sm lg:text-left",
+              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3 lg:py-3 lg:text-sm lg:text-left",
               active
-                ? "border-[var(--accent)]/30 bg-[var(--accent)]/14 text-white"
-                : "border-white/8 bg-white/3 text-[var(--foreground-muted)] hover:border-white/12 hover:bg-white/6 hover:text-white",
+                ? "border-[var(--accent)]/38 bg-[linear-gradient(180deg,rgba(247,177,93,0.18),rgba(247,177,93,0.1))] text-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]"
+                : "border-white/7 bg-[color:color-mix(in_srgb,var(--background)_72%,white_6%)] text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_8%)] hover:border-white/12 hover:bg-[color:color-mix(in_srgb,var(--background)_64%,white_9%)] hover:text-white",
             )}
           >
             <Icon className="size-4" />

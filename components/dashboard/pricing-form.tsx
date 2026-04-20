@@ -597,7 +597,7 @@ export function PricingForm({
   }
 
   return (
-    <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_95%,white_2.5%)] shadow-[0_16px_34px_rgba(0,0,0,0.14)]">
+    <Card className="surface-border overflow-hidden border-white/7 bg-[linear-gradient(180deg,rgba(31,33,39,0.96),rgba(22,24,29,0.98))] shadow-[0_24px_48px_rgba(0,0,0,0.2)]">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -612,17 +612,17 @@ export function PricingForm({
         </div>
       </CardHeader>
       <CardContent className="space-y-5 pt-0">
-        <div className="grid gap-2 sm:grid-cols-5">
+        <div className="grid gap-2.5 sm:grid-cols-5">
           {copy.phases.map((phaseItem, index) => {
             const active = phase === index + 1;
             return (
               <div
                 key={phaseItem.navLabel}
                 className={cn(
-                  "rounded-2xl border px-4 py-3 text-sm transition",
+                  "rounded-[18px] border px-4 py-3 text-sm transition",
                   active
-                    ? "border-[var(--accent)]/28 bg-[var(--accent)]/[0.11] text-white"
-                    : "border-white/8 bg-white/[0.015] text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]",
+                    ? "border-[var(--accent)]/40 bg-[linear-gradient(180deg,rgba(247,177,93,0.18),rgba(247,177,93,0.1))] text-white shadow-[0_12px_24px_rgba(0,0,0,0.16)]"
+                    : "border-white/7 bg-[color:color-mix(in_srgb,var(--background)_76%,white_5%)] text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]",
                 )}
               >
                 {phaseItem.navLabel}

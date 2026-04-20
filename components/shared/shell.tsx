@@ -14,8 +14,9 @@ export function AppShell({
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(247,177,93,0.18),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(87,58,36,0.4),_transparent_40%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_25%,transparent_75%,rgba(255,255,255,0.02))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(247,177,93,0.12),_transparent_28%),radial-gradient(circle_at_top,_rgba(255,255,255,0.03),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(101,72,48,0.22),_transparent_36%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),transparent_18%,transparent_80%,rgba(255,255,255,0.018))]" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-[22rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01)_35%,transparent)] opacity-70" />
       <div className="relative w-full min-w-0 max-w-full overflow-visible">{children}</div>
     </div>
   );
@@ -49,7 +50,7 @@ export function SectionHeading({
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="font-display text-3xl leading-tight text-white sm:text-4xl">{title}</h2>
+      <h2 className="font-display text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">{title}</h2>
       {description ? (
         <p className="max-w-2xl text-sm leading-7 text-[var(--foreground-muted)] sm:text-base">
           {description}
