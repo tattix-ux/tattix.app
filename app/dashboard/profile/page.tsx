@@ -20,7 +20,7 @@ export default async function DashboardProfilePage() {
           title={isTurkish ? "Profilin" : "Your profile"}
           description={
             isTurkish
-              ? "Profil sayfan, müşterinin seninle ilk karşılaştığı yer. Fotoğrafların, açıklaman ve iletişim bilgilerin burada görünür."
+              ? "Profiline ilişkin detayları, iletişim bilgilerini ve müsait olduğun tarihleri buradan yönetebilirsin."
               : "Your profile page is where clients first meet you. Your photos, description, and contact details appear here."
           }
         />

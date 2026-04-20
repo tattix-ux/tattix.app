@@ -65,7 +65,7 @@ const profileCopy = {
     saveFailed: "Unable to save profile.",
   },
   tr: {
-    sectionTitle: "Profil bilgileri",
+    sectionTitle: "Profil Bilgileri",
     artistName: "Profilde görünen isim",
     upperLabel: "Kısa etiket (opsiyonel)",
     upperLabelDescription: "İsminin üstünde küçük bir etiket olarak görünür.",
@@ -81,13 +81,13 @@ const profileCopy = {
     welcomeHeadline: "Kısa başlık (opsiyonel)",
     welcomeHeadlineDescription: "İsminin altında görünür. Müşterin ilk burayı okuyacaktır.",
     welcomeHeadlinePlaceholder: "Aklında ne var?",
-    linkSection: "Profil linkin",
+    linkSection: "Profil Linkin",
     linkSectionDescription: "Bu linki Instagram sayfana, storylerine veya mesajlarına ekleyebilirsin.",
     copyLink: "Kopyala",
     copied: "Kopyalandı",
     whatsapp: "WhatsApp numarası",
     instagram: "Instagram kullanıcı adı",
-    contactSection: "İletişim bilgileri",
+    contactSection: "İletişim Bilgileri",
     saving: "Kaydediliyor",
     saved: "Kaydedildi",
     demoSaved: "Demo verisi güncellendi.",
@@ -166,12 +166,14 @@ export function ProfileForm({
   demoMode,
   locale,
   onPreviewChange,
+  onOpenChange,
 }: {
   profile: ArtistProfile;
   upperLabel: string;
   demoMode: boolean;
   locale: PublicLocale;
   onPreviewChange?: (draft: ProfilePreviewDraft) => void;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const copy = profileCopy[locale];
   const [copied, setCopied] = useState(false);
@@ -199,6 +201,7 @@ export function ProfileForm({
   const watchedValues = useWatch({ control: form.control }) as ProfileValues | undefined;
   const lastSavedPayloadRef = useRef(JSON.stringify(defaultValues));
   const saveRequestIdRef = useRef(0);
+  const detailsRef = useRef<HTMLDetailsElement | null>(null);
   const slug = useWatch({ control: form.control, name: "slug" }) ?? "";
   const watchedArtistName = useWatch({ control: form.control, name: "artistName" }) ?? "";
   const watchedUpperLabel = useWatch({ control: form.control, name: "upperLabel" }) ?? "";
@@ -290,6 +293,10 @@ export function ProfileForm({
     watchedWelcomeHeadline,
   ]);
 
+  useEffect(() => {
+    onOpenChange?.(detailsRef.current?.open ?? false);
+  }, [onOpenChange]);
+
   async function handleMediaUpload(field: "profileImageUrl" | "coverImageUrl", file: File) {
     if (demoMode) {
       form.setError("root", { message: copy.uploadUnavailable });
@@ -352,8 +359,12 @@ export function ProfileForm({
   }
 
   return (
-    <div className="space-y-3">
-      <details open className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
+    <div className="space-y-2">
+      <details
+        ref={detailsRef}
+        className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20"
+        onToggle={(event) => onOpenChange?.(event.currentTarget.open)}
+      >
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
           <p className="text-base font-medium text-white">{copy.sectionTitle}</p>
           <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
@@ -435,9 +446,6 @@ export function ProfileForm({
                   {copied ? copy.copied : copy.copyLink}
                 </Button>
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-[var(--foreground-muted)]">
-                {publicLink}
-              </div>
             </CardContent>
           </Card>
 
@@ -484,7 +492,7 @@ export function ProfilePreviewCard({
   return (
     <Card className="surface-border overflow-hidden xl:sticky xl:top-6 xl:self-start">
       <CardHeader className="pb-3">
-        <CardTitle>{locale === "tr" ? "Sayfa önizlemesi" : "Page preview"}</CardTitle>
+        <CardTitle>{locale === "tr" ? "Sayfa Önizlemesi" : "Page preview"}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="mx-auto max-w-[320px]">

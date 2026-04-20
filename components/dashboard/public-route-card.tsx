@@ -28,12 +28,11 @@ export function PublicRouteCard({
   return (
     <div className="w-full rounded-[22px] border border-white/8 bg-black/20 p-4 sm:rounded-[24px] sm:p-4">
       <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-        {locale === "tr" ? "Profil linkin" : "Profile link"}
+        {locale === "tr" ? "Profil Linkin" : "Profile link"}
       </p>
       <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="truncate text-sm text-white">{fallbackHref}</p>
-          <p className="mt-1 text-xs text-[var(--foreground-muted)]">
+          <p className="text-xs text-[var(--foreground-muted)]">
             {locale === "tr"
               ? "Bu link, müşteriyi doğrudan profil sayfana götürür."
               : "This link takes clients directly to your profile page."}

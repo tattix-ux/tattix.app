@@ -557,7 +557,7 @@ export function ProfileRequestSettings({
   const activeBuiltInStyleCards = builtInStyleCards.filter((style) => selectedStyles.includes(style.styleKey));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <details className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
           <div className="min-w-0">
