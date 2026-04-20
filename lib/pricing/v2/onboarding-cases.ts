@@ -151,7 +151,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "clean_line",
     imageSlot: singleObjectImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
-    title: { tr: "6 cm tek obje", en: "6 cm single object" },
+    title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
       en: "Forearm · black only · simple linework",
@@ -167,7 +167,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "clean_line",
     imageSlot: singleObjectImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
-    title: { tr: "10 cm tek obje", en: "10 cm single object" },
+    title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
       en: "Forearm · black only · simple linework",
@@ -183,7 +183,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "clean_line",
     imageSlot: singleObjectImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
-    title: { tr: "16 cm tek obje", en: "16 cm single object" },
+    title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
       en: "Forearm · black only · simple linework",
@@ -199,7 +199,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: singleFigureImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.singleFigure,
-    title: { tr: "12 cm tek figür", en: "12 cm single figure" },
+    title: { tr: "Tek figür", en: "Single figure" },
     metaLine: {
       tr: "Üst kol · siyah-gri · daha dolu, gölgeli",
       en: "Upper arm · black-grey · fuller / shaded",
@@ -231,7 +231,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: colorPieceImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.colorPiece,
-    title: { tr: "10–12 cm renkli parça", en: "10–12 cm color piece" },
+    title: { tr: "Renkli parça", en: "Color piece" },
     metaLine: {
       tr: "Üst kol · renkli · orta yoğunluk",
       en: "Upper arm · color · medium density",
@@ -247,7 +247,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: coverUpImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
-    title: { tr: "7 cm küçük cover-up", en: "7 cm small cover-up" },
+    title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · küçük dövme kapatma",
       en: "Forearm · mostly black · covering a small existing tattoo",
@@ -266,7 +266,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "clean_line",
     imageSlot: textWordImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.text,
-    title: { tr: "4 cm kısa yazı", en: "4 cm short text" },
+    title: { tr: "Kısa yazı", en: "Short text" },
     metaLine: {
       tr: "Bilek · sadece siyah · sade font",
       en: "Wrist · black only · simple font",
@@ -282,7 +282,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "clean_line",
     imageSlot: smallSymbolImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.symbol,
-    title: { tr: "4 cm minimal sembol", en: "4 cm minimal symbol" },
+    title: { tr: "Minimal sembol", en: "Minimal symbol" },
     metaLine: {
       tr: "Ayak bileği · sadece siyah · sade çizgisel",
       en: "Ankle · black only · simple linework",
@@ -298,7 +298,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "clean_line",
     imageSlot: singleObjectImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
-    title: { tr: "16 cm tek obje", en: "16 cm single object" },
+    title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
       en: "Forearm · black only · simple linework",
@@ -314,7 +314,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: multiElementImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.multiElement,
-    title: { tr: "15 cm çok öğeli tasarım", en: "15 cm multi-element design" },
+    title: { tr: "Çok öğeli tasarım", en: "Multi-element design" },
     metaLine: {
       tr: "Baldır · sadece siyah · çok öğeli kompozisyon",
       en: "Calf · black only · multi-element composition",
@@ -330,7 +330,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: coverUpImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
-    title: { tr: "8 cm küçük cover-up", en: "8 cm small cover-up" },
+    title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · kapatma",
       en: "Forearm · mostly black · covering a small tattoo",

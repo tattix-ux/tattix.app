@@ -315,6 +315,10 @@ function getEstimateDisplayClass(displayLabel: string) {
   return displayLabel.trim().endsWith("+") ? "text-[2.15rem]" : "text-2xl";
 }
 
+function getSizeLabel(sizeCm: number, locale: PublicLocale) {
+  return locale === "tr" ? `Boyut · ${sizeCm} cm` : `Size · ${sizeCm} cm`;
+}
+
 function createDefaultReviewCase(): ReviewCaseDraft {
   return {
     verdict: "",
@@ -836,6 +840,9 @@ export function PricingForm({
                           <div className="space-y-3">
                             <div className="space-y-1.5">
                               <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                              <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
+                                {getSizeLabel(item.referenceSizeCm, locale)}
+                              </p>
                               <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                                 {item.metaLine[locale]}
                               </p>
@@ -901,6 +908,9 @@ export function PricingForm({
                         <div className="space-y-4 md:pt-1">
                           <div className="space-y-2">
                             <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                            <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
+                              {getSizeLabel(item.referenceSizeCm, locale)}
+                            </p>
                             <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                               {item.metaLine[locale]}
                             </p>
@@ -967,7 +977,7 @@ export function PricingForm({
                       <div className="space-y-2">
                         <p className="text-base font-semibold text-white">{item.title[locale]}</p>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
-                          {locale === "tr" ? `Boyut · ${item.referenceSizeCm} cm` : `Size · ${item.referenceSizeCm} cm`}
+                          {getSizeLabel(item.referenceSizeCm, locale)}
                         </p>
                         <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                           {item.metaLine[locale]}
