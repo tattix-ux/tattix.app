@@ -40,6 +40,22 @@ export type PricingReviewCase = {
   metaLine: Record<PublicLocale, string>;
 };
 
+export type PricingLargeAreaCase = {
+  id: string;
+  imageSlot: string;
+  imagePresentation?: PricingCaseImagePresentation;
+  title: Record<PublicLocale, string>;
+  metaLine: Record<PublicLocale, string>;
+};
+
+export type PricingWideAreaCase = {
+  id: string;
+  imageSlot: string;
+  imagePresentation?: PricingCaseImagePresentation;
+  title: Record<PublicLocale, string>;
+  metaLine: Record<PublicLocale, string>;
+};
+
 export type PricingCaseImagePresentation = {
   frameClassName?: string;
   imageClassName?: string;
@@ -110,6 +126,18 @@ export const PRICING_V2_SPECIAL_CASE_IDS = [
   "ornamental-small-hard",
   "medium-color-piece",
   "small-cover-up",
+] as const;
+
+export const PRICING_V2_LARGE_AREA_CASE_IDS = [
+  "forearm-large-coverage",
+  "calf-large-coverage",
+  "chest-large-coverage",
+] as const;
+
+export const PRICING_V2_WIDE_AREA_CASE_IDS = [
+  "half-sleeve",
+  "full-sleeve",
+  "back-large-coverage",
 ] as const;
 
 export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
@@ -306,6 +334,66 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · kapatma",
       en: "Forearm · mostly black · covering a small tattoo",
+    },
+  },
+] as const;
+
+export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
+  {
+    id: "forearm-large-coverage",
+    imageSlot: "",
+    title: { tr: "Ön kolun büyük kısmını kaplayan iş", en: "Piece covering most of the forearm" },
+    metaLine: {
+      tr: "Siyah-gri · daha dolu / gölgeli",
+      en: "Black-grey · fuller / shaded",
+    },
+  },
+  {
+    id: "calf-large-coverage",
+    imageSlot: "",
+    title: { tr: "Baldırın büyük kısmını kaplayan iş", en: "Piece covering most of the calf" },
+    metaLine: {
+      tr: "Sadece siyah · daha düzenli / simetrik",
+      en: "Black only · more structured / symmetrical",
+    },
+  },
+  {
+    id: "chest-large-coverage",
+    imageSlot: "",
+    title: { tr: "Göğüste büyük alan kaplayan iş", en: "Large coverage piece on the chest" },
+    metaLine: {
+      tr: "Siyah-gri · daha dolu / gölgeli",
+      en: "Black-grey · fuller / shaded",
+    },
+  },
+] as const;
+
+export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
+  {
+    id: "half-sleeve",
+    imageSlot: "",
+    title: { tr: "Kolun yarısını kaplayan iş", en: "Piece covering half the arm" },
+    metaLine: {
+      tr: "Siyah-gri · daha dolu / gölgeli",
+      en: "Black-grey · fuller / shaded",
+    },
+  },
+  {
+    id: "full-sleeve",
+    imageSlot: "",
+    title: { tr: "Tüm kolu kaplayan iş", en: "Piece covering the full arm" },
+    metaLine: {
+      tr: "Siyah-gri · daha dolu / gölgeli",
+      en: "Black-grey · fuller / shaded",
+    },
+  },
+  {
+    id: "back-large-coverage",
+    imageSlot: "",
+    title: { tr: "Sırtta geniş alan kaplayan iş", en: "Large coverage piece on the back" },
+    metaLine: {
+      tr: "Siyah-gri · daha dolu / gölgeli",
+      en: "Black-grey · fuller / shaded",
     },
   },
 ] as const;

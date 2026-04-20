@@ -12,18 +12,28 @@ import { Input } from "@/components/ui/input";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { estimateCustomRequestPrice } from "@/lib/pricing/v2/custom-request";
 import {
+  PRICING_V2_LARGE_AREA_CASES,
+  PRICING_V2_WIDE_AREA_CASES,
   PRICING_V2_ONBOARDING_CASES,
   PRICING_V2_REVIEW_CASES,
+  PRICING_V2_WIDE_AREA_CASE_IDS,
   PRICING_V2_SIZE_SERIES_CASE_IDS,
   PRICING_V2_SPECIAL_CASE_IDS,
 } from "@/lib/pricing/v2/onboarding-cases";
 import { formatCurrencyValue, roundToFriendlyPrice } from "@/lib/pricing/v2/helpers";
-import { buildPricingV2Profile, buildSuggestedOnboardingCases, getArtistPricingV2Profile } from "@/lib/pricing/v2/profile";
+import {
+  buildPricingV2Profile,
+  buildSuggestedLargeAreaCases,
+  buildSuggestedOnboardingCases,
+  buildSuggestedWideAreaCases,
+  getArtistPricingV2Profile,
+} from "@/lib/pricing/v2/profile";
 import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Verdict = "looks-right" | "slightly-low" | "slightly-high";
-type Phase = 1 | 2 | 3 | 4;
+type Phase = 1 | 2 | 3 | 4 | 5;
+type LargeAreaChoice = "enabled" | "disabled";
 type StatusTone = "success" | "error" | null;
 
 function getText(locale: PublicLocale) {
@@ -50,6 +60,11 @@ function getText(locale: PublicLocale) {
           title: "Son bir kontrol yapalım",
           description: "Son olarak, tahminlerin sana uygun olup olmadığını kontrol edelim.",
         },
+        {
+          navLabel: "5. Geniş alan işleri",
+          title: "Geniş alan işleri de göstermek istiyor musun?",
+          description: "İstersen büyük işler için de başlangıç seviyeleri belirleyebiliriz.",
+        },
       ],
       minimumJobPrice: "En küçük işlerde genelde başladığın fiyat",
       textStartingPrice: "Yazı gibi çok basit işlerde çoğu zaman başladığın fiyat",
@@ -60,6 +75,16 @@ function getText(locale: PublicLocale) {
       specialCasesTitle: "Farklı durumları görelim",
       specialCasesDescription: "Bu örnekler özel durumlarda fiyat yapını anlamamıza yardımcı olur.",
       caseTitle: "Bu iş için müşteriye hangi bandı göstermek istersin?",
+      largeAreasChoice: "Geniş alan işleri de göstermek istiyor musun?",
+      largeAreasChoiceDescription: "İstersen büyük işler için de başlangıç seviyeleri belirleyebiliriz.",
+      largeAreasOptions: {
+        enabled: "Evet",
+        disabled: "Şimdilik hayır",
+      },
+      largeAreaCasesTitle: "Tek bölgede büyük alan örnekleri",
+      wideAreaCasesTitle: "Çok geniş alan örnekleri",
+      wideAreaCaseTitle: "Bu tür işlerde müşteriye hangi seviyeden başlanacağı gösterilsin?",
+      startingFrom: "Başlangıç seviyesi",
       min: "Alt sınır",
       max: "Üst sınır",
       placeholderAsset: "Örnek görsel alanı",
@@ -103,6 +128,11 @@ function getText(locale: PublicLocale) {
         title: "Let’s do one final check",
         description: "Finally, let’s make sure these estimates feel right for you.",
       },
+      {
+        navLabel: "5. Large coverage work",
+        title: "Do you want to show large coverage work too?",
+        description: "If you want, we can also set starting levels for bigger pieces.",
+      },
     ],
     minimumJobPrice: "Where do your smallest jobs usually start?",
     textStartingPrice: "Where do very simple text jobs usually start?",
@@ -113,6 +143,16 @@ function getText(locale: PublicLocale) {
     specialCasesTitle: "Let’s look at different cases",
     specialCasesDescription: "These examples help us understand your pricing in special situations.",
     caseTitle: "What range would you want to show for this case?",
+    largeAreasChoice: "Do you want to show large coverage work too?",
+    largeAreasChoiceDescription: "If you want, we can also set starting levels for bigger pieces.",
+    largeAreasOptions: {
+      enabled: "Yes",
+      disabled: "Not for now",
+    },
+    largeAreaCasesTitle: "Large coverage examples for a single area",
+    wideAreaCasesTitle: "Very wide coverage examples",
+    wideAreaCaseTitle: "What starting level should the client see for this kind of piece?",
+    startingFrom: "Starting level",
     min: "Min",
     max: "Max",
     placeholderAsset: "Example image area",
@@ -313,6 +353,9 @@ export function PricingForm({
   const currentPhaseCopy = copy.phases[phase - 1];
   const [minimumJobPrice, setMinimumJobPrice] = useState(String(initialProfile.minimumJobPrice));
   const [textStartingPrice, setTextStartingPrice] = useState(String(initialProfile.textStartingPrice));
+  const [largeAreaChoice, setLargeAreaChoice] = useState<LargeAreaChoice>(
+    initialProfile.onboardingLargeAreasEnabled ? "enabled" : "disabled",
+  );
   const [hasEditedCaseRanges, setHasEditedCaseRanges] = useState(false);
   const [statusTone, setStatusTone] = useState<StatusTone>(null);
   const suggestedCases = useMemo(
@@ -338,6 +381,49 @@ export function PricingForm({
       };
     }),
   );
+  const suggestedLargeAreaCases = useMemo(
+    () =>
+      buildSuggestedLargeAreaCases({
+        minimumJobPrice: toInputNumber(minimumJobPrice, initialProfile.minimumJobPrice),
+        onboardingCases: onboardingCases.map((item) => ({
+          id: item.id,
+          min: toInputNumber(item.min),
+          max: toInputNumber(item.max),
+        })),
+      }),
+    [initialProfile.minimumJobPrice, minimumJobPrice, onboardingCases],
+  );
+  const suggestedWideAreaCases = useMemo(
+    () =>
+      buildSuggestedWideAreaCases(
+        suggestedLargeAreaCases.map((item) => ({
+          id: item.id,
+          min: item.min,
+          max: item.max,
+        })),
+        toInputNumber(minimumJobPrice, initialProfile.minimumJobPrice),
+      ),
+    [initialProfile.minimumJobPrice, minimumJobPrice, suggestedLargeAreaCases],
+  );
+  const [largeAreaCases, setLargeAreaCases] = useState(
+    suggestedLargeAreaCases.map((item) => {
+      const existing = initialProfile.largeAreaCases.find((caseItem) => caseItem.id === item.id);
+      return {
+        id: item.id,
+        min: String(existing?.min ?? item.min),
+        max: String(existing?.max ?? item.max),
+      };
+    }),
+  );
+  const [wideAreaCases, setWideAreaCases] = useState(
+    suggestedWideAreaCases.map((item) => {
+      const existing = initialProfile.wideAreaCases.find((caseItem) => caseItem.id === item.id);
+      return {
+        id: item.id,
+        startingFrom: String(existing?.startingFrom ?? item.startingFrom),
+      };
+    }),
+  );
   const [reviewCases, setReviewCases] = useState<Record<string, Verdict>>(
     Object.fromEntries(initialProfile.reviewCases.map((item) => [item.id, item.verdict])),
   );
@@ -356,7 +442,20 @@ export function PricingForm({
         max: String(item.max),
       })),
     );
-  }, [hasEditedCaseRanges, suggestedCases]);
+    setLargeAreaCases(
+      suggestedLargeAreaCases.map((item) => ({
+        id: item.id,
+        min: String(item.min),
+        max: String(item.max),
+      })),
+    );
+    setWideAreaCases(
+      suggestedWideAreaCases.map((item) => ({
+        id: item.id,
+        startingFrom: String(item.startingFrom),
+      })),
+    );
+  }, [hasEditedCaseRanges, suggestedCases, suggestedLargeAreaCases, suggestedWideAreaCases]);
 
   const derivedProfile = useMemo(
     () =>
@@ -368,15 +467,28 @@ export function PricingForm({
           min: toInputNumber(item.min),
           max: toInputNumber(item.max),
         })),
+        onboardingLargeAreasEnabled: largeAreaChoice === "enabled",
+        largeAreaCases: largeAreaCases.map((item) => ({
+          id: item.id,
+          min: toInputNumber(item.min),
+          max: toInputNumber(item.max),
+        })),
+        wideAreaCases: wideAreaCases.map((item) => ({
+          id: item.id,
+          startingFrom: toInputNumber(item.startingFrom),
+        })),
         reviewCases: Object.entries(reviewCases).map(([id, verdict]) => ({ id, verdict })),
       }),
     [
       initialProfile.minimumJobPrice,
       initialProfile.textStartingPrice,
+      largeAreaCases,
+      largeAreaChoice,
       minimumJobPrice,
       onboardingCases,
       reviewCases,
       textStartingPrice,
+      wideAreaCases,
     ],
   );
 
@@ -408,6 +520,8 @@ export function PricingForm({
   const specialCaseIds = new Set<string>(PRICING_V2_SPECIAL_CASE_IDS);
   const sizeSeriesCases = PRICING_V2_ONBOARDING_CASES.filter((item) => sizeSeriesCaseIds.has(item.id));
   const specialCases = PRICING_V2_ONBOARDING_CASES.filter((item) => specialCaseIds.has(item.id));
+  const largeAreaDisplayCases = PRICING_V2_LARGE_AREA_CASES;
+  const wideAreaDisplayCases = PRICING_V2_WIDE_AREA_CASES;
   const anchorCase = sizeSeriesCases.find((item) => item.id === "object-10cm-forearm") ?? null;
   const anchorCaseValues = onboardingCases.find((item) => item.id === "object-10cm-forearm") ?? null;
 
@@ -426,6 +540,10 @@ export function PricingForm({
     return Boolean(currentCase?.min.trim() && currentCase?.max.trim());
   });
   const phaseFourComplete = reviewEstimates.every((item) => Boolean(reviewCases[item.id]));
+  const phaseFiveComplete =
+    largeAreaChoice === "disabled" ||
+    (largeAreaCases.every((item) => item.min.trim() && item.max.trim()) &&
+      wideAreaCases.every((item) => item.startingFrom.trim()));
 
   async function handleSave() {
     setIsSaving(true);
@@ -443,6 +561,16 @@ export function PricingForm({
             id: item.id,
             min: toInputNumber(item.min),
             max: toInputNumber(item.max),
+          })),
+          onboardingLargeAreasEnabled: largeAreaChoice === "enabled",
+          largeAreaCases: largeAreaCases.map((item) => ({
+            id: item.id,
+            min: toInputNumber(item.min),
+            max: toInputNumber(item.max),
+          })),
+          wideAreaCases: wideAreaCases.map((item) => ({
+            id: item.id,
+            startingFrom: toInputNumber(item.startingFrom),
           })),
           reviewCases: Object.entries(reviewCases).map(([id, verdict]) => ({ id, verdict })),
         }),
@@ -482,7 +610,7 @@ export function PricingForm({
         </div>
       </CardHeader>
       <CardContent className="space-y-5 pt-0">
-        <div className="grid gap-2 sm:grid-cols-4">
+        <div className="grid gap-2 sm:grid-cols-5">
           {copy.phases.map((phaseItem, index) => {
             const active = phase === index + 1;
             return (
@@ -783,6 +911,152 @@ export function PricingForm({
           </div>
         ) : null}
 
+        {phase === 5 ? (
+          <div className="space-y-6">
+            <Field label={copy.largeAreasChoice} description={copy.largeAreasChoiceDescription}>
+              <ChoiceGroup
+                value={largeAreaChoice}
+                onChange={setLargeAreaChoice}
+                options={[
+                  { value: "enabled", label: copy.largeAreasOptions.enabled },
+                  { value: "disabled", label: copy.largeAreasOptions.disabled },
+                ]}
+                columnsClassName="sm:grid-cols-2"
+              />
+            </Field>
+
+            {largeAreaChoice === "enabled" ? (
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-white">{copy.largeAreaCasesTitle}</p>
+                  </div>
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    {largeAreaDisplayCases.map((item) => {
+                      const currentCase = largeAreaCases.find((entry) => entry.id === item.id);
+
+                      if (!currentCase) {
+                        return null;
+                      }
+
+                      return (
+                        <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+                          <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
+                            <ImageSlotPreview
+                              imageSlot={item.imageSlot}
+                              imagePresentation={item.imagePresentation}
+                              placeholderAsset={copy.placeholderAsset}
+                              placeholderHelp={copy.placeholderHelp}
+                              variant="case"
+                            />
+                            <div className="space-y-4 md:pt-1">
+                              <div className="space-y-2">
+                                <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                                  {item.metaLine[locale]}
+                                </p>
+                                <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                                  {copy.caseTitle}
+                                </p>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <CurrencyInput
+                                  value={currentCase.min}
+                                  onChange={(value) => {
+                                    setHasEditedCaseRanges(true);
+                                    setLargeAreaCases((current) =>
+                                      current.map((entry) => (entry.id === item.id ? { ...entry, min: value } : entry)),
+                                    );
+                                  }}
+                                  label={copy.min}
+                                  suffix={copy.currency}
+                                  normalizeOnBlur
+                                />
+                                <CurrencyInput
+                                  value={currentCase.max}
+                                  onChange={(value) => {
+                                    setHasEditedCaseRanges(true);
+                                    setLargeAreaCases((current) =>
+                                      current.map((entry) => (entry.id === item.id ? { ...entry, max: value } : entry)),
+                                    );
+                                  }}
+                                  label={copy.max}
+                                  suffix={copy.currency}
+                                  normalizeOnBlur
+                                />
+                              </div>
+                              <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                                {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-white">{copy.wideAreaCasesTitle}</p>
+                  </div>
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    {wideAreaDisplayCases.map((item) => {
+                      const currentCase = wideAreaCases.find((entry) => entry.id === item.id);
+
+                      if (!currentCase) {
+                        return null;
+                      }
+
+                      return (
+                        <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+                          <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
+                            <ImageSlotPreview
+                              imageSlot={item.imageSlot}
+                              imagePresentation={item.imagePresentation}
+                              placeholderAsset={copy.placeholderAsset}
+                              placeholderHelp={copy.placeholderHelp}
+                              variant="case"
+                            />
+                            <div className="space-y-4 md:pt-1">
+                              <div className="space-y-2">
+                                <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                                  {item.metaLine[locale]}
+                                </p>
+                                <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                                  {copy.wideAreaCaseTitle}
+                                </p>
+                              </div>
+                              <CurrencyInput
+                                value={currentCase.startingFrom}
+                                onChange={(value) => {
+                                  setHasEditedCaseRanges(true);
+                                  setWideAreaCases((current) =>
+                                    current.map((entry) =>
+                                      entry.id === item.id ? { ...entry, startingFrom: value } : entry,
+                                    ),
+                                  );
+                                }}
+                                label={copy.startingFrom}
+                                suffix={copy.currency}
+                                normalizeOnBlur
+                              />
+                              <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                                {`${toDisplayCurrency(toInputNumber(currentCase.startingFrom), locale)}+`}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
           <p
             className={cn(
@@ -802,20 +1076,21 @@ export function PricingForm({
                 {copy.back}
               </Button>
             ) : null}
-            {phase < 4 ? (
+            {phase < 5 ? (
               <Button
                 type="button"
                 onClick={() => setPhase((current) => (current + 1) as Phase)}
                 disabled={
                   (phase === 1 && !phaseOneComplete) ||
                   (phase === 2 && !phaseTwoComplete) ||
-                  (phase === 3 && !phaseThreeComplete)
+                  (phase === 3 && !phaseThreeComplete) ||
+                  (phase === 4 && !phaseFourComplete)
                 }
               >
                 {copy.next}
               </Button>
             ) : (
-              <Button type="button" onClick={handleSave} disabled={isSaving || !phaseFourComplete}>
+              <Button type="button" onClick={handleSave} disabled={isSaving || !phaseFiveComplete}>
                 {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : null}
                 {isSaving ? copy.saving : copy.save}
               </Button>

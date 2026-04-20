@@ -2,12 +2,18 @@ import type {
   ArtistPricingRules,
   ArtistPricingV2Profile,
   LeadPreferenceValue,
+  PricingV2CaseAnswer,
+  PricingV2WideAreaAnswer,
   PricingV2WorkStyleSensitivity,
 } from "@/lib/types";
 import {
+  PRICING_V2_LARGE_AREA_CASE_IDS,
+  PRICING_V2_LARGE_AREA_CASES,
   PRICING_V2_ONBOARDING_CASES,
   PRICING_V2_SIZE_SERIES_CASE_IDS,
   PRICING_V2_SPECIAL_CASE_IDS,
+  PRICING_V2_WIDE_AREA_CASE_IDS,
+  PRICING_V2_WIDE_AREA_CASES,
 } from "./onboarding-cases";
 import { midpoint, roundToFriendlyPrice } from "./helpers";
 import {
@@ -21,6 +27,9 @@ type BuildPricingV2ProfileInput = {
   minimumJobPrice: number;
   textStartingPrice: number;
   onboardingCases: Array<{ id: string; min: number; max: number }>;
+  onboardingLargeAreasEnabled?: boolean;
+  largeAreaCases?: Array<{ id: string; min: number; max: number }>;
+  wideAreaCases?: Array<{ id: string; startingFrom: number }>;
   reviewCases?: Array<{ id: string; verdict: "looks-right" | "slightly-low" | "slightly-high" }>;
 };
 
@@ -113,6 +122,101 @@ function buildFallbackCases(rules: ArtistPricingRules) {
   });
 }
 
+function getRoundedCaseRange(
+  cases: Array<{ id: string; min: number; max: number }>,
+  id: string,
+  fallback: { min: number; max: number },
+) {
+  const found = cases.find((item) => item.id === id);
+  if (!found) {
+    return fallback;
+  }
+
+  return {
+    min: roundToFriendlyPrice(Math.min(found.min, found.max), "down"),
+    max: roundToFriendlyPrice(Math.max(found.min, found.max), "up"),
+  };
+}
+
+function getRoundedStartingFrom(
+  cases: Array<{ id: string; startingFrom: number }>,
+  id: string,
+  fallback: number,
+) {
+  const found = cases.find((item) => item.id === id);
+  return roundToFriendlyPrice(found?.startingFrom ?? fallback, "up");
+}
+
+type SuggestedLargeAreaInput = {
+  minimumJobPrice: number;
+  onboardingCases: Array<{ id: string; min: number; max: number }>;
+};
+
+export function buildSuggestedLargeAreaCases(
+  input: SuggestedLargeAreaInput,
+): PricingV2CaseAnswer[] {
+  const minimum = Math.max(input.minimumJobPrice, 500);
+  const object16 = getRoundedCaseRange(input.onboardingCases, "object-16cm-forearm", {
+    min: roundToFriendlyPrice(minimum * 1.8, "down"),
+    max: roundToFriendlyPrice(minimum * 2.3, "up"),
+  });
+  const singleFigure = getRoundedCaseRange(input.onboardingCases, "single-figure-12cm-upper-arm", {
+    min: roundToFriendlyPrice(minimum * 1.9, "down"),
+    max: roundToFriendlyPrice(minimum * 2.5, "up"),
+  });
+  const ornamental = getRoundedCaseRange(input.onboardingCases, "ornamental-small-hard", {
+    min: roundToFriendlyPrice(minimum * 1.75, "down"),
+    max: roundToFriendlyPrice(minimum * 2.35, "up"),
+  });
+
+  const centers: Record<string, number> = {
+    "forearm-large-coverage": Math.max(midpoint(object16.min, object16.max) * 1.7, minimum * 2.8),
+    "calf-large-coverage": Math.max(midpoint(ornamental.min, ornamental.max) * 1.82, minimum * 3),
+    "chest-large-coverage": Math.max(midpoint(singleFigure.min, singleFigure.max) * 1.95, minimum * 3.2),
+  };
+
+  const spreads: Record<string, number> = {
+    "forearm-large-coverage": 0.14,
+    "calf-large-coverage": 0.14,
+    "chest-large-coverage": 0.16,
+  };
+
+  const ids = new Set<string>(PRICING_V2_LARGE_AREA_CASE_IDS);
+
+  return PRICING_V2_LARGE_AREA_CASES.filter((item) => ids.has(item.id)).map((item) => ({
+    id: item.id,
+    ...buildRoundedBand(centers[item.id] ?? minimum * 3, spreads[item.id] ?? 0.15, minimum * 2),
+  }));
+}
+
+export function buildSuggestedWideAreaCases(
+  largeAreaCases: Array<{ id: string; min: number; max: number }>,
+  minimumJobPrice: number,
+): PricingV2WideAreaAnswer[] {
+  const minimum = Math.max(minimumJobPrice, 500);
+  const forearmLarge = getRoundedCaseRange(largeAreaCases, "forearm-large-coverage", {
+    min: roundToFriendlyPrice(minimum * 2.8, "down"),
+    max: roundToFriendlyPrice(minimum * 3.4, "up"),
+  });
+  const chestLarge = getRoundedCaseRange(largeAreaCases, "chest-large-coverage", {
+    min: roundToFriendlyPrice(minimum * 3.2, "down"),
+    max: roundToFriendlyPrice(minimum * 3.9, "up"),
+  });
+
+  const starts: Record<string, number> = {
+    "half-sleeve": Math.max(forearmLarge.max * 1.55, minimum * 4.8),
+    "full-sleeve": Math.max(forearmLarge.max * 2.8, minimum * 8.4),
+    "back-large-coverage": Math.max(chestLarge.max * 2.1, minimum * 7.2),
+  };
+
+  const ids = new Set<string>(PRICING_V2_WIDE_AREA_CASE_IDS);
+
+  return PRICING_V2_WIDE_AREA_CASES.filter((item) => ids.has(item.id)).map((item) => ({
+    id: item.id,
+    startingFrom: roundToFriendlyPrice(starts[item.id] ?? minimum * 5, "up"),
+  }));
+}
+
 export function buildPricingV2Profile(
   input: BuildPricingV2ProfileInput,
 ): ArtistPricingV2Profile {
@@ -131,6 +235,15 @@ export function buildPricingV2Profile(
     roundToFriendlyPrice(input.textStartingPrice, "up"),
     reviewAdjustments,
   );
+  const largeAreaCases = (input.largeAreaCases ?? []).map((item) => ({
+    id: item.id,
+    min: roundToFriendlyPrice(Math.min(item.min, item.max), "down"),
+    max: roundToFriendlyPrice(Math.max(item.min, item.max), "up"),
+  }));
+  const wideAreaCases = (input.wideAreaCases ?? []).map((item) => ({
+    id: item.id,
+    startingFrom: roundToFriendlyPrice(item.startingFrom, "up"),
+  }));
 
   return {
     version: 2,
@@ -140,6 +253,9 @@ export function buildPricingV2Profile(
     colorImpactPreference: "medium",
     coverUpImpactPreference: "medium",
     onboardingCases,
+    onboardingLargeAreasEnabled: input.onboardingLargeAreasEnabled ?? false,
+    largeAreaCases,
+    wideAreaCases,
     reviewCases: (input.reviewCases ?? []).map((item) => ({
       id: item.id,
       verdict: item.verdict,
@@ -161,11 +277,30 @@ export function getArtistPricingV2Profile(rules: ArtistPricingRules): ArtistPric
       const found = storedProfile.onboardingCases.find((item) => item.id === fallbackCase.id);
       return found ?? fallbackCase;
     });
+    const fallbackLargeAreaCases = buildSuggestedLargeAreaCases({
+      minimumJobPrice: storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
+      onboardingCases: mergedCases,
+    });
+    const mergedLargeAreaCases = fallbackLargeAreaCases.map((fallbackCase) => {
+      const found = storedProfile.largeAreaCases?.find((item) => item.id === fallbackCase.id);
+      return found ?? fallbackCase;
+    });
+    const fallbackWideAreaCases = buildSuggestedWideAreaCases(
+      mergedLargeAreaCases,
+      storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
+    );
+    const mergedWideAreaCases = fallbackWideAreaCases.map((fallbackCase) => {
+      const found = storedProfile.wideAreaCases?.find((item) => item.id === fallbackCase.id);
+      return found ?? fallbackCase;
+    });
 
     return buildPricingV2Profile({
       minimumJobPrice: storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
       textStartingPrice: storedProfile.textStartingPrice ?? storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
       onboardingCases: mergedCases,
+      onboardingLargeAreasEnabled: storedProfile.onboardingLargeAreasEnabled ?? false,
+      largeAreaCases: mergedLargeAreaCases,
+      wideAreaCases: mergedWideAreaCases,
       reviewCases: storedProfile.reviewCases ?? [],
     });
   }
@@ -176,11 +311,19 @@ export function getArtistPricingV2Profile(rules: ArtistPricingRules): ArtistPric
     minimumJobPrice,
     roundToFriendlyPrice(minimumJobPrice * 0.9, "down"),
   );
+  const fallbackLargeAreaCases = buildSuggestedLargeAreaCases({
+    minimumJobPrice,
+    onboardingCases: fallbackCases,
+  });
+  const fallbackWideAreaCases = buildSuggestedWideAreaCases(fallbackLargeAreaCases, minimumJobPrice);
 
   return buildPricingV2Profile({
     minimumJobPrice,
     textStartingPrice,
     onboardingCases: fallbackCases,
+    onboardingLargeAreasEnabled: false,
+    largeAreaCases: fallbackLargeAreaCases,
+    wideAreaCases: fallbackWideAreaCases,
     reviewCases: [],
   });
 }

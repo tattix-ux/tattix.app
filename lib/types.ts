@@ -162,6 +162,10 @@ export type PricingV2CaseAnswer = {
   min: number;
   max: number;
 };
+export type PricingV2WideAreaAnswer = {
+  id: string;
+  startingFrom: number;
+};
 export type PricingV2ReviewAnswer = {
   id: string;
   verdict: PricingValidationFeedback;
@@ -219,6 +223,9 @@ export type ArtistPricingV2Profile = {
   colorImpactPreference: ColorImpactPreferenceValue;
   coverUpImpactPreference: CoverUpImpactPreferenceValue;
   onboardingCases: PricingV2CaseAnswer[];
+  onboardingLargeAreasEnabled: boolean;
+  largeAreaCases: PricingV2CaseAnswer[];
+  wideAreaCases: PricingV2WideAreaAnswer[];
   reviewCases: PricingV2ReviewAnswer[];
   sizeSeries: PricingV2SizeSeries;
   inferredSizeProfile: PricingV2SizeProfile;

@@ -316,6 +316,24 @@ export const pricingOnboardingSchema = z.object({
       max: z.coerce.number().gt(0),
     }),
   ).min(7),
+  onboardingLargeAreasEnabled: z.boolean().default(false),
+  largeAreaCases: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        min: z.coerce.number().gt(0),
+        max: z.coerce.number().gt(0),
+      }),
+    )
+    .default([]),
+  wideAreaCases: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        startingFrom: z.coerce.number().gt(0),
+      }),
+    )
+    .default([]),
   reviewCases: z
     .array(
       z.object({
