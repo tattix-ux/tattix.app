@@ -315,7 +315,7 @@ export const pricingOnboardingSchema = z.object({
       min: z.coerce.number().gt(0),
       max: z.coerce.number().gt(0),
     }),
-  ).min(3),
+  ).min(7),
   reviewCases: z
     .array(
       z.object({

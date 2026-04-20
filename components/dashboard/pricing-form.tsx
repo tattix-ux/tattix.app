@@ -15,6 +15,7 @@ import {
   PRICING_V2_ONBOARDING_CASES,
   PRICING_V2_REVIEW_CASES,
   PRICING_V2_SIZE_SERIES_CASE_IDS,
+  PRICING_V2_SPECIAL_CASE_IDS,
 } from "@/lib/pricing/v2/onboarding-cases";
 import { formatCurrencyValue, roundToFriendlyPrice } from "@/lib/pricing/v2/helpers";
 import { buildPricingV2Profile, buildSuggestedOnboardingCases, getArtistPricingV2Profile } from "@/lib/pricing/v2/profile";
@@ -22,7 +23,7 @@ import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Verdict = "looks-right" | "slightly-low" | "slightly-high";
-type Phase = 1 | 2 | 3;
+type Phase = 1 | 2 | 3 | 4;
 type StatusTone = "success" | "error" | null;
 
 function getText(locale: PublicLocale) {
@@ -40,7 +41,12 @@ function getText(locale: PublicLocale) {
           description: "Burada tasarım aynı. Sadece boyut farkını düşünüyoruz.",
         },
         {
-          navLabel: "3. Son bir kontrol yapalım",
+          navLabel: "3. Farklı durumları görelim",
+          title: "Farklı durumları görelim",
+          description: "Bu örnekler özel durumlarda fiyat yapını anlamamıza yardımcı olur.",
+        },
+        {
+          navLabel: "4. Son bir kontrol yapalım",
           title: "Son bir kontrol yapalım",
           description: "Son olarak, tahminlerin sana uygun olup olmadığını kontrol edelim.",
         },
@@ -51,6 +57,8 @@ function getText(locale: PublicLocale) {
       textStartingPriceDescription: "Yazı ve benzeri basit işler buna yakın davranır.",
       sizeSeriesTitle: "Aynı işin boyutu büyüdüğünde fiyatın nasıl değişiyor?",
       sizeSeriesDescription: "Burada tasarım aynı. Sadece boyut farkını düşünüyoruz.",
+      specialCasesTitle: "Farklı durumları görelim",
+      specialCasesDescription: "Bu örnekler özel durumlarda fiyat yapını anlamamıza yardımcı olur.",
       caseTitle: "Bu iş için müşteriye hangi bandı göstermek istersin?",
       min: "Alt sınır",
       max: "Üst sınır",
@@ -86,7 +94,12 @@ function getText(locale: PublicLocale) {
         description: "The design stays the same here. We’re only thinking about size.",
       },
       {
-        navLabel: "3. Do one final check",
+        navLabel: "3. Let’s look at different cases",
+        title: "Let’s look at different cases",
+        description: "These examples help us understand your pricing in special situations.",
+      },
+      {
+        navLabel: "4. Do one final check",
         title: "Let’s do one final check",
         description: "Finally, let’s make sure these estimates feel right for you.",
       },
@@ -97,6 +110,8 @@ function getText(locale: PublicLocale) {
     textStartingPriceDescription: "Very simple text-like jobs stay close to this.",
     sizeSeriesTitle: "How does your pricing change when the same piece gets bigger?",
     sizeSeriesDescription: "The design stays the same here. We’re only thinking about size.",
+    specialCasesTitle: "Let’s look at different cases",
+    specialCasesDescription: "These examples help us understand your pricing in special situations.",
     caseTitle: "What range would you want to show for this case?",
     min: "Min",
     max: "Max",
@@ -251,8 +266,8 @@ function ImageSlotPreview({
   const fitClassName = imagePresentation?.fit === "cover" ? "object-cover" : "object-contain";
   const sizeClassName =
     variant === "case"
-      ? "h-[224px] md:h-[252px]"
-      : "h-[208px] md:h-[224px]";
+      ? "h-[248px] md:h-[292px]"
+      : "h-[224px] md:h-[248px]";
 
   if (!imageSlot || hasError) {
     return (
@@ -372,7 +387,7 @@ export function PricingForm({
         estimate: estimateCustomRequestPrice(
           {
             requestType: item.requestType,
-            placement: getPlacementDetail(item.placementBucket),
+            placement: item.placementDetail ?? getPlacementDetail(item.placementBucket),
             sizeCm: item.referenceSizeCm,
             colorMode: item.colorMode,
             workStyle: item.workStyle,
@@ -390,7 +405,9 @@ export function PricingForm({
     [derivedProfile, locale, pricingRules],
   );
   const sizeSeriesCaseIds = new Set<string>(PRICING_V2_SIZE_SERIES_CASE_IDS);
+  const specialCaseIds = new Set<string>(PRICING_V2_SPECIAL_CASE_IDS);
   const sizeSeriesCases = PRICING_V2_ONBOARDING_CASES.filter((item) => sizeSeriesCaseIds.has(item.id));
+  const specialCases = PRICING_V2_ONBOARDING_CASES.filter((item) => specialCaseIds.has(item.id));
   const anchorCase = sizeSeriesCases.find((item) => item.id === "object-10cm-forearm") ?? null;
   const anchorCaseValues = onboardingCases.find((item) => item.id === "object-10cm-forearm") ?? null;
 
@@ -400,8 +417,15 @@ export function PricingForm({
       anchorCaseValues?.min.trim() &&
       anchorCaseValues?.max.trim(),
   );
-  const phaseTwoComplete = onboardingCases.every((item) => item.min.trim() && item.max.trim());
-  const phaseThreeComplete = reviewEstimates.every((item) => Boolean(reviewCases[item.id]));
+  const phaseTwoComplete = sizeSeriesCases.every((item) => {
+    const currentCase = onboardingCases.find((entry) => entry.id === item.id);
+    return Boolean(currentCase?.min.trim() && currentCase?.max.trim());
+  });
+  const phaseThreeComplete = specialCases.every((item) => {
+    const currentCase = onboardingCases.find((entry) => entry.id === item.id);
+    return Boolean(currentCase?.min.trim() && currentCase?.max.trim());
+  });
+  const phaseFourComplete = reviewEstimates.every((item) => Boolean(reviewCases[item.id]));
 
   async function handleSave() {
     setIsSaving(true);
@@ -458,7 +482,7 @@ export function PricingForm({
         </div>
       </CardHeader>
       <CardContent className="space-y-5 pt-0">
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-4">
           {copy.phases.map((phaseItem, index) => {
             const active = phase === index + 1;
             return (
@@ -497,7 +521,7 @@ export function PricingForm({
             />
             {anchorCase && anchorCaseValues ? (
               <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5 lg:col-span-2">
-                <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
+                <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
                   <ImageSlotPreview
                     imageSlot={anchorCase.imageSlot}
                     imagePresentation={anchorCase.imagePresentation}
@@ -574,7 +598,7 @@ export function PricingForm({
 
                   return (
                     <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                      <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
+                      <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
                         <ImageSlotPreview
                           imageSlot={item.imageSlot}
                           imagePresentation={item.imagePresentation}
@@ -632,11 +656,87 @@ export function PricingForm({
         ) : null}
 
         {phase === 3 ? (
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-white">{copy.specialCasesTitle}</p>
+                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                  {copy.specialCasesDescription}
+                </p>
+              </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                {specialCases.map((item) => {
+                  const currentCase = onboardingCases.find((entry) => entry.id === item.id);
+
+                  if (!currentCase) {
+                    return null;
+                  }
+
+                  return (
+                    <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+                      <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
+                        <ImageSlotPreview
+                          imageSlot={item.imageSlot}
+                          imagePresentation={item.imagePresentation}
+                          placeholderAsset={copy.placeholderAsset}
+                          placeholderHelp={copy.placeholderHelp}
+                          variant="case"
+                        />
+                        <div className="space-y-4 md:pt-1">
+                          <div className="space-y-2">
+                            <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                              {item.metaLine[locale]}
+                            </p>
+                            <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                              {copy.caseTitle}
+                            </p>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <CurrencyInput
+                              value={currentCase.min}
+                              onChange={(value) => {
+                                setHasEditedCaseRanges(true);
+                                setOnboardingCases((current) =>
+                                  current.map((entry) => (entry.id === item.id ? { ...entry, min: value } : entry)),
+                                );
+                              }}
+                              label={copy.min}
+                              suffix={copy.currency}
+                              normalizeOnBlur
+                            />
+                            <CurrencyInput
+                              value={currentCase.max}
+                              onChange={(value) => {
+                                setHasEditedCaseRanges(true);
+                                setOnboardingCases((current) =>
+                                  current.map((entry) => (entry.id === item.id ? { ...entry, max: value } : entry)),
+                                );
+                              }}
+                              label={copy.max}
+                              suffix={copy.currency}
+                              normalizeOnBlur
+                            />
+                          </div>
+                          <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                            {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {phase === 4 ? (
           <div className="space-y-3">
             <div className="grid gap-4 xl:grid-cols-2">
             {reviewEstimates.map((item) => (
               <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                <div className="grid gap-5 md:grid-cols-[208px_minmax(0,1fr)] md:items-start">
+                <div className="grid gap-5 md:grid-cols-[224px_minmax(0,1fr)] md:items-start">
                   <ImageSlotPreview
                     imageSlot={item.imageSlot}
                     imagePresentation={item.imagePresentation}
@@ -702,16 +802,20 @@ export function PricingForm({
                 {copy.back}
               </Button>
             ) : null}
-            {phase < 3 ? (
+            {phase < 4 ? (
               <Button
                 type="button"
                 onClick={() => setPhase((current) => (current + 1) as Phase)}
-                disabled={(phase === 1 && !phaseOneComplete) || (phase === 2 && !phaseTwoComplete)}
+                disabled={
+                  (phase === 1 && !phaseOneComplete) ||
+                  (phase === 2 && !phaseTwoComplete) ||
+                  (phase === 3 && !phaseThreeComplete)
+                }
               >
                 {copy.next}
               </Button>
             ) : (
-              <Button type="button" onClick={handleSave} disabled={isSaving || !phaseThreeComplete}>
+              <Button type="button" onClick={handleSave} disabled={isSaving || !phaseFourComplete}>
                 {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : null}
                 {isSaving ? copy.saving : copy.save}
               </Button>

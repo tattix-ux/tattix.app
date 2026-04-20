@@ -4,7 +4,11 @@ import type {
   LeadPreferenceValue,
   PricingV2WorkStyleSensitivity,
 } from "@/lib/types";
-import { PRICING_V2_ONBOARDING_CASES, PRICING_V2_SIZE_SERIES_CASE_IDS } from "./onboarding-cases";
+import {
+  PRICING_V2_ONBOARDING_CASES,
+  PRICING_V2_SIZE_SERIES_CASE_IDS,
+  PRICING_V2_SPECIAL_CASE_IDS,
+} from "./onboarding-cases";
 import { midpoint, roundToFriendlyPrice } from "./helpers";
 import {
   buildCategoryAnchors,
@@ -64,17 +68,28 @@ export function buildSuggestedOnboardingCases(input: SuggestedCaseInput) {
     "object-6cm-forearm": Math.max(minimum * 1.14, single6),
     "object-10cm-forearm": singleAnchor10,
     "object-16cm-forearm": Math.max(singleAnchor10 * 1.42, single16),
+    "single-figure-12cm-upper-arm": Math.max(singleAnchor10 * 1.28, minimum * 1.56),
+    "ornamental-small-hard": Math.max(singleAnchor10 * 1.2, minimum * 1.48),
+    "medium-color-piece": Math.max(singleAnchor10 * 1.26, minimum * 1.6),
+    "small-cover-up": Math.max(singleAnchor10 * 1.14, minimum * 1.4),
   };
 
   const spreads: Record<string, number> = {
     "object-6cm-forearm": 0.09,
     "object-10cm-forearm": 0.1,
     "object-16cm-forearm": 0.12,
+    "single-figure-12cm-upper-arm": 0.12,
+    "ornamental-small-hard": 0.12,
+    "medium-color-piece": 0.13,
+    "small-cover-up": 0.15,
   };
 
   const sizeSeriesCaseIds = new Set<string>(PRICING_V2_SIZE_SERIES_CASE_IDS);
+  const specialCaseIds = new Set<string>(PRICING_V2_SPECIAL_CASE_IDS);
 
-  return PRICING_V2_ONBOARDING_CASES.filter((item) => sizeSeriesCaseIds.has(item.id)).map((item) => ({
+  return PRICING_V2_ONBOARDING_CASES.filter(
+    (item) => sizeSeriesCaseIds.has(item.id) || specialCaseIds.has(item.id),
+  ).map((item) => ({
     id: item.id,
     ...buildRoundedBand(
       centers[item.id] ?? minimum,
