@@ -340,16 +340,19 @@ function buildRelativeSingleObjectCurve(sizeCm: number, sizeProfile: PricingV2Si
 export function buildCategoryAnchors(
   onboardingCases: Array<{ id: string; min: number; max: number }>,
   minimumJobPrice: number,
+  textStartingPrice: number,
   reviewAdjustments: PricingV2ReviewAdjustments,
 ) {
   const sizeProfile = deriveSizeProfileFromOnboarding(onboardingCases, minimumJobPrice, reviewAdjustments);
   const textAnchor = Math.max(
     minimumJobPrice,
-    getCaseMidpoint(onboardingCases, "text-4cm-wrist", minimumJobPrice) * reviewAdjustments.textBias * reviewAdjustments.globalBias,
+    getCaseMidpoint(onboardingCases, "text-4cm-wrist", textStartingPrice) *
+      reviewAdjustments.textBias *
+      reviewAdjustments.globalBias,
   );
   const miniAnchor = Math.max(
     minimumJobPrice,
-    getCaseMidpoint(onboardingCases, "symbol-4cm-ankle", minimumJobPrice * 1.04) *
+    getCaseMidpoint(onboardingCases, "symbol-4cm-ankle", Math.max(minimumJobPrice * 1.04, textStartingPrice * 1.06)) *
       reviewAdjustments.miniSimpleBias *
       reviewAdjustments.globalBias,
   );

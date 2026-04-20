@@ -138,23 +138,10 @@ export const demoPricingRules: ArtistPricingRules = {
     pricingV2Profile: buildPricingV2Profile({
       minimumJobPrice: 1500,
       textStartingPrice: 1500,
-      colorImpactPreference: "medium",
-      coverUpImpactPreference: "medium",
-      workStyleSensitivity: {
-        clean_line: "medium",
-        shaded_detailed: "medium",
-        precision_symmetric: "medium",
-      },
-      leadPreference: "balanced",
       onboardingCases: [
-        { id: "text-4cm-wrist", min: 1500, max: 1800 },
-        { id: "symbol-4cm-ankle", min: 1500, max: 1900 },
         { id: "object-6cm-forearm", min: 1800, max: 2200 },
         { id: "object-10cm-forearm", min: 2200, max: 3000 },
         { id: "object-16cm-forearm", min: 3200, max: 4200 },
-        { id: "ornamental-small-hard", min: 2800, max: 3900 },
-        { id: "medium-color-piece", min: 3400, max: 4700 },
-        { id: "small-cover-up", min: 3000, max: 4200 },
       ],
       reviewCases: [],
     }),

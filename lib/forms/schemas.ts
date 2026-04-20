@@ -309,21 +309,13 @@ export const detailCalibrationSubmissionSchema = z.object({
 export const pricingOnboardingSchema = z.object({
   minimumJobPrice: z.coerce.number().gt(0),
   textStartingPrice: z.coerce.number().gt(0),
-  colorImpactPreference: z.enum(["low", "medium", "high"]),
-  coverUpImpactPreference: z.enum(["low", "medium", "high"]),
-  workStyleSensitivity: z.object({
-    clean_line: z.enum(["low", "medium", "high"]),
-    shaded_detailed: z.enum(["low", "medium", "high"]),
-    precision_symmetric: z.enum(["low", "medium", "high"]),
-  }),
-  leadPreference: z.enum(["lead_friendly", "balanced", "filtered"]),
   onboardingCases: z.array(
     z.object({
       id: z.string().min(1),
       min: z.coerce.number().gt(0),
       max: z.coerce.number().gt(0),
     }),
-  ).min(8),
+  ).min(3),
   reviewCases: z
     .array(
       z.object({

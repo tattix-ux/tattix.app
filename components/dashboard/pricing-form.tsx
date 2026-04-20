@@ -30,14 +30,14 @@ function getText(locale: PublicLocale) {
     return {
       phases: [
         {
-          navLabel: "1. Fiyat yapını tanıyalım",
-          title: "Fiyat yapını tanıyalım",
-          description: "Müşteriye gösterilecek başlangıç seviyesini senin fiyat alışkanlığına göre netleştirelim.",
+          navLabel: "1. Başlangıç noktalarını koyalım",
+          title: "Başlangıç noktalarını koyalım",
+          description: "İlk olarak temel seviyeyi yerleştirelim.",
         },
         {
-          navLabel: "2. Birkaç örnek üzerinden ilerleyelim",
-          title: "Birkaç örnek üzerinden ilerleyelim",
-          description: "Bu örnekler, başlangıç seviyeni daha doğru oturtmamıza yardımcı olur.",
+          navLabel: "2. Aynı iş büyüdüğünde ne olur?",
+          title: "Aynı iş büyüdüğünde ne olur?",
+          description: "Burada tasarım aynı. Sadece boyut farkını düşünüyoruz.",
         },
         {
           navLabel: "3. Son bir kontrol yapalım",
@@ -49,52 +49,6 @@ function getText(locale: PublicLocale) {
       textStartingPrice: "Yazı gibi çok basit işlerde çoğu zaman başladığın fiyat",
       minimumJobPriceDescription: "Çoğu küçük işte baz alınacak alt seviyeyi belirler.",
       textStartingPriceDescription: "Yazı ve benzeri basit işler buna yakın davranır.",
-      colorImpact: "Aynı dövmenin renkli halinde fiyatın çoğu zaman nasıl başlar?",
-      colorImpactDescription: "Siyah haliyle kıyaslayarak düşün.",
-      coverUpImpact: "Aynı boyutta bir iş kapatma olduğunda fiyatın çoğu zaman nasıl başlar?",
-      coverUpImpactDescription: "Standart uygulamayla kıyaslayarak düşün.",
-      workStyleTitle: "Bazı işlerde fiyatın biraz farklı davranabilir. Kısa örneklerle bunu da netleştirelim.",
-      workStyleFields: {
-        clean_line: {
-          label: "İnce çizgi, küçük sembol veya sade floral gibi işlerde fiyatın çoğu zaman nasıl kalır?",
-          description: "Daha temiz ve çizgi ağırlıklı işler için düşün.",
-        },
-        precision_symmetric: {
-          label: "Geometrik, ornamental düzen veya simetri isteyen işlerde fiyatın çoğu zaman nasıl başlar?",
-          description: "Daha dikkatli yerleşim ve kontrol isteyen işler için düşün.",
-        },
-        shaded_detailed: {
-          label: "Daha gerçekçi, daha dolu veya gölgeli işlerde fiyatın çoğu zaman nasıl başlar?",
-          description: "İşçilik süresi uzayan işler için düşün.",
-        },
-      },
-      leadPreference: "Gösterilen fiyatlar nasıl davransın?",
-      leadPreferenceDescription: "Daha çok talep mi çeksin, yoksa daha seçili mi kalsın?",
-      impactOptions: {
-        low: {
-          label: "Genelde benzer seviyede kalır",
-          description: "Çoğu işte ayrı bir başlangıç açmaz.",
-        },
-        medium: {
-          label: "Aynı işin daha pahalı tarafına geçer",
-          description: "Benzer işe göre daha yukarıdan açılır.",
-        },
-        high: {
-          label: "Çoğu zaman üst seviyeden başlar",
-          description: "Neredeyse her seferinde üst banttan açılır.",
-        },
-      },
-      coverUpOptions: {
-        medium: "Standart işten daha yukarı başlar",
-        high: "Çoğu zaman üst seviyeden başlar",
-      },
-      leadOptions: {
-        lead_friendly: "Daha çok talep gelsin",
-        balanced: "Dengeli olsun",
-        filtered: "Daha seçili talepler gelsin",
-      },
-      categoryCasesTitle: "Farklı iş türlerine bakalım",
-      categoryCasesDescription: "Bu örnekler farklı işlerin sende nereden başladığını anlamamıza yardımcı olur.",
       sizeSeriesTitle: "Aynı işin boyutu büyüdüğünde fiyatın nasıl değişiyor?",
       sizeSeriesDescription: "Burada tasarım aynı. Sadece boyut farkını düşünüyoruz.",
       caseTitle: "Bu iş için müşteriye hangi bandı göstermek istersin?",
@@ -122,14 +76,14 @@ function getText(locale: PublicLocale) {
   return {
     phases: [
       {
-        navLabel: "1. Learn your pricing style",
-        title: "Let’s learn your pricing style",
-        description: "Let’s align the starting level your clients will see with the way you usually price.",
+        navLabel: "1. Set the starting points",
+        title: "Let’s set the starting points",
+        description: "First, let’s place the baseline.",
       },
       {
-        navLabel: "2. Review a few examples",
-        title: "Let’s review a few examples",
-        description: "These examples help us set your starting level more accurately.",
+        navLabel: "2. What happens when the same piece grows?",
+        title: "What happens when the same piece grows?",
+        description: "The design stays the same here. We’re only thinking about size.",
       },
       {
         navLabel: "3. Do one final check",
@@ -141,52 +95,6 @@ function getText(locale: PublicLocale) {
     textStartingPrice: "Where do very simple text jobs usually start?",
     minimumJobPriceDescription: "This sets the lower level the system uses for most small jobs.",
     textStartingPriceDescription: "Very simple text-like jobs stay close to this.",
-    colorImpact: "When the same tattoo becomes color, where does your price usually start?",
-    colorImpactDescription: "Think about it compared to the black version.",
-    coverUpImpact: "When a piece becomes a cover-up at the same size, where does your price usually start?",
-    coverUpImpactDescription: "Compare it to the standard version of the same piece.",
-    workStyleTitle: "Some jobs can shift your pricing a bit. Let’s pin that down with short examples.",
-    workStyleFields: {
-      clean_line: {
-        label: "With fine line, small symbols, or simple floral pieces, where does your price usually stay?",
-        description: "Think of cleaner, line-led work.",
-      },
-      precision_symmetric: {
-        label: "With geometric, ornamental, or symmetry-led pieces, where does your price usually start?",
-        description: "Think of work that needs more control and careful placement.",
-      },
-      shaded_detailed: {
-        label: "With more realistic, fuller, or shaded pieces, where does your price usually start?",
-        description: "Think of work that takes longer to execute.",
-      },
-    },
-    leadPreference: "How do you want the system to behave?",
-    leadPreferenceDescription: "Should the starting band stay a bit more open or a bit more filtered?",
-    impactOptions: {
-      low: {
-        label: "Usually stays around the same level",
-        description: "It does not open a separate starting level most of the time.",
-      },
-      medium: {
-        label: "It moves into the pricier side of the same job",
-        description: "It usually opens a bit higher than the standard version.",
-      },
-      high: {
-        label: "It usually starts from the upper level",
-        description: "It opens from the upper band most of the time.",
-      },
-    },
-    coverUpOptions: {
-      medium: "It starts above the standard version",
-      high: "It usually starts from the upper level",
-    },
-    leadOptions: {
-      lead_friendly: "Bring in more leads",
-      balanced: "Keep it balanced",
-      filtered: "Filter leads a bit more",
-    },
-    categoryCasesTitle: "Let’s look at different types of work",
-    categoryCasesDescription: "These examples help us understand where different kinds of work usually start for you.",
     sizeSeriesTitle: "How does your pricing change when the same piece gets bigger?",
     sizeSeriesDescription: "The design stays the same here. We’re only thinking about size.",
     caseTitle: "What range would you want to show for this case?",
@@ -390,14 +298,6 @@ export function PricingForm({
   const currentPhaseCopy = copy.phases[phase - 1];
   const [minimumJobPrice, setMinimumJobPrice] = useState(String(initialProfile.minimumJobPrice));
   const [textStartingPrice, setTextStartingPrice] = useState(String(initialProfile.textStartingPrice));
-  const [colorImpactPreference, setColorImpactPreference] = useState(initialProfile.colorImpactPreference);
-  const [coverUpImpactPreference, setCoverUpImpactPreference] = useState(initialProfile.coverUpImpactPreference);
-  const [workStyleSensitivity, setWorkStyleSensitivity] = useState({
-    clean_line: initialProfile.workStyleSensitivity.cleanLine,
-    shaded_detailed: initialProfile.workStyleSensitivity.shadedDetailed,
-    precision_symmetric: initialProfile.workStyleSensitivity.precisionSymmetric,
-  });
-  const [leadPreference, setLeadPreference] = useState(initialProfile.leadPreference);
   const [hasEditedCaseRanges, setHasEditedCaseRanges] = useState(false);
   const [statusTone, setStatusTone] = useState<StatusTone>(null);
   const suggestedCases = useMemo(
@@ -405,18 +305,12 @@ export function PricingForm({
       buildSuggestedOnboardingCases({
         minimumJobPrice: toInputNumber(minimumJobPrice, initialProfile.minimumJobPrice),
         textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
-        colorImpactPreference,
-        coverUpImpactPreference,
-        workStyleSensitivity,
       }),
     [
-      colorImpactPreference,
-      coverUpImpactPreference,
       initialProfile.minimumJobPrice,
       initialProfile.textStartingPrice,
       minimumJobPrice,
       textStartingPrice,
-      workStyleSensitivity,
     ],
   );
   const [onboardingCases, setOnboardingCases] = useState(
@@ -454,10 +348,6 @@ export function PricingForm({
       buildPricingV2Profile({
         minimumJobPrice: toInputNumber(minimumJobPrice, initialProfile.minimumJobPrice),
         textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
-        colorImpactPreference,
-        coverUpImpactPreference,
-        workStyleSensitivity,
-        leadPreference,
         onboardingCases: onboardingCases.map((item) => ({
           id: item.id,
           min: toInputNumber(item.min),
@@ -466,16 +356,12 @@ export function PricingForm({
         reviewCases: Object.entries(reviewCases).map(([id, verdict]) => ({ id, verdict })),
       }),
     [
-      colorImpactPreference,
-      coverUpImpactPreference,
       initialProfile.minimumJobPrice,
       initialProfile.textStartingPrice,
-      leadPreference,
       minimumJobPrice,
       onboardingCases,
       reviewCases,
       textStartingPrice,
-      workStyleSensitivity,
     ],
   );
 
@@ -504,10 +390,16 @@ export function PricingForm({
     [derivedProfile, locale, pricingRules],
   );
   const sizeSeriesCaseIds = new Set<string>(PRICING_V2_SIZE_SERIES_CASE_IDS);
-  const categoryCases = PRICING_V2_ONBOARDING_CASES.filter((item) => !sizeSeriesCaseIds.has(item.id));
   const sizeSeriesCases = PRICING_V2_ONBOARDING_CASES.filter((item) => sizeSeriesCaseIds.has(item.id));
+  const anchorCase = sizeSeriesCases.find((item) => item.id === "object-10cm-forearm") ?? null;
+  const anchorCaseValues = onboardingCases.find((item) => item.id === "object-10cm-forearm") ?? null;
 
-  const phaseOneComplete = Boolean(minimumJobPrice && textStartingPrice);
+  const phaseOneComplete = Boolean(
+    minimumJobPrice &&
+      textStartingPrice &&
+      anchorCaseValues?.min.trim() &&
+      anchorCaseValues?.max.trim(),
+  );
   const phaseTwoComplete = onboardingCases.every((item) => item.min.trim() && item.max.trim());
   const phaseThreeComplete = reviewEstimates.every((item) => Boolean(reviewCases[item.id]));
 
@@ -523,10 +415,6 @@ export function PricingForm({
         body: JSON.stringify({
           minimumJobPrice: toInputNumber(minimumJobPrice, initialProfile.minimumJobPrice),
           textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
-          colorImpactPreference,
-          coverUpImpactPreference,
-          workStyleSensitivity,
-          leadPreference,
           onboardingCases: onboardingCases.map((item) => ({
             id: item.id,
             min: toInputNumber(item.min),
@@ -607,160 +495,140 @@ export function PricingForm({
               helper={copy.textStartingPriceDescription}
               normalizeOnBlur
             />
-            <Field label={copy.colorImpact} description={copy.colorImpactDescription} className="lg:col-span-2">
-              <ChoiceGroup
-                value={colorImpactPreference}
-                onChange={setColorImpactPreference}
-                options={[
-                  { value: "low", label: copy.impactOptions.low.label },
-                  { value: "medium", label: copy.impactOptions.medium.label },
-                  { value: "high", label: copy.impactOptions.high.label },
-                ]}
-              />
-            </Field>
-            <Field label={copy.coverUpImpact} description={copy.coverUpImpactDescription} className="lg:col-span-2">
-              <ChoiceGroup
-                value={coverUpImpactPreference}
-                onChange={setCoverUpImpactPreference}
-                options={[
-                  { value: "medium", label: copy.coverUpOptions.medium },
-                  { value: "high", label: copy.coverUpOptions.high },
-                ]}
-                columnsClassName="sm:grid-cols-2"
-              />
-            </Field>
-            <div className="space-y-3 rounded-[24px] border border-white/8 bg-white/[0.02] p-4 lg:col-span-2">
-              <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
-                {copy.workStyleTitle}
-              </p>
-              <div className="space-y-4">
-                {(
-                  [
-                    ["clean_line", copy.workStyleFields.clean_line],
-                    ["precision_symmetric", copy.workStyleFields.precision_symmetric],
-                    ["shaded_detailed", copy.workStyleFields.shaded_detailed],
-                  ] as const
-                ).map(([key, field]) => (
-                  <Field key={key} label={field.label} description={field.description}>
-                    <ChoiceGroup
-                      value={workStyleSensitivity[key]}
-                      onChange={(value) =>
-                        setWorkStyleSensitivity((current) => ({
-                          ...current,
-                          [key]: value,
-                        }))
-                      }
-                      options={[
-                        { value: "low", label: copy.impactOptions.low.label },
-                        { value: "medium", label: copy.impactOptions.medium.label },
-                        { value: "high", label: copy.impactOptions.high.label },
-                      ]}
-                    />
-                  </Field>
-                ))}
+            {anchorCase && anchorCaseValues ? (
+              <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5 lg:col-span-2">
+                <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
+                  <ImageSlotPreview
+                    imageSlot={anchorCase.imageSlot}
+                    imagePresentation={anchorCase.imagePresentation}
+                    placeholderAsset={copy.placeholderAsset}
+                    placeholderHelp={copy.placeholderHelp}
+                    variant="case"
+                  />
+                  <div className="space-y-4 md:pt-1">
+                    <div className="space-y-2">
+                      <p className="text-base font-semibold text-white">{anchorCase.title[locale]}</p>
+                      <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                        {anchorCase.metaLine[locale]}
+                      </p>
+                      <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                        {copy.caseTitle}
+                      </p>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <CurrencyInput
+                        value={anchorCaseValues.min}
+                        onChange={(value) => {
+                          setHasEditedCaseRanges(true);
+                          setOnboardingCases((current) =>
+                            current.map((entry) =>
+                              entry.id === anchorCase.id ? { ...entry, min: value } : entry,
+                            ),
+                          );
+                        }}
+                        label={copy.min}
+                        suffix={copy.currency}
+                        normalizeOnBlur
+                      />
+                      <CurrencyInput
+                        value={anchorCaseValues.max}
+                        onChange={(value) => {
+                          setHasEditedCaseRanges(true);
+                          setOnboardingCases((current) =>
+                            current.map((entry) =>
+                              entry.id === anchorCase.id ? { ...entry, max: value } : entry,
+                            ),
+                          );
+                        }}
+                        label={copy.max}
+                        suffix={copy.currency}
+                        normalizeOnBlur
+                      />
+                    </div>
+                    <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                      {`${toDisplayCurrency(toInputNumber(anchorCaseValues.min), locale)} – ${toDisplayCurrency(toInputNumber(anchorCaseValues.max), locale)}`}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <Field label={copy.leadPreference} description={copy.leadPreferenceDescription} className="lg:col-span-2">
-              <ChoiceGroup
-                value={leadPreference}
-                onChange={setLeadPreference}
-                options={[
-                  { value: "lead_friendly", label: copy.leadOptions.lead_friendly },
-                  { value: "balanced", label: copy.leadOptions.balanced },
-                  { value: "filtered", label: copy.leadOptions.filtered },
-                ]}
-              />
-            </Field>
+            ) : null}
           </div>
         ) : null}
 
         {phase === 2 ? (
           <div className="space-y-6">
-            {[
-              {
-                title: copy.categoryCasesTitle,
-                description: copy.categoryCasesDescription,
-                items: categoryCases,
-              },
-              {
-                title: copy.sizeSeriesTitle,
-                description: copy.sizeSeriesDescription,
-                items: sizeSeriesCases,
-              },
-            ].map((section) => (
-              <div key={section.title} className="space-y-3">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-white">{section.title}</p>
-                  <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
-                    {section.description}
-                  </p>
-                </div>
-                <div className="grid gap-4 xl:grid-cols-2">
-                  {section.items.map((item) => {
-                    const currentCase = onboardingCases.find((entry) => entry.id === item.id);
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-white">{copy.sizeSeriesTitle}</p>
+                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                  {copy.sizeSeriesDescription}
+                </p>
+              </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                {sizeSeriesCases.map((item) => {
+                  const currentCase = onboardingCases.find((entry) => entry.id === item.id);
 
-                    if (!currentCase) {
-                      return null;
-                    }
+                  if (!currentCase) {
+                    return null;
+                  }
 
-                    return (
-                      <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                        <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
-                          <ImageSlotPreview
-                            imageSlot={item.imageSlot}
-                            imagePresentation={item.imagePresentation}
-                            placeholderAsset={copy.placeholderAsset}
-                            placeholderHelp={copy.placeholderHelp}
-                            variant="case"
-                          />
-                          <div className="space-y-4 md:pt-1">
-                            <div className="space-y-2">
-                              <p className="text-base font-semibold text-white">{item.title[locale]}</p>
-                              <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
-                                {item.metaLine[locale]}
-                              </p>
-                              <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
-                                {copy.caseTitle}
-                              </p>
-                            </div>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              <CurrencyInput
-                                value={currentCase.min}
-                                onChange={(value) => {
-                                  setHasEditedCaseRanges(true);
-                                  setOnboardingCases((current) =>
-                                    current.map((entry) => (entry.id === item.id ? { ...entry, min: value } : entry)),
-                                  );
-                                }}
-                                label={copy.min}
-                                suffix={copy.currency}
-                                normalizeOnBlur
-                              />
-                              <CurrencyInput
-                                value={currentCase.max}
-                                onChange={(value) => {
-                                  setHasEditedCaseRanges(true);
-                                  setOnboardingCases((current) =>
-                                    current.map((entry) => (entry.id === item.id ? { ...entry, max: value } : entry)),
-                                  );
-                                }}
-                                label={copy.max}
-                                suffix={copy.currency}
-                                normalizeOnBlur
-                              />
-                            </div>
-                            <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
-                              {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
+                  return (
+                    <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+                      <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
+                        <ImageSlotPreview
+                          imageSlot={item.imageSlot}
+                          imagePresentation={item.imagePresentation}
+                          placeholderAsset={copy.placeholderAsset}
+                          placeholderHelp={copy.placeholderHelp}
+                          variant="case"
+                        />
+                        <div className="space-y-4 md:pt-1">
+                          <div className="space-y-2">
+                            <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                              {item.metaLine[locale]}
+                            </p>
+                            <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                              {copy.caseTitle}
                             </p>
                           </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <CurrencyInput
+                              value={currentCase.min}
+                              onChange={(value) => {
+                                setHasEditedCaseRanges(true);
+                                setOnboardingCases((current) =>
+                                  current.map((entry) => (entry.id === item.id ? { ...entry, min: value } : entry)),
+                                );
+                              }}
+                              label={copy.min}
+                              suffix={copy.currency}
+                              normalizeOnBlur
+                            />
+                            <CurrencyInput
+                              value={currentCase.max}
+                              onChange={(value) => {
+                                setHasEditedCaseRanges(true);
+                                setOnboardingCases((current) =>
+                                  current.map((entry) => (entry.id === item.id ? { ...entry, max: value } : entry)),
+                                );
+                              }}
+                              label={copy.max}
+                              suffix={copy.currency}
+                              normalizeOnBlur
+                            />
+                          </div>
+                          <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                            {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
+                          </p>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
             </div>
+          </div>
         ) : null}
 
         {phase === 3 ? (
