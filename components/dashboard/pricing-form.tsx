@@ -230,10 +230,6 @@ function toDisplayCurrency(value: number, locale: PublicLocale) {
   return formatCurrencyValue(value, locale, "TRY");
 }
 
-function getPublicImageSrc(path: string) {
-  return `/${encodeURI(path).replace(/%2F/g, "/")}`;
-}
-
 function ImageSlotPreview({
   imageSlot,
   placeholderAsset,
@@ -262,7 +258,7 @@ function ImageSlotPreview({
   return (
     <div className="h-[124px] overflow-hidden rounded-[20px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)]">
       <img
-        src={getPublicImageSrc(imageSlot)}
+        src={imageSlot}
         alt=""
         className="h-full w-full object-cover"
         onError={() => setHasError(true)}
