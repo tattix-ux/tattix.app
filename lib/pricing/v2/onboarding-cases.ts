@@ -9,6 +9,12 @@ import reviewSingleObjectImage from "@/sample-tattoos/final-control/Tekobje.png"
 import reviewMultiElementImage from "@/sample-tattoos/final-control/pricing-multi-element.png";
 import reviewSmallCoverUpImage from "@/sample-tattoos/final-control/pricing-small-cover-up.png";
 import reviewColorPieceImage from "@/sample-tattoos/final-control/cherry-blossom.png";
+import broadAreaBackImage from "@/sample-tattoos/broad-area/broad-area-back-wide.png";
+import broadAreaCalfImage from "@/sample-tattoos/broad-area/broad-area-calf-large.png";
+import broadAreaChestImage from "@/sample-tattoos/broad-area/broad-area-chest-wide.png";
+import broadAreaForearmImage from "@/sample-tattoos/broad-area/broad-area-forearm-large.png";
+import broadAreaFullSleeveImage from "@/sample-tattoos/broad-area/broad-area-full-sleeve.png";
+import broadAreaHalfSleeveImage from "@/sample-tattoos/broad-area/broad-area-half-sleeve.png";
 import ornamentalImage from "@/sample-tattoos/pricing-ornamental-small.png";
 import colorPieceImage from "@/sample-tattoos/pricing-color-piece.png";
 import coverUpImage from "@/sample-tattoos/pricing-cover-up.png";
@@ -53,6 +59,7 @@ export type PricingLargeAreaCase = {
   id: string;
   imageSlot: string;
   imagePresentation?: PricingCaseImagePresentation;
+  cardLayoutClassName?: string;
   title: Record<PublicLocale, string>;
   metaLine: Record<PublicLocale, string>;
 };
@@ -61,6 +68,7 @@ export type PricingWideAreaCase = {
   id: string;
   imageSlot: string;
   imagePresentation?: PricingCaseImagePresentation;
+  cardLayoutClassName?: string;
   title: Record<PublicLocale, string>;
   metaLine: Record<PublicLocale, string>;
 };
@@ -69,6 +77,7 @@ export type PricingCaseImagePresentation = {
   frameClassName?: string;
   imageClassName?: string;
   fit?: "cover" | "contain";
+  sizeClassName?: string;
 };
 
 const CALIBRATION_IMAGE_SLOTS = {
@@ -89,6 +98,15 @@ const FINAL_CONTROL_IMAGE_SLOTS = {
   colorPiece: reviewColorPieceImage.src,
 } as const;
 
+const BROAD_AREA_IMAGE_SLOTS = {
+  forearmLargeCoverage: broadAreaForearmImage.src,
+  calfLargeCoverage: broadAreaCalfImage.src,
+  chestLargeCoverage: broadAreaChestImage.src,
+  halfSleeve: broadAreaHalfSleeveImage.src,
+  fullSleeve: broadAreaFullSleeveImage.src,
+  backLargeCoverage: broadAreaBackImage.src,
+} as const;
+
 const IMAGE_PRESENTATIONS: Record<
   | "text"
   | "symbol"
@@ -98,7 +116,10 @@ const IMAGE_PRESENTATIONS: Record<
   | "ornamental"
   | "colorPiece"
   | "coverUp"
-  | "advancedRealism",
+  | "advancedRealism"
+  | "broadAreaPortrait"
+  | "broadAreaLandscape"
+  | "broadAreaSquare",
   PricingCaseImagePresentation
 > = {
   text: {
@@ -145,6 +166,24 @@ const IMAGE_PRESENTATIONS: Record<
     fit: "contain",
     frameClassName: "bg-white/[0.985] px-1 py-1",
     imageClassName: "scale-[1.28] object-center",
+  },
+  broadAreaPortrait: {
+    fit: "contain",
+    sizeClassName: "h-[284px] md:h-[344px]",
+    frameClassName: "bg-white/[0.985] px-2 py-1.5",
+    imageClassName: "scale-[1.2] object-center",
+  },
+  broadAreaLandscape: {
+    fit: "contain",
+    sizeClassName: "h-[228px] md:h-[272px]",
+    frameClassName: "bg-white/[0.985] px-1.5 py-1.5",
+    imageClassName: "scale-[1.16] object-center",
+  },
+  broadAreaSquare: {
+    fit: "contain",
+    sizeClassName: "h-[260px] md:h-[312px]",
+    frameClassName: "bg-white/[0.985] px-2.5 py-2.5",
+    imageClassName: "scale-[1.24] object-center",
   },
 };
 
@@ -443,7 +482,9 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
 export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
   {
     id: "forearm-large-coverage",
-    imageSlot: "",
+    imageSlot: BROAD_AREA_IMAGE_SLOTS.forearmLargeCoverage,
+    imagePresentation: IMAGE_PRESENTATIONS.broadAreaPortrait,
+    cardLayoutClassName: "md:grid-cols-[240px_minmax(0,1fr)]",
     title: { tr: "Ön kolun büyük kısmını kaplayan iş", en: "Piece covering most of the forearm" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -452,7 +493,9 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
   },
   {
     id: "calf-large-coverage",
-    imageSlot: "",
+    imageSlot: BROAD_AREA_IMAGE_SLOTS.calfLargeCoverage,
+    imagePresentation: IMAGE_PRESENTATIONS.broadAreaPortrait,
+    cardLayoutClassName: "md:grid-cols-[240px_minmax(0,1fr)]",
     title: { tr: "Baldırın büyük kısmını kaplayan iş", en: "Piece covering most of the calf" },
     metaLine: {
       tr: "Sadece siyah · daha düzenli, simetrik",
@@ -461,7 +504,9 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
   },
   {
     id: "chest-large-coverage",
-    imageSlot: "",
+    imageSlot: BROAD_AREA_IMAGE_SLOTS.chestLargeCoverage,
+    imagePresentation: IMAGE_PRESENTATIONS.broadAreaLandscape,
+    cardLayoutClassName: "md:grid-cols-[320px_minmax(0,1fr)]",
     title: { tr: "Göğüste geniş alan kaplayan iş", en: "Wide coverage piece on the chest" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -473,7 +518,9 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
 export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
   {
     id: "half-sleeve",
-    imageSlot: "",
+    imageSlot: BROAD_AREA_IMAGE_SLOTS.halfSleeve,
+    imagePresentation: IMAGE_PRESENTATIONS.broadAreaLandscape,
+    cardLayoutClassName: "md:grid-cols-[320px_minmax(0,1fr)]",
     title: { tr: "Kolun yarısını kaplayan iş", en: "Piece covering half the arm" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -482,7 +529,9 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
   },
   {
     id: "full-sleeve",
-    imageSlot: "",
+    imageSlot: BROAD_AREA_IMAGE_SLOTS.fullSleeve,
+    imagePresentation: IMAGE_PRESENTATIONS.broadAreaSquare,
+    cardLayoutClassName: "md:grid-cols-[272px_minmax(0,1fr)]",
     title: { tr: "Tüm kolu kaplayan iş", en: "Piece covering the full arm" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",
@@ -491,7 +540,9 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
   },
   {
     id: "back-large-coverage",
-    imageSlot: "",
+    imageSlot: BROAD_AREA_IMAGE_SLOTS.backLargeCoverage,
+    imagePresentation: IMAGE_PRESENTATIONS.broadAreaLandscape,
+    cardLayoutClassName: "md:grid-cols-[320px_minmax(0,1fr)]",
     title: { tr: "Sırtta geniş alan kaplayan iş", en: "Large coverage piece on the back" },
     metaLine: {
       tr: "Siyah-gri · daha dolu, gölgeli",

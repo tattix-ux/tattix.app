@@ -450,6 +450,7 @@ function ImageSlotPreview({
     fit?: "cover" | "contain";
     frameClassName?: string;
     imageClassName?: string;
+    sizeClassName?: string;
   };
   placeholderAsset: string;
   placeholderHelp: string;
@@ -460,11 +461,12 @@ function ImageSlotPreview({
     imagePresentation?.frameClassName ?? "bg-white/[0.97] px-4 py-4";
   const fitClassName = imagePresentation?.fit === "cover" ? "object-cover" : "object-contain";
   const sizeClassName =
-    variant === "case"
+    imagePresentation?.sizeClassName ??
+    (variant === "case"
       ? "h-[248px] md:h-[292px]"
       : variant === "showcase"
         ? "h-[300px] md:h-[360px]"
-        : "h-[224px] md:h-[248px]";
+        : "h-[224px] md:h-[248px]");
 
   if (!imageSlot || hasError) {
     return (
@@ -1189,7 +1191,12 @@ export function PricingForm({
 
                       return (
                         <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                          <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
+                          <div
+                            className={cn(
+                              "grid gap-5 md:items-start",
+                              item.cardLayoutClassName ?? "md:grid-cols-[252px_minmax(0,1fr)]",
+                            )}
+                          >
                             <ImageSlotPreview
                               imageSlot={item.imageSlot}
                               imagePresentation={item.imagePresentation}
@@ -1255,7 +1262,12 @@ export function PricingForm({
 
                       return (
                         <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                          <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
+                          <div
+                            className={cn(
+                              "grid gap-5 md:items-start",
+                              item.cardLayoutClassName ?? "md:grid-cols-[252px_minmax(0,1fr)]",
+                            )}
+                          >
                             <ImageSlotPreview
                               imageSlot={item.imageSlot}
                               imagePresentation={item.imagePresentation}
