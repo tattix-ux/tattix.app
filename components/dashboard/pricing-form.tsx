@@ -47,7 +47,7 @@ function getText(locale: PublicLocale) {
       ],
       minimumJobPrice: "En küçük işlerde genelde başladığın fiyat",
       textStartingPrice: "Yazı gibi çok basit işlerde çoğu zaman başladığın fiyat",
-      minimumJobPriceDescription: "Sistemin çoğu küçük işte baz alacağı alt seviyeyi belirler.",
+      minimumJobPriceDescription: "Çoğu küçük işte baz alınacak alt seviyeyi belirler.",
       textStartingPriceDescription: "Yazı ve benzeri basit işler buna yakın davranır.",
       colorImpact: "Aynı dövmenin renkli halinde fiyatın çoğu zaman nasıl başlar?",
       colorImpactDescription: "Siyah haliyle kıyaslayarak düşün.",
@@ -68,8 +68,8 @@ function getText(locale: PublicLocale) {
           description: "İşçilik süresi uzayan işler için düşün.",
         },
       },
-      leadPreference: "Sistemin nasıl çalışmasını istersin?",
-      leadPreferenceDescription: "Başlangıç bandı biraz daha açık mı, biraz daha filtreli mi olsun?",
+      leadPreference: "Gösterilen fiyatlar nasıl davransın?",
+      leadPreferenceDescription: "Daha çok talep mi çeksin, yoksa daha seçili mi kalsın?",
       impactOptions: {
         low: {
           label: "Genelde benzer seviyede kalır",
@@ -89,9 +89,9 @@ function getText(locale: PublicLocale) {
         high: "Çoğu zaman üst seviyeden başlar",
       },
       leadOptions: {
-        lead_friendly: "Daha fazla lead gelsin",
+        lead_friendly: "Daha çok talep gelsin",
         balanced: "Dengeli olsun",
-        filtered: "Daha filtreli lead gelsin",
+        filtered: "Daha seçili talepler gelsin",
       },
       categoryCasesTitle: "Farklı iş türlerine bakalım",
       categoryCasesDescription: "Bu örnekler farklı işlerin sende nereden başladığını anlamamıza yardımcı olur.",
