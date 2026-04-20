@@ -89,8 +89,8 @@ export function DashboardNav({
             className={cn(
               "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3 lg:py-3 lg:text-sm lg:text-left",
               active
-                ? "border-[var(--accent)]/38 bg-[linear-gradient(180deg,rgba(247,177,93,0.18),rgba(247,177,93,0.1))] text-white shadow-[0_16px_28px_rgba(0,0,0,0.18)]"
-                : "border-white/7 bg-[color:color-mix(in_srgb,var(--background)_72%,white_6%)] text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_8%)] hover:border-white/12 hover:bg-[color:color-mix(in_srgb,var(--background)_64%,white_9%)] hover:text-white",
+                ? "border-[rgba(247,177,93,0.34)] bg-[linear-gradient(180deg,rgba(247,177,93,0.22),rgba(126,78,46,0.22))] text-white shadow-[0_18px_30px_rgba(0,0,0,0.24)]"
+                : "border-[rgba(233,199,158,0.08)] bg-[linear-gradient(180deg,rgba(255,243,227,0.035),rgba(255,243,227,0.015))] text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_6%)] hover:border-[rgba(233,199,158,0.15)] hover:bg-[linear-gradient(180deg,rgba(255,243,227,0.05),rgba(255,243,227,0.025))] hover:text-white",
             )}
           >
             <Icon className="size-4" />

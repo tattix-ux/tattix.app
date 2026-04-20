@@ -14,9 +14,9 @@ export function AppShell({
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(247,177,93,0.12),_transparent_28%),radial-gradient(circle_at_top,_rgba(255,255,255,0.03),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(101,72,48,0.22),_transparent_36%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),transparent_18%,transparent_80%,rgba(255,255,255,0.018))]" />
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-[22rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01)_35%,transparent)] opacity-70" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(247,177,93,0.16),_transparent_26%),radial-gradient(circle_at_top,_rgba(255,236,214,0.035),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(122,78,50,0.28),_transparent_38%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,244,228,0.03),transparent_18%,transparent_78%,rgba(247,177,93,0.03))]" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-[22rem] bg-[linear-gradient(180deg,rgba(255,242,225,0.03),rgba(255,242,225,0.012)_35%,transparent)] opacity-80" />
       <div className="relative w-full min-w-0 max-w-full overflow-visible">{children}</div>
     </div>
   );
