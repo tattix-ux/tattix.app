@@ -68,7 +68,7 @@ export default async function DashboardLayout({
             <div className="mt-6 grid items-start gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-9">
               <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[230px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="rounded-[28px] border border-[rgba(233,199,158,0.14)] bg-[linear-gradient(180deg,rgba(43,30,24,0.98),rgba(24,17,15,0.99))] p-4 shadow-[0_26px_60px_rgba(0,0,0,0.3)]">
+                <div className="rounded-[28px] border border-[rgba(214,173,126,0.1)] bg-[linear-gradient(180deg,rgba(30,24,24,0.98),rgba(18,15,17,1))] p-4 shadow-[0_26px_60px_rgba(0,0,0,0.34)]">
                   <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                     {isTurkish ? "Panel" : "Dashboard"}
                   </p>

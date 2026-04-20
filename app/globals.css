@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #171110;
+  --background: #131113;
   --foreground: #f7efe4;
-  --foreground-muted: #b7a693;
-  --card: rgba(255, 245, 232, 0.055);
-  --border: rgba(233, 199, 158, 0.14);
+  --foreground-muted: #ab9b8b;
+  --card: rgba(255, 245, 232, 0.04);
+  --border: rgba(214, 173, 126, 0.1);
   --accent: #f7b15d;
-  --accent-soft: #f0c58f;
+  --accent-soft: #d8ab76;
   --accent-foreground: #140d05;
   --ring: #f7b15d;
 }
@@ -78,9 +78,9 @@ a {
 
 .surface-border {
   box-shadow:
-    inset 0 1px 0 rgba(255, 245, 232, 0.06),
-    0 20px 44px rgba(0, 0, 0, 0.3),
-    0 2px 0 rgba(255, 245, 232, 0.025);
+    inset 0 1px 0 rgba(255, 245, 232, 0.04),
+    0 20px 44px rgba(0, 0, 0, 0.34),
+    0 2px 0 rgba(255, 245, 232, 0.015);
 }
 
 .text-balance {
