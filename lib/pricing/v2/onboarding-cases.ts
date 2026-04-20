@@ -41,7 +41,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/text-4cm-wrist.png",
+    imageSlot: "sample-tattoos/4 cm tek kelime yazı.png",
     title: { tr: "4 cm tek kelime yazı", en: "4 cm single word" },
     metaLine: {
       tr: "Bilek · sadece siyah · sade font",
@@ -55,7 +55,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/symbol-4cm-ankle.png",
+    imageSlot: "sample-tattoos/4 cm küçük sembol.png",
     title: { tr: "4 cm küçük sembol", en: "4 cm small symbol" },
     metaLine: {
       tr: "Ayak bileği · sadece siyah · sade çizgisel",
@@ -69,7 +69,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "easy",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/object-6cm-forearm.png",
+    imageSlot: "sample-tattoos/tek obje.png",
     title: { tr: "6 cm tek obje", en: "6 cm single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
@@ -83,7 +83,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "easy",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/object-10cm-forearm.png",
+    imageSlot: "sample-tattoos/tek obje.png",
     title: { tr: "10 cm tek obje", en: "10 cm single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
@@ -97,7 +97,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "easy",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/object-16cm-forearm.png",
+    imageSlot: "sample-tattoos/tek obje.png",
     title: { tr: "16 cm tek obje", en: "16 cm single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
@@ -111,7 +111,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "hard",
     colorMode: "black-only",
     workStyle: "precision_symmetric",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/ornamental-small-hard.png",
+    imageSlot: "sample-tattoos/Küçük ornamental parça.png",
     title: { tr: "Küçük ornamental parça", en: "Small ornamental piece" },
     metaLine: {
       tr: "Sternum · sadece siyah · simetri ve hassasiyet önemli",
@@ -125,7 +125,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "easy",
     colorMode: "full-color",
     workStyle: "shaded_detailed",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/medium-color-piece.png",
+    imageSlot: "sample-tattoos/10–12 cm renkli parça.png",
     title: { tr: "10–12 cm renkli parça", en: "10–12 cm color piece" },
     metaLine: {
       tr: "Üst kol · renkli · orta yoğunluk",
@@ -139,7 +139,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     workStyle: "shaded_detailed",
-    imageSlot: "sample-tattoos/pricing-v2/onboarding/small-cover-up.png",
+    imageSlot: "sample-tattoos/Küçük cover-up örneği.png",
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · mevcut küçük dövmeyi kapatma",
@@ -156,7 +156,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/review/review-text.png",
+    imageSlot: "sample-tattoos/4 cm tek kelime yazı.png",
     title: { tr: "Kısa yazı", en: "Short text" },
     metaLine: {
       tr: "Bilek · sadece siyah · sade font",
@@ -170,7 +170,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementBucket: "easy",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/review/review-mini.png",
+    imageSlot: "sample-tattoos/4 cm küçük sembol.png",
     title: { tr: "Minimal sembol", en: "Minimal symbol" },
     metaLine: {
       tr: "Ayak bileği · sadece siyah · sade çizgisel",
@@ -184,7 +184,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementBucket: "easy",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: "sample-tattoos/pricing-v2/review/review-single-large.png",
+    imageSlot: "sample-tattoos/12 cm tek figür.png",
     title: { tr: "16 cm tek obje", en: "16 cm single object" },
     metaLine: {
       tr: "Ön kol · sadece siyah · sade çizgisel",
@@ -198,7 +198,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     workStyle: "shaded_detailed",
-    imageSlot: "sample-tattoos/pricing-v2/review/review-multi.png",
+    imageSlot: "sample-tattoos/15 cm çok öğeli tasarım.png",
     title: { tr: "Birden fazla öğeli iş", en: "Multi-element piece" },
     metaLine: {
       tr: "Baldır · sadece siyah · çok öğeli",
@@ -212,7 +212,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     workStyle: "shaded_detailed",
-    imageSlot: "sample-tattoos/pricing-v2/review/review-cover.png",
+    imageSlot: "sample-tattoos/Küçük cover-up örneği.png",
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · kapatma",
