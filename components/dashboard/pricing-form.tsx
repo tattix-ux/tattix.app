@@ -28,7 +28,7 @@ import {
   buildSuggestedWideAreaCases,
   getArtistPricingV2Profile,
 } from "@/lib/pricing/v2/profile";
-import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
+import type { ArtistPricingRules } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Verdict = "looks-right" | "slightly-low" | "slightly-high";
@@ -339,11 +339,9 @@ function ImageSlotPreview({
 
 export function PricingForm({
   pricingRules,
-  styles: _styles,
   locale = "en",
 }: {
   pricingRules: ArtistPricingRules;
-  styles: ArtistStyleOption[];
   locale?: PublicLocale;
 }) {
   const router = useRouter();

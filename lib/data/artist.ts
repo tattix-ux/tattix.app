@@ -22,7 +22,7 @@ import type {
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-function mapArtistProfile(row: Record<string, unknown>): ArtistProfile {
+export function mapArtistProfile(row: Record<string, unknown>): ArtistProfile {
   return {
     id: String(row.id),
     userId: row.user_id ? String(row.user_id) : null,
@@ -41,7 +41,7 @@ function mapArtistProfile(row: Record<string, unknown>): ArtistProfile {
   };
 }
 
-function mapFunnelSettings(row: Record<string, unknown>, artistId: string): ArtistFunnelSettings {
+export function mapFunnelSettings(row: Record<string, unknown>, artistId: string): ArtistFunnelSettings {
   return {
     artistId,
     introEyebrow: String(row.intro_eyebrow ?? ""),
@@ -53,7 +53,7 @@ function mapFunnelSettings(row: Record<string, unknown>, artistId: string): Arti
   };
 }
 
-function mapBookingCities(
+export function mapBookingCities(
   rows: Array<Record<string, unknown>>,
   dateRows: Array<Record<string, unknown>>,
 ): ArtistBookingCity[] {
@@ -74,7 +74,7 @@ function mapBookingCities(
     .sort((left, right) => left.cityName.localeCompare(right.cityName, "tr"));
 }
 
-function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption {
+export function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption {
   return {
     id: String(row.id),
     artistId: String(row.artist_id),
@@ -90,7 +90,7 @@ function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption {
   };
 }
 
-function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedDesign {
+export function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedDesign {
   const rawCategory = String(row.category);
   const legacyReferenceSize =
     row.reference_size_cm === null || row.reference_size_cm === undefined
@@ -160,7 +160,7 @@ function buildDefaultCalibrationReferenceSlots(): PricingCalibrationReferenceSlo
   return CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot }));
 }
 
-function mapPricingRules(row: Record<string, unknown>, artistId: string): ArtistPricingRules {
+export function mapPricingRules(row: Record<string, unknown>, artistId: string): ArtistPricingRules {
   const minimumSessionPrice = Number(row.minimum_session_price ?? 0);
   const sizeBaseRanges = row.size_base_ranges as ArtistPricingRules["sizeBaseRanges"];
   const anchorPrice =
@@ -380,7 +380,7 @@ function mapPricingRules(row: Record<string, unknown>, artistId: string): Artist
   };
 }
 
-function mapPageTheme(row: Record<string, unknown>, artistId: string): ArtistPageTheme {
+export function mapPageTheme(row: Record<string, unknown>, artistId: string): ArtistPageTheme {
   const defaults = buildDefaultArtistTheme();
 
   return {
@@ -420,7 +420,7 @@ function mapPageTheme(row: Record<string, unknown>, artistId: string): ArtistPag
   };
 }
 
-function mapSavedTheme(row: Record<string, unknown>, artistId: string): ArtistSavedTheme {
+export function mapSavedTheme(row: Record<string, unknown>, artistId: string): ArtistSavedTheme {
   return {
     id: String(row.id),
     artistId,

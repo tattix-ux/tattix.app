@@ -21,11 +21,15 @@ import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import { resolveArtistTheme } from "@/lib/theme";
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { ArtistPageData, ArtistPageTheme, ArtistSavedTheme } from "@/lib/types";
+import type { ArtistFunnelSettings, ArtistPageTheme, ArtistProfile, ArtistSavedTheme } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
+type CustomizePageArtist = {
+  profile: ArtistProfile;
+  funnelSettings: ArtistFunnelSettings;
+};
 
 const colorSwatches = ["#f7b15d", "#ffffff", "#54f0dd", "#dc5c5c", "#b899ff", "#88cfa5"] as const;
 const backgroundSolidSwatches = ["#09090b", "#0e131a", "#131116", "#16100e"] as const;
@@ -163,7 +167,7 @@ function ThemeCardPreview({
   theme,
   variant = "card",
 }: {
-  artist: ArtistPageData;
+  artist: CustomizePageArtist;
   theme: ArtistPageTheme;
   variant?: "card" | "panel";
 }) {
@@ -404,7 +408,7 @@ function ThemePresetCard({
   description: string;
   active: boolean;
   onSelect: () => void;
-  artist: ArtistPageData;
+  artist: CustomizePageArtist;
   theme: ArtistPageTheme;
   selectedLabel: string;
 }) {
@@ -442,7 +446,7 @@ export function CustomizePageForm({
   demoMode,
   locale = "en",
 }: {
-  artist: ArtistPageData;
+  artist: CustomizePageArtist;
   theme: ArtistPageTheme;
   savedThemes: ArtistSavedTheme[];
   demoMode: boolean;

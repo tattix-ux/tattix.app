@@ -2,13 +2,13 @@ import { CustomizePageForm } from "@/components/dashboard/customize-page-form";
 import { ProFeatureGate } from "@/components/dashboard/pro-feature-gate";
 import { SectionHeading } from "@/components/shared/shell";
 import { hasProAccess } from "@/lib/access";
-import { getDashboardCoreData } from "@/lib/data/dashboard";
+import { getDashboardCustomizeData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function DashboardCustomizePage() {
   const session = await getSupabaseSession();
-  const data = await getDashboardCoreData(session?.user.id ?? null);
-  const isTurkish = data.funnelSettings.defaultLanguage === "tr";
+  const data = await getDashboardCustomizeData(session?.user.id ?? null);
+  const isTurkish = data.locale === "tr";
 
   return (
     <div className="space-y-6">
@@ -27,7 +27,10 @@ export default async function DashboardCustomizePage() {
       />
       {hasProAccess(data.profile) ? (
         <CustomizePageForm
-          artist={data}
+          artist={{
+            profile: data.profile,
+            funnelSettings: data.funnelSettings,
+          }}
           theme={data.pageTheme}
           savedThemes={data.savedThemes}
           demoMode={data.demoMode}

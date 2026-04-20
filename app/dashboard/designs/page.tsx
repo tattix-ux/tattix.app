@@ -2,13 +2,13 @@ import { FeaturedDesignsForm } from "@/components/dashboard/featured-designs-for
 import { ProFeatureGate } from "@/components/dashboard/pro-feature-gate";
 import { SectionHeading } from "@/components/shared/shell";
 import { hasProAccess } from "@/lib/access";
-import { getDashboardCoreData } from "@/lib/data/dashboard";
+import { getDashboardDesignsData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function DashboardDesignsPage() {
   const session = await getSupabaseSession();
-  const data = await getDashboardCoreData(session?.user.id ?? null);
-  const isTurkish = data.funnelSettings.defaultLanguage === "tr";
+  const data = await getDashboardDesignsData(session?.user.id ?? null);
+  const isTurkish = data.locale === "tr";
 
   return (
     <div className="space-y-6">

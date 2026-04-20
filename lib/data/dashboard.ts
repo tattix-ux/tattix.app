@@ -8,7 +8,17 @@ import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
 import { buildPricingV2Profile } from "@/lib/pricing/v2/profile";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getArtistPageDataById } from "@/lib/data/artist";
+import {
+  getArtistPageDataById,
+  mapArtistProfile,
+  mapBookingCities,
+  mapFeaturedDesign,
+  mapFunnelSettings,
+  mapPageTheme,
+  mapPricingRules,
+  mapSavedTheme,
+  mapStyleOption,
+} from "@/lib/data/artist";
 import { slugify } from "@/lib/utils";
 
 function deriveLeadStatus(row: Record<string, unknown>): LeadStatus {
@@ -113,14 +123,9 @@ export type DashboardCoreData = ArtistPageData & {
   demoMode: boolean;
 };
 
-export const getDashboardCoreData = cache(async function getDashboardCoreData(
-  userId: string | null,
-): Promise<DashboardCoreData> {
+async function resolveDashboardArtistId(userId: string | null) {
   if (!isSupabaseConfigured() || !userId) {
-    return {
-      ...demoArtistPageData,
-      demoMode: true,
-    };
+    return null;
   }
 
   const supabase = await createSupabaseServerClient();
@@ -130,28 +135,35 @@ export const getDashboardCoreData = cache(async function getDashboardCoreData(
     .eq("user_id", userId)
     .maybeSingle();
 
-  const artist = existingArtist?.id
-    ? existingArtist
-    : await (async () => {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+  if (existingArtist?.id) {
+    return String(existingArtist.id);
+  }
 
-        if (!user) {
-          return null;
-        }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-        return ensureArtistForUser(user);
-      })();
+  if (!user) {
+    return null;
+  }
 
-  if (!artist) {
+  const artist = await ensureArtistForUser(user);
+  return artist?.id ? String(artist.id) : null;
+}
+
+export const getDashboardCoreData = cache(async function getDashboardCoreData(
+  userId: string | null,
+): Promise<DashboardCoreData> {
+  const artistId = await resolveDashboardArtistId(userId);
+
+  if (!artistId) {
     return {
       ...demoArtistPageData,
       demoMode: true,
     };
   }
 
-  const pageData = await getArtistPageDataById(String(artist.id));
+  const pageData = await getArtistPageDataById(artistId);
 
   if (!pageData) {
     return {
@@ -194,11 +206,178 @@ export const getDashboardData = cache(async function getDashboardData(
 export const getDashboardShellData = cache(async function getDashboardShellData(
   userId: string | null,
 ): Promise<Pick<DashboardCoreData, "profile" | "funnelSettings" | "demoMode">> {
-  const coreData = await getDashboardCoreData(userId);
+  const artistId = await resolveDashboardArtistId(userId);
+
+  if (!artistId) {
+    return {
+      profile: demoArtistPageData.profile,
+      funnelSettings: demoArtistPageData.funnelSettings,
+      demoMode: true,
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [artistRow, funnelSettingsRow] = await Promise.all([
+    supabase.from("artists").select("*").eq("id", artistId).maybeSingle(),
+    supabase.from("artist_funnel_settings").select("*").eq("artist_id", artistId).maybeSingle(),
+  ]);
+
   return {
-    profile: coreData.profile,
-    funnelSettings: coreData.funnelSettings,
-    demoMode: coreData.demoMode,
+    profile: mapArtistProfile((artistRow.data ?? {}) as Record<string, unknown>),
+    funnelSettings: {
+      ...mapFunnelSettings((funnelSettingsRow.data ?? {}) as Record<string, unknown>, artistId),
+      bookingCities: [],
+    },
+    demoMode: false,
+  };
+});
+
+export const getDashboardPricingData = cache(async function getDashboardPricingData(
+  userId: string | null,
+) {
+  const artistId = await resolveDashboardArtistId(userId);
+
+  if (!artistId) {
+    return {
+      pricingRules: demoArtistPageData.pricingRules,
+      locale: demoArtistPageData.funnelSettings.defaultLanguage,
+      demoMode: true,
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [funnelSettingsRow, pricingRulesRow] = await Promise.all([
+    supabase.from("artist_funnel_settings").select("*").eq("artist_id", artistId).maybeSingle(),
+    supabase.from("artist_pricing_rules").select("*").eq("artist_id", artistId).maybeSingle(),
+  ]);
+
+  return {
+    pricingRules: mapPricingRules((pricingRulesRow.data ?? {}) as Record<string, unknown>, artistId),
+    locale: mapFunnelSettings((funnelSettingsRow.data ?? {}) as Record<string, unknown>, artistId)
+      .defaultLanguage,
+    demoMode: false,
+  };
+});
+
+export const getDashboardDesignsData = cache(async function getDashboardDesignsData(
+  userId: string | null,
+) {
+  const artistId = await resolveDashboardArtistId(userId);
+
+  if (!artistId) {
+    return {
+      profile: demoArtistPageData.profile,
+      locale: demoArtistPageData.funnelSettings.defaultLanguage,
+      featuredDesigns: demoArtistPageData.featuredDesigns,
+      demoMode: true,
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [artistRow, funnelSettingsRow, designRows] = await Promise.all([
+    supabase.from("artists").select("*").eq("id", artistId).maybeSingle(),
+    supabase.from("artist_funnel_settings").select("*").eq("artist_id", artistId).maybeSingle(),
+    supabase.from("artist_featured_designs").select("*").eq("artist_id", artistId).order("sort_order"),
+  ]);
+
+  return {
+    profile: mapArtistProfile((artistRow.data ?? {}) as Record<string, unknown>),
+    locale: mapFunnelSettings((funnelSettingsRow.data ?? {}) as Record<string, unknown>, artistId)
+      .defaultLanguage,
+    featuredDesigns: (designRows.data ?? []).map((row) => mapFeaturedDesign(row as Record<string, unknown>)),
+    demoMode: false,
+  };
+});
+
+export const getDashboardCustomizeData = cache(async function getDashboardCustomizeData(
+  userId: string | null,
+) {
+  const artistId = await resolveDashboardArtistId(userId);
+
+  if (!artistId) {
+    return {
+      profile: demoArtistPageData.profile,
+      funnelSettings: demoArtistPageData.funnelSettings,
+      pageTheme: demoArtistPageData.pageTheme,
+      savedThemes: demoArtistPageData.savedThemes,
+      locale: demoArtistPageData.funnelSettings.defaultLanguage,
+      demoMode: true,
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [artistRow, funnelSettingsRow, pageThemeRow, savedThemesRows] = await Promise.all([
+    supabase.from("artists").select("*").eq("id", artistId).maybeSingle(),
+    supabase.from("artist_funnel_settings").select("*").eq("artist_id", artistId).maybeSingle(),
+    supabase.from("artist_page_themes").select("*").eq("artist_id", artistId).maybeSingle(),
+    supabase.from("artist_saved_themes").select("*").eq("artist_id", artistId).order("created_at", { ascending: true }),
+  ]);
+
+  return {
+    profile: mapArtistProfile((artistRow.data ?? {}) as Record<string, unknown>),
+    funnelSettings: {
+      ...mapFunnelSettings((funnelSettingsRow.data ?? {}) as Record<string, unknown>, artistId),
+      bookingCities: [],
+    },
+    pageTheme: mapPageTheme((pageThemeRow.data ?? {}) as Record<string, unknown>, artistId),
+    savedThemes: (savedThemesRows.data ?? []).map((row) =>
+      mapSavedTheme(row as Record<string, unknown>, artistId),
+    ),
+    locale: mapFunnelSettings((funnelSettingsRow.data ?? {}) as Record<string, unknown>, artistId)
+      .defaultLanguage,
+    demoMode: false,
+  };
+});
+
+export const getDashboardProfileData = cache(async function getDashboardProfileData(
+  userId: string | null,
+) {
+  const artistId = await resolveDashboardArtistId(userId);
+
+  if (!artistId) {
+    return {
+      profile: demoArtistPageData.profile,
+      funnelSettings: demoArtistPageData.funnelSettings,
+      pageTheme: demoArtistPageData.pageTheme,
+      styleOptions: demoArtistPageData.styleOptions,
+      demoMode: true,
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [artistRow, funnelSettingsRow, styleRows, pageThemeRow, bookingLocationRows] = await Promise.all([
+    supabase.from("artists").select("*").eq("id", artistId).maybeSingle(),
+    supabase.from("artist_funnel_settings").select("*").eq("artist_id", artistId).maybeSingle(),
+    supabase.from("artist_style_options").select("*").eq("artist_id", artistId),
+    supabase.from("artist_page_themes").select("*").eq("artist_id", artistId).maybeSingle(),
+    supabase.from("artist_booking_locations").select("*").eq("artist_id", artistId).order("city_name"),
+  ]);
+
+  const bookingLocationIds =
+    (bookingLocationRows.data ?? []).map((row) => String((row as Record<string, unknown>).id));
+  const bookingDateRows =
+    bookingLocationIds.length > 0
+      ? await supabase
+          .from("artist_booking_location_dates")
+          .select("*")
+          .in("artist_location_id", bookingLocationIds)
+          .order("available_date")
+      : { data: [], error: null };
+
+  return {
+    profile: mapArtistProfile((artistRow.data ?? {}) as Record<string, unknown>),
+    funnelSettings: {
+      ...mapFunnelSettings((funnelSettingsRow.data ?? {}) as Record<string, unknown>, artistId),
+      bookingCities: mapBookingCities(
+        (bookingLocationRows.data ?? []) as Array<Record<string, unknown>>,
+        (bookingDateRows.data ?? []) as Array<Record<string, unknown>>,
+      ),
+    },
+    pageTheme: mapPageTheme((pageThemeRow.data ?? {}) as Record<string, unknown>, artistId),
+    styleOptions: ((styleRows.data ?? []) as Array<Record<string, unknown>>).map((row) =>
+      mapStyleOption(row),
+    ),
+    demoMode: false,
   };
 });
 

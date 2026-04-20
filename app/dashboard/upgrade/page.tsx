@@ -5,7 +5,7 @@ import { ProRequestActions } from "@/components/dashboard/pro-request-actions";
 import { SectionHeading } from "@/components/shared/shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDashboardCoreData } from "@/lib/data/dashboard";
+import { getDashboardShellData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 function buildMailto({
@@ -38,7 +38,7 @@ function buildMailto({
 
 export default async function DashboardUpgradePage() {
   const session = await getSupabaseSession();
-  const data = await getDashboardCoreData(session?.user.id ?? null);
+  const data = await getDashboardShellData(session?.user.id ?? null);
   const isTurkish = data.funnelSettings.defaultLanguage === "tr";
   const requestedAt = new Intl.DateTimeFormat(isTurkish ? "tr-TR" : "en-GB", {
     dateStyle: "medium",

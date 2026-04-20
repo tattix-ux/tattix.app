@@ -1,12 +1,12 @@
 import { PricingForm } from "@/components/dashboard/pricing-form";
 import { SectionHeading } from "@/components/shared/shell";
-import { getDashboardCoreData } from "@/lib/data/dashboard";
+import { getDashboardPricingData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function DashboardPricingPage() {
   const session = await getSupabaseSession();
-  const data = await getDashboardCoreData(session?.user.id ?? null);
-  const isTurkish = data.funnelSettings.defaultLanguage === "tr";
+  const data = await getDashboardPricingData(session?.user.id ?? null);
+  const isTurkish = data.locale === "tr";
 
   return (
     <div className="space-y-6">
@@ -25,7 +25,6 @@ export default async function DashboardPricingPage() {
       />
       <PricingForm
         pricingRules={data.pricingRules}
-        styles={data.styleOptions}
         locale={isTurkish ? "tr" : "en"}
       />
     </div>
