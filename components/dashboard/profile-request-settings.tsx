@@ -100,13 +100,15 @@ export function ProfileRequestSettings({
   const copy =
     locale === "tr"
       ? {
-          bookingTitle: "Şehir & randevu",
+          bookingTitle: "Randevu aldığın şehirler ve uygun tarihler",
+          bookingDescription: "Müşteri hangi şehirleri seçebileceğini ve hangi günlerin açık olduğunu burada görür.",
           stylesTitle: "Çalıştığın stiller",
           cityName: "Şehir",
           cityPlaceholder: "Adana",
           addCity: "Şehir ekle",
           noCities: "Henüz şehir eklenmedi.",
           dates: "Tarihler",
+          datesDescription: "Bu şehirde açık olduğun günleri seç.",
           addDate: "Tarih seç",
           noDates: "Tarih seçilmedi.",
           remove: "Kaldır",
@@ -132,13 +134,15 @@ export function ProfileRequestSettings({
           deleteConfirm: "Bu stili silmek istediğine emin misin?",
         }
       : {
-          bookingTitle: "Cities & booking",
+          bookingTitle: "Cities and available booking dates",
+          bookingDescription: "Clients see which cities they can choose and which days are open.",
           stylesTitle: "Styles you work in",
           cityName: "City",
           cityPlaceholder: "Adana",
           addCity: "Add city",
           noCities: "No cities added yet.",
           dates: "Dates",
+          datesDescription: "Choose the dates when you are available in this city.",
           addDate: "Pick dates",
           noDates: "No dates selected.",
           remove: "Remove",
@@ -556,7 +560,10 @@ export function ProfileRequestSettings({
     <div className="space-y-4">
       <details className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
-          <p className="text-base font-medium text-white">{copy.bookingTitle}</p>
+          <div className="min-w-0">
+            <p className="text-base font-medium text-white">{copy.bookingTitle}</p>
+            <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.bookingDescription}</p>
+          </div>
           <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
         </summary>
         <div className="space-y-4 border-t border-white/8 px-5 py-5">
@@ -607,7 +614,10 @@ export function ProfileRequestSettings({
                     </div>
 
                     <div className="mt-4 space-y-3">
-                      <p className="text-sm font-medium text-white">{copy.dates}</p>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-white">{copy.dates}</p>
+                        <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
+                      </div>
                       <DateCalendarPopover
                         locale={locale}
                         mode="multiple"
@@ -640,310 +650,6 @@ export function ProfileRequestSettings({
               })}
             </div>
           )}
-        </div>
-      </details>
-
-      <details className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
-          <p className="text-base font-medium text-white">{copy.stylesTitle}</p>
-          <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
-        </summary>
-        <div className="space-y-5 border-t border-white/8 px-5 py-5">
-          <div className="flex flex-wrap items-center gap-2">
-            {builtInStyles.map((style) => {
-              const active = selectedStyles.includes(style.styleKey);
-
-              return (
-                <div
-                  key={style.id}
-                  className={cn(
-                    "flex items-center gap-1 rounded-full border pr-1.5 transition",
-                    active
-                      ? "border-[var(--accent)]/35 bg-[var(--accent)]/14 text-white"
-                      : "border-white/8 bg-white/[0.03] text-[var(--foreground-muted)] hover:border-white/14",
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleBuiltInStyle(style.styleKey)}
-                    className={cn(
-                      "rounded-full px-3 py-2 text-sm font-medium transition",
-                      active ? "text-white" : "text-[var(--foreground-muted)] hover:text-white",
-                    )}
-                  >
-                    {style.styleKey === "realism" ? "Realistic" : style.label}
-                  </button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-label={copy.remove}
-                    className="h-7 w-7 rounded-full px-0"
-                    onClick={() => {
-                      form.setValue(
-                        "removedBuiltInStyles",
-                        Array.from(new Set([...removedBuiltInStyles, style.styleKey])),
-                        { shouldValidate: true, shouldDirty: true },
-                      );
-                      form.setValue(
-                        "enabledStyles",
-                        selectedStyles.filter((item) => item !== style.styleKey),
-                        { shouldValidate: true, shouldDirty: true },
-                      );
-                    }}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
-              );
-            })}
-
-            <Button type="button" size="sm" variant="outline" onClick={resetStylesToDefault}>
-              <RotateCcw className="size-4" />
-              {copy.resetStyles}
-            </Button>
-          </div>
-
-          {activeBuiltInStyleCards.length > 0 ? (
-            <div className="grid gap-3 lg:grid-cols-2">
-              {activeBuiltInStyleCards.map((style) => {
-                const styleIndex = builtInStyleCards.findIndex((item) => item.styleKey === style.styleKey);
-                const hasImage = Boolean(style.imageUrl);
-                const isUploading = uploadingStyleKey === `builtIn:${style.styleKey}`;
-
-                return (
-                  <div
-                    key={style.styleKey}
-                    className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold text-white">
-                        {style.styleKey === "realism" ? "Realistic" : style.label}
-                      </p>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleBuiltInStyle(style.styleKey)}
-                      >
-                        {copy.remove}
-                      </Button>
-                    </div>
-
-                    <div className="mt-4 grid gap-4 sm:grid-cols-[108px_minmax(0,1fr)] sm:items-start">
-                      <div className="overflow-hidden rounded-[18px] border border-white/8 bg-black/25 p-2">
-                        <div className="flex h-[108px] items-center justify-center rounded-[14px] bg-white/[0.04]">
-                          {hasImage ? (
-                            <img
-                              src={style.imageUrl ?? ""}
-                              alt={style.label}
-                              className="h-full w-full rounded-[10px] object-cover"
-                            />
-                          ) : (
-                            <div className="flex flex-col items-center gap-2 px-3 text-center text-[var(--foreground-muted)]">
-                              <ImagePlus className="size-5" />
-                              <span className="text-xs leading-5">{copy.noStyleImage}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap gap-2">
-                          <label
-                            className={cn(
-                              "inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 text-xs font-medium text-white transition hover:bg-white/12",
-                              isUploading && "pointer-events-none opacity-50",
-                            )}
-                          >
-                            <Upload className="size-4" />
-                            {hasImage ? copy.replaceImage : copy.uploadImage}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="sr-only"
-                              onChange={(event) => {
-                                const file = event.target.files?.[0];
-                                if (file) {
-                                  void handleStyleImageUpload({ kind: "builtIn", styleKey: style.styleKey }, file);
-                                }
-                                event.currentTarget.value = "";
-                              }}
-                            />
-                          </label>
-                          {hasImage ? (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => void removeStyleImage({ kind: "builtIn", styleKey: style.styleKey })}
-                            >
-                              <X className="size-4" />
-                              {copy.removeImage}
-                            </Button>
-                          ) : null}
-                        </div>
-
-                        {!hasImage ? (
-                          <p className="text-xs text-amber-200">{copy.styleImageRequired}</p>
-                        ) : null}
-
-                        <Textarea
-                          value={style.description ?? ""}
-                          onChange={(event) =>
-                            form.setValue(`builtInStyles.${styleIndex}.description`, event.target.value, {
-                              shouldDirty: true,
-                              shouldValidate: true,
-                            })
-                          }
-                          placeholder={copy.styleDescriptionPlaceholder}
-                          className="min-h-[92px]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : null}
-
-          <div className="space-y-3 rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Input
-                value={newStyleLabel}
-                onChange={(event) => setNewStyleLabel(event.target.value)}
-                placeholder={copy.newStylePlaceholder}
-              />
-              <Button type="button" onClick={addCustomStyle}>
-                <Plus className="size-4" />
-                {copy.addStyle}
-              </Button>
-            </div>
-
-            {customStyleCards.length === 0 ? (
-              <p className="text-sm text-[var(--foreground-muted)]">{copy.noCustomStyles}</p>
-            ) : (
-              <div className="grid gap-3 lg:grid-cols-2">
-                {customStyleCards.map((style, index) => {
-                  const styleIdentifier = style.id ?? style.styleKey ?? `custom-style-${index}`;
-                  const hasImage = Boolean(style.imageUrl);
-                  const isUploading = uploadingStyleKey === `custom:${styleIdentifier}`;
-
-                  return (
-                    <div
-                      key={styleIdentifier}
-                      className={cn(
-                        "rounded-[22px] border p-4 transition",
-                        style.enabled
-                          ? "border-[var(--accent)]/18 bg-white/[0.04]"
-                          : "border-white/8 bg-white/[0.02]",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <p className="text-sm font-semibold text-white">{style.label}</p>
-                          <Badge variant={style.enabled ? "accent" : "muted"}>
-                            {style.enabled ? copy.enabled : copy.hidden}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleCustomStyle(styleIdentifier)}
-                          >
-                            {style.enabled ? copy.remove : copy.enabled}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => void removeCustomStyle(styleIdentifier)}
-                          >
-                            <Trash2 className="size-4" />
-                            {copy.remove}
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid gap-4 sm:grid-cols-[108px_minmax(0,1fr)] sm:items-start">
-                        <div className="overflow-hidden rounded-[18px] border border-white/8 bg-black/25 p-2">
-                          <div className="flex h-[108px] items-center justify-center rounded-[14px] bg-white/[0.04]">
-                            {hasImage ? (
-                              <img
-                                src={style.imageUrl ?? ""}
-                                alt={style.label}
-                                className="h-full w-full rounded-[10px] object-cover"
-                              />
-                            ) : (
-                              <div className="flex flex-col items-center gap-2 px-3 text-center text-[var(--foreground-muted)]">
-                                <ImagePlus className="size-5" />
-                                <span className="text-xs leading-5">{copy.noStyleImage}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          <div className="flex flex-wrap gap-2">
-                            <label
-                              className={cn(
-                                "inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 text-xs font-medium text-white transition hover:bg-white/12",
-                                isUploading && "pointer-events-none opacity-50",
-                              )}
-                            >
-                              <Upload className="size-4" />
-                              {hasImage ? copy.replaceImage : copy.uploadImage}
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="sr-only"
-                                onChange={(event) => {
-                                  const file = event.target.files?.[0];
-                                  if (file) {
-                                    void handleStyleImageUpload({ kind: "custom", styleKey: styleIdentifier }, file);
-                                  }
-                                  event.currentTarget.value = "";
-                                }}
-                              />
-                            </label>
-                            {hasImage ? (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => void removeStyleImage({ kind: "custom", styleKey: styleIdentifier })}
-                              >
-                                <X className="size-4" />
-                                {copy.removeImage}
-                              </Button>
-                            ) : null}
-                          </div>
-
-                          {!hasImage ? (
-                            <p className="text-xs text-amber-200">{copy.styleImageRequired}</p>
-                          ) : null}
-
-                          <Textarea
-                            value={style.description ?? ""}
-                            onChange={(event) =>
-                              form.setValue(`customStyles.${index}.description`, event.target.value, {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              })
-                            }
-                            placeholder={copy.styleDescriptionPlaceholder}
-                            className="min-h-[92px]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </div>
       </details>
 
