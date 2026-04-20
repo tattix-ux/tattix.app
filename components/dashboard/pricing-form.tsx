@@ -283,6 +283,43 @@ function toDisplayCurrency(value: number, locale: PublicLocale) {
   return formatCurrencyValue(value, locale, "TRY");
 }
 
+function areRangeAnswersEqual(
+  current: Array<{ id: string; min: string; max: string }>,
+  next: Array<{ id: string; min: string; max: string }>,
+) {
+  if (current.length !== next.length) {
+    return false;
+  }
+
+  return current.every((item, index) => {
+    const candidate = next[index];
+    return (
+      candidate &&
+      item.id === candidate.id &&
+      item.min === candidate.min &&
+      item.max === candidate.max
+    );
+  });
+}
+
+function areStartingAnswersEqual(
+  current: Array<{ id: string; startingFrom: string }>,
+  next: Array<{ id: string; startingFrom: string }>,
+) {
+  if (current.length !== next.length) {
+    return false;
+  }
+
+  return current.every((item, index) => {
+    const candidate = next[index];
+    return (
+      candidate &&
+      item.id === candidate.id &&
+      item.startingFrom === candidate.startingFrom
+    );
+  });
+}
+
 function ImageSlotPreview({
   imageSlot,
   imagePresentation,
@@ -433,25 +470,29 @@ export function PricingForm({
       return;
     }
 
-    setOnboardingCases(
-      suggestedCases.map((item) => ({
-        id: item.id,
-        min: String(item.min),
-        max: String(item.max),
-      })),
+    const nextOnboardingCases = suggestedCases.map((item) => ({
+      id: item.id,
+      min: String(item.min),
+      max: String(item.max),
+    }));
+    const nextLargeAreaCases = suggestedLargeAreaCases.map((item) => ({
+      id: item.id,
+      min: String(item.min),
+      max: String(item.max),
+    }));
+    const nextWideAreaCases = suggestedWideAreaCases.map((item) => ({
+      id: item.id,
+      startingFrom: String(item.startingFrom),
+    }));
+
+    setOnboardingCases((current) =>
+      areRangeAnswersEqual(current, nextOnboardingCases) ? current : nextOnboardingCases,
     );
-    setLargeAreaCases(
-      suggestedLargeAreaCases.map((item) => ({
-        id: item.id,
-        min: String(item.min),
-        max: String(item.max),
-      })),
+    setLargeAreaCases((current) =>
+      areRangeAnswersEqual(current, nextLargeAreaCases) ? current : nextLargeAreaCases,
     );
-    setWideAreaCases(
-      suggestedWideAreaCases.map((item) => ({
-        id: item.id,
-        startingFrom: String(item.startingFrom),
-      })),
+    setWideAreaCases((current) =>
+      areStartingAnswersEqual(current, nextWideAreaCases) ? current : nextWideAreaCases,
     );
   }, [hasEditedCaseRanges, suggestedCases, suggestedLargeAreaCases, suggestedWideAreaCases]);
 
