@@ -16,13 +16,13 @@ export default async function DashboardDesignsPage() {
         eyebrow={isTurkish ? "Tasarımlar" : "Designs"}
         title={
           isTurkish
-            ? "Müşteriye göstereceğin tasarımları yönet."
-            : "Manage the designs clients can see."
+            ? "Hazır tasarımlarını ekle ve düzenle."
+            : "Add and manage your ready-made designs."
         }
         description={
           isTurkish
-            ? "Buraya eklediğin tasarımlar, müşteri seçim ekranında gösterilir ve doğrudan talep oluşturmaya yardımcı olur."
-            : "Designs added here appear in the client selection flow and support direct requests."
+            ? "Buradaki tasarımlar profil sayfanda görünür. Müşteri beğendiği tasarımdan talep gönderebilir."
+            : "These designs appear on your profile page. Clients can send a request from the design they like."
         }
       />
       {hasProAccess(data.profile) ? (
