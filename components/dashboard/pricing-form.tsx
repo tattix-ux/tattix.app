@@ -344,7 +344,7 @@ function ImageSlotPreview({
   const sizeClassName =
     variant === "case"
       ? "h-[224px] md:h-[252px]"
-      : "h-[176px] md:h-[196px]";
+      : "h-[208px] md:h-[224px]";
 
   if (!imageSlot || hasError) {
     return (
@@ -768,7 +768,7 @@ export function PricingForm({
             <div className="grid gap-4 xl:grid-cols-2">
             {reviewEstimates.map((item) => (
               <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                <div className="grid gap-5 md:grid-cols-[188px_minmax(0,1fr)] md:items-start">
+                <div className="grid gap-5 md:grid-cols-[208px_minmax(0,1fr)] md:items-start">
                   <ImageSlotPreview
                     imageSlot={item.imageSlot}
                     imagePresentation={item.imagePresentation}
@@ -777,12 +777,15 @@ export function PricingForm({
                     variant="review"
                   />
                   <div className="space-y-4 md:pt-1">
-                    <div className="space-y-1.5">
-                      <p className="text-[15px] font-semibold text-white">{item.title[locale]}</p>
+                    <div className="space-y-2">
+                      <p className="text-base font-semibold text-white">{item.title[locale]}</p>
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent-soft)]">
+                        {locale === "tr" ? `Boyut · ${item.referenceSizeCm} cm` : `Size · ${item.referenceSizeCm} cm`}
+                      </p>
                       <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                         {item.metaLine[locale]}
                       </p>
-                      <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                      <p className="pt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
                         {copy.estimate}
                       </p>
                       <p className="text-2xl font-semibold tracking-tight text-white">{item.estimate.displayLabel}</p>

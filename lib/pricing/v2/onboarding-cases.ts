@@ -235,7 +235,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "clean_line",
     imageSlot: textWordImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.text,
-    title: { tr: "Kısa yazı", en: "Short text" },
+    title: { tr: "5 cm kısa yazı", en: "5 cm short text" },
     metaLine: {
       tr: "Bilek · sadece siyah · sade font",
       en: "Wrist · black only · simple font",
@@ -250,7 +250,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "clean_line",
     imageSlot: smallSymbolImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.symbol,
-    title: { tr: "Minimal sembol", en: "Minimal symbol" },
+    title: { tr: "5 cm minimal sembol", en: "5 cm minimal symbol" },
     metaLine: {
       tr: "Ayak bileği · sadece siyah · sade çizgisel",
       en: "Ankle · black only · simple linework",
@@ -280,10 +280,10 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: multiElementImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.multiElement,
-    title: { tr: "Birden fazla öğeli iş", en: "Multi-element piece" },
+    title: { tr: "16 cm çok öğeli iş", en: "16 cm multi-element piece" },
     metaLine: {
-      tr: "Baldır · sadece siyah · çok öğeli",
-      en: "Calf · black only · multi-element",
+      tr: "Baldır · sadece siyah · çok öğeli kompozisyon",
+      en: "Calf · black only · multi-element composition",
     },
   },
   {
@@ -295,10 +295,10 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: coverUpImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
-    title: { tr: "Küçük cover-up", en: "Small cover-up" },
+    title: { tr: "8 cm küçük cover-up", en: "8 cm small cover-up" },
     metaLine: {
-      tr: "Ön kol · siyah ağırlıklı · kapatma",
-      en: "Forearm · mostly black · cover-up",
+      tr: "Ön kol · siyah ağırlıklı · küçük dövme kapatma",
+      en: "Forearm · mostly black · covering a small tattoo",
     },
   },
 ] as const;
