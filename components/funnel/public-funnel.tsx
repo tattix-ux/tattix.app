@@ -975,12 +975,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 locale={locale}
                 designs={activeDesigns}
                 selectedDesignId={draft.selectedDesignId}
+                selectedDesignCategory={draft.selectedDesignCategory}
                 pricingSource={draft.pricingSource}
                 areaScope={draft.areaScope}
                 onPricingSourceChange={(value) => {
                   setBookingError(null);
                   setField("pricingSource", value);
                   setField("selectedDesignId", "");
+                  setField("selectedDesignCategory", "");
                   if (value === "custom_request") {
                     resetCustomPathState("");
                     setField("areaScope", "");
@@ -1000,12 +1002,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 }}
                 onAreaScopeChange={(value) => {
                   setField("pricingSource", "custom_request");
+                  setField("selectedDesignCategory", "");
                   setField("areaScope", value);
                   resetCustomPathState(value);
                   if (value === "unsure") {
                     setField("bodyAreaGroup", "");
                     setField("bodyAreaDetail", "");
                   }
+                }}
+                onDesignCategoryChange={(value) => {
+                  setField("pricingSource", "featured_design");
+                  setField("selectedDesignCategory", value);
+                  setField("selectedDesignId", "");
+                  setField("colorMode", "");
                 }}
                 onDesignSelect={(designId) => {
                   if (!designId) {
@@ -1017,6 +1026,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   const design = activeDesigns.find((item) => item.id === designId) ?? null;
                   setField("pricingSource", "featured_design");
                   setField("areaScope", "");
+                  setField("selectedDesignCategory", design?.category ?? draft.selectedDesignCategory);
                   setField("selectedDesignId", designId);
                   setField("requestType", "");
                   setField("largeAreaCoverage", "");

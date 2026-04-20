@@ -482,6 +482,7 @@ export type LeadStatus = "new" | "contacted" | "sold" | "lost";
 export type SubmissionDraft = {
   pricingSource: PricingSourceValue | "";
   areaScope: AreaScopeValue | "";
+  selectedDesignCategory: string | "";
   largeAreaCoverage: LargeAreaCoverageValue | "";
   wideAreaTarget: WideAreaTargetValue | "";
   requestType: RequestTypeValue | "";

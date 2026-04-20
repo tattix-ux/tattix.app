@@ -1,30 +1,36 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
+import { useMemo, useState } from "react";
 
-import type { PublicLocale } from "@/lib/i18n/public";
+import { getFeaturedCategoryLabel, type PublicLocale } from "@/lib/i18n/public";
 import type { AreaScopeValue, ArtistFeaturedDesign, PricingSourceValue } from "@/lib/types";
 
 export function IntentSelectionStep({
   locale,
   designs,
   selectedDesignId,
+  selectedDesignCategory,
   pricingSource,
   areaScope,
   onPricingSourceChange,
   onAreaScopeChange,
+  onDesignCategoryChange,
   onDesignSelect,
 }: {
   locale: PublicLocale;
   designs: ArtistFeaturedDesign[];
   selectedDesignId: string;
+  selectedDesignCategory: string;
   pricingSource: PricingSourceValue | "";
   areaScope: AreaScopeValue | "";
   onPricingSourceChange: (value: PricingSourceValue | "") => void;
   onAreaScopeChange: (value: AreaScopeValue | "") => void;
+  onDesignCategoryChange: (value: string) => void;
   onDesignSelect: (designId: string) => void;
 }) {
   const hasDesigns = designs.length > 0;
+  const [previewDesign, setPreviewDesign] = useState<ArtistFeaturedDesign | null>(null);
   const areaScopeOptions: AreaScopeValue[] = [
     "standard_piece",
     "large_single_area",
@@ -59,6 +65,22 @@ export function IntentSelectionStep({
           wide_area: "Like half an arm, full arm, back, chest, or most of a leg",
           unsure: "Choose this if you are not sure yet",
         };
+  const designCategories = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          designs.map((design) => [design.category, design]),
+        ).values(),
+      ).map((design) => design.category),
+    [designs],
+  );
+  const filteredDesigns = useMemo(() => {
+    if (!selectedDesignCategory) {
+      return [];
+    }
+
+    return designs.filter((design) => design.category === selectedDesignCategory);
+  }, [designs, selectedDesignCategory]);
 
   return (
     <div className="space-y-4">
@@ -164,20 +186,64 @@ export function IntentSelectionStep({
         <div className="space-y-3">
           <div>
             <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
-              {locale === "tr" ? "Hangi tasarımı yaptırmak istiyorsun?" : "Which design do you want to get?"}
+              {locale === "tr" ? "Önce bir kategori seç" : "Choose a category first"}
             </p>
             <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-              {locale === "tr" ? "Sana en yakın olan tasarımı seç." : "Choose the design that feels closest."}
+              {locale === "tr"
+                ? "Dövmecinin eklediği kategorilerden birini seç. Sonra ilgili tasarımları görebilirsin."
+                : "Pick one of the artist’s categories. Then you can browse the matching designs."}
             </p>
           </div>
-          <div className="grid gap-3">
-            {designs.map((design) => {
-              const active = selectedDesignId === design.id;
+          <div className="grid gap-3 sm:grid-cols-2">
+            {designCategories.map((category) => {
+              const active = selectedDesignCategory === category;
               return (
                 <button
-                  key={design.id}
+                  key={category}
                   type="button"
-                  onClick={() => onDesignSelect(active ? "" : design.id)}
+                  onClick={() => onDesignCategoryChange(active ? "" : category)}
+                  className="rounded-[22px] border px-4 py-4 text-left transition"
+                  style={{
+                    borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
+                    backgroundColor: active
+                      ? "var(--artist-selected-surface)"
+                      : "var(--artist-section-surface)",
+                    color: "var(--artist-card-text)",
+                    borderRadius: "var(--artist-field-radius, 22px)",
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium">{getFeaturedCategoryLabel(category, locale)}</p>
+                    {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                  </div>
+                  <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                    {locale === "tr"
+                      ? "Bu kategorideki tasarımları göster"
+                      : "Show the designs in this category"}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedDesignCategory ? (
+            <div className="space-y-3">
+              <div>
+                <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
+                  {locale === "tr" ? "Bu kategorideki tasarımlar" : "Designs in this category"}
+                </p>
+                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                  {locale === "tr"
+                    ? "Tasarıma tıklayarak tam boy görebilir, alttan seçebilirsin."
+                    : "Tap a design to see it full size, then select it below."}
+                </p>
+              </div>
+              <div className="grid gap-3">
+                {filteredDesigns.map((design) => {
+              const active = selectedDesignId === design.id;
+              return (
+                <div
+                  key={design.id}
                   className="overflow-hidden rounded-[24px] border p-4 text-left transition"
                   style={{
                     borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
@@ -189,7 +255,11 @@ export function IntentSelectionStep({
                   }}
                 >
                   <div className="grid gap-4 sm:grid-cols-[128px_minmax(0,1fr)]">
-                    <div className="h-28 overflow-hidden rounded-[20px] border border-white/10 bg-black/20">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDesign(design)}
+                      className="h-28 overflow-hidden rounded-[20px] border border-white/10 bg-black/20 transition hover:border-white/20"
+                    >
                       {design.imageUrl ? (
                         <img
                           src={design.imageUrl}
@@ -201,7 +271,7 @@ export function IntentSelectionStep({
                           {locale === "tr" ? "Görsel" : "Preview"}
                         </div>
                       )}
-                    </div>
+                    </button>
                     <div className="min-w-0">
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-base font-medium">{design.title}</p>
@@ -212,11 +282,114 @@ export function IntentSelectionStep({
                           {design.shortDescription}
                         </p>
                       ) : null}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewDesign(design)}
+                          className="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition"
+                          style={{
+                            borderColor: "var(--artist-border)",
+                            color: "var(--artist-card-muted)",
+                            backgroundColor: "var(--artist-chip-surface)",
+                          }}
+                        >
+                          {locale === "tr" ? "Tam boy gör" : "View full size"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDesignSelect(active ? "" : design.id)}
+                          className="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition"
+                          style={{
+                            borderColor: active ? "var(--artist-selected-border)" : "var(--artist-border)",
+                            color: active ? "var(--artist-card-text)" : "var(--artist-card-text)",
+                            background: active ? "var(--artist-selected-surface)" : "var(--artist-section-surface)",
+                          }}
+                        >
+                          {active
+                            ? locale === "tr"
+                              ? "Seçimi kaldır"
+                              : "Clear selection"
+                            : locale === "tr"
+                              ? "Bu tasarımı seç"
+                              : "Select this design"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </button>
+                </div>
               );
-            })}
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {previewDesign ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+          onClick={() => setPreviewDesign(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl rounded-[28px] border p-4 shadow-2xl"
+            style={{
+              borderColor: "var(--artist-selected-border)",
+              backgroundColor: "var(--artist-flow-surface)",
+              boxShadow: "var(--artist-card-shadow)",
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewDesign(null)}
+              className="absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full border transition"
+              style={{
+                borderColor: "var(--artist-border)",
+                backgroundColor: "var(--artist-section-surface)",
+                color: "var(--artist-card-text)",
+              }}
+              aria-label={locale === "tr" ? "Kapat" : "Close"}
+            >
+              <X className="size-4" />
+            </button>
+            <div className="mb-4 pr-12">
+              <p className="text-lg font-semibold" style={{ color: "var(--artist-card-text)" }}>
+                {previewDesign.title}
+              </p>
+              <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                {getFeaturedCategoryLabel(previewDesign.category, locale)}
+              </p>
+            </div>
+            <div className="overflow-hidden rounded-[22px] border border-white/10 bg-black/20">
+              {previewDesign.imageUrl ? (
+                <img
+                  src={previewDesign.imageUrl}
+                  alt={previewDesign.title}
+                  className="max-h-[80vh] w-full object-contain"
+                />
+              ) : (
+                <div className="flex min-h-[320px] items-center justify-center text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                  {locale === "tr" ? "Bu tasarım için görsel yok." : "No image available for this design."}
+                </div>
+              )}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  onDesignSelect(previewDesign.id);
+                  setPreviewDesign(null);
+                }}
+                className="inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition"
+                style={{
+                  borderColor: "var(--artist-selected-border)",
+                  background: "var(--artist-selected-surface)",
+                  color: "var(--artist-card-text)",
+                }}
+              >
+                {locale === "tr" ? "Bu tasarımı seç" : "Select this design"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
