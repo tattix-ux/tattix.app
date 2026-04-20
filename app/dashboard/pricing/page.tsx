@@ -1,11 +1,11 @@
 import { PricingForm } from "@/components/dashboard/pricing-form";
 import { SectionHeading } from "@/components/shared/shell";
-import { getDashboardData } from "@/lib/data/dashboard";
+import { getDashboardCoreData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function DashboardPricingPage() {
   const session = await getSupabaseSession();
-  const data = await getDashboardData(session?.user.id ?? null);
+  const data = await getDashboardCoreData(session?.user.id ?? null);
   const isTurkish = data.funnelSettings.defaultLanguage === "tr";
 
   return (

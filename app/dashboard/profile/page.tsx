@@ -2,12 +2,12 @@ import { isAdminEmail } from "@/lib/access";
 import { AdminProAccessForm } from "@/components/dashboard/admin-pro-access-form";
 import { ProfilePageContent } from "@/components/dashboard/profile-page-content";
 import { SectionHeading } from "@/components/shared/shell";
-import { getDashboardData } from "@/lib/data/dashboard";
+import { getDashboardCoreData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function DashboardProfilePage() {
   const session = await getSupabaseSession();
-  const data = await getDashboardData(session?.user.id ?? null);
+  const data = await getDashboardCoreData(session?.user.id ?? null);
   const isTurkish = data.funnelSettings.defaultLanguage === "tr";
   const showAdminControls =
     isAdminEmail(session?.user.email) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);

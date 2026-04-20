@@ -12,7 +12,7 @@ import { Logo } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
 import { hasProAccess } from "@/lib/access";
-import { getDashboardData } from "@/lib/data/dashboard";
+import { getDashboardShellData } from "@/lib/data/dashboard";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getSupabaseSession } from "@/lib/supabase/server";
 import { getUnreadArtistNotificationCount, getUnreadSupportMessageCount } from "@/lib/support";
@@ -28,7 +28,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const dashboardData = await getDashboardData(session?.user.id ?? null);
+  const dashboardData = await getDashboardShellData(session?.user.id ?? null);
   const isTurkish = dashboardData.funnelSettings.defaultLanguage === "tr";
   const isProActive = hasProAccess(dashboardData.profile);
   const showAdminMessages = isAdminEmail(session?.user.email);

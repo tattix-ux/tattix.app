@@ -3,7 +3,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { demoArtistPageData, demoLeads } from "@/lib/demo-data";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
-import type { ArtistProfile, ClientSubmission, DashboardData, LeadStatus } from "@/lib/types";
+import type { ArtistPageData, ArtistProfile, ClientSubmission, DashboardData, LeadStatus } from "@/lib/types";
 import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
 import { buildPricingV2Profile } from "@/lib/pricing/v2/profile";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -109,13 +109,16 @@ function normalizeAuthenticatedArtist(row: Record<string, unknown>): ArtistProfi
   };
 }
 
-export const getDashboardData = cache(async function getDashboardData(
+export type DashboardCoreData = ArtistPageData & {
+  demoMode: boolean;
+};
+
+export const getDashboardCoreData = cache(async function getDashboardCoreData(
   userId: string | null,
-): Promise<DashboardData> {
+): Promise<DashboardCoreData> {
   if (!isSupabaseConfigured() || !userId) {
     return {
       ...demoArtistPageData,
-      leads: demoLeads,
       demoMode: true,
     };
   }
@@ -144,7 +147,6 @@ export const getDashboardData = cache(async function getDashboardData(
   if (!artist) {
     return {
       ...demoArtistPageData,
-      leads: demoLeads,
       demoMode: true,
     };
   }
@@ -154,21 +156,49 @@ export const getDashboardData = cache(async function getDashboardData(
   if (!pageData) {
     return {
       ...demoArtistPageData,
-      leads: demoLeads,
       demoMode: true,
     };
   }
 
+  return {
+    ...pageData,
+    demoMode: false,
+  };
+});
+
+export const getDashboardData = cache(async function getDashboardData(
+  userId: string | null,
+): Promise<DashboardData> {
+  const coreData = await getDashboardCoreData(userId);
+
+  if (coreData.demoMode) {
+    return {
+      ...coreData,
+      leads: demoLeads,
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
   const { data: leadsRows } = await supabase
     .from("client_submissions")
     .select("*")
-    .eq("artist_id", pageData.profile.id)
+    .eq("artist_id", coreData.profile.id)
     .order("created_at", { ascending: false });
 
   return {
-    ...pageData,
+    ...coreData,
     leads: (leadsRows ?? []).map((row) => mapLead(row as Record<string, unknown>)),
-    demoMode: false,
+  };
+});
+
+export const getDashboardShellData = cache(async function getDashboardShellData(
+  userId: string | null,
+): Promise<Pick<DashboardCoreData, "profile" | "funnelSettings" | "demoMode">> {
+  const coreData = await getDashboardCoreData(userId);
+  return {
+    profile: coreData.profile,
+    funnelSettings: coreData.funnelSettings,
+    demoMode: coreData.demoMode,
   };
 });
 

@@ -2,12 +2,12 @@ import { CustomizePageForm } from "@/components/dashboard/customize-page-form";
 import { ProFeatureGate } from "@/components/dashboard/pro-feature-gate";
 import { SectionHeading } from "@/components/shared/shell";
 import { hasProAccess } from "@/lib/access";
-import { getDashboardData } from "@/lib/data/dashboard";
+import { getDashboardCoreData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
 export default async function DashboardCustomizePage() {
   const session = await getSupabaseSession();
-  const data = await getDashboardData(session?.user.id ?? null);
+  const data = await getDashboardCoreData(session?.user.id ?? null);
   const isTurkish = data.funnelSettings.defaultLanguage === "tr";
 
   return (
