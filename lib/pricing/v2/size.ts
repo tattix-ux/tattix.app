@@ -51,47 +51,9 @@ function getReviewBiasMultiplier(verdict: "looks-right" | "slightly-low" | "slig
   return 1;
 }
 
-function getReviewCommentIntensity(note: string) {
-  const normalized = note.trim().toLocaleLowerCase("tr-TR");
-
-  if (!normalized) {
-    return 0;
-  }
-
-  let intensity = 0.05;
-  const strongSignals = [
-    "çok",
-    "epey",
-    "fazla",
-    "ciddi",
-    "bariz",
-    "oldukça",
-    "aşırı",
-    "hayli",
-    "kesin",
-    "net",
-    "çok daha",
-  ];
-  const softSignals = ["biraz", "az", "ufak", "hafif", "bir tık", "bir tik"];
-
-  if (strongSignals.some((item) => normalized.includes(item))) {
-    intensity += 0.12;
-  }
-
-  if (softSignals.some((item) => normalized.includes(item))) {
-    intensity += 0.04;
-  }
-
-  if (normalized.length >= 48) {
-    intensity += 0.04;
-  }
-
-  return clamp(intensity, 0.05, 0.22);
-}
-
 export function deriveReviewAdjustmentBias(input: {
   verdict: "looks-right" | "slightly-low" | "slightly-high";
-  note?: string;
+  reason?: "size" | "detail" | "placement" | "color_shading" | "cover_up" | "general";
   currentBias?: number;
   iterationCount?: number;
 }) {
@@ -101,11 +63,53 @@ export function deriveReviewAdjustmentBias(input: {
 
   const direction = input.verdict === "slightly-low" ? 1 : -1;
   const iterationBoost = Math.min(input.iterationCount ?? 0, 3) * 0.012;
-  const noteIntensity = getReviewCommentIntensity(input.note ?? "");
-  const step = clamp(0.04 + noteIntensity + iterationBoost, 0.05, 0.22);
+  const baseStep =
+    input.reason === "size" || input.reason === "cover_up"
+      ? 0.09
+      : input.reason === "detail"
+        ? 0.075
+        : input.reason === "placement" || input.reason === "color_shading"
+          ? 0.065
+          : 0.07;
+  const step = clamp(baseStep + iterationBoost, 0.05, 0.22);
   const base = input.currentBias ?? 1;
 
   return clamp(base * (1 + direction * step), 0.78, 1.34);
+}
+
+function applyCaseFamilyBias(
+  id: string,
+  bias: number,
+  current: PricingV2ReviewAdjustments,
+  weight = 1,
+) {
+  const weightedBias = clamp(1 + (bias - 1) * weight, 0.78, 1.34);
+
+  if (id === "review-text") {
+    return { ...current, textBias: clamp(current.textBias * weightedBias, 0.78, 1.34) };
+  }
+
+  if (id === "review-mini") {
+    return { ...current, miniSimpleBias: clamp(current.miniSimpleBias * weightedBias, 0.78, 1.34) };
+  }
+
+  if (id === "review-single-large") {
+    return {
+      ...current,
+      singleObjectBias: clamp(current.singleObjectBias * clamp(1 + (bias - 1) * 0.5, 0.84, 1.22), 0.78, 1.34),
+      largeSizeBias: clamp(current.largeSizeBias * weightedBias, 0.78, 1.34),
+    };
+  }
+
+  if (id === "review-multi") {
+    return { ...current, multiElementBias: clamp(current.multiElementBias * weightedBias, 0.78, 1.34) };
+  }
+
+  if (id === "review-cover") {
+    return { ...current, coverUpBias: clamp(current.coverUpBias * weightedBias, 0.78, 1.34) };
+  }
+
+  return current;
 }
 
 function getLowerSlope(object6cm: number, object10cm: number) {
@@ -273,26 +277,77 @@ export function deriveReviewAdjustments(
   reviewCases: Array<{
     id: string;
     verdict: "looks-right" | "slightly-low" | "slightly-high";
+    reason?: "size" | "detail" | "placement" | "color_shading" | "cover_up" | "general";
     adjustmentBias?: number;
   }>,
 ): PricingV2ReviewAdjustments {
-  const lookup = Object.fromEntries(
-    reviewCases.map((item) => [
-      item.id,
-      clamp(item.adjustmentBias ?? getReviewBiasMultiplier(item.verdict), 0.78, 1.34),
-    ]),
-  );
-  const singleLargeBias = lookup["review-single-large"] ?? 1;
-
-  return {
+  const initial: PricingV2ReviewAdjustments = {
     globalBias: 1,
-    textBias: lookup["review-text"] ?? 1,
-    miniSimpleBias: lookup["review-mini"] ?? 1,
-    singleObjectBias: clamp(1 + (singleLargeBias - 1) * 0.35, 0.88, 1.16),
-    largeSizeBias: singleLargeBias,
-    multiElementBias: lookup["review-multi"] ?? 1,
-    coverUpBias: lookup["review-cover"] ?? 1,
+    textBias: 1,
+    miniSimpleBias: 1,
+    singleObjectBias: 1,
+    largeSizeBias: 1,
+    multiElementBias: 1,
+    coverUpBias: 1,
+    placementBias: 1,
+    detailBias: 1,
+    colorShadingBias: 1,
   };
+
+  return reviewCases.reduce((current, item) => {
+    const bias = clamp(item.adjustmentBias ?? getReviewBiasMultiplier(item.verdict), 0.78, 1.34);
+    const reason = item.reason ?? "general";
+
+    if (reason === "placement") {
+      return applyCaseFamilyBias(
+        item.id,
+        bias,
+        {
+          ...current,
+          placementBias: clamp(current.placementBias * bias, 0.82, 1.26),
+        },
+        0.35,
+      );
+    }
+
+    if (reason === "detail") {
+      return applyCaseFamilyBias(
+        item.id,
+        bias,
+        {
+          ...current,
+          detailBias: clamp(current.detailBias * bias, 0.82, 1.28),
+        },
+        0.28,
+      );
+    }
+
+    if (reason === "color_shading") {
+      return applyCaseFamilyBias(
+        item.id,
+        bias,
+        {
+          ...current,
+          colorShadingBias: clamp(current.colorShadingBias * bias, 0.82, 1.28),
+        },
+        0.24,
+      );
+    }
+
+    if (reason === "cover_up") {
+      return applyCaseFamilyBias(
+        item.id,
+        bias,
+        {
+          ...current,
+          coverUpBias: clamp(current.coverUpBias * bias, 0.78, 1.34),
+        },
+        0.2,
+      );
+    }
+
+    return applyCaseFamilyBias(item.id, bias, current, 1);
+  }, initial);
 }
 
 export function deriveSizeSeriesFromOnboarding(
@@ -311,6 +366,9 @@ export function deriveSizeSeriesFromOnboarding(
     largeSizeBias: 1,
     multiElementBias: 1,
     coverUpBias: 1,
+    placementBias: 1,
+    detailBias: 1,
+    colorShadingBias: 1,
   };
 
   const base6 = getCaseMidpoint(onboardingCases, SIZE_SERIES_CASE_IDS.object6cm, fallback6);

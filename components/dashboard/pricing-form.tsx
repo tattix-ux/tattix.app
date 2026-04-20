@@ -8,7 +8,6 @@ import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { estimateCustomRequestPrice } from "@/lib/pricing/v2/custom-request";
 import {
@@ -29,7 +28,7 @@ import {
   getArtistPricingV2Profile,
 } from "@/lib/pricing/v2/profile";
 import { deriveReviewAdjustmentBias } from "@/lib/pricing/v2/size";
-import type { ArtistPricingRules } from "@/lib/types";
+import type { ArtistPricingRules, PricingV2ReviewReason } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Verdict = "looks-right" | "slightly-low" | "slightly-high";
@@ -38,7 +37,7 @@ type LargeAreaChoice = "enabled" | "disabled";
 type StatusTone = "success" | "error" | null;
 type ReviewCaseDraft = {
   verdict: Verdict | "";
-  note: string;
+  reason: PricingV2ReviewReason | "";
   adjustmentBias: number;
   iterationCount: number;
 };
@@ -94,12 +93,9 @@ function getText(locale: PublicLocale) {
       placeholderHelp: "Görseli sonra ekleyebilirsin.",
       reviewTitle: "Bu tahmin sana uygun mu?",
       reviewNote: "Buradaki seçimler, sistemin tahminlerini sana yaklaştırmak için kullanılır.",
-      reviewReasonLabelLow: "Neden biraz düşük geldi?",
-      reviewReasonLabelHigh: "Neden biraz yüksek geldi?",
-      reviewReasonPlaceholderLow: "Örn. bu boyutta biraz daha yukarıdan başlar, gölgesi daha yoğun, kapatması zor...",
-      reviewReasonPlaceholderHigh: "Örn. bu iş bu kadar yükselmez, daha sade kalır, yerleşimi daha rahat...",
+      reviewReasonLabel: "Neden böyle geldi?",
       reviewUpdate: "Tahmini güncelle",
-      reviewNeedsAdjustment: "Uygun değilse kısa nedenini yazıp tahmini güncelle.",
+      reviewNeedsAdjustment: "Uygun değilse nedeni seçip tahmini güncelle.",
       reviewAdjusted: "Tahmin güncellendi. Hâlâ uymuyorsa yeniden ayarlayabilirsin.",
       verdicts: {
         "looks-right": "Uygun",
@@ -165,12 +161,9 @@ function getText(locale: PublicLocale) {
     placeholderAsset: "Example image area",
     placeholderHelp: "You can add the real image later.",
     reviewTitle: "Does this estimate feel right?",
-    reviewReasonLabelLow: "Why does this feel a bit low?",
-    reviewReasonLabelHigh: "Why does this feel a bit high?",
-    reviewReasonPlaceholderLow: "For example: larger pieces start higher, shading is denser, cover-up is tougher...",
-    reviewReasonPlaceholderHigh: "For example: this stays simpler, should not rise that much, placement is easier...",
+    reviewReasonLabel: "What feels off here?",
     reviewUpdate: "Update estimate",
-    reviewNeedsAdjustment: "If it is not right yet, add a short reason and update the estimate.",
+    reviewNeedsAdjustment: "If it is not right yet, choose the reason and update the estimate.",
     reviewAdjusted: "Estimate updated. If it still feels off, you can adjust it again.",
     verdicts: {
       "looks-right": "Looks right",
@@ -319,10 +312,58 @@ function getSizeLabel(sizeCm: number, locale: PublicLocale) {
   return locale === "tr" ? `Boyut · ${sizeCm} cm` : `Size · ${sizeCm} cm`;
 }
 
+function buildReviewReasonOptionLabel(
+  reason: PricingV2ReviewReason,
+  verdict: Verdict,
+  locale: PublicLocale,
+) {
+  if (locale !== "tr") {
+    return reason;
+  }
+
+  const suffix = verdict === "slightly-low" ? "düşük geldi" : "yüksek geldi";
+
+  switch (reason) {
+    case "size":
+      return `Boyut için ${suffix}`;
+    case "detail":
+      return `Detay için ${suffix}`;
+    case "placement":
+      return `Bölge için ${suffix}`;
+    case "color_shading":
+      return `Renk / gölge için ${suffix}`;
+    case "cover_up":
+      return `Kapatma işi olduğu için ${suffix}`;
+    case "general":
+      return `Genel olarak ${suffix}`;
+  }
+}
+
+function getReviewReasonOptions(
+  item: (typeof PRICING_V2_REVIEW_CASES)[number],
+  verdict: Verdict,
+  locale: PublicLocale,
+) {
+  const options: PricingV2ReviewReason[] = ["size", "detail", "placement", "general"];
+
+  if (item.colorMode !== "black-only" || item.workStyle === "shaded_detailed") {
+    options.splice(3, 0, "color_shading");
+  }
+
+  if (item.requestType === "cover_up") {
+    options.splice(options.length - 1, 0, "cover_up");
+  }
+
+  return options.map((reason) => ({
+    value: reason,
+    label: buildReviewReasonOptionLabel(reason, verdict, locale),
+  }));
+}
+
 function createDefaultReviewCase(): ReviewCaseDraft {
   return {
     verdict: "",
-    note: "",
+    reason: "",
     adjustmentBias: 1,
     iterationCount: 0,
   };
@@ -334,7 +375,7 @@ function buildReviewCaseState(initialProfile: ReturnType<typeof getArtistPricing
       item.id,
       {
         verdict: item.verdict,
-        note: item.note ?? "",
+        reason: item.reason ?? "",
         adjustmentBias:
           typeof item.adjustmentBias === "number"
             ? item.adjustmentBias
@@ -342,7 +383,7 @@ function buildReviewCaseState(initialProfile: ReturnType<typeof getArtistPricing
               ? 1
               : deriveReviewAdjustmentBias({
                   verdict: item.verdict,
-                  note: item.note,
+                  reason: item.reason,
                   currentBias: 1,
                   iterationCount: item.iterationCount ?? 0,
                 }),
@@ -592,7 +633,7 @@ export function PricingForm({
           .map(([id, item]) => ({
             id,
             verdict: item.verdict as Verdict,
-            note: item.note.trim(),
+            reason: item.reason || undefined,
             adjustmentBias: item.adjustmentBias,
             iterationCount: item.iterationCount,
           })),
@@ -612,29 +653,76 @@ export function PricingForm({
 
   const reviewEstimates = useMemo(
     () =>
-      PRICING_V2_REVIEW_CASES.map((item) => ({
-        ...item,
-        estimate: estimateCustomRequestPrice(
-          {
-            areaScope: "standard_piece",
-            requestType: item.requestType,
-            placement: item.placementDetail ?? getPlacementDetail(item.placementBucket),
-            sizeCm: item.referenceSizeCm,
-            colorMode: item.colorMode,
-            workStyle: item.workStyle,
-            hasReferenceImage: true,
-            hasReferenceNote: false,
-            coverUp: item.requestType === "cover_up",
-          },
-          {
-            locale,
-            currency: "TRY",
-            pricingRules,
-            profile: derivedProfile,
-          },
-        ),
-      })),
-    [derivedProfile, locale, pricingRules],
+      PRICING_V2_REVIEW_CASES.map((item) => {
+        const reviewCase = reviewCases[item.id];
+        const profileForCase = buildPricingV2Profile({
+          minimumJobPrice: toInputNumber(minimumJobPrice, initialProfile.minimumJobPrice),
+          textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
+          onboardingCases: onboardingCases.map((entry) => ({
+            id: entry.id,
+            min: toInputNumber(entry.min),
+            max: toInputNumber(entry.max),
+          })),
+          onboardingLargeAreasEnabled: largeAreaChoice === "enabled",
+          largeAreaCases: largeAreaCases.map((entry) => ({
+            id: entry.id,
+            min: toInputNumber(entry.min),
+            max: toInputNumber(entry.max),
+          })),
+          wideAreaCases: wideAreaCases.map((entry) => ({
+            id: entry.id,
+            startingFrom: toInputNumber(entry.startingFrom),
+          })),
+          reviewCases:
+            reviewCase && reviewCase.verdict
+              ? [
+                  {
+                    id: item.id,
+                    verdict: reviewCase.verdict as Verdict,
+                    reason: reviewCase.reason || undefined,
+                    adjustmentBias: reviewCase.adjustmentBias,
+                    iterationCount: reviewCase.iterationCount,
+                  },
+                ]
+              : [],
+        });
+
+        return {
+          ...item,
+          estimate: estimateCustomRequestPrice(
+            {
+              areaScope: "standard_piece",
+              requestType: item.requestType,
+              placement: item.placementDetail ?? getPlacementDetail(item.placementBucket),
+              sizeCm: item.referenceSizeCm,
+              colorMode: item.colorMode,
+              workStyle: item.workStyle,
+              hasReferenceImage: true,
+              hasReferenceNote: false,
+              coverUp: item.requestType === "cover_up",
+            },
+            {
+              locale,
+              currency: "TRY",
+              pricingRules,
+              profile: profileForCase,
+            },
+          ),
+        };
+      }),
+    [
+      initialProfile.minimumJobPrice,
+      initialProfile.textStartingPrice,
+      largeAreaCases,
+      largeAreaChoice,
+      locale,
+      minimumJobPrice,
+      onboardingCases,
+      pricingRules,
+      reviewCases,
+      textStartingPrice,
+      wideAreaCases,
+    ],
   );
   const sizeSeriesCaseIds = new Set<string>(PRICING_V2_SIZE_SERIES_CASE_IDS);
   const specialCaseIds = new Set<string>(PRICING_V2_SPECIAL_CASE_IDS);
@@ -692,7 +780,7 @@ export function PricingForm({
             .map(([id, item]) => ({
               id,
               verdict: item.verdict as Verdict,
-              note: item.note.trim(),
+              reason: item.reason || undefined,
               adjustmentBias: item.adjustmentBias,
               iterationCount: item.iterationCount,
             })),
@@ -731,12 +819,13 @@ export function PricingForm({
     updateReviewCase(id, (current) => ({
       ...current,
       verdict,
+      reason: verdict === "looks-right" ? current.reason : "",
     }));
   }
 
   function handleReviewAdjustmentApply(id: string) {
     updateReviewCase(id, (current) => {
-      if (!current.verdict || current.verdict === "looks-right" || !current.note.trim()) {
+      if (!current.verdict || current.verdict === "looks-right" || !current.reason) {
         return current;
       }
 
@@ -744,7 +833,7 @@ export function PricingForm({
         ...current,
         adjustmentBias: deriveReviewAdjustmentBias({
           verdict: current.verdict,
-          note: current.note,
+          reason: current.reason,
           currentBias: current.adjustmentBias,
           iterationCount: current.iterationCount,
         }),
@@ -1006,31 +1095,23 @@ export function PricingForm({
                       {needsReason ? (
                         <div className="space-y-3 rounded-[20px] border border-[var(--accent)]/12 bg-[linear-gradient(180deg,rgba(247,177,93,0.06),rgba(255,255,255,0.01))] p-3.5">
                           <Field
-                            label={
-                              reviewCase.verdict === "slightly-low"
-                                ? copy.reviewReasonLabelLow
-                                : copy.reviewReasonLabelHigh
-                            }
+                            label={copy.reviewReasonLabel}
                             description={
                               reviewCase.iterationCount > 0
                                 ? copy.reviewAdjusted
                                 : copy.reviewNeedsAdjustment
                             }
                           >
-                            <Textarea
-                              value={reviewCase.note}
-                              onChange={(event) =>
+                            <ChoiceGroup
+                              value={reviewCase.reason}
+                              onChange={(value) =>
                                 updateReviewCase(item.id, (current) => ({
                                   ...current,
-                                  note: event.target.value,
+                                  reason: value,
                                 }))
                               }
-                              placeholder={
-                                reviewCase.verdict === "slightly-low"
-                                  ? copy.reviewReasonPlaceholderLow
-                                  : copy.reviewReasonPlaceholderHigh
-                              }
-                              className="min-h-[108px]"
+                              options={getReviewReasonOptions(item, reviewCase.verdict as Verdict, locale)}
+                              columnsClassName="sm:grid-cols-2"
                             />
                           </Field>
                           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1045,7 +1126,7 @@ export function PricingForm({
                               type="button"
                               variant="secondary"
                               onClick={() => handleReviewAdjustmentApply(item.id)}
-                              disabled={!reviewCase.note.trim()}
+                              disabled={!reviewCase.reason}
                             >
                               {copy.reviewUpdate}
                             </Button>

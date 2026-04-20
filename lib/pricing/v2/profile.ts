@@ -35,7 +35,7 @@ type BuildPricingV2ProfileInput = {
   reviewCases?: Array<{
     id: string;
     verdict: "looks-right" | "slightly-low" | "slightly-high";
-    note?: string;
+    reason?: "size" | "detail" | "placement" | "color_shading" | "cover_up" | "general";
     adjustmentBias?: number;
     iterationCount?: number;
   }>;
@@ -361,7 +361,7 @@ export function buildPricingV2Profile(
     reviewCases: (input.reviewCases ?? []).map((item) => ({
       id: item.id,
       verdict: item.verdict,
-      note: item.note?.trim() || "",
+      reason: item.reason,
       adjustmentBias:
         typeof item.adjustmentBias === "number"
           ? clamp(item.adjustmentBias, 0.78, 1.34)

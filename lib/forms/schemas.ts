@@ -115,6 +115,7 @@ const pricingValidationExampleIds = [
   "colored-butterfly",
 ] as const;
 const pricingValidationFeedbackValues = ["looks-right", "slightly-low", "slightly-high"] as const;
+const pricingReviewReasonValues = ["size", "detail", "placement", "color_shading", "cover_up", "general"] as const;
 const pricingValidationReasonValues = ["size", "detail", "color", "general"] as const;
 
 export const funnelSettingsSchema = z.object({
@@ -339,7 +340,7 @@ export const pricingOnboardingSchema = z.object({
       z.object({
         id: z.string().min(1),
         verdict: z.enum(pricingValidationFeedbackValues),
-        note: z.string().trim().max(280).optional().default(""),
+        reason: z.enum(pricingReviewReasonValues).optional(),
         adjustmentBias: z.coerce.number().positive().optional(),
         iterationCount: z.coerce.number().int().min(0).optional(),
       }),

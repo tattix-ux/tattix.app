@@ -30,7 +30,7 @@ function getPlacementFactor(
 function getConcreteColorFactor(
   colorMode: CustomRequestPricingInput["colorMode"],
   input: Pick<CustomRequestPricingInput, "requestType">,
-  context: Pick<PricingV2Context["profile"], "specialCaseAdjustments">,
+  context: Pick<PricingV2Context["profile"], "specialCaseAdjustments" | "reviewAdjustments">,
   intensity = 1,
 ) {
   const base =
@@ -48,7 +48,13 @@ function getConcreteColorFactor(
           ? 0.88
           : 1;
 
-  return 1 + (base - 1) * clamp(intensity * requestWeight, 0.25, 1);
+  const factor = 1 + (base - 1) * clamp(intensity * requestWeight, 0.25, 1);
+
+  if (colorMode === "black-only") {
+    return factor;
+  }
+
+  return factor * context.reviewAdjustments.colorShadingBias;
 }
 
 function getWorkStyleWeight(
@@ -85,7 +91,7 @@ function getWorkStyleWeight(
 function getConcreteWorkStyleFactor(
   workStyle: CustomRequestPricingInput["workStyle"],
   input: Pick<CustomRequestPricingInput, "requestType">,
-  context: Pick<PricingV2Context["profile"], "specialCaseAdjustments">,
+  context: Pick<PricingV2Context["profile"], "specialCaseAdjustments" | "reviewAdjustments">,
   intensity = 1,
 ) {
   if (workStyle === "clean_line") {
@@ -103,7 +109,7 @@ function getConcreteWorkStyleFactor(
       : context.specialCaseAdjustments.shadedDetailedFactor;
   const requestWeight = getWorkStyleWeight(input.requestType, workStyle);
 
-  return 1 + (base - 1) * clamp(intensity * requestWeight, 0.22, 1);
+  return (1 + (base - 1) * clamp(intensity * requestWeight, 0.22, 1)) * context.reviewAdjustments.detailBias;
 }
 
 function getReviewCalibrationFactor(
@@ -444,7 +450,7 @@ function estimateStandardPiecePrice(
               : profile.categoryAnchors.unsure;
   const sizeFactorResult = buildCustomRequestSizeFactor(requestType, input.sizeCm, profile);
   const placementBucket = resolvePlacementBucket(input.placement);
-  const placementFactor = getPlacementFactor(placementBucket);
+  const placementFactor = getPlacementFactor(placementBucket) * profile.reviewAdjustments.placementBias;
   const colorFactor = getConcreteColorFactor(input.colorMode, { requestType }, profile);
   const workStyleFactor = getConcreteWorkStyleFactor(input.workStyle, { requestType }, profile);
   const rawCenter = Math.max(

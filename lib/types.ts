@@ -169,10 +169,17 @@ export type PricingV2WideAreaAnswer = {
 export type PricingV2ReviewAnswer = {
   id: string;
   verdict: PricingValidationFeedback;
-  note?: string;
+  reason?: PricingV2ReviewReason;
   adjustmentBias?: number;
   iterationCount?: number;
 };
+export type PricingV2ReviewReason =
+  | "size"
+  | "detail"
+  | "placement"
+  | "color_shading"
+  | "cover_up"
+  | "general";
 export type PricingV2SizeSeries = {
   object6cm: number;
   object10cm: number;
@@ -204,6 +211,9 @@ export type PricingV2ReviewAdjustments = {
   largeSizeBias: number;
   multiElementBias: number;
   coverUpBias: number;
+  placementBias: number;
+  detailBias: number;
+  colorShadingBias: number;
 };
 export type PricingV2CategoryAnchors = {
   text: number;
