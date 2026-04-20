@@ -32,6 +32,7 @@ import type {
   ColorModeValue,
   LargeAreaCoverageValue,
   PricingSourceValue,
+  RealismLevelValue,
   WideAreaTargetValue,
   WorkStyleValue,
 } from "@/lib/types";
@@ -141,6 +142,16 @@ function getCopy(locale: PublicLocale) {
         shaded_detailed: "Daha dolu, gölgeli veya emek isteyen görünüm",
         precision_symmetric: "Daha dikkatli ve kontrollü çalışma isteyen görünüm",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
+      },
+      realismLevelTitle: "Bu işin yoğunluğu hangisine daha yakın?",
+      realismLevelDescription: "Standart gölgeli bir iş mi, yoksa çok yoğun realistik bir iş mi seç.",
+      realismLevels: {
+        standard: "Gölgeli / detaylı",
+        advanced: "Çok yoğun realistik",
+      },
+      realismLevelDescriptions: {
+        standard: "Daha klasik gölgeli ve detaylı işler",
+        advanced: "Yoğun siyah-gri, daha realistik ve teknik işler",
       },
       colorModes: {
         "black-only": "Sadece siyah",
@@ -305,6 +316,16 @@ function getCopy(locale: PublicLocale) {
       shaded_detailed: "A fuller, shaded, or more worked look",
       precision_symmetric: "A more controlled and symmetry-led look",
       unsure: "Choose this if you’re not sure yet",
+    },
+    realismLevelTitle: "Which side is this closer to?",
+    realismLevelDescription: "Choose whether it feels more like a standard shaded piece or a very dense realistic one.",
+    realismLevels: {
+      standard: "Shaded / detailed",
+      advanced: "Very dense realistic",
+    },
+    realismLevelDescriptions: {
+      standard: "A more standard shaded and detailed look",
+      advanced: "Dense black-grey work with a more realistic technical feel",
     },
     colorModes: {
       "black-only": "Black only",
@@ -583,6 +604,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     { value: "precision_symmetric", label: copy.workStyles.precision_symmetric },
     { value: "unsure", label: copy.workStyles.unsure },
   ];
+  const realismLevelChoices: Array<{ value: RealismLevelValue; label: string }> = [
+    { value: "standard", label: copy.realismLevels.standard },
+    { value: "advanced", label: copy.realismLevels.advanced },
+  ];
   const largeAreaCoverageChoices: Array<{ value: LargeAreaCoverageValue; label: string }> = [
     { value: "partial", label: copy.largeAreaCoverageOptions.partial },
     { value: "mostly", label: copy.largeAreaCoverageOptions.mostly },
@@ -617,7 +642,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 : currentFlowStep === "color_only"
                   ? Boolean(draft.colorMode)
                   : currentFlowStep === "color_character"
-                    ? Boolean(draft.colorMode && draft.workStyle)
+                    ? Boolean(
+                        draft.colorMode &&
+                          draft.workStyle &&
+                          (draft.workStyle !== "shaded_detailed" ||
+                            draft.colorMode !== "black-grey" ||
+                            draft.realismLevel),
+                      )
                     : true;
   const canSubmit =
     draft.pricingSource === "custom_request" && (draft.areaScope === "large_single_area" || draft.areaScope === "wide_area")
@@ -707,6 +738,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("sizeCategory", "");
     setField("colorMode", "");
     setField("workStyle", "");
+    setField("realismLevel", "");
     setField("coverUp", nextAreaScope === "wide_area" || nextAreaScope === "large_single_area" ? null : false);
   }
 
@@ -799,6 +831,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       workStyle:
         draft.pricingSource === "custom_request"
           ? draft.workStyle || undefined
+          : undefined,
+      realismLevel:
+        draft.pricingSource === "custom_request" && draft.workStyle === "shaded_detailed"
+          ? draft.realismLevel || undefined
           : undefined,
       notes: draft.notes || undefined,
       coverUp:
@@ -997,6 +1033,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     setField("sizeCategory", "");
                     setField("colorMode", "");
                     setField("workStyle", "");
+                    setField("realismLevel", "");
                     setField("coverUp", null);
                   }
                 }}
@@ -1037,6 +1074,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("sizeCategory", "");
                   setField("colorMode", design?.referenceColorMode ?? "black-only");
                   setField("workStyle", "");
+                  setField("realismLevel", "");
                   setField("coverUp", null);
                 }}
               />
@@ -1209,7 +1247,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         <button
                           key={option.key}
                           type="button"
-                          onClick={() => setField("colorMode", option.value)}
+                          onClick={() => {
+                            setField("colorMode", option.value);
+
+                            if (option.value === "black-grey" && draft.workStyle === "shaded_detailed") {
+                              setField("realismLevel", draft.realismLevel || "standard");
+                              return;
+                            }
+
+                            setField("realismLevel", "");
+                          }}
                           className="rounded-[22px] border px-4 py-4 text-left transition"
                           style={{
                             borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -1254,7 +1301,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           <button
                             key={option.value}
                             type="button"
-                            onClick={() => setField("workStyle", option.value)}
+                            onClick={() => {
+                              setField("workStyle", option.value);
+
+                              if (option.value === "shaded_detailed" && draft.colorMode === "black-grey") {
+                                setField("realismLevel", draft.realismLevel || "standard");
+                                return;
+                              }
+
+                              setField("realismLevel", "");
+                            }}
                             className="rounded-[22px] border px-4 py-4 text-left transition"
                             style={{
                               borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -1277,6 +1333,53 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         );
                       })}
                     </div>
+
+                    {draft.workStyle === "shaded_detailed" && draft.colorMode === "black-grey" ? (
+                      <div
+                        className="mt-4 rounded-[22px] border px-4 py-4"
+                        style={{
+                          borderColor: "var(--artist-border)",
+                          backgroundColor: "var(--artist-section-surface)",
+                        }}
+                      >
+                        <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                          {copy.realismLevelTitle}
+                        </p>
+                        <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                          {copy.realismLevelDescription}
+                        </p>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          {realismLevelChoices.map((option) => {
+                            const active = draft.realismLevel === option.value;
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => setField("realismLevel", option.value)}
+                                className="rounded-[22px] border px-4 py-4 text-left transition"
+                                style={{
+                                  borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
+                                  backgroundColor: active
+                                    ? "var(--artist-selected-surface)"
+                                    : "var(--artist-section-surface-strong)",
+                                  color: tokens.cardText,
+                                }}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="font-medium">{option.label}</p>
+                                    <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                      {copy.realismLevelDescriptions[option.value]}
+                                    </p>
+                                  </div>
+                                  {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>

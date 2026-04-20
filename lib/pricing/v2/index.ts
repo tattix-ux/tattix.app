@@ -45,6 +45,22 @@ function resolveColorMode(submission: SubmissionRequest) {
   return submission.colorMode ?? "black-only";
 }
 
+function resolveRealismLevel(submission: SubmissionRequest) {
+  if (submission.realismLevel) {
+    return submission.realismLevel;
+  }
+
+  if (
+    submission.workStyle === "shaded_detailed" &&
+    submission.colorMode === "black-grey" &&
+    submission.detailLevel === "detailed"
+  ) {
+    return "advanced";
+  }
+
+  return null;
+}
+
 export function estimateSubmissionPriceV2(
   submission: SubmissionRequest,
   context: SubmissionPricingV2Context,
@@ -54,6 +70,7 @@ export function estimateSubmissionPriceV2(
   const sizeCm = resolveRepresentativeSizeCm(submission);
   const colorMode = resolveColorMode(submission);
   const areaScope = resolveAreaScope(submission);
+  const realismLevel = resolveRealismLevel(submission);
 
   if (pricingSource === "featured_design" && submission.selectedDesignId) {
     const design = context.featuredDesigns?.find((item) => item.id === submission.selectedDesignId);
@@ -95,6 +112,7 @@ export function estimateSubmissionPriceV2(
       sizeCm,
       colorMode,
       workStyle: submission.workStyle ?? "unsure",
+      realismLevel,
       hasReferenceImage: Boolean(submission.referenceImage?.trim()),
       hasReferenceNote: Boolean(submission.referenceDescription?.trim() || submission.notes?.trim()),
       coverUp: submission.coverUp ?? null,

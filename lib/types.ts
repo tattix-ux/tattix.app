@@ -7,12 +7,14 @@ import type {
   FeaturedCategoryValue,
   IntentValue,
   LargeAreaCoverageValue,
+  RealismLevelValue,
   SizeValue,
   WideAreaTargetValue,
   WorkStyleValue,
 } from "@/lib/constants/options";
 export type { RequestTypeValue } from "@/lib/constants/options";
 export type { WorkStyleValue } from "@/lib/constants/options";
+export type { RealismLevelValue } from "@/lib/constants/options";
 export type { AreaScopeValue, LargeAreaCoverageValue, WideAreaTargetValue } from "@/lib/constants/options";
 import type { RequestTypeValue } from "@/lib/constants/options";
 import type { SizeMode } from "@/lib/constants/size-estimation";
@@ -227,6 +229,7 @@ export type PricingV2SpecialCaseAdjustments = {
   blackGreyFactor: number;
   fullColorFactor: number;
   shadedDetailedFactor: number;
+  advancedRealismFactor: number;
   precisionSymmetricFactor: number;
   coverUpPremiumFactor: number;
 };
@@ -510,6 +513,7 @@ export type SubmissionDraft = {
   gender: CustomerGenderValue | "";
   ageRange: CustomerAgeRangeValue | "";
   workStyle: WorkStyleValue | "";
+  realismLevel: RealismLevelValue | "";
   bodyAreaGroup: BodyAreaGroupValue | "";
   bodyAreaDetail: BodyAreaDetailValue | "";
   sizeMode: SizeMode;
@@ -589,6 +593,7 @@ export type SubmissionRequest = {
   gender?: CustomerGenderValue | null;
   ageRange?: CustomerAgeRangeValue | null;
   workStyle?: WorkStyleValue | null;
+  realismLevel?: RealismLevelValue | null;
   bodyAreaGroup: BodyAreaGroupValue;
   bodyAreaDetail: BodyAreaDetailValue;
   sizeMode: SizeMode;

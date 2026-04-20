@@ -6,6 +6,7 @@ import {
   featuredDesignCategories,
   intentOptions,
   largeAreaCoverageOptions,
+  realismLevelOptions,
   requestTypeOptions,
   sizeOptions,
   wideAreaTargetOptions,
@@ -37,6 +38,7 @@ const intentValues = intentOptions.map((intent) => intent.value);
 const requestTypeValues = requestTypeOptions.map((requestType) => requestType.value);
 const sizeValues = sizeOptions.map((size) => size.value);
 const workStyleValues = workStyleOptions.map((item) => item.value);
+const realismLevelValues = realismLevelOptions.map((item) => item.value);
 const areaScopeValues = areaScopeOptions.map((item) => item.value);
 const largeAreaCoverageValues = largeAreaCoverageOptions.map((item) => item.value);
 const wideAreaTargetValues = wideAreaTargetOptions.map((item) => item.value);
@@ -316,7 +318,7 @@ export const pricingOnboardingSchema = z.object({
       min: z.coerce.number().gt(0),
       max: z.coerce.number().gt(0),
     }),
-  ).min(7),
+  ).min(8),
   onboardingLargeAreasEnabled: z.boolean().default(false),
   largeAreaCases: z
     .array(
@@ -575,6 +577,7 @@ export const submissionSchema = z.object({
   gender: z.enum(["female", "male", "prefer_not_to_say"]).nullable().optional(),
   ageRange: z.enum(["18-24", "25-34", "35-44", "45+"]).nullable().optional(),
   workStyle: z.enum(workStyleValues as [string, ...string[]]).nullable().optional(),
+  realismLevel: z.enum(realismLevelValues as [string, ...string[]]).nullable().optional(),
   bodyAreaGroup: z.enum(groupValues as [string, ...string[]]),
   bodyAreaDetail: z.enum(detailValues as [string, ...string[]]),
   sizeMode: z.enum(["quick", "visual"]),

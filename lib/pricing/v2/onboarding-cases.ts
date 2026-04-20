@@ -11,6 +11,7 @@ import multiElementImage from "@/sample-tattoos/pricing-multi-element.png";
 import ornamentalImage from "@/sample-tattoos/pricing-ornamental-small.png";
 import colorPieceImage from "@/sample-tattoos/pricing-color-piece.png";
 import coverUpImage from "@/sample-tattoos/pricing-cover-up.png";
+import advancedRealismImage from "@/sample-tattoos/pricing-statue.png";
 
 export type PricingOnboardingCase = {
   id: string;
@@ -24,6 +25,7 @@ export type PricingOnboardingCase = {
   imagePresentation?: PricingCaseImagePresentation;
   title: Record<PublicLocale, string>;
   metaLine: Record<PublicLocale, string>;
+  description?: Record<PublicLocale, string>;
 };
 
 export type PricingReviewCase = {
@@ -70,7 +72,8 @@ const IMAGE_PRESENTATIONS: Record<
   | "multiElement"
   | "ornamental"
   | "colorPiece"
-  | "coverUp",
+  | "coverUp"
+  | "advancedRealism",
   PricingCaseImagePresentation
 > = {
   text: {
@@ -113,6 +116,11 @@ const IMAGE_PRESENTATIONS: Record<
     frameClassName: "bg-white/[0.985] px-1 py-1",
     imageClassName: "scale-[1.4] object-center",
   },
+  advancedRealism: {
+    fit: "contain",
+    frameClassName: "bg-white/[0.985] px-1 py-1",
+    imageClassName: "scale-[1.28] object-center",
+  },
 };
 
 export const PRICING_V2_SIZE_SERIES_CASE_IDS = [
@@ -123,6 +131,7 @@ export const PRICING_V2_SIZE_SERIES_CASE_IDS = [
 
 export const PRICING_V2_SPECIAL_CASE_IDS = [
   "single-figure-12cm-upper-arm",
+  "advanced-realism-black-grey",
   "ornamental-small-hard",
   "medium-color-piece",
   "small-cover-up",
@@ -203,6 +212,26 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     metaLine: {
       tr: "Üst kol · siyah-gri · daha dolu, gölgeli",
       en: "Upper arm · black-grey · fuller / shaded",
+    },
+  },
+  {
+    id: "advanced-realism-black-grey",
+    requestType: "single_object",
+    referenceSizeCm: 11,
+    placementBucket: "easy",
+    placementDetail: "upper-arm-outer",
+    colorMode: "black-grey",
+    workStyle: "shaded_detailed",
+    imageSlot: advancedRealismImage.src,
+    imagePresentation: IMAGE_PRESENTATIONS.advancedRealism,
+    title: { tr: "Yoğun realistik siyah-gri", en: "Dense realistic black-grey" },
+    metaLine: {
+      tr: "Üst kol · siyah-gri · tek figür, yoğun gölgeli",
+      en: "Upper arm · black-grey · single subject, dense shading",
+    },
+    description: {
+      tr: "Tek ana figürlü, yoğun gölgeli, realistik siyah-gri bir iş düşün. Bu örnek, standart gölgeli işlerden daha ileri teknik yoğunluğu temsil eder.",
+      en: "Think of a single-subject black-grey piece with dense realistic shading. This represents a higher technical load than a standard shaded piece.",
     },
   },
   {

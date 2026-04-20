@@ -100,6 +100,7 @@ export function buildSuggestedOnboardingCases(input: SuggestedCaseInput) {
     "object-10cm-forearm": singleAnchor10,
     "object-16cm-forearm": Math.max(singleAnchor10 * 1.42, single16),
     "single-figure-12cm-upper-arm": Math.max(singleAnchor10 * 1.28, minimum * 1.56),
+    "advanced-realism-black-grey": Math.max(singleAnchor10 * 1.6, minimum * 1.98),
     "ornamental-small-hard": Math.max(singleAnchor10 * 1.2, minimum * 1.48),
     "medium-color-piece": Math.max(singleAnchor10 * 1.26, minimum * 1.6),
     "small-cover-up": Math.max(singleAnchor10 * 1.14, minimum * 1.4),
@@ -110,6 +111,7 @@ export function buildSuggestedOnboardingCases(input: SuggestedCaseInput) {
     "object-10cm-forearm": 0.1,
     "object-16cm-forearm": 0.12,
     "single-figure-12cm-upper-arm": 0.12,
+    "advanced-realism-black-grey": 0.14,
     "ornamental-small-hard": 0.12,
     "medium-color-piece": 0.13,
     "small-cover-up": 0.15,
@@ -188,11 +190,25 @@ function deriveSpecialCaseAdjustments(
   const shadedPlusGreyRatio = observedSingleFigure / Math.max(baselineSingle12, 1);
   const blackGreyFactor = clamp(1 + (shadedPlusGreyRatio - 1) * 0.24, 1.03, 1.11);
   const shadedDetailedFactor = clamp(shadedPlusGreyRatio / blackGreyFactor, 1.02, 1.22);
-
   const baselineSingle11 = Math.max(
     minimumJobPrice,
     categoryAnchors.singleObject * buildCustomRequestSizeFactor("single_object", 11, sizeContext).factor,
   );
+  const baselineAdvancedRealism = Math.max(
+    minimumJobPrice,
+    baselineSingle11 * blackGreyFactor * shadedDetailedFactor,
+  );
+  const observedAdvancedRealism = getCaseCenter(
+    onboardingCases,
+    "advanced-realism-black-grey",
+    baselineAdvancedRealism * 1.1,
+  );
+  const advancedRealismFactor = clamp(
+    observedAdvancedRealism / Math.max(baselineAdvancedRealism, 1),
+    1,
+    1.26,
+  );
+
   const observedColorPiece = getCaseCenter(
     onboardingCases,
     "medium-color-piece",
@@ -238,6 +254,7 @@ function deriveSpecialCaseAdjustments(
     blackGreyFactor,
     fullColorFactor,
     shadedDetailedFactor,
+    advancedRealismFactor,
     precisionSymmetricFactor,
     coverUpPremiumFactor,
   };

@@ -9,6 +9,7 @@ import type {
   EstimateMode,
   LargeAreaCoverageValue,
   PricingSourceValue,
+  RealismLevelValue,
   RequestTypeValue,
   SubmissionRequest,
   WideAreaTargetValue,
@@ -36,6 +37,7 @@ export type CustomRequestPricingInput = {
   sizeCm: number;
   colorMode: ColorModeValue;
   workStyle: WorkStyleValue;
+  realismLevel?: RealismLevelValue | null;
   hasReferenceImage: boolean;
   hasReferenceNote: boolean;
   coverUp?: boolean | null;

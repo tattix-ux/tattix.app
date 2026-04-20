@@ -1003,6 +1003,11 @@ export function PricingForm({
                             <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
                               {item.metaLine[locale]}
                             </p>
+                            {item.description ? (
+                              <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_7%)]">
+                                {item.description[locale]}
+                              </p>
+                            ) : null}
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">
                             <CurrencyInput
