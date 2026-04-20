@@ -201,7 +201,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     imagePresentation: IMAGE_PRESENTATIONS.singleFigure,
     title: { tr: "12 cm tek figür", en: "12 cm single figure" },
     metaLine: {
-      tr: "Üst kol · siyah-gri · daha dolu / gölgeli",
+      tr: "Üst kol · siyah-gri · daha dolu, gölgeli",
       en: "Upper arm · black-grey · fuller / shaded",
     },
   },
@@ -215,9 +215,9 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     workStyle: "precision_symmetric",
     imageSlot: ornamentalImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.ornamental,
-    title: { tr: "Küçük düzenli parça", en: "Small structured piece" },
+    title: { tr: "Küçük düzenli kompozisyon", en: "Small structured composition" },
     metaLine: {
-      tr: "Sternum · sadece siyah · geometrik / ornamental",
+      tr: "Göğüs · sadece siyah · geometrik, ornamental",
       en: "Sternum · black only · geometric / ornamental",
     },
   },
@@ -249,7 +249,7 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
-      tr: "Ön kol · siyah ağırlıklı · mevcut küçük dövmeyi kapatma",
+      tr: "Ön kol · siyah ağırlıklı · küçük dövme kapatma",
       en: "Forearm · mostly black · covering a small existing tattoo",
     },
   },
@@ -314,7 +314,7 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     workStyle: "shaded_detailed",
     imageSlot: multiElementImage.src,
     imagePresentation: IMAGE_PRESENTATIONS.multiElement,
-    title: { tr: "15 cm çok öğeli iş", en: "15 cm multi-element piece" },
+    title: { tr: "15 cm çok öğeli tasarım", en: "15 cm multi-element design" },
     metaLine: {
       tr: "Baldır · sadece siyah · çok öğeli kompozisyon",
       en: "Calf · black only · multi-element composition",
@@ -344,7 +344,7 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
     imageSlot: "",
     title: { tr: "Ön kolun büyük kısmını kaplayan iş", en: "Piece covering most of the forearm" },
     metaLine: {
-      tr: "Siyah-gri · daha dolu / gölgeli",
+      tr: "Siyah-gri · daha dolu, gölgeli",
       en: "Black-grey · fuller / shaded",
     },
   },
@@ -353,16 +353,16 @@ export const PRICING_V2_LARGE_AREA_CASES: PricingLargeAreaCase[] = [
     imageSlot: "",
     title: { tr: "Baldırın büyük kısmını kaplayan iş", en: "Piece covering most of the calf" },
     metaLine: {
-      tr: "Sadece siyah · daha düzenli / simetrik",
+      tr: "Sadece siyah · daha düzenli, simetrik",
       en: "Black only · more structured / symmetrical",
     },
   },
   {
     id: "chest-large-coverage",
     imageSlot: "",
-    title: { tr: "Göğüste büyük alan kaplayan iş", en: "Large coverage piece on the chest" },
+    title: { tr: "Göğüste geniş alan kaplayan iş", en: "Wide coverage piece on the chest" },
     metaLine: {
-      tr: "Siyah-gri · daha dolu / gölgeli",
+      tr: "Siyah-gri · daha dolu, gölgeli",
       en: "Black-grey · fuller / shaded",
     },
   },
@@ -374,7 +374,7 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
     imageSlot: "",
     title: { tr: "Kolun yarısını kaplayan iş", en: "Piece covering half the arm" },
     metaLine: {
-      tr: "Siyah-gri · daha dolu / gölgeli",
+      tr: "Siyah-gri · daha dolu, gölgeli",
       en: "Black-grey · fuller / shaded",
     },
   },
@@ -383,7 +383,7 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
     imageSlot: "",
     title: { tr: "Tüm kolu kaplayan iş", en: "Piece covering the full arm" },
     metaLine: {
-      tr: "Siyah-gri · daha dolu / gölgeli",
+      tr: "Siyah-gri · daha dolu, gölgeli",
       en: "Black-grey · fuller / shaded",
     },
   },
@@ -392,7 +392,7 @@ export const PRICING_V2_WIDE_AREA_CASES: PricingWideAreaCase[] = [
     imageSlot: "",
     title: { tr: "Sırtta geniş alan kaplayan iş", en: "Large coverage piece on the back" },
     metaLine: {
-      tr: "Siyah-gri · daha dolu / gölgeli",
+      tr: "Siyah-gri · daha dolu, gölgeli",
       en: "Black-grey · fuller / shaded",
     },
   },

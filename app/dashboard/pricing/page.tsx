@@ -14,12 +14,12 @@ export default async function DashboardPricingPage() {
         eyebrow={isTurkish ? "Fiyatlama" : "Pricing"}
         title={
           isTurkish
-            ? "Başlangıç fiyatlarını birlikte oturtalım."
+            ? "Başlangıç fiyatlarını belirleyelim."
             : "Let’s shape the starting prices together."
         }
         description={
           isTurkish
-            ? "Sistem müşteriye göstereceği başlangıç seviyesini senin fiyat yapına göre ayarlar."
+            ? "Müşteriye gösterilecek fiyat tahmini, burada girdiğin değerlere göre oluşur."
             : "The system adapts its starting estimates to the way you usually price your work."
         }
       />

@@ -77,7 +77,7 @@ export default async function DashboardLayout({
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
                     {isTurkish
-                      ? "Müşterilerine sunacağın talep formunu ve profil sayfanı buradan yönet."
+                      ? "Profil sayfanı, talep formunu ve fiyat ayarlarını buradan yönet."
                       : "Manage the request form and profile page you present to clients here."}
                   </p>
                   <div className="mt-5">

@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Field } from "@/components/shared/field";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -41,55 +40,56 @@ function getText(locale: PublicLocale) {
     return {
       phases: [
         {
-          navLabel: "1. Başlangıç noktalarını koyalım",
-          title: "Başlangıç noktalarını koyalım",
-          description: "İlk olarak temel seviyeyi yerleştirelim.",
+          navLabel: "1. Temel fiyatları belirleyelim",
+          title: "Temel fiyatları belirleyelim",
+          description: "Önce en temel fiyat seviyelerini belirleyelim.",
         },
         {
-          navLabel: "2. Aynı iş büyüdüğünde ne olur?",
-          title: "Aynı iş büyüdüğünde ne olur?",
-          description: "Burada tasarım aynı. Sadece boyut farkını düşünüyoruz.",
+          navLabel: "2. Boyut büyüdükçe fiyat nasıl değişir?",
+          title: "Boyut büyüdükçe fiyat nasıl değişir?",
+          description: "Burada tasarım aynı kalır; sadece boyut değişir.",
         },
         {
-          navLabel: "3. Farklı durumları görelim",
-          title: "Farklı durumları görelim",
-          description: "Bu örnekler özel durumlarda fiyat yapını anlamamıza yardımcı olur.",
+          navLabel: "3. Farklı işleri karşılaştıralım",
+          title: "Farklı işleri karşılaştıralım",
+          description: "Bu örnekler, farklı işlerde fiyat yaklaşımını netleştirir.",
         },
         {
-          navLabel: "4. Son bir kontrol yapalım",
-          title: "Son bir kontrol yapalım",
-          description: "Son olarak, tahminlerin sana uygun olup olmadığını kontrol edelim.",
+          navLabel: "4. Son kontrol",
+          title: "Son kontrol",
+          description: "Şimdi oluşan tahminlerin sana ne kadar uyduğunu kontrol edelim.",
         },
         {
-          navLabel: "5. Geniş alan işleri",
-          title: "Geniş alan işleri de göstermek istiyor musun?",
-          description: "İstersen büyük işler için de başlangıç seviyeleri belirleyebiliriz.",
+          navLabel: "5. Geniş alan çalışmaları",
+          title: "Geniş alan çalışmaları için de fiyat girmek ister misin?",
+          description: "İstersen büyük alan kaplayan işler için de ayrı başlangıç fiyatları belirleyebilirsin.",
         },
       ],
-      minimumJobPrice: "En küçük işlerde genelde başladığın fiyat",
-      textStartingPrice: "Yazı gibi çok basit işlerde çoğu zaman başladığın fiyat",
-      minimumJobPriceDescription: "Çoğu küçük işte baz alınacak alt seviyeyi belirler.",
-      textStartingPriceDescription: "Yazı ve benzeri basit işler buna yakın davranır.",
-      sizeSeriesTitle: "Aynı işin boyutu büyüdüğünde fiyatın nasıl değişiyor?",
-      sizeSeriesDescription: "Burada tasarım aynı. Sadece boyut farkını düşünüyoruz.",
-      specialCasesTitle: "Farklı durumları görelim",
-      specialCasesDescription: "Bu örnekler özel durumlarda fiyat yapını anlamamıza yardımcı olur.",
-      caseTitle: "Bu iş için müşteriye hangi bandı göstermek istersin?",
-      largeAreasChoice: "Geniş alan işleri de göstermek istiyor musun?",
-      largeAreasChoiceDescription: "İstersen büyük işler için de başlangıç seviyeleri belirleyebiliriz.",
+      minimumJobPrice: "En küçük işlerde başladığın fiyat",
+      textStartingPrice: "Yazı gibi çok basit işlerde başladığın fiyat",
+      minimumJobPriceDescription: "Küçük ve basit işlerde referans alınır.",
+      textStartingPriceDescription: "Kısa yazılar ve benzer sade işler buna yakın hesaplanır.",
+      phaseOneNote: "Müşteriye gösterilecek aralık yaklaşık fiyattır.",
+      sizeSeriesTitle: "Aynı tasarım büyüdükçe fiyatın nasıl değişiyor?",
+      specialCasesTitle: "Farklı işleri karşılaştıralım",
+      caseTitle: "Müşteriye bu iş için hangi fiyat aralığı gösterilsin?",
+      largeAreasChoice: "Bu adımı açmak ister misin?",
+      largeAreasChoiceDescription: "İstersen büyük alan kaplayan işler için de ayrı başlangıç fiyatları belirleyebilirsin.",
+      phaseFiveNote: "Bu adım isteğe bağlıdır. Büyük alan çalışmaları almıyorsan boş bırakabilirsin.",
       largeAreasOptions: {
         enabled: "Evet",
         disabled: "Şimdilik hayır",
       },
-      largeAreaCasesTitle: "Tek bölgede büyük alan örnekleri",
+      largeAreaCasesTitle: "Tek bölgede geniş alan örnekleri",
       wideAreaCasesTitle: "Çok geniş alan örnekleri",
-      wideAreaCaseTitle: "Bu tür işlerde müşteriye hangi seviyeden başlanacağı gösterilsin?",
-      startingFrom: "Başlangıç seviyesi",
+      wideAreaCaseTitle: "Müşteriye bu işler için hangi başlangıç fiyatı gösterilsin?",
+      startingFrom: "Başlangıç fiyatı",
       min: "Alt sınır",
       max: "Üst sınır",
       placeholderAsset: "Örnek görsel alanı",
       placeholderHelp: "Görseli sonra ekleyebilirsin.",
       reviewTitle: "Bu tahmin sana uygun mu?",
+      reviewNote: "Buradaki seçimler, sistemin tahminlerini sana yaklaştırmak için kullanılır.",
       verdicts: {
         "looks-right": "Uygun",
         "slightly-low": "Biraz düşük",
@@ -101,8 +101,9 @@ function getText(locale: PublicLocale) {
       saving: "Kaydediliyor",
       saved: "Fiyat ayarların kaydedildi.",
       failed: "Ayarlar kaydedilirken bir sorun oluştu. Tekrar dene.",
-      estimate: "Müşterinin göreceği başlangıç bandı",
+      estimate: "Müşteriye gösterilecek fiyat tahmini",
       currency: "TL",
+      optionalSinglePriceHint: "Bu işler için tek bir başlangıç fiyatı göstermek çoğu zaman daha uygundur.",
     };
   }
 
@@ -142,8 +143,8 @@ function getText(locale: PublicLocale) {
     sizeSeriesDescription: "The design stays the same here. We’re only thinking about size.",
     specialCasesTitle: "Let’s look at different cases",
     specialCasesDescription: "These examples help us understand your pricing in special situations.",
-    caseTitle: "What range would you want to show for this case?",
-    largeAreasChoice: "Do you want to show large coverage work too?",
+      caseTitle: "What price range should the client see for this piece?",
+    largeAreasChoice: "Do you want to enable this step?",
     largeAreasChoiceDescription: "If you want, we can also set starting levels for bigger pieces.",
     largeAreasOptions: {
       enabled: "Yes",
@@ -169,9 +170,13 @@ function getText(locale: PublicLocale) {
     saving: "Saving",
     saved: "Your pricing settings are saved.",
     failed: "Something went wrong while saving. Try again.",
-    estimate: "The starting band the client would see",
-    currency: "TRY",
-  };
+      estimate: "The price estimate shown to the client",
+      currency: "TRY",
+      phaseOneNote: "The range shown to the client is an approximate price.",
+      reviewNote: "These choices help pull the system estimates closer to your pricing.",
+      phaseFiveNote: "This step is optional. Leave it blank if you do not take large coverage work.",
+      optionalSinglePriceHint: "For these pieces, showing a single starting price is usually more suitable.",
+    };
 }
 
 function CurrencyInput({
@@ -220,14 +225,22 @@ function ChoiceGroup<T extends string>({
   onChange,
   options,
   columnsClassName = "sm:grid-cols-3",
+  segmented = false,
 }: {
   value: T | "";
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string; description?: string }>;
   columnsClassName?: string;
+  segmented?: boolean;
 }) {
   return (
-    <div className={cn("grid gap-2", columnsClassName)}>
+    <div
+      className={cn(
+        "grid gap-2",
+        columnsClassName,
+        segmented && "rounded-[20px] border border-white/8 bg-white/[0.03] p-1.5",
+      )}
+    >
       {options.map((option) => {
         const active = value === option.value;
         return (
@@ -239,7 +252,9 @@ function ChoiceGroup<T extends string>({
               "rounded-2xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35 focus-visible:ring-offset-0",
               active
                 ? "border-[var(--accent)]/34 bg-[var(--accent)]/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                : "border-white/8 bg-white/[0.015] text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)] hover:border-white/16 hover:bg-white/[0.04]",
+                : segmented
+                  ? "border-transparent bg-transparent text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)] hover:border-white/10 hover:bg-white/[0.04]"
+                  : "border-white/8 bg-white/[0.015] text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)] hover:border-white/16 hover:bg-white/[0.04]",
             )}
           >
             <span className="text-sm font-medium">{option.label}</span>
@@ -281,6 +296,10 @@ function toInputNumber(value: string, fallback = 0) {
 
 function toDisplayCurrency(value: number, locale: PublicLocale) {
   return formatCurrencyValue(value, locale, "TRY");
+}
+
+function getEstimateDisplayClass(displayLabel: string) {
+  return displayLabel.trim().endsWith("+") ? "text-[2.15rem]" : "text-2xl";
 }
 
 function areRangeAnswersEqual(
@@ -638,16 +657,11 @@ export function PricingForm({
   return (
     <Card className="surface-border overflow-hidden border-white/7 bg-[linear-gradient(180deg,rgba(31,33,39,0.96),rgba(22,24,29,0.98))] shadow-[0_24px_48px_rgba(0,0,0,0.2)]">
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle>{currentPhaseCopy.title}</CardTitle>
-            <CardDescription className="mt-2 max-w-[56ch] text-[15px] leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
-              {currentPhaseCopy.description}
-            </CardDescription>
-          </div>
-          <Badge variant="muted" className="w-fit">
-            v2
-          </Badge>
+        <div>
+          <CardTitle>{currentPhaseCopy.title}</CardTitle>
+          <CardDescription className="mt-2 max-w-[56ch] text-[15px] leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+            {currentPhaseCopy.description}
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-5 pt-0">
@@ -655,17 +669,19 @@ export function PricingForm({
           {copy.phases.map((phaseItem, index) => {
             const active = phase === index + 1;
             return (
-              <div
+              <button
                 key={phaseItem.navLabel}
+                type="button"
+                onClick={() => setPhase((index + 1) as Phase)}
                 className={cn(
-                  "rounded-[18px] border px-4 py-3 text-sm transition",
+                  "rounded-[18px] border px-3 py-3 text-left text-[13px] leading-5 transition",
                   active
                     ? "border-[var(--accent)]/40 bg-[linear-gradient(180deg,rgba(247,177,93,0.18),rgba(247,177,93,0.1))] text-white shadow-[0_12px_24px_rgba(0,0,0,0.16)]"
-                    : "border-white/7 bg-[color:color-mix(in_srgb,var(--background)_76%,white_5%)] text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]",
+                    : "border-white/7 bg-[color:color-mix(in_srgb,var(--background)_76%,white_5%)] text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)] hover:border-white/12 hover:bg-white/[0.03] hover:text-white",
                 )}
               >
                 {phaseItem.navLabel}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -688,6 +704,9 @@ export function PricingForm({
               helper={copy.textStartingPriceDescription}
               normalizeOnBlur
             />
+            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)] lg:col-span-2">
+              {copy.phaseOneNote}
+            </p>
             {anchorCase && anchorCaseValues ? (
               <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5 lg:col-span-2">
                 <div className="grid gap-5 md:grid-cols-[252px_minmax(0,1fr)] md:items-start">
@@ -736,9 +755,9 @@ export function PricingForm({
                         label={copy.max}
                         suffix={copy.currency}
                         normalizeOnBlur
-                      />
-                    </div>
-                    <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                          />
+                        </div>
+                    <p className="border-t border-white/8 pt-3 text-base font-semibold text-[color:color-mix(in_srgb,var(--foreground-muted)_96%,white_10%)]">
                       {`${toDisplayCurrency(toInputNumber(anchorCaseValues.min), locale)} – ${toDisplayCurrency(toInputNumber(anchorCaseValues.max), locale)}`}
                     </p>
                   </div>
@@ -751,12 +770,6 @@ export function PricingForm({
         {phase === 2 ? (
           <div className="space-y-6">
             <div className="space-y-3">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-white">{copy.sizeSeriesTitle}</p>
-                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
-                  {copy.sizeSeriesDescription}
-                </p>
-              </div>
               <div className="grid gap-4 xl:grid-cols-2">
                 {sizeSeriesCases.map((item) => {
                   const currentCase = onboardingCases.find((entry) => entry.id === item.id);
@@ -811,7 +824,7 @@ export function PricingForm({
                               normalizeOnBlur
                             />
                           </div>
-                          <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                          <p className="border-t border-white/8 pt-3 text-base font-semibold text-[color:color-mix(in_srgb,var(--foreground-muted)_96%,white_10%)]">
                             {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
                           </p>
                         </div>
@@ -827,12 +840,6 @@ export function PricingForm({
         {phase === 3 ? (
           <div className="space-y-6">
             <div className="space-y-3">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-white">{copy.specialCasesTitle}</p>
-                <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
-                  {copy.specialCasesDescription}
-                </p>
-              </div>
               <div className="grid gap-4 xl:grid-cols-2">
                 {specialCases.map((item) => {
                   const currentCase = onboardingCases.find((entry) => entry.id === item.id);
@@ -887,7 +894,7 @@ export function PricingForm({
                               normalizeOnBlur
                             />
                           </div>
-                          <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                          <p className="border-t border-white/8 pt-3 text-base font-semibold text-[color:color-mix(in_srgb,var(--foreground-muted)_96%,white_10%)]">
                             {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
                           </p>
                         </div>
@@ -902,6 +909,9 @@ export function PricingForm({
 
         {phase === 4 ? (
           <div className="space-y-3">
+            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+              {copy.reviewNote}
+            </p>
             <div className="grid gap-4 xl:grid-cols-2">
             {reviewEstimates.map((item) => (
               <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
@@ -925,7 +935,9 @@ export function PricingForm({
                       <p className="pt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
                         {copy.estimate}
                       </p>
-                      <p className="text-2xl font-semibold tracking-tight text-white">{item.estimate.displayLabel}</p>
+                      <p className={cn("font-semibold tracking-tight text-white", getEstimateDisplayClass(item.estimate.displayLabel))}>
+                        {item.estimate.displayLabel}
+                      </p>
                     </div>
                     <Field label={copy.reviewTitle}>
                       <ChoiceGroup
@@ -942,6 +954,7 @@ export function PricingForm({
                           { value: "slightly-high", label: copy.verdicts["slightly-high"] },
                         ]}
                         columnsClassName="sm:grid-cols-3"
+                        segmented
                       />
                     </Field>
                   </div>
@@ -954,7 +967,7 @@ export function PricingForm({
 
         {phase === 5 ? (
           <div className="space-y-6">
-            <Field label={copy.largeAreasChoice} description={copy.largeAreasChoiceDescription}>
+            <Field label={copy.largeAreasChoice}>
               <ChoiceGroup
                 value={largeAreaChoice}
                 onChange={setLargeAreaChoice}
@@ -965,6 +978,9 @@ export function PricingForm({
                 columnsClassName="sm:grid-cols-2"
               />
             </Field>
+            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+              {copy.phaseFiveNote}
+            </p>
 
             {largeAreaChoice === "enabled" ? (
               <div className="space-y-6">
@@ -1026,7 +1042,7 @@ export function PricingForm({
                                   normalizeOnBlur
                                 />
                               </div>
-                              <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                              <p className="border-t border-white/8 pt-3 text-base font-semibold text-[color:color-mix(in_srgb,var(--foreground-muted)_96%,white_10%)]">
                                 {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
                               </p>
                             </div>
@@ -1040,6 +1056,9 @@ export function PricingForm({
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-white">{copy.wideAreaCasesTitle}</p>
+                    <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+                      {copy.optionalSinglePriceHint}
+                    </p>
                   </div>
                   <div className="grid gap-4 xl:grid-cols-2">
                     {wideAreaDisplayCases.map((item) => {
@@ -1069,21 +1088,23 @@ export function PricingForm({
                                   {copy.wideAreaCaseTitle}
                                 </p>
                               </div>
-                              <CurrencyInput
-                                value={currentCase.startingFrom}
-                                onChange={(value) => {
-                                  setHasEditedCaseRanges(true);
-                                  setWideAreaCases((current) =>
-                                    current.map((entry) =>
-                                      entry.id === item.id ? { ...entry, startingFrom: value } : entry,
-                                    ),
-                                  );
-                                }}
-                                label={copy.startingFrom}
-                                suffix={copy.currency}
-                                normalizeOnBlur
-                              />
-                              <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_94%,white_10%)]">
+                              <div className="max-w-xs">
+                                <CurrencyInput
+                                  value={currentCase.startingFrom}
+                                  onChange={(value) => {
+                                    setHasEditedCaseRanges(true);
+                                    setWideAreaCases((current) =>
+                                      current.map((entry) =>
+                                        entry.id === item.id ? { ...entry, startingFrom: value } : entry,
+                                      ),
+                                    );
+                                  }}
+                                  label={copy.startingFrom}
+                                  suffix={copy.currency}
+                                  normalizeOnBlur
+                                />
+                              </div>
+                              <p className="border-t border-white/8 pt-3 text-[2rem] font-semibold tracking-tight text-white">
                                 {`${toDisplayCurrency(toInputNumber(currentCase.startingFrom), locale)}+`}
                               </p>
                             </div>

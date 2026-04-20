@@ -34,7 +34,7 @@ export function PublicRouteCard({
         <div className="min-w-0">
           <p className="text-xs text-[var(--foreground-muted)]">
             {locale === "tr"
-              ? "Bu link, müşteriyi doğrudan profil sayfana götürür."
+              ? "Müşteri bu linkten profil sayfana ulaşır."
               : "This link takes clients directly to your profile page."}
           </p>
         </div>
