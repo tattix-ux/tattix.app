@@ -43,6 +43,9 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     status,
     pricingVersion: row.pricing_version ? String(row.pricing_version) : null,
     pricingSource: row.pricing_source ? String(row.pricing_source) as ClientSubmission["pricingSource"] : null,
+    areaScope: row.area_scope ? String(row.area_scope) as ClientSubmission["areaScope"] : null,
+    largeAreaCoverage: row.large_area_coverage ? String(row.large_area_coverage) as ClientSubmission["largeAreaCoverage"] : null,
+    wideAreaTarget: row.wide_area_target ? String(row.wide_area_target) as ClientSubmission["wideAreaTarget"] : null,
     requestType: row.request_type ? String(row.request_type) as ClientSubmission["requestType"] : null,
     estimateMode: row.estimate_mode ? String(row.estimate_mode) as ClientSubmission["estimateMode"] : null,
     featuredDesignPricingMode:
@@ -69,6 +72,12 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     gender: row.customer_gender ? String(row.customer_gender) as ClientSubmission["gender"] : null,
     ageRange: row.customer_age_range ? String(row.customer_age_range) as ClientSubmission["ageRange"] : null,
     workStyle: row.work_style ? String(row.work_style) as ClientSubmission["workStyle"] : null,
+    coverUp:
+      typeof row.cover_up === "boolean"
+        ? row.cover_up
+        : row.cover_up === null || row.cover_up === undefined
+          ? null
+          : Boolean(row.cover_up),
     style: String(row.style) as ClientSubmission["style"],
     notes: row.notes ? String(row.notes) : null,
     estimatedMin: Number(row.estimated_min),

@@ -200,6 +200,8 @@ function getCopy(locale: PublicLocale) {
         starting_from: "Tahmini başlangıç aralığı",
       },
       summaryTitle: "Seçim özeti",
+      startingFromExtra: "Net fiyat, detaylar netleştikten sonra belirlenir.",
+      wideAreaExtraInfo: "Bu tür işler çoğu zaman görüşme sonrası netleşir.",
       summaryLabels: {
         requestType: "İş tipi",
         areaScope: "Alan",
@@ -210,6 +212,7 @@ function getCopy(locale: PublicLocale) {
         size: "Boyut",
         color: "Renk",
         workStyle: "İşin karakteri",
+        coverUp: "Kapatma durumu",
       },
       sendWhatsapp: "WhatsApp'tan gönder",
       copyMessage: "Mesajı kopyala",
@@ -359,6 +362,8 @@ function getCopy(locale: PublicLocale) {
       starting_from: "Starting price",
     },
     summaryTitle: "Summary",
+    startingFromExtra: "The final price is set after the details are clarified.",
+    wideAreaExtraInfo: "Requests like this are often clarified after a conversation.",
     summaryLabels: {
       requestType: "Job type",
       areaScope: "Area",
@@ -369,6 +374,7 @@ function getCopy(locale: PublicLocale) {
       size: "Size",
       color: "Color",
       workStyle: "Character of the piece",
+      coverUp: "Cover-up",
     },
     sendWhatsapp: "Send on WhatsApp",
     copyMessage: "Copy message",
@@ -677,8 +683,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       });
     }
 
+    const shouldShowCoverUp =
+      draft.pricingSource === "custom_request" &&
+      (draft.coverUp === true || draft.areaScope === "large_single_area" || draft.areaScope === "wide_area");
+
+    if (shouldShowCoverUp && draft.coverUp !== null && draft.coverUp !== undefined) {
+      items.push({
+        label: copy.summaryLabels.coverUp,
+        value: draft.coverUp ? (locale === "tr" ? "Evet" : "Yes") : (locale === "tr" ? "Hayır" : "No"),
+      });
+    }
+
     return items;
-  }, [copy.colorModes, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.largeAreaCoverage, draft.pricingSource, draft.requestType, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
+  }, [copy.colorModes, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.coverUp, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.coverUp, draft.largeAreaCoverage, draft.pricingSource, draft.requestType, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
 
   function resetCustomPathState(nextAreaScope?: AreaScopeValue | "") {
     setField("requestType", "");
@@ -1629,6 +1646,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                     {result.disclaimer}
                   </p>
+                  {result.estimateMode === "starting_from" ? (
+                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.startingFromExtra}
+                    </p>
+                  ) : null}
+                  {draft.pricingSource === "custom_request" && draft.areaScope === "wide_area" ? (
+                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.wideAreaExtraInfo}
+                    </p>
+                  ) : null}
                   {draft.pricingSource === "featured_design" ? (
                     <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                       {copy.featuredDisclaimer}

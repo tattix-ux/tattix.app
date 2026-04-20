@@ -20,7 +20,13 @@ import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/bo
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import { intentOptions, styleOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
-import { getRequestTypeLabel, getWorkStyleLabel } from "@/lib/pricing/v2/output";
+import {
+  getAreaScopeLabel,
+  getLargeAreaCoverageLabel,
+  getRequestTypeLabel,
+  getWideAreaTargetLabel,
+  getWorkStyleLabel,
+} from "@/lib/pricing/v2/output";
 import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
 import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
@@ -92,9 +98,14 @@ const leadCopy = {
       markLost: "Mark as lost",
       placement: "Placement",
       size: "Size",
+      areaScope: "Area size",
+      areaCoverage: "Coverage",
+      wideAreaTarget: "Closest area",
       intent: "Request type",
       style: "Style",
       workStyle: "Work style",
+      estimateType: "Estimate type",
+      coverUp: "Cover-up",
       city: "City",
       timing: "Preferred time",
       notes: "Notes",
@@ -176,9 +187,14 @@ const leadCopy = {
       markLost: "Satış olmadı",
       placement: "Yerleşim",
       size: "Yaklaşık boyut",
+      areaScope: "Alan büyüklüğü",
+      areaCoverage: "Kaplama seviyesi",
+      wideAreaTarget: "Yakın olduğu alan",
       intent: "Talep tipi",
       style: "Stil",
       workStyle: "İşçilik karakteri",
+      estimateType: "Tahmin tipi",
+      coverUp: "Kapatma durumu",
       city: "Şehir",
       timing: "Tercih edilen zaman",
       notes: "Notlar",
@@ -297,6 +313,50 @@ function getDisplayedWorkStyle(lead: ClientSubmission, locale: PublicLocale) {
   return formatStyle(lead.style, locale);
 }
 
+function getDisplayedAreaScope(lead: ClientSubmission, locale: PublicLocale) {
+  if (!lead.areaScope) {
+    return null;
+  }
+
+  return getAreaScopeLabel(lead.areaScope, locale);
+}
+
+function getDisplayedCoverage(lead: ClientSubmission, locale: PublicLocale) {
+  return lead.largeAreaCoverage ? getLargeAreaCoverageLabel(lead.largeAreaCoverage, locale) : null;
+}
+
+function getDisplayedWideAreaTarget(lead: ClientSubmission, locale: PublicLocale) {
+  return lead.wideAreaTarget ? getWideAreaTargetLabel(lead.wideAreaTarget, locale) : null;
+}
+
+function getEstimateModeLabel(value: ClientSubmission["estimateMode"], locale: PublicLocale) {
+  if (!value) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    if (value === "range") return "Aralık";
+    if (value === "soft_range") return "Yaklaşık bant";
+    return "Başlangıç seviyesi";
+  }
+
+  if (value === "range") return "Range";
+  if (value === "soft_range") return "Soft range";
+  return "Starting level";
+}
+
+function getCoverUpLabel(value: ClientSubmission["coverUp"], locale: PublicLocale) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    return value ? "Evet" : "Hayır";
+  }
+
+  return value ? "Yes" : "No";
+}
+
 function formatPlacement(detail: ClientSubmission["bodyAreaDetail"], locale: PublicLocale) {
   if (locale === "tr") {
     return placementLabelsTr[detail] ?? getPlacementDetailLabel(detail);
@@ -397,6 +457,10 @@ function getRequestLabel(lead: ClientSubmission, locale: PublicLocale, designs: 
 
   if (lead.requestType) {
     return getRequestTypeLabel(lead.requestType, locale);
+  }
+
+  if (lead.areaScope) {
+    return getAreaScopeLabel(lead.areaScope, locale);
   }
 
   return formatIntent(lead.intent, locale);
@@ -794,10 +858,26 @@ export function LeadsTable({
               <p className="text-sm text-white">{getSizeLabel(lead, locale)}</p>
             </div>
             <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.areaScope}</p>
+              <p className="text-sm text-white">{getDisplayedAreaScope(lead, locale) ?? "—"}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.areaCoverage}</p>
+              <p className="text-sm text-white">{getDisplayedCoverage(lead, locale) ?? "—"}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.wideAreaTarget}</p>
+              <p className="text-sm text-white">{getDisplayedWideAreaTarget(lead, locale) ?? "—"}</p>
+            </div>
+            <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
                 {lead.workStyle ? copy.table.workStyle : copy.table.style}
               </p>
               <p className="text-sm text-white">{getDisplayedWorkStyle(lead, locale)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.coverUp}</p>
+              <p className="text-sm text-white">{getCoverUpLabel(lead.coverUp, locale) ?? "—"}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.city}</p>
@@ -810,6 +890,10 @@ export function LeadsTable({
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.shownEstimate}</p>
               <p className="text-sm text-white">{getDisplayedEstimate(lead, currency)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.estimateType}</p>
+              <p className="text-sm text-white">{getEstimateModeLabel(lead.estimateMode, locale) ?? "—"}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.selectedDesign}</p>
@@ -1110,6 +1194,7 @@ export function LeadsTable({
                     <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--foreground-muted)]">
                       <span>{formatLeadDate(lead.createdAt, locale)}</span>
                       <span>{copy.table.source}: {getPricingSourceLabel(lead, locale)}</span>
+                      {getDisplayedAreaScope(lead, locale) ? <span>{getDisplayedAreaScope(lead, locale)}</span> : null}
                       {getReferenceImageUrl(lead) ? (
                         <span className="inline-flex items-center gap-1">
                           <ImageIcon className="size-4" />
@@ -1188,6 +1273,16 @@ export function LeadsTable({
                                 {notesPreview(lead.notes, copy.table.noNotes)}
                               </p>
                               <div className="flex flex-wrap gap-2">
+                                {getDisplayedAreaScope(lead, locale) ? (
+                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
+                                    {getDisplayedAreaScope(lead, locale)}
+                                  </span>
+                                ) : null}
+                                {getEstimateModeLabel(lead.estimateMode, locale) ? (
+                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
+                                    {getEstimateModeLabel(lead.estimateMode, locale)}
+                                  </span>
+                                ) : null}
                                 {getReferenceImageUrl(lead) ? (
                                   <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}

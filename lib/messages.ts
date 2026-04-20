@@ -99,6 +99,18 @@ function getColorLabel(
   return "Color";
 }
 
+function getCoverUpLabel(value: SubmissionRequest["coverUp"], locale: PublicLocale) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    return value ? "Evet" : "Hayır";
+  }
+
+  return value ? "Yes" : "No";
+}
+
 export function buildSubmissionMessage(
   submission: SubmissionRequest,
   options: {
@@ -112,8 +124,16 @@ export function buildSubmissionMessage(
   const { locale, pricingSource, requestTypeLabel, selectedDesignTitle, displayEstimateLabel } = options;
   const copy = getPublicCopy(locale);
   const labels = copy.summaryLabels;
-  const sizeLabel = getSizeLabel(submission.sizeCategory, locale);
-  const manualSize = formatApproximateSizeLabel(submission) ?? sizeLabel;
+  const sizeLabel = submission.sizeCategory ? getSizeLabel(submission.sizeCategory, locale) : null;
+  const manualSize = formatApproximateSizeLabel(submission);
+  const displayedSize =
+    sizeLabel && manualSize && manualSize !== sizeLabel
+      ? `${sizeLabel} (${manualSize})`
+      : manualSize ?? sizeLabel;
+  const areaScopeLine =
+    pricingSource === "custom_request" && submission.areaScope
+      ? `${locale === "tr" ? "Alan büyüklüğü" : "Area size"}: ${getAreaScopeLabel(submission.areaScope, locale)}`
+      : null;
   const requestTypeLine =
     pricingSource === "featured_design"
       ? selectedDesignTitle
@@ -121,15 +141,14 @@ export function buildSubmissionMessage(
         : null
       : requestTypeLabel
         ? `${labels.intent}: ${requestTypeLabel}`
-        : submission.areaScope
-          ? `${locale === "tr" ? "Alan" : "Area"}: ${getAreaScopeLabel(submission.areaScope, locale)}`
-          : null;
+        : null;
   const lines = [
     locale === "tr"
       ? "Merhaba, dövme talebim için bilgi almak istiyorum."
       : "Hi! I want to discuss a tattoo.",
     "",
     requestTypeLine,
+    areaScopeLine,
   ];
 
   lines.push(
@@ -138,8 +157,11 @@ export function buildSubmissionMessage(
         ? getWideAreaTargetLabel(submission.wideAreaTarget, locale)
         : getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale)
     }`,
-    `${labels.size}: ${sizeLabel}${manualSize && manualSize !== sizeLabel ? ` (${manualSize})` : ""}`,
   );
+
+  if (submission.areaScope !== "wide_area" && displayedSize) {
+    lines.push(`${labels.size}: ${displayedSize}`);
+  }
 
   if (submission.largeAreaCoverage) {
     lines.push(
@@ -154,6 +176,15 @@ export function buildSubmissionMessage(
 
   if (pricingSource === "custom_request" && submission.workStyle) {
     lines.push(`${locale === "tr" ? "İşin karakteri" : "Character of the piece"}: ${getWorkStyleLabel(submission.workStyle, locale)}`);
+  }
+
+  const coverUpLabel = getCoverUpLabel(submission.coverUp, locale);
+  const shouldShowCoverUp =
+    submission.coverUp === true ||
+    submission.areaScope === "large_single_area" ||
+    submission.areaScope === "wide_area";
+  if (coverUpLabel && shouldShowCoverUp) {
+    lines.push(`${locale === "tr" ? "Kapatma durumu" : "Cover-up"}: ${coverUpLabel}`);
   }
 
   if (submission.referenceImage) {

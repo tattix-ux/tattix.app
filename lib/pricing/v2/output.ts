@@ -21,10 +21,10 @@ export function buildEstimateSummaryText(
     }
 
     if (mode === "soft_range") {
-      return "Bu tür işler seçilen boyut, bölge ve içeriğe göre genelde bu bantta değerlendirilir.";
+      return "Bu tür işler seçilen alan, boyut ve içeriğe göre genelde bu bantta değerlendirilir.";
     }
 
-    return "Bu tür işler genelde bu seviyeden başlayan bir değerlendirme gerektirir. Net fiyat, tasarım ve detaylar netleştikten sonra belirlenir.";
+    return "Bu tür işler genelde bu seviyeden başlayan bir değerlendirme gerektirir.";
   }
 
   if (mode === "range") {
@@ -32,10 +32,10 @@ export function buildEstimateSummaryText(
   }
 
   if (mode === "soft_range") {
-    return "Requests like this are usually evaluated within this band depending on size, placement, and content.";
+    return "Requests like this are usually evaluated within this band depending on area, size, and content.";
   }
 
-  return "Requests like this usually need an evaluation that starts from this level. The final price is set after the design and details are clarified.";
+  return "Requests like this usually need an evaluation that starts from this level.";
 }
 
 export function buildDisplayEstimateLabel(

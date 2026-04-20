@@ -440,6 +440,9 @@ export type ClientSubmission = {
   status: LeadStatus;
   pricingVersion: string | null;
   pricingSource: PricingSourceValue | null;
+  areaScope: AreaScopeValue | null;
+  largeAreaCoverage: LargeAreaCoverageValue | null;
+  wideAreaTarget: WideAreaTargetValue | null;
   requestType: RequestTypeValue | null;
   estimateMode: EstimateMode | null;
   featuredDesignPricingMode: FeaturedDesignPricingMode | null;
@@ -462,6 +465,7 @@ export type ClientSubmission = {
   gender: CustomerGenderValue | null;
   ageRange: CustomerAgeRangeValue | null;
   workStyle: WorkStyleValue | null;
+  coverUp: boolean | null;
   style: string;
   notes: string | null;
   estimatedMin: number;

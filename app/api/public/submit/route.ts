@@ -83,6 +83,9 @@ export async function POST(request: Request) {
     const insertPayload = {
       artist_id: artist.profile.id,
       intent: submission.intent,
+      area_scope: submission.areaScope ?? null,
+      large_area_coverage: submission.largeAreaCoverage ?? null,
+      wide_area_target: submission.wideAreaTarget ?? null,
       selected_design_id: submission.selectedDesignId ?? null,
       body_area_group: submission.bodyAreaGroup,
       body_area_detail: submission.bodyAreaDetail,
@@ -100,6 +103,7 @@ export async function POST(request: Request) {
       customer_gender: submission.gender ?? null,
       customer_age_range: submission.ageRange ?? null,
       work_style: submission.workStyle ?? null,
+      cover_up: submission.coverUp ?? null,
       style: "custom",
       notes: combinedNotes || null,
       estimated_min: estimate.min,
@@ -122,6 +126,10 @@ export async function POST(request: Request) {
         error.message.toLowerCase().includes("customer_gender") ||
         error.message.toLowerCase().includes("customer_age_range") ||
         error.message.toLowerCase().includes("work_style") ||
+        error.message.toLowerCase().includes("area_scope") ||
+        error.message.toLowerCase().includes("large_area_coverage") ||
+        error.message.toLowerCase().includes("wide_area_target") ||
+        error.message.toLowerCase().includes("cover_up") ||
         error.message.toLowerCase().includes("pricing_version") ||
         error.message.toLowerCase().includes("pricing_source") ||
         error.message.toLowerCase().includes("estimate_mode") ||
@@ -132,6 +140,10 @@ export async function POST(request: Request) {
         customer_gender: _customerGender,
         customer_age_range: _customerAgeRange,
         work_style: _workStyle,
+        area_scope: _areaScope,
+        large_area_coverage: _largeAreaCoverage,
+        wide_area_target: _wideAreaTarget,
+        cover_up: _coverUp,
         pricing_version: _pricingVersion,
         pricing_source: _pricingSource,
         request_type: _requestType,
