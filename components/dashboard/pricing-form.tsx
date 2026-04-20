@@ -49,41 +49,44 @@ function getText(locale: PublicLocale) {
       textStartingPrice: "Yazı gibi çok basit işlerde çoğu zaman başladığın fiyat",
       minimumJobPriceDescription: "Sistemin çoğu küçük işte baz alacağı alt seviyeyi belirler.",
       textStartingPriceDescription: "Yazı ve benzeri basit işler buna yakın davranır.",
-      colorImpact: "Aynı iş renkli olduğunda fiyatın genelde nasıl değişir?",
-      colorImpactDescription: "Siyah versiyona göre nasıl davrandığını seç.",
-      coverUpImpact: "Kapatma gereken işlerde fiyatın genelde nasıl davranır?",
-      coverUpImpactDescription: "Aynı boyuttaki standart işe göre düşün.",
-      workStyleTitle: "Bazı işlerde fiyat yapın biraz farklı davranabilir. Bunu da kısaca netleştirelim.",
+      colorImpact: "Aynı dövmenin renkli halinde fiyatın çoğu zaman nasıl başlar?",
+      colorImpactDescription: "Siyah haliyle kıyaslayarak düşün.",
+      coverUpImpact: "Aynı boyutta bir iş kapatma olduğunda fiyatın çoğu zaman nasıl başlar?",
+      coverUpImpactDescription: "Standart uygulamayla kıyaslayarak düşün.",
+      workStyleTitle: "Bazı işlerde fiyatın biraz farklı davranabilir. Kısa örneklerle bunu da netleştirelim.",
       workStyleFields: {
         clean_line: {
-          label: "Sade çizgisel işlerde fiyatın çoğu zaman nasıl kalır?",
-          description: "Temiz, basit ve çizgi ağırlıklı işler için düşün.",
-        },
-        shaded_detailed: {
-          label: "Daha işçilikli veya gölgeli işlerde fiyat genelde nereye gider?",
-          description: "Daha fazla emek ve işçilik isteyen işler için düşün.",
+          label: "İnce çizgi, küçük sembol veya sade floral gibi işlerde fiyatın çoğu zaman nasıl kalır?",
+          description: "Daha temiz ve çizgi ağırlıklı işler için düşün.",
         },
         precision_symmetric: {
-          label: "Hassasiyet ve simetri isteyen işlerde fiyatın nasıl değişir?",
-          description: "Daha kontrollü çalışma gerektiren işler için düşün.",
+          label: "Geometrik, ornamental düzen veya simetri isteyen işlerde fiyatın çoğu zaman nasıl başlar?",
+          description: "Daha dikkatli yerleşim ve kontrol isteyen işler için düşün.",
+        },
+        shaded_detailed: {
+          label: "Daha gerçekçi, daha dolu veya gölgeli işlerde fiyatın çoğu zaman nasıl başlar?",
+          description: "İşçilik süresi uzayan işler için düşün.",
         },
       },
       leadPreference: "Sistemin nasıl çalışmasını istersin?",
       leadPreferenceDescription: "Başlangıç bandı biraz daha açık mı, biraz daha filtreli mi olsun?",
       impactOptions: {
         low: {
-          label: "Genelde benzer kalır",
+          label: "Genelde benzer seviyede kalır",
+          description: "Çoğu işte ayrı bir başlangıç açmaz.",
         },
         medium: {
-          label: "Bir miktar yukarı çıkar",
+          label: "Aynı işin daha pahalı tarafına geçer",
+          description: "Benzer işe göre daha yukarıdan açılır.",
         },
         high: {
-          label: "Belirgin şekilde yukarı çıkar",
+          label: "Çoğu zaman üst seviyeden başlar",
+          description: "Neredeyse her seferinde üst banttan açılır.",
         },
       },
       coverUpOptions: {
-        medium: "Biraz daha yukarı çıkar",
-        high: "Belirgin şekilde yukarı çıkar",
+        medium: "Standart işten daha yukarı başlar",
+        high: "Çoğu zaman üst seviyeden başlar",
       },
       leadOptions: {
         lead_friendly: "Daha fazla lead gelsin",
@@ -138,41 +141,44 @@ function getText(locale: PublicLocale) {
     textStartingPrice: "Where do very simple text jobs usually start?",
     minimumJobPriceDescription: "This sets the lower level the system uses for most small jobs.",
     textStartingPriceDescription: "Very simple text-like jobs stay close to this.",
-    colorImpact: "When the same piece becomes color, how does your price usually move?",
-    colorImpactDescription: "Think about how it behaves compared to the black version.",
-    coverUpImpact: "When a piece needs a cover-up, how does your price usually behave?",
-    coverUpImpactDescription: "Compare it to a standard piece of the same size.",
-    workStyleTitle: "Some jobs can make your pricing behave a little differently. Let’s set that quickly too.",
+    colorImpact: "When the same tattoo becomes color, where does your price usually start?",
+    colorImpactDescription: "Think about it compared to the black version.",
+    coverUpImpact: "When a piece becomes a cover-up at the same size, where does your price usually start?",
+    coverUpImpactDescription: "Compare it to the standard version of the same piece.",
+    workStyleTitle: "Some jobs can shift your pricing a bit. Let’s pin that down with short examples.",
     workStyleFields: {
       clean_line: {
-        label: "With clean line pieces, where does your price usually stay?",
-        description: "Think of clean, simple, line-heavy pieces.",
-      },
-      shaded_detailed: {
-        label: "With more worked or shaded pieces, where does your price usually go?",
-        description: "Think of pieces that need more labor and craftsmanship.",
+        label: "With fine line, small symbols, or simple floral pieces, where does your price usually stay?",
+        description: "Think of cleaner, line-led work.",
       },
       precision_symmetric: {
-        label: "With pieces that need precision and symmetry, how does your price change?",
-        description: "Think of work that needs more control and precision.",
+        label: "With geometric, ornamental, or symmetry-led pieces, where does your price usually start?",
+        description: "Think of work that needs more control and careful placement.",
+      },
+      shaded_detailed: {
+        label: "With more realistic, fuller, or shaded pieces, where does your price usually start?",
+        description: "Think of work that takes longer to execute.",
       },
     },
     leadPreference: "How do you want the system to behave?",
     leadPreferenceDescription: "Should the starting band stay a bit more open or a bit more filtered?",
     impactOptions: {
       low: {
-        label: "Usually stays about the same",
+        label: "Usually stays around the same level",
+        description: "It does not open a separate starting level most of the time.",
       },
       medium: {
-        label: "Moves up a bit",
+        label: "It moves into the pricier side of the same job",
+        description: "It usually opens a bit higher than the standard version.",
       },
       high: {
-        label: "Moves up clearly",
+        label: "It usually starts from the upper level",
+        description: "It opens from the upper band most of the time.",
       },
     },
     coverUpOptions: {
-      medium: "Moves up a bit",
-      high: "Moves up clearly",
+      medium: "It starts above the standard version",
+      high: "It usually starts from the upper level",
     },
     leadOptions: {
       lead_friendly: "Bring in more leads",
@@ -337,8 +343,8 @@ function ImageSlotPreview({
   const fitClassName = imagePresentation?.fit === "cover" ? "object-cover" : "object-contain";
   const sizeClassName =
     variant === "case"
-      ? "h-[176px] md:h-[188px]"
-      : "h-[160px] md:h-[168px]";
+      ? "h-[224px] md:h-[252px]"
+      : "h-[176px] md:h-[196px]";
 
   if (!imageSlot || hasError) {
     return (
@@ -355,10 +361,10 @@ function ImageSlotPreview({
   }
 
   return (
-    <div className={cn("overflow-hidden rounded-[22px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)]", sizeClassName)}>
-      <div className={cn("flex h-full w-full items-center justify-center", frameClassName)}>
-        <img
-          src={imageSlot}
+      <div className={cn("overflow-hidden rounded-[22px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", sizeClassName)}>
+        <div className={cn("flex h-full w-full items-center justify-center", frameClassName)}>
+          <img
+            src={imageSlot}
           alt=""
           className={cn("h-full w-full", fitClassName, imagePresentation?.imageClassName)}
           onError={() => setHasError(true)}
@@ -631,8 +637,8 @@ export function PricingForm({
                 {(
                   [
                     ["clean_line", copy.workStyleFields.clean_line],
-                    ["shaded_detailed", copy.workStyleFields.shaded_detailed],
                     ["precision_symmetric", copy.workStyleFields.precision_symmetric],
+                    ["shaded_detailed", copy.workStyleFields.shaded_detailed],
                   ] as const
                 ).map(([key, field]) => (
                   <Field key={key} label={field.label} description={field.description}>
@@ -699,7 +705,7 @@ export function PricingForm({
 
                     return (
                       <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                        <div className="grid gap-4 md:grid-cols-[176px_minmax(0,1fr)] md:items-start">
+                        <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
                           <ImageSlotPreview
                             imageSlot={item.imageSlot}
                             imagePresentation={item.imagePresentation}
@@ -707,7 +713,7 @@ export function PricingForm({
                             placeholderHelp={copy.placeholderHelp}
                             variant="case"
                           />
-                          <div className="space-y-4">
+                          <div className="space-y-4 md:pt-1">
                             <div className="space-y-2">
                               <p className="text-base font-semibold text-white">{item.title[locale]}</p>
                               <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
@@ -762,7 +768,7 @@ export function PricingForm({
             <div className="grid gap-4 xl:grid-cols-2">
             {reviewEstimates.map((item) => (
               <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
-                <div className="grid gap-4 md:grid-cols-[156px_minmax(0,1fr)] md:items-start">
+                <div className="grid gap-5 md:grid-cols-[188px_minmax(0,1fr)] md:items-start">
                   <ImageSlotPreview
                     imageSlot={item.imageSlot}
                     imagePresentation={item.imagePresentation}
@@ -770,7 +776,7 @@ export function PricingForm({
                     placeholderHelp={copy.placeholderHelp}
                     variant="review"
                   />
-                  <div className="space-y-4">
+                  <div className="space-y-4 md:pt-1">
                     <div className="space-y-1.5">
                       <p className="text-[15px] font-semibold text-white">{item.title[locale]}</p>
                       <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">

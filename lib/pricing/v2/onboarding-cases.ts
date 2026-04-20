@@ -56,43 +56,43 @@ const IMAGE_PRESENTATIONS: Record<
 > = {
   text: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-5 py-6",
-    imageClassName: "scale-[1.22] object-center",
+    frameClassName: "bg-white/[0.985] px-3 py-4",
+    imageClassName: "scale-[1.42] object-center",
   },
   symbol: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-5 py-5",
-    imageClassName: "scale-[1.24] object-center",
+    frameClassName: "bg-white/[0.985] px-3 py-3",
+    imageClassName: "scale-[1.44] object-center",
   },
   singleObject: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-4 py-4",
-    imageClassName: "scale-[1.16] object-center",
+    frameClassName: "bg-white/[0.985] px-1.5 py-1.5",
+    imageClassName: "scale-[1.34] object-center",
   },
   singleFigure: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-3 py-3",
-    imageClassName: "scale-[1.08] object-center",
+    frameClassName: "bg-white/[0.985] px-2 py-2",
+    imageClassName: "scale-[1.2] object-center",
   },
   multiElement: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-3 py-3",
-    imageClassName: "scale-[1.08] object-center",
+    frameClassName: "bg-white/[0.985] px-2 py-2",
+    imageClassName: "scale-[1.14] object-center",
   },
   ornamental: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-3 py-3",
-    imageClassName: "scale-[1.18] object-center",
+    frameClassName: "bg-white/[0.985] px-1 py-1.5",
+    imageClassName: "scale-[1.34] object-center",
   },
   colorPiece: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-3 py-3",
-    imageClassName: "scale-[1.08] object-center",
+    frameClassName: "bg-white/[0.985] px-2 py-2",
+    imageClassName: "scale-[1.16] object-center",
   },
   coverUp: {
     fit: "contain",
-    frameClassName: "bg-white/[0.97] px-3 py-3",
-    imageClassName: "scale-[1.12] object-center",
+    frameClassName: "bg-white/[0.985] px-1.5 py-1.5",
+    imageClassName: "scale-[1.28] object-center",
   },
 };
 

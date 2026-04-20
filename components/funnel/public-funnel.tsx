@@ -61,8 +61,8 @@ function getCopy(locale: PublicLocale) {
       colorTitleFeatured: "Renk aynı mı kalsın?",
       colorDescriptionCustom: "Dövmenin genel görünümüne en yakın seçeneği seç.",
       colorDescriptionFeatured: "Tasarıma en yakın görünümü seç.",
-      workStyleTitle: "Bu iş daha çok nasıl bir şey?",
-      workStyleDescription: "Sana en yakın olan görünümü seç.",
+      workStyleTitle: "Bu dövme daha çok nasıl görünüyor?",
+      workStyleDescription: "Sana en yakın olan seçeneği seç.",
       workStyles: {
         clean_line: "Sade çizgisel",
         shaded_detailed: "Daha işçilikli / gölgeli",
@@ -70,9 +70,9 @@ function getCopy(locale: PublicLocale) {
         unsure: "Emin değilim",
       },
       workStyleDescriptions: {
-        clean_line: "Temiz çizgiler, daha sade görünüm",
-        shaded_detailed: "Daha dolu, gölgeli veya emek isteyen görünüm",
-        precision_symmetric: "Daha dikkatli ve kontrollü çalışma isteyen görünüm",
+        clean_line: "Daha basit çizgiler, küçük semboller, sade tasarımlar",
+        shaded_detailed: "Daha dolu, daha gerçekçi, gölgeli görünümler",
+        precision_symmetric: "Geometrik şekiller, düzenli süsleme, simetri isteyen tasarımlar",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
       colorModes: {
@@ -179,8 +179,8 @@ function getCopy(locale: PublicLocale) {
     colorTitleFeatured: "Will the color stay the same?",
     colorDescriptionCustom: "Choose the option closest to the overall look of the tattoo.",
     colorDescriptionFeatured: "Choose the look that feels closest to the design.",
-    workStyleTitle: "What does this piece feel more like?",
-    workStyleDescription: "Choose the look that feels closest.",
+    workStyleTitle: "What does this tattoo look more like?",
+    workStyleDescription: "Choose the option that feels closest.",
     workStyles: {
       clean_line: "Clean line",
       shaded_detailed: "More worked / shaded",
@@ -188,9 +188,9 @@ function getCopy(locale: PublicLocale) {
       unsure: "Not sure",
     },
     workStyleDescriptions: {
-      clean_line: "Clean lines and a simpler look",
-      shaded_detailed: "A fuller, shaded, or more labor-heavy look",
-      precision_symmetric: "A look that needs more control and precision",
+      clean_line: "Simpler lines, small symbols, and cleaner designs",
+      shaded_detailed: "A fuller, more realistic, or shaded look",
+      precision_symmetric: "Geometric shapes, ornamental balance, or symmetry-led designs",
       unsure: "Choose this if you’re not sure yet",
     },
     colorModes: {
