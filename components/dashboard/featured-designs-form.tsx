@@ -7,6 +7,7 @@ import {
   Copy,
   ImagePlus,
   LoaderCircle,
+  MoreHorizontal,
   PencilLine,
   Plus,
   Save,
@@ -82,18 +83,20 @@ function EditorSection({
 function CollapsibleSection({
   title,
   description,
+  summary,
   open,
   onToggle,
   children,
 }: {
   title: string;
   description?: string;
+  summary?: string;
   open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-white/8 bg-white/[0.02]">
+    <section className="rounded-[22px] border border-white/8 bg-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
       <button
         type="button"
         onClick={onToggle}
@@ -102,17 +105,24 @@ function CollapsibleSection({
         <div className="space-y-1">
           <p className="text-base font-semibold tracking-[-0.02em] text-white">{title}</p>
           {description ? (
-            <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_8%)]">
+            <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
               {description}
             </p>
           ) : null}
         </div>
-        <ChevronDown
-          className={cn(
-            "size-4 shrink-0 text-[var(--foreground-muted)] transition",
-            open ? "rotate-180 text-white/80" : "",
-          )}
-        />
+        <div className="flex items-center gap-3">
+          {summary ? (
+            <span className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
+              {summary}
+            </span>
+          ) : null}
+          <ChevronDown
+            className={cn(
+              "size-4 shrink-0 text-[var(--foreground-muted)] transition",
+              open ? "rotate-180 text-white/80" : "",
+            )}
+          />
+        </div>
       </button>
       {open ? <div className="border-t border-white/7 px-5 py-4">{children}</div> : null}
     </section>
@@ -162,10 +172,9 @@ const copy = {
     uploadFailed: "Unable to upload image.",
     saveFailed: "Unable to save designs.",
     saved: "Saved",
-    introTitle: "Add and manage your ready-made designs.",
     introDescription:
       "These designs appear on your profile page. Clients can send a request from the design they like.",
-    introHint: "To add a design, image, name, and approximate price are enough.",
+    introHint: "To add a new design, image, name, size, and price are enough.",
     introSteps: ["Upload image", "Name it", "Set price"],
     addDesign: "Add new design",
     emptyTitle: "Add your first design",
@@ -179,25 +188,23 @@ const copy = {
     liveOn: "Live",
     liveOff: "Draft",
     image: "Design image",
-    imageHelp: "Clients see this image.",
     noImage: "No image yet",
     uploadImage: "Upload image",
-    replaceImage: "Replace image",
-    removeImage: "Remove image",
+    replaceImage: "Change image",
+    removeImage: "Remove",
     detailsTitle: "Required info",
-    detailsDescription: "These are enough to publish a design.",
+    detailsDescription: "These are enough to get started.",
     titleLabel: "Design name",
-    titleHelp: "Clients see this name.",
     titlePlaceholder: "e.g. Fine line rose",
     sizeLabel: "Approximate size",
-    sizeHelp: "e.g. 10 cm",
-    sizePlaceholder: "e.g. 10",
+    sizePlaceholder: "10",
     priceLabel: "Price shown to clients",
     priceHelp: "An approximate range is shown.",
-    priceMin: "Min price",
-    priceMax: "Max price",
-    optionalTitle: "Optional info",
-    optionalDescription: "Add these only if you want.",
+    priceMin: "Lower price",
+    priceMax: "Upper price",
+    optionalTitle: "Extra info (optional)",
+    optionalDescription: "If you want, you can add a short note and a category.",
+    optionalSummary: "Can be left blank",
     category: "Category (optional)",
     customCategory: "Custom category",
     customCategoryPlaceholder: "e.g. Floral",
@@ -206,19 +213,23 @@ const copy = {
     shortDescriptionPlaceholder:
       "e.g. Fine line piece. Looks good on the forearm and upper arm.",
     advancedTitle: "Advanced pricing settings",
-    advancedDescription: "Use this only if this design should behave differently.",
+    advancedDescription: "Open this only if this design should behave differently from your general pricing.",
+    advancedSummaryDefault: "Using general pricing settings",
+    advancedSummaryCustom: "Custom pricing active",
     useGeneralPricing: "Use general pricing settings",
-    useGeneralPricingHelp: "When on, this design follows the main pricing logic.",
+    useGeneralPricingHelp: "Most designs do not need this changed.",
     advancedSize: "What size is this price for?",
     advancedSizeHelp: "e.g. 10 cm",
     advancedPricingMode: "Should the price increase when size grows?",
     advancedColorMode: "Which color setup is this price for?",
     advancedColorImpact: "Should the price increase for color work?",
-    optionalNote: "This step is optional.",
-    statusHelp: "When on, it appears on your profile page.",
+    advancedDefaultNote: "You usually do not need to change this for most designs.",
+    statusLabel: "Show on your profile page",
+    statusHelp: "When on, clients can see it.",
+    drawerTitle: "Edit design",
     save: "Save",
     saving: "Saving",
-    close: "Close",
+    cancel: "Cancel",
     flash: "Flash design",
     discounted: "Discounted design",
     customOption: "Custom category",
@@ -247,10 +258,9 @@ const copy = {
     uploadFailed: "Görsel yüklenemedi.",
     saveFailed: "Tasarım kaydedilemedi.",
     saved: "Kaydedildi",
-    introTitle: "Hazır tasarımlarını ekle ve düzenle.",
     introDescription:
       "Buradaki tasarımlar profil sayfanda görünür. Müşteri beğendiği tasarımdan talep gönderebilir.",
-    introHint: "Bir tasarım eklemek için görsel, ad ve yaklaşık fiyat yeterli.",
+    introHint: "Yeni tasarım eklemek için görsel, ad, boyut ve fiyat yeterli.",
     introSteps: ["Görsel yükle", "Ad ver", "Fiyat gir"],
     addDesign: "Yeni tasarım ekle",
     emptyTitle: "İlk tasarımını ekle",
@@ -264,25 +274,23 @@ const copy = {
     liveOn: "Yayında",
     liveOff: "Taslak",
     image: "Tasarım görseli",
-    imageHelp: "Müşteri bu görseli görür.",
     noImage: "Henüz görsel yok",
     uploadImage: "Görsel yükle",
-    replaceImage: "Görseli değiştir",
-    removeImage: "Görseli kaldır",
+    replaceImage: "Görsel değiştir",
+    removeImage: "Kaldır",
     detailsTitle: "Gerekli bilgiler",
-    detailsDescription: "Bu alanlar tasarımı eklemek için yeterlidir.",
+    detailsDescription: "Başlamak için bu alanlar yeterli.",
     titleLabel: "Tasarım adı",
-    titleHelp: "Müşteri bu adı görür.",
     titlePlaceholder: "Örn: Minimal gül",
     sizeLabel: "Yaklaşık boyut",
-    sizeHelp: "Örn: 10 cm",
-    sizePlaceholder: "Örn: 10",
+    sizePlaceholder: "10",
     priceLabel: "Müşteriye gösterilecek fiyat",
     priceHelp: "Yaklaşık fiyat aralığı gösterilir.",
-    priceMin: "Min fiyat",
-    priceMax: "Maks fiyat",
-    optionalTitle: "İsteğe bağlı bilgiler",
-    optionalDescription: "İstersen bunları da ekleyebilirsin.",
+    priceMin: "Alt fiyat",
+    priceMax: "Üst fiyat",
+    optionalTitle: "Ek bilgiler (opsiyonel)",
+    optionalDescription: "İstersen kısa not ve kategori ekleyebilirsin.",
+    optionalSummary: "Boş bırakılabilir",
     category: "Kategori (opsiyonel)",
     customCategory: "Özel kategori",
     customCategoryPlaceholder: "Örn: Floral",
@@ -291,19 +299,23 @@ const copy = {
     shortDescriptionPlaceholder:
       "Örn: İnce çizgi çalışılır. Ön kol ve üst kolda iyi durur.",
     advancedTitle: "Gelişmiş fiyat ayarları",
-    advancedDescription: "Bu tasarım için farklı davranmasını istersen aç.",
+    advancedDescription: "Sadece bu tasarım genel ayarlardan farklı olsun istiyorsan aç.",
+    advancedSummaryDefault: "Şu an genel fiyat ayarlarını kullanıyor",
+    advancedSummaryCustom: "Özel fiyat ayarları açık",
     useGeneralPricing: "Genel fiyat ayarlarını kullan",
-    useGeneralPricingHelp: "Açık olduğunda bu tasarım genel fiyat mantığını kullanır.",
+    useGeneralPricingHelp: "Çoğu tasarım için bunu değiştirmene gerek yok.",
     advancedSize: "Bu fiyat hangi boyut için?",
     advancedSizeHelp: "Örn: 10 cm",
     advancedPricingMode: "Boyut büyürse fiyat artsın mı?",
     advancedColorMode: "Bu fiyat hangi renk düzeni için?",
     advancedColorImpact: "Renkli çalışmada fiyat artsın mı?",
-    optionalNote: "Bu bölüm isteğe bağlıdır.",
-    statusHelp: "Açık olduğunda profil sayfanda görünür.",
+    advancedDefaultNote: "Çoğu tasarım için bunu değiştirmen gerekmez.",
+    statusLabel: "Profil sayfanda göster",
+    statusHelp: "Açık olduğunda müşteri görür.",
+    drawerTitle: "Tasarımı düzenle",
     save: "Kaydet",
     saving: "Kaydediliyor",
-    close: "Kapat",
+    cancel: "Vazgeç",
     flash: "Flash tasarım",
     discounted: "İndirimli tasarım",
     customOption: "Özel kategori",
@@ -460,6 +472,7 @@ export function FeaturedDesignsForm({
   const [optionalOpen, setOptionalOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [useGeneralPricing, setUseGeneralPricing] = useState(true);
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   const editingIndex = editingId
     ? designsFieldArray.fields.findIndex((field) => field.id === editingId)
@@ -492,6 +505,15 @@ export function FeaturedDesignsForm({
     setAdvancedOpen(false);
     setUseGeneralPricing(isUsingGeneralPricing(editingDesign as PartialDesignDraft));
   }, [editingDesign?.id]);
+
+  useEffect(() => {
+    if (!flashMessage) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setFlashMessage(null), 2200);
+    return () => window.clearTimeout(timeout);
+  }, [flashMessage]);
 
   function getCategorySelectValue(category: string) {
     return featuredDesignCategories.some((item) => item.value === category) ? category : "__custom__";
@@ -546,7 +568,8 @@ export function FeaturedDesignsForm({
 
       form.setValue(`designs.${index}.imageUrl`, uploaded.publicUrl, { shouldDirty: true });
       form.setValue(`designs.${index}.imagePath`, uploaded.path, { shouldDirty: true });
-      form.setError("root", { message: labels.uploaded });
+      form.clearErrors("root");
+      setFlashMessage(labels.uploaded);
     } catch (error) {
       form.setError("root", {
         message: error instanceof Error ? error.message : labels.uploadFailed,
@@ -600,43 +623,39 @@ export function FeaturedDesignsForm({
     }
 
     form.reset(values);
-    form.setError("root", { message: labels.saved });
+    form.clearErrors("root");
+    setFlashMessage(labels.saved);
   }
 
-  const statusMessage =
-    form.formState.errors.root?.message ?? null;
+  const statusMessage = form.formState.errors.root?.message ?? null;
 
   return (
     <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+      {flashMessage ? (
+        <div className="fixed right-5 top-5 z-[70] rounded-full border border-[var(--accent)]/20 bg-[color:color-mix(in_srgb,var(--background)_82%,black_18%)] px-4 py-2 text-sm text-[var(--accent-soft)] shadow-[0_18px_36px_rgba(0,0,0,0.28)]">
+          {flashMessage}
+        </div>
+      ) : null}
       <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-        <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
-          <div className="space-y-2">
-            <h2 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-white">
-              {labels.introTitle}
-            </h2>
-            <p className="max-w-[68ch] text-sm leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]">
-              {labels.introDescription}
-            </p>
-            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_8%)]">
+        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="min-w-0 space-y-2">
+            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]">
               {labels.introHint}
             </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {labels.introSteps.map((step) => (
-              <span
-                key={step}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]"
-              >
-                {step}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_8%)]">
-              {statusMessage}
+            <div className="flex flex-wrap gap-1.5">
+              {labels.introSteps.map((step) => (
+                <span
+                  key={step}
+                  className="rounded-full border border-white/8 bg-white/[0.02] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]"
+                >
+                  {step}
+                </span>
+              ))}
             </div>
+            {statusMessage && !editingDesign ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
+          </div>
+
+          <div className="shrink-0">
             <Button
               type="button"
               onClick={() => {
@@ -682,23 +701,37 @@ export function FeaturedDesignsForm({
             const title = design?.title?.trim() || `${labels.newItem} ${index + 1}`;
             const category = getCategoryLabel(design?.category || "flash-designs");
             const sizeValue = toNullableNumber(design?.referenceSizeCm);
-            const size = sizeValue ? `${sizeValue} cm` : "—";
+            const size = sizeValue ? `${sizeValue} cm` : null;
             const min = formatCurrency(locale, toNullableNumber(design?.referencePriceMin));
             const max = formatCurrency(locale, toNullableNumber(design?.referencePriceMax));
             const priceText = min && max ? `${min} – ${max}` : min ?? max ?? "—";
+            const metaText = [category, size].filter(Boolean).join(" • ");
             const isEditing = editingId === field.id;
 
             return (
               <Card
                 key={field.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setEditingId(field.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setEditingId(field.id);
+                  }
+                }}
                 className={cn(
-                  "surface-border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_16px_38px_rgba(0,0,0,0.12)] transition",
+                  "surface-border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_14px_32px_rgba(0,0,0,0.1)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35",
                   isEditing ? "border-[var(--accent)]/24 shadow-[0_18px_42px_rgba(0,0,0,0.16)]" : "",
                 )}
               >
-                <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div className="relative size-16 shrink-0 overflow-hidden rounded-[18px] border border-white/8 bg-white/[0.03]">
+                <CardContent className="flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(field.id)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    <div className="relative size-14 shrink-0 overflow-hidden rounded-[16px] border border-white/8 bg-white/[0.03]">
                       {design?.imageUrl ? (
                         <img
                           src={design.imageUrl}
@@ -718,17 +751,11 @@ export function FeaturedDesignsForm({
                           {title}
                         </p>
                         <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
-                          {category} • {size}
+                          {metaText || "—"}
                         </p>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_10%)]">
-                          {category}
-                        </span>
-                        <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_10%)]">
-                          {size}
-                        </span>
                         <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/88">
                           {priceText}
                         </span>
@@ -744,9 +771,9 @@ export function FeaturedDesignsForm({
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </button>
 
-                  <div className="flex flex-wrap gap-2 sm:justify-end">
+                  <div className="flex items-center gap-2 sm:shrink-0" onClick={(event) => event.stopPropagation()}>
                     <Button type="button" variant="secondary" onClick={() => setEditingId(field.id)}>
                       <PencilLine className="size-4" />
                       {labels.edit}
@@ -755,7 +782,8 @@ export function FeaturedDesignsForm({
                       type="button"
                       variant="ghost"
                       className="text-white/82 hover:text-white"
-                      onClick={() => {
+                      onClick={(event) => {
+                        event.stopPropagation();
                         designsFieldArray.append(
                           cloneDesign(
                             form.getValues(`designs.${index}`) as PartialDesignDraft,
@@ -768,15 +796,27 @@ export function FeaturedDesignsForm({
                       <Copy className="size-4" />
                       {labels.duplicate}
                     </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="text-white/72 hover:text-white"
-                      onClick={() => handleRemove(index)}
+                    <details
+                      className="relative [&_summary::-webkit-details-marker]:hidden"
+                      onClick={(event) => event.stopPropagation()}
                     >
-                      <Trash2 className="size-4" />
-                      {labels.remove}
-                    </Button>
+                      <summary
+                        aria-label={labels.remove}
+                        className="flex size-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/8 bg-white/[0.03] text-[var(--foreground-muted)] transition hover:border-white/12 hover:bg-white/[0.05] hover:text-white"
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </summary>
+                      <div className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-[140px] rounded-[18px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_92%,black_8%)] p-1.5 shadow-[0_18px_32px_rgba(0,0,0,0.26)]">
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 rounded-[14px] px-3 py-2 text-sm text-red-200 transition hover:bg-white/[0.05] hover:text-red-100"
+                          onClick={() => handleRemove(index)}
+                        >
+                          <Trash2 className="size-4" />
+                          {labels.remove}
+                        </button>
+                      </div>
+                    </details>
                   </div>
                 </CardContent>
               </Card>
@@ -794,29 +834,23 @@ export function FeaturedDesignsForm({
           <aside className="fixed inset-0 z-50 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[min(560px,100vw)]">
             <div className="flex h-full flex-col bg-[color:color-mix(in_srgb,var(--background)_96%,black_6%)] sm:border-l sm:border-white/8 sm:shadow-[-24px_0_48px_rgba(0,0,0,0.28)]">
               <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-5 sm:px-6">
-                <div className="min-w-0 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={cn(
-                        "rounded-full border px-2.5 py-1 text-[11px] font-medium",
-                        editingDesign.active
-                          ? "border-[var(--accent)]/22 bg-[var(--accent)]/10 text-[var(--accent-soft)]"
-                          : "border-white/8 bg-white/[0.03] text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_10%)]",
-                      )}
-                    >
-                      {editingDesign.active ? labels.liveOn : labels.liveOff}
-                    </span>
-                    <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_8%)]">
-                      {labels.statusHelp}
-                    </p>
-                  </div>
+                <div className="min-w-0 space-y-1.5">
+                  <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_8%)]">
+                    {labels.drawerTitle}
+                  </p>
                   <h3 className="truncate text-xl font-semibold tracking-[-0.02em] text-white">
                     {editingDesign.title?.trim() || labels.newItem}
                   </h3>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <label className="relative inline-flex items-center">
+                <div className="flex items-start gap-4">
+                  <div className="space-y-1 text-right">
+                    <p className="text-sm font-medium text-white">{labels.statusLabel}</p>
+                    <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_8%)]">
+                      {labels.statusHelp}
+                    </p>
+                  </div>
+                  <label className="relative mt-0.5 inline-flex items-center">
                     <input
                       type="checkbox"
                       className="peer sr-only"
@@ -825,9 +859,14 @@ export function FeaturedDesignsForm({
                     <span className="h-7 w-12 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
                     <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
                   </label>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setEditingId(null)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={labels.cancel}
+                    onClick={() => setEditingId(null)}
+                  >
                     <X className="size-4" />
-                    {labels.close}
                   </Button>
                 </div>
               </div>
@@ -839,10 +878,10 @@ export function FeaturedDesignsForm({
                   <input type="hidden" {...form.register(`designs.${editingIndex}.imageUrl`)} />
 
                   <EditorSection title={labels.detailsTitle} description={labels.detailsDescription}>
-                    <div className="grid gap-5 sm:grid-cols-[140px_minmax(0,1fr)]">
-                      <Field label={labels.image} description={labels.imageHelp}>
+                    <div className="space-y-4">
+                      <Field label={labels.image}>
                         <div className="space-y-3">
-                          <div className="relative flex h-[140px] items-center justify-center overflow-hidden rounded-[22px] border border-white/8 bg-white/[0.03]">
+                          <div className="relative flex h-[176px] items-center justify-center overflow-hidden rounded-[20px] border border-white/8 bg-white/[0.03]">
                             {editingDesign.imageUrl ? (
                               <img
                                 src={editingDesign.imageUrl}
@@ -893,72 +932,69 @@ export function FeaturedDesignsForm({
                         </div>
                       </Field>
 
-                      <div className="space-y-4">
-                        <Field
-                          label={labels.titleLabel}
-                          description={labels.titleHelp}
-                          error={form.formState.errors.designs?.[editingIndex]?.title?.message}
-                        >
-                          <Input
-                            className="h-12 rounded-[18px] bg-white/[0.03]"
-                            placeholder={labels.titlePlaceholder}
-                            {...form.register(`designs.${editingIndex}.title`)}
-                          />
-                        </Field>
+                      <Field
+                        label={labels.titleLabel}
+                        error={form.formState.errors.designs?.[editingIndex]?.title?.message}
+                      >
+                        <Input
+                          className="h-12 rounded-[18px] bg-white/[0.03]"
+                          placeholder={labels.titlePlaceholder}
+                          {...form.register(`designs.${editingIndex}.title`)}
+                        />
+                      </Field>
 
-                        <Field
-                          label={labels.sizeLabel}
-                          description={labels.sizeHelp}
-                          error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
-                        >
-                          <div className="relative">
+                      <Field
+                        label={labels.sizeLabel}
+                        error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
+                      >
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
+                            placeholder={labels.sizePlaceholder}
+                            {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
+                          />
+                          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
+                            cm
+                          </span>
+                        </div>
+                      </Field>
+
+                      <Field label={labels.priceLabel} description={labels.priceHelp}>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Field
+                            label={labels.priceMin}
+                            className="gap-2"
+                            error={form.formState.errors.designs?.[editingIndex]?.referencePriceMin?.message}
+                          >
                             <Input
                               type="number"
-                              className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
-                              placeholder={labels.sizePlaceholder}
-                              {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
+                              className="h-12 rounded-[18px] bg-white/[0.03]"
+                              placeholder="6000"
+                              {...form.register(`designs.${editingIndex}.referencePriceMin`)}
                             />
-                            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-                              cm
-                            </span>
-                          </div>
-                        </Field>
-
-                        <Field label={labels.priceLabel} description={labels.priceHelp}>
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <Field
-                              label={labels.priceMin}
-                              className="gap-2"
-                              error={form.formState.errors.designs?.[editingIndex]?.referencePriceMin?.message}
-                            >
-                              <Input
-                                type="number"
-                                className="h-12 rounded-[18px] bg-white/[0.03]"
-                                placeholder="6000"
-                                {...form.register(`designs.${editingIndex}.referencePriceMin`)}
-                              />
-                            </Field>
-                            <Field
-                              label={labels.priceMax}
-                              className="gap-2"
-                              error={form.formState.errors.designs?.[editingIndex]?.referencePriceMax?.message}
-                            >
-                              <Input
-                                type="number"
-                                className="h-12 rounded-[18px] bg-white/[0.03]"
-                                placeholder="8500"
-                                {...form.register(`designs.${editingIndex}.referencePriceMax`)}
-                              />
-                            </Field>
-                          </div>
-                        </Field>
-                      </div>
+                          </Field>
+                          <Field
+                            label={labels.priceMax}
+                            className="gap-2"
+                            error={form.formState.errors.designs?.[editingIndex]?.referencePriceMax?.message}
+                          >
+                            <Input
+                              type="number"
+                              className="h-12 rounded-[18px] bg-white/[0.03]"
+                              placeholder="8500"
+                              {...form.register(`designs.${editingIndex}.referencePriceMax`)}
+                            />
+                          </Field>
+                        </div>
+                      </Field>
                     </div>
                   </EditorSection>
 
                   <CollapsibleSection
                     title={labels.optionalTitle}
                     description={labels.optionalDescription}
+                    summary={optionalOpen ? undefined : labels.optionalSummary}
                     open={optionalOpen}
                     onToggle={() => setOptionalOpen((current) => !current)}
                   >
@@ -1010,6 +1046,13 @@ export function FeaturedDesignsForm({
                   <CollapsibleSection
                     title={labels.advancedTitle}
                     description={labels.advancedDescription}
+                    summary={
+                      advancedOpen
+                        ? undefined
+                        : useGeneralPricing
+                          ? labels.advancedSummaryDefault
+                          : labels.advancedSummaryCustom
+                    }
                     open={advancedOpen}
                     onToggle={() => setAdvancedOpen((current) => !current)}
                   >
@@ -1052,10 +1095,6 @@ export function FeaturedDesignsForm({
                           <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
                         </label>
                       </div>
-
-                      <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_74%,white_10%)]">
-                        {labels.optionalNote}
-                      </p>
 
                       {!useGeneralPricing ? (
                         <div className="space-y-4">
@@ -1129,7 +1168,11 @@ export function FeaturedDesignsForm({
                             />
                           </Field>
                         </div>
-                      ) : null}
+                      ) : (
+                        <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
+                          {labels.advancedDefaultNote}
+                        </p>
+                      )}
                     </div>
                   </CollapsibleSection>
                 </div>
@@ -1137,14 +1180,12 @@ export function FeaturedDesignsForm({
 
               <div className="border-t border-white/8 px-5 py-4 sm:px-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
-                    {statusMessage}
-                  </p>
+                  {statusMessage ? <p className="text-sm text-red-300">{statusMessage}</p> : <span />}
                   <div className="flex flex-wrap gap-2 sm:justify-end">
                     <Button type="button" variant="secondary" onClick={() => setEditingId(null)}>
-                      {labels.close}
+                      {labels.cancel}
                     </Button>
-                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                    <Button type="submit" disabled={form.formState.isSubmitting || !form.formState.isDirty}>
                       {form.formState.isSubmitting ? (
                         <>
                           <LoaderCircle className="size-4 animate-spin" />

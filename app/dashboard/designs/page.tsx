@@ -16,8 +16,8 @@ export default async function DashboardDesignsPage() {
         eyebrow={isTurkish ? "Tasarımlar" : "Designs"}
         title={
           isTurkish
-            ? "Hazır tasarımlarını ekle ve düzenle."
-            : "Add and manage your ready-made designs."
+            ? "Hazır tasarımlar"
+            : "Ready-made designs"
         }
         description={
           isTurkish
