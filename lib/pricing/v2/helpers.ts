@@ -8,6 +8,68 @@ export function roundToNearestFifty(value: number) {
   return Math.round(value / 50) * 50;
 }
 
+function getFriendlyPriceStep(value: number) {
+  const absolute = Math.abs(value);
+
+  if (absolute >= 10000) {
+    return 1000;
+  }
+
+  if (absolute >= 5000) {
+    return 500;
+  }
+
+  if (absolute >= 2000) {
+    return 250;
+  }
+
+  if (absolute >= 1000) {
+    return 100;
+  }
+
+  return 50;
+}
+
+export function roundToFriendlyPrice(
+  value: number,
+  direction: "nearest" | "down" | "up" = "nearest",
+) {
+  const safeValue = Math.max(0, value);
+  const step = getFriendlyPriceStep(safeValue);
+
+  if (direction === "down") {
+    return Math.floor(safeValue / step) * step;
+  }
+
+  if (direction === "up") {
+    return Math.ceil(safeValue / step) * step;
+  }
+
+  return Math.round(safeValue / step) * step;
+}
+
+export function formatCurrencyValue(
+  value: number,
+  locale: "tr" | "en",
+  currency = "TRY",
+) {
+  const numberFormatter = new Intl.NumberFormat(locale === "tr" ? "tr-TR" : "en-US", {
+    maximumFractionDigits: 0,
+  });
+
+  if (currency === "TRY") {
+    return locale === "tr"
+      ? `₺${numberFormatter.format(value)}`
+      : `TRY ${numberFormatter.format(value)}`;
+  }
+
+  return new Intl.NumberFormat(locale === "tr" ? "tr-TR" : "en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 export function formatEstimateLabel(
   minimum: number,
   maximum: number | null,
@@ -15,17 +77,21 @@ export function formatEstimateLabel(
   locale: "tr" | "en",
   currency = "TRY",
 ) {
-  const formatter = new Intl.NumberFormat(locale === "tr" ? "tr-TR" : "en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  });
+  const roundedMinimum = roundToFriendlyPrice(
+    minimum,
+    mode === "starting_from" ? "up" : "down",
+  );
 
   if (mode === "starting_from" || maximum === null) {
-    return `${formatter.format(minimum)}+`;
+    return `${formatCurrencyValue(roundedMinimum, locale, currency)}+`;
   }
 
-  return `${formatter.format(minimum)} – ${formatter.format(maximum)}`;
+  const roundedMaximum = Math.max(
+    roundedMinimum,
+    roundToFriendlyPrice(maximum, "up"),
+  );
+
+  return `${formatCurrencyValue(roundedMinimum, locale, currency)} – ${formatCurrencyValue(roundedMaximum, locale, currency)}`;
 }
 
 export function midpoint(minimum: number, maximum: number) {

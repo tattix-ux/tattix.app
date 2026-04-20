@@ -45,22 +45,33 @@ export async function POST(request: Request) {
     pricingV2Profile: nextPricingProfile,
   };
 
-  const { error } = await supabase.from("artist_pricing_rules").upsert({
+  const basePayload = {
     artist_id: artist.id,
-    pricing_version: "v2",
     anchor_price: parsed.data.minimumJobPrice,
     base_price: parsed.data.minimumJobPrice,
     minimum_charge: parsed.data.minimumJobPrice,
     minimum_session_price: parsed.data.minimumJobPrice,
     calibration_examples: nextCalibrationExamples,
+  };
+
+  const { error: v2Error } = await supabase.from("artist_pricing_rules").upsert({
+    ...basePayload,
+    pricing_version: "v2",
   });
+
+  const error =
+    v2Error && v2Error.message.toLowerCase().includes("pricing_version")
+      ? (
+          await supabase.from("artist_pricing_rules").upsert(basePayload)
+        ).error
+      : v2Error;
 
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 
   return NextResponse.json({
-    message: "Pricing onboarding saved.",
+    message: "Pricing settings saved.",
     pricingProfile: nextPricingProfile,
   });
 }

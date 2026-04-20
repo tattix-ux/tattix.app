@@ -1,4 +1,4 @@
-import { roundToNearestFifty, dampedPowerScale, getColorImpactFactor } from "./helpers";
+import { dampedPowerScale, getColorImpactFactor, roundToFriendlyPrice } from "./helpers";
 import { buildDisplayEstimateLabel, buildEstimateSummaryText } from "./output";
 import { resolvePlacementBucket } from "./placement";
 import { getArtistPricingV2Profile } from "./profile";
@@ -60,12 +60,12 @@ export function estimateFeaturedDesignPrice(
       ? 1
       : dampedPowerScale(input.sizeCm / Math.max(referenceSizeCm, 2), 0.45, 0.9, 1.42);
   const adjustedMin = Math.max(
-    profile.minimumJobPrice,
-    roundToNearestFifty(referenceRange.min * sizeFactor * placementFactor * colorFactor),
+    roundToFriendlyPrice(profile.minimumJobPrice, "up"),
+    roundToFriendlyPrice(referenceRange.min * sizeFactor * placementFactor * colorFactor, "down"),
   );
   const adjustedMax = Math.max(
     adjustedMin,
-    roundToNearestFifty(referenceRange.max * sizeFactor * placementFactor * colorFactor),
+    roundToFriendlyPrice(referenceRange.max * sizeFactor * placementFactor * colorFactor, "up"),
   );
 
   if (pricingMode === "starting_from") {

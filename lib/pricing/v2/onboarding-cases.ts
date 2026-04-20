@@ -10,7 +10,7 @@ export type PricingOnboardingCase = {
   colorMode: "black-only" | "black-grey" | "full-color";
   imageSlot: string;
   title: Record<PublicLocale, string>;
-  description: Record<PublicLocale, string>;
+  metaLine: Record<PublicLocale, string>;
 };
 
 export type PricingReviewCase = {
@@ -21,6 +21,7 @@ export type PricingReviewCase = {
   colorMode: "black-only" | "black-grey" | "full-color";
   imageSlot: string;
   title: Record<PublicLocale, string>;
+  metaLine: Record<PublicLocale, string>;
 };
 
 export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
@@ -31,10 +32,10 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/text-4cm-wrist.png",
-    title: { tr: "4 cm tek kelime yazı, bilek", en: "4 cm single word, wrist" },
-    description: {
-      tr: "Müşteriye hangi başlangıç bandını göstermek istersin?",
-      en: "Which starting band would you show the client?",
+    title: { tr: "4 cm tek kelime yazı", en: "4 cm single word" },
+    metaLine: {
+      tr: "Bilek · sadece siyah · sade font",
+      en: "Wrist · black only · simple font",
     },
   },
   {
@@ -44,8 +45,11 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/symbol-4cm-ankle.png",
-    title: { tr: "4 cm küçük sembol, ayak bileği", en: "4 cm small symbol, ankle" },
-    description: { tr: "Müşteriye hangi başlangıç bandını göstermek istersin?", en: "Which starting band would you show the client?" },
+    title: { tr: "4 cm küçük sembol", en: "4 cm small symbol" },
+    metaLine: {
+      tr: "Ayak bileği · sadece siyah · sade çizgisel",
+      en: "Ankle · black only · simple linework",
+    },
   },
   {
     id: "object-8cm-forearm",
@@ -54,18 +58,24 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "easy",
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/object-8cm-forearm.png",
-    title: { tr: "8 cm basit tek obje, ön kol", en: "8 cm simple single object, forearm" },
-    description: { tr: "Müşteriye hangi başlangıç bandını göstermek istersin?", en: "Which starting band would you show the client?" },
+    title: { tr: "8 cm tek obje", en: "8 cm single object" },
+    metaLine: {
+      tr: "Ön kol · sadece siyah · sade çizgisel",
+      en: "Forearm · black only · simple linework",
+    },
   },
   {
     id: "figure-12cm-upper-arm",
     requestType: "single_object",
     referenceSizeCm: 12,
     placementBucket: "easy",
-    colorMode: "black-only",
+    colorMode: "black-grey",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/figure-12cm-upper-arm.png",
-    title: { tr: "12 cm tek figür, üst kol", en: "12 cm single figure, upper arm" },
-    description: { tr: "Müşteriye hangi başlangıç bandını göstermek istersin?", en: "Which starting band would you show the client?" },
+    title: { tr: "12 cm tek figür", en: "12 cm single figure" },
+    metaLine: {
+      tr: "Üst kol · siyah-gri · orta yoğunluk",
+      en: "Upper arm · black and grey · medium density",
+    },
   },
   {
     id: "multi-15cm-calf",
@@ -74,8 +84,11 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/multi-15cm-calf.png",
-    title: { tr: "15 cm birden fazla öğeli tasarım, baldır", en: "15 cm multi-element design, calf" },
-    description: { tr: "Müşteriye hangi başlangıç bandını göstermek istersin?", en: "Which starting band would you show the client?" },
+    title: { tr: "15 cm çok öğeli tasarım", en: "15 cm multi-element design" },
+    metaLine: {
+      tr: "Baldır · sadece siyah · orta yoğunluk kompozisyon",
+      en: "Calf · black only · medium-density composition",
+    },
   },
   {
     id: "ornamental-small-hard",
@@ -84,21 +97,24 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "hard",
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/ornamental-small-hard.png",
-    title: {
-      tr: "Küçük hassas ornamental iş, sternum / zor alan",
-      en: "Small sensitive ornamental piece, sternum / hard area",
+    title: { tr: "Küçük ornamental parça", en: "Small ornamental piece" },
+    metaLine: {
+      tr: "Sternum · sadece siyah · simetri ve hassasiyet önemli",
+      en: "Sternum · black only · symmetry and precision matter",
     },
-    description: { tr: "Müşteriye hangi başlangıç bandını göstermek istersin?", en: "Which starting band would you show the client?" },
   },
   {
     id: "medium-color-piece",
     requestType: "single_object",
-    referenceSizeCm: 14,
+    referenceSizeCm: 11,
     placementBucket: "easy",
     colorMode: "full-color",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/medium-color-piece.png",
-    title: { tr: "Orta boy renkli iş", en: "Medium-size color piece" },
-    description: { tr: "Müşteriye hangi başlangıç bandını göstermek istersin?", en: "Which starting band would you show the client?" },
+    title: { tr: "10–12 cm renkli parça", en: "10–12 cm color piece" },
+    metaLine: {
+      tr: "Üst kol · renkli · orta yoğunluk",
+      en: "Upper arm · color · medium density",
+    },
   },
   {
     id: "small-cover-up",
@@ -107,8 +123,11 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementBucket: "standard",
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/onboarding/small-cover-up.png",
-    title: { tr: "Küçük cover-up işi", en: "Small cover-up job" },
-    description: { tr: "Müşteriye hangi başlangıç bandını göstermek istersin?", en: "Which starting band would you show the client?" },
+    title: { tr: "Küçük cover-up", en: "Small cover-up" },
+    metaLine: {
+      tr: "Ön kol · siyah ağırlıklı · mevcut küçük dövmeyi kapatma",
+      en: "Forearm · mostly black · covering a small existing tattoo",
+    },
   },
 ] as const;
 
@@ -121,6 +140,10 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/review/review-text.png",
     title: { tr: "Kısa yazı", en: "Short text" },
+    metaLine: {
+      tr: "Bilek · sadece siyah · sade font",
+      en: "Wrist · black only · simple font",
+    },
   },
   {
     id: "review-mini",
@@ -130,15 +153,23 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/review/review-mini.png",
     title: { tr: "Minimal sembol", en: "Minimal symbol" },
+    metaLine: {
+      tr: "Ayak bileği · sadece siyah · sade çizgisel",
+      en: "Ankle · black only · simple linework",
+    },
   },
   {
     id: "review-single",
     requestType: "single_object",
     referenceSizeCm: 11,
     placementBucket: "easy",
-    colorMode: "black-grey",
+    colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/review/review-single.png",
     title: { tr: "Tek obje", en: "Single object" },
+    metaLine: {
+      tr: "Ön kol · sadece siyah · sade çizgisel",
+      en: "Forearm · black only · simple linework",
+    },
   },
   {
     id: "review-multi",
@@ -148,14 +179,22 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/review/review-multi.png",
     title: { tr: "Birden fazla öğeli iş", en: "Multi-element piece" },
+    metaLine: {
+      tr: "Baldır · sadece siyah · çok öğeli",
+      en: "Calf · black only · multi-element",
+    },
   },
   {
     id: "review-cover",
     requestType: "cover_up",
     referenceSizeCm: 8,
-    placementBucket: "hard",
+    placementBucket: "standard",
     colorMode: "black-only",
     imageSlot: "sample-tattoos/pricing-v2/review/review-cover.png",
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
+    metaLine: {
+      tr: "Ön kol · siyah ağırlıklı · kapatma",
+      en: "Forearm · mostly black · cover-up",
+    },
   },
 ] as const;

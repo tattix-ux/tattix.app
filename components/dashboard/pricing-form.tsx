@@ -1,7 +1,7 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ImageIcon, LoaderCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Field } from "@/components/shared/field";
@@ -12,18 +12,20 @@ import { Input } from "@/components/ui/input";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { estimateCustomRequestPrice } from "@/lib/pricing/v2/custom-request";
 import { PRICING_V2_ONBOARDING_CASES, PRICING_V2_REVIEW_CASES } from "@/lib/pricing/v2/onboarding-cases";
-import { buildPricingV2Profile, getArtistPricingV2Profile } from "@/lib/pricing/v2/profile";
+import { formatCurrencyValue, roundToFriendlyPrice } from "@/lib/pricing/v2/helpers";
+import { buildPricingV2Profile, buildSuggestedOnboardingCases, getArtistPricingV2Profile } from "@/lib/pricing/v2/profile";
 import type { ArtistPricingRules, ArtistStyleOption } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Verdict = "looks-right" | "slightly-low" | "slightly-high";
 type Phase = 1 | 2 | 3;
+type StatusTone = "success" | "error" | null;
 
 function getText(locale: PublicLocale) {
   if (locale === "tr") {
     return {
       title: "Fiyat yapını tanıyalım",
-      description: "Müşteriye göstereceğimiz başlangıç fiyatlarını birkaç kısa adımla oturt.",
+      description: "Müşteriye gösterilecek başlangıç seviyesini birlikte netleştirelim.",
       phases: [
         "1. Fiyat yapını tanıyalım",
         "2. Birkaç örnek üzerinden ilerleyelim",
@@ -48,12 +50,12 @@ function getText(locale: PublicLocale) {
         balanced: "Dengeli olsun",
         filtered: "Daha filtreli lead gelsin",
       },
-      caseTitle: "Bu iş için müşteriye başlangıçta hangi bandı göstermek istersin?",
+      caseTitle: "Bu iş için müşteriye hangi bandı göstermek istersin?",
       min: "Alt sınır",
       max: "Üst sınır",
-      placeholderAsset: "Görsel slotu hazır",
-      placeholderHelp: "Gerçek görseli sonradan ekleyebilirsin.",
-      reviewTitle: "Sence bu tahmin nasıl?",
+      placeholderAsset: "Örnek görsel alanı",
+      placeholderHelp: "Görseli sonra ekleyebilirsin.",
+      reviewTitle: "Bu tahmin nasıl duruyor?",
       verdicts: {
         "looks-right": "Uygun",
         "slightly-low": "Biraz düşük",
@@ -61,18 +63,18 @@ function getText(locale: PublicLocale) {
       },
       back: "Geri",
       next: "Devam",
-      save: "Ayarları kaydet",
+      save: "Fiyat ayarlarını kaydet",
       saving: "Kaydediliyor",
-      saved: "Yeni fiyat yapısı kaydedildi.",
-      failed: "Fiyat ayarı kaydedilemedi.",
-      estimate: "Sistemin göstereceği fiyat",
+      saved: "Fiyat ayarların kaydedildi.",
+      failed: "Ayarlar kaydedilirken bir sorun oluştu. Tekrar dene.",
+      estimate: "Müşterinin göreceği fiyat",
       currency: "TL",
     };
   }
 
   return {
     title: "Let’s learn your pricing style",
-    description: "Set the starting prices clients will see in three short steps.",
+    description: "Let’s shape the starting prices your clients will see.",
     phases: [
       "1. Learn your pricing style",
       "2. Review a few example cases",
@@ -97,11 +99,11 @@ function getText(locale: PublicLocale) {
       balanced: "Keep it balanced",
       filtered: "Filter leads a bit more",
     },
-    caseTitle: "What starting band would you want to show for this case?",
+    caseTitle: "What range would you want to show for this case?",
     min: "Min",
     max: "Max",
-    placeholderAsset: "Image slot ready",
-    placeholderHelp: "You can attach the real image later.",
+    placeholderAsset: "Example image area",
+    placeholderHelp: "You can add the real image later.",
     reviewTitle: "How does this estimate feel?",
     verdicts: {
       "looks-right": "Looks right",
@@ -110,11 +112,11 @@ function getText(locale: PublicLocale) {
     },
     back: "Back",
     next: "Next",
-    save: "Save settings",
+    save: "Save pricing settings",
     saving: "Saving",
-    saved: "Pricing setup saved.",
-    failed: "Pricing setup could not be saved.",
-    estimate: "What the system would show",
+    saved: "Your pricing settings are saved.",
+    failed: "Something went wrong while saving. Try again.",
+    estimate: "What the client would see",
     currency: "TRY",
   };
 }
@@ -124,14 +126,18 @@ function CurrencyInput({
   onChange,
   label,
   suffix,
+  helper,
+  normalizeOnBlur = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   label: string;
   suffix: string;
+  helper?: string;
+  normalizeOnBlur?: boolean;
 }) {
   return (
-    <Field label={label}>
+    <Field label={label} description={helper}>
       <div className="relative">
         <Input
           type="number"
@@ -139,7 +145,14 @@ function CurrencyInput({
           inputMode="numeric"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="pr-14"
+          onBlur={() => {
+            if (!normalizeOnBlur || !value.trim()) {
+              return;
+            }
+
+            onChange(String(roundToFriendlyPrice(toInputNumber(value), "nearest")));
+          }}
+          className="h-12 rounded-2xl border-white/10 bg-white/[0.03] pr-14"
         />
         <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
           {suffix}
@@ -153,13 +166,15 @@ function ChoiceGroup<T extends string>({
   value,
   onChange,
   options,
+  columnsClassName = "sm:grid-cols-3",
 }: {
   value: T | "";
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string }>;
+  columnsClassName?: string;
 }) {
   return (
-    <div className="grid gap-2 sm:grid-cols-3">
+    <div className={cn("grid gap-2", columnsClassName)}>
       {options.map((option) => {
         const active = value === option.value;
         return (
@@ -168,10 +183,10 @@ function ChoiceGroup<T extends string>({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "rounded-2xl border px-4 py-3 text-left transition",
+              "rounded-2xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35 focus-visible:ring-offset-0",
               active
-                ? "border-[var(--accent)]/30 bg-[var(--accent)]/10 text-white"
-                : "border-white/8 bg-white/[0.02] text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_10%)] hover:border-white/14 hover:bg-white/[0.04]",
+                ? "border-[var(--accent)]/34 bg-[var(--accent)]/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                : "border-white/8 bg-white/[0.015] text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)] hover:border-white/16 hover:bg-white/[0.04]",
             )}
           >
             <span className="text-sm font-medium">{option.label}</span>
@@ -199,6 +214,10 @@ function toInputNumber(value: string, fallback = 0) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function toDisplayCurrency(value: number, locale: PublicLocale) {
+  return formatCurrencyValue(value, locale, "TRY");
+}
+
 export function PricingForm({
   pricingRules,
   styles: _styles,
@@ -217,13 +236,32 @@ export function PricingForm({
   const [colorImpactPreference, setColorImpactPreference] = useState(initialProfile.colorImpactPreference);
   const [coverUpImpactPreference, setCoverUpImpactPreference] = useState(initialProfile.coverUpImpactPreference);
   const [leadPreference, setLeadPreference] = useState(initialProfile.leadPreference);
+  const [hasEditedCaseRanges, setHasEditedCaseRanges] = useState(false);
+  const [statusTone, setStatusTone] = useState<StatusTone>(null);
+  const suggestedCases = useMemo(
+    () =>
+      buildSuggestedOnboardingCases({
+        minimumJobPrice: toInputNumber(minimumJobPrice, initialProfile.minimumJobPrice),
+        textStartingPrice: toInputNumber(textStartingPrice, initialProfile.textStartingPrice),
+        colorImpactPreference,
+        coverUpImpactPreference,
+      }),
+    [
+      colorImpactPreference,
+      coverUpImpactPreference,
+      initialProfile.minimumJobPrice,
+      initialProfile.textStartingPrice,
+      minimumJobPrice,
+      textStartingPrice,
+    ],
+  );
   const [onboardingCases, setOnboardingCases] = useState(
-    PRICING_V2_ONBOARDING_CASES.map((item) => {
+    suggestedCases.map((item) => {
       const existing = initialProfile.onboardingCases.find((caseItem) => caseItem.id === item.id);
       return {
         id: item.id,
-        min: String(existing?.min ?? ""),
-        max: String(existing?.max ?? ""),
+        min: String(existing?.min ?? item.min),
+        max: String(existing?.max ?? item.max),
       };
     }),
   );
@@ -232,6 +270,20 @@ export function PricingForm({
   );
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (hasEditedCaseRanges) {
+      return;
+    }
+
+    setOnboardingCases(
+      suggestedCases.map((item) => ({
+        id: item.id,
+        min: String(item.min),
+        max: String(item.max),
+      })),
+    );
+  }, [hasEditedCaseRanges, suggestedCases]);
 
   const derivedProfile = useMemo(
     () =>
@@ -292,6 +344,7 @@ export function PricingForm({
   async function handleSave() {
     setIsSaving(true);
     setStatusMessage(null);
+    setStatusTone(null);
 
     try {
       const response = await fetch("/api/dashboard/pricing/onboarding", {
@@ -312,13 +365,18 @@ export function PricingForm({
         }),
       });
 
+      const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
       if (!response.ok) {
-        throw new Error("save-failed");
+        throw new Error(payload?.message ?? "save-failed");
       }
 
+      setStatusTone("success");
       setStatusMessage(copy.saved);
       router.refresh();
-    } catch {
+    } catch (error) {
+      console.error("[pricing-v2-save]", error);
+      setStatusTone("error");
       setStatusMessage(copy.failed);
     } finally {
       setIsSaving(false);
@@ -326,12 +384,12 @@ export function PricingForm({
   }
 
   return (
-    <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_94%,white_3%)] shadow-[0_18px_42px_rgba(0,0,0,0.16)]">
-      <CardHeader className="pb-4">
+    <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_95%,white_2.5%)] shadow-[0_16px_34px_rgba(0,0,0,0.14)]">
+      <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle>{copy.title}</CardTitle>
-            <CardDescription className="mt-2 max-w-[56ch] text-[15px] leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_6%)]">
+            <CardDescription className="mt-2 max-w-[56ch] text-[15px] leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
               {copy.description}
             </CardDescription>
           </div>
@@ -340,7 +398,7 @@ export function PricingForm({
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6 pt-0">
+      <CardContent className="space-y-5 pt-0">
         <div className="grid gap-2 sm:grid-cols-3">
           {copy.phases.map((label, index) => {
             const active = phase === index + 1;
@@ -350,8 +408,8 @@ export function PricingForm({
                 className={cn(
                   "rounded-2xl border px-4 py-3 text-sm transition",
                   active
-                    ? "border-[var(--accent)]/26 bg-[var(--accent)]/10 text-white"
-                    : "border-white/8 bg-white/[0.02] text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]",
+                    ? "border-[var(--accent)]/28 bg-[var(--accent)]/[0.11] text-white"
+                    : "border-white/8 bg-white/[0.015] text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]",
                 )}
               >
                 {label}
@@ -367,12 +425,16 @@ export function PricingForm({
               onChange={setMinimumJobPrice}
               label={copy.minimumJobPrice}
               suffix={copy.currency}
+              helper={locale === "tr" ? "Minimum iş çizgini belirler." : "Sets the baseline for your smallest jobs."}
+              normalizeOnBlur
             />
             <CurrencyInput
               value={textStartingPrice}
               onChange={setTextStartingPrice}
               label={copy.textStartingPrice}
               suffix={copy.currency}
+              helper={locale === "tr" ? "Yazı ve en basit işler buna yakın davranır." : "Text and very simple jobs stay close to this."}
+              normalizeOnBlur
             />
             <Field label={copy.colorImpact} className="lg:col-span-2">
               <ChoiceGroup
@@ -410,81 +472,106 @@ export function PricingForm({
         ) : null}
 
         {phase === 2 ? (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="space-y-3">
+            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+              {locale === "tr"
+                ? "İstersen önerilen bandları düzenle. Tam oturması yeterli, milimetrik olmasına gerek yok."
+                : "Adjust the suggested bands if you want. They only need to feel roughly right."}
+            </p>
+            <div className="grid gap-4 xl:grid-cols-2">
             {PRICING_V2_ONBOARDING_CASES.map((item, index) => {
               const currentCase = onboardingCases[index];
 
               return (
-                <div key={item.id} className="rounded-[22px] border border-white/8 bg-white/[0.02] p-4">
-                  <div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)]">
-                    <div className="rounded-[18px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_92%,white_3%)] p-4">
-                      <p className="text-xs uppercase tracking-[0.18em] text-[var(--accent-soft)]">
+                <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+                  <div className="grid gap-4 md:grid-cols-[124px_minmax(0,1fr)] md:items-start">
+                    <div className="flex h-[124px] flex-col items-center justify-center rounded-[20px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] px-4 text-center">
+                      <ImageIcon className="size-5 text-[var(--accent-soft)]" />
+                      <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent-soft)]">
                         {copy.placeholderAsset}
                       </p>
-                      <p className="mt-3 text-sm text-white">{item.title[locale]}</p>
-                      <p className="mt-2 text-xs leading-5 text-[var(--foreground-muted)]">{copy.placeholderHelp}</p>
-                      <code className="mt-4 block break-all text-[11px] text-[var(--foreground-muted)]">
-                        {item.imageSlot}
-                      </code>
+                      <p className="mt-2 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+                        {copy.placeholderHelp}
+                      </p>
                     </div>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-base font-semibold text-white">{item.title[locale]}</p>
-                        <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_6%)]">
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <p className="text-[15px] font-semibold text-white">{item.title[locale]}</p>
+                        <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                          {item.metaLine[locale]}
+                        </p>
+                        <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
                           {copy.caseTitle}
                         </p>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <CurrencyInput
                           value={currentCase.min}
-                          onChange={(value) =>
+                          onChange={(value) => {
+                            setHasEditedCaseRanges(true);
                             setOnboardingCases((current) =>
                               current.map((entry) => (entry.id === item.id ? { ...entry, min: value } : entry)),
-                            )
-                          }
+                            );
+                          }}
                           label={copy.min}
                           suffix={copy.currency}
+                          normalizeOnBlur
                         />
                         <CurrencyInput
                           value={currentCase.max}
-                          onChange={(value) =>
+                          onChange={(value) => {
+                            setHasEditedCaseRanges(true);
                             setOnboardingCases((current) =>
                               current.map((entry) => (entry.id === item.id ? { ...entry, max: value } : entry)),
-                            )
-                          }
+                            );
+                          }}
                           label={copy.max}
                           suffix={copy.currency}
+                          normalizeOnBlur
                         />
                       </div>
+                      <p className="text-sm font-medium text-[color:color-mix(in_srgb,var(--foreground-muted)_92%,white_10%)]">
+                        {`${toDisplayCurrency(toInputNumber(currentCase.min), locale)} – ${toDisplayCurrency(toInputNumber(currentCase.max), locale)}`}
+                      </p>
                     </div>
                   </div>
                 </div>
               );
             })}
+            </div>
           </div>
         ) : null}
 
         {phase === 3 ? (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="space-y-3">
+            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+              {locale === "tr"
+                ? "Burada sadece hissine güvenmen yeterli. Biraz düşük ya da biraz yüksek demen sistemi toparlar."
+                : "Trust your instinct here. A quick low/high signal is enough to tune the system."}
+            </p>
+            <div className="grid gap-4 xl:grid-cols-2">
             {reviewEstimates.map((item) => (
-              <div key={item.id} className="rounded-[22px] border border-white/8 bg-white/[0.02] p-4">
-                <div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)]">
-                  <div className="rounded-[18px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_92%,white_3%)] p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-[var(--accent-soft)]">
+              <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+                <div className="grid gap-4 md:grid-cols-[120px_minmax(0,1fr)] md:items-start">
+                  <div className="flex h-[120px] flex-col items-center justify-center rounded-[20px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] px-4 text-center">
+                    <ImageIcon className="size-5 text-[var(--accent-soft)]" />
+                    <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent-soft)]">
                       {copy.placeholderAsset}
                     </p>
-                    <p className="mt-3 text-sm text-white">{item.title[locale]}</p>
-                    <code className="mt-4 block break-all text-[11px] text-[var(--foreground-muted)]">
-                      {item.imageSlot}
-                    </code>
+                    <p className="mt-2 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+                      {copy.placeholderHelp}
+                    </p>
                   </div>
                   <div className="space-y-4">
-                    <div>
-                      <p className="text-base font-semibold text-white">{item.title[locale]}</p>
-                      <p className="mt-1 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_6%)]">
+                    <div className="space-y-1.5">
+                      <p className="text-[15px] font-semibold text-white">{item.title[locale]}</p>
+                      <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_90%,white_8%)]">
+                        {item.metaLine[locale]}
+                      </p>
+                      <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
                         {copy.estimate}
                       </p>
-                      <p className="mt-2 text-xl font-semibold text-white">{item.estimate.displayLabel}</p>
+                      <p className="text-2xl font-semibold tracking-tight text-white">{item.estimate.displayLabel}</p>
                     </div>
                     <Field label={copy.reviewTitle}>
                       <ChoiceGroup
@@ -500,17 +587,28 @@ export function PricingForm({
                           { value: "slightly-low", label: copy.verdicts["slightly-low"] },
                           { value: "slightly-high", label: copy.verdicts["slightly-high"] },
                         ]}
+                        columnsClassName="sm:grid-cols-3"
                       />
                     </Field>
                   </div>
                 </div>
               </div>
             ))}
+            </div>
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-2">
-          <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_6%)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3">
+          <p
+            className={cn(
+              "text-sm",
+              statusTone === "success"
+                ? "text-emerald-300"
+                : statusTone === "error"
+                  ? "text-rose-300"
+                  : "text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_6%)]",
+            )}
+          >
             {statusMessage ?? ""}
           </p>
           <div className="flex flex-wrap items-center gap-2">

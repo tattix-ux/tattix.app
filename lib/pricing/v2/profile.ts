@@ -1,6 +1,6 @@
 import type { ArtistPricingRules, ArtistPricingV2Profile, ColorImpactPreferenceValue, CoverUpImpactPreferenceValue, LeadPreferenceValue } from "@/lib/types";
 import { PRICING_V2_ONBOARDING_CASES } from "./onboarding-cases";
-import { midpoint } from "./helpers";
+import { midpoint, roundToFriendlyPrice } from "./helpers";
 
 type BuildPricingV2ProfileInput = {
   minimumJobPrice: number;
@@ -41,39 +41,85 @@ function deriveCoverUpImpactPreference(rules: ArtistPricingRules): CoverUpImpact
   return coverUpMidpoint >= 900 ? "high" : "medium";
 }
 
+function buildRoundedBand(center: number, spreadRatio: number, floor: number) {
+  const minimum = Math.max(
+    roundToFriendlyPrice(center * (1 - spreadRatio), "down"),
+    roundToFriendlyPrice(floor, "up"),
+  );
+  const maximum = Math.max(
+    minimum,
+    roundToFriendlyPrice(center * (1 + spreadRatio), "up"),
+  );
+
+  return {
+    min: minimum,
+    max: maximum,
+  };
+}
+
+type SuggestedCaseInput = {
+  minimumJobPrice: number;
+  textStartingPrice: number;
+  colorImpactPreference: ColorImpactPreferenceValue;
+  coverUpImpactPreference: CoverUpImpactPreferenceValue;
+};
+
+export function buildSuggestedOnboardingCases(input: SuggestedCaseInput) {
+  const minimum = Math.max(input.minimumJobPrice, 500);
+  const textBase = Math.max(input.textStartingPrice, minimum * 0.94);
+  const colorMultiplier =
+    input.colorImpactPreference === "low"
+      ? 1.1
+      : input.colorImpactPreference === "medium"
+        ? 1.16
+        : 1.22;
+  const coverUpMultiplier = input.coverUpImpactPreference === "high" ? 1.34 : 1.2;
+
+  const centers: Record<string, number> = {
+    "text-4cm-wrist": Math.max(textBase, minimum * 0.96),
+    "symbol-4cm-ankle": Math.max(minimum, textBase * 1.04),
+    "object-8cm-forearm": Math.max(minimum * 1.18, textBase * 1.18),
+    "figure-12cm-upper-arm": Math.max(minimum * 1.45, textBase * 1.34),
+    "multi-15cm-calf": Math.max(minimum * 1.82, textBase * 1.68),
+    "ornamental-small-hard": Math.max(minimum * 1.54, textBase * 1.42),
+    "medium-color-piece": Math.max(minimum * 1.62, textBase * 1.4) * colorMultiplier,
+    "small-cover-up": Math.max(minimum * 1.36, textBase * 1.12) * coverUpMultiplier,
+  };
+
+  const spreads: Record<string, number> = {
+    "text-4cm-wrist": 0.08,
+    "symbol-4cm-ankle": 0.09,
+    "object-8cm-forearm": 0.1,
+    "figure-12cm-upper-arm": 0.11,
+    "multi-15cm-calf": 0.14,
+    "ornamental-small-hard": 0.12,
+    "medium-color-piece": 0.13,
+    "small-cover-up": 0.15,
+  };
+
+  return PRICING_V2_ONBOARDING_CASES.map((item) => ({
+    id: item.id,
+    ...buildRoundedBand(
+      centers[item.id] ?? minimum,
+      spreads[item.id] ?? 0.1,
+      minimum,
+    ),
+  }));
+}
+
 function buildFallbackCases(rules: ArtistPricingRules) {
+  const minimumJobPrice = rules.minimumCharge || rules.minimumSessionPrice || 1500;
   const tiny = midpoint(rules.sizeBaseRanges.tiny.min, rules.sizeBaseRanges.tiny.max);
-  const small = midpoint(rules.sizeBaseRanges.small.min, rules.sizeBaseRanges.small.max);
-  const medium = midpoint(rules.sizeBaseRanges.medium.min, rules.sizeBaseRanges.medium.max);
-  const large = midpoint(rules.sizeBaseRanges.large.min, rules.sizeBaseRanges.large.max);
-  const coverUpMidpoint = midpoint(rules.addonFees.coverUp.min, rules.addonFees.coverUp.max);
-  const colorDelta = Math.max(0, (rules.calibrationExamples.colorMode["full-color"] ?? medium) - (rules.calibrationExamples.colorMode["black-only"] ?? medium));
+  const textStartingPrice = Math.max(
+    Math.min(tiny, minimumJobPrice),
+    roundToFriendlyPrice(minimumJobPrice * 0.9, "down"),
+  );
 
-  return PRICING_V2_ONBOARDING_CASES.map((item) => {
-    const center =
-      item.id === "text-4cm-wrist"
-        ? Math.max(rules.minimumCharge, tiny)
-        : item.id === "symbol-4cm-ankle"
-          ? Math.max(rules.minimumCharge, tiny * 1.02)
-          : item.id === "object-8cm-forearm"
-            ? small
-            : item.id === "figure-12cm-upper-arm"
-              ? medium
-              : item.id === "multi-15cm-calf"
-                ? medium * 1.18
-                : item.id === "ornamental-small-hard"
-                  ? medium * 1.08
-                  : item.id === "medium-color-piece"
-                    ? medium + colorDelta
-                    : Math.max(rules.minimumCharge + coverUpMidpoint, small * 1.08);
-
-    const spread = item.requestType === "cover_up" ? center * 0.12 : center * 0.09;
-
-    return {
-      id: item.id,
-      min: Math.max(rules.minimumCharge, Math.round(center - spread)),
-      max: Math.max(Math.round(center + spread), Math.round(center - spread)),
-    };
+  return buildSuggestedOnboardingCases({
+    minimumJobPrice,
+    textStartingPrice,
+    colorImpactPreference: deriveColorImpactPreference(rules),
+    coverUpImpactPreference: deriveCoverUpImpactPreference(rules),
   });
 }
 
@@ -83,14 +129,14 @@ export function buildPricingV2Profile(
   return {
     version: 2,
     leadPreference: input.leadPreference,
-    minimumJobPrice: Math.round(input.minimumJobPrice),
-    textStartingPrice: Math.round(input.textStartingPrice),
+    minimumJobPrice: roundToFriendlyPrice(input.minimumJobPrice, "up"),
+    textStartingPrice: roundToFriendlyPrice(input.textStartingPrice, "up"),
     colorImpactPreference: input.colorImpactPreference,
     coverUpImpactPreference: input.coverUpImpactPreference,
     onboardingCases: input.onboardingCases.map((item) => ({
       id: item.id,
-      min: Math.round(Math.min(item.min, item.max)),
-      max: Math.round(Math.max(item.min, item.max)),
+      min: roundToFriendlyPrice(Math.min(item.min, item.max), "down"),
+      max: roundToFriendlyPrice(Math.max(item.min, item.max), "up"),
     })),
     reviewCases: (input.reviewCases ?? []).map((item) => ({
       id: item.id,

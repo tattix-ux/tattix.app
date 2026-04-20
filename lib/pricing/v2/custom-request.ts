@@ -1,6 +1,6 @@
 import type { RequestTypeValue } from "@/lib/constants/options";
 import type { EstimateMode } from "@/lib/types";
-import { clamp, roundToNearestFifty } from "./helpers";
+import { clamp, roundToFriendlyPrice } from "./helpers";
 import { buildDisplayEstimateLabel, buildEstimateSummaryText } from "./output";
 import { resolvePlacementBucket } from "./placement";
 import { getArtistPricingV2Profile, getLeadPreferenceAdjustment, getOnboardingCaseMidpoint } from "./profile";
@@ -180,7 +180,10 @@ export function estimateCustomRequestPrice(
   const spread = getSpread(input.requestType, mode, input, placementBucket) * leadPreference.spread;
 
   if (mode === "starting_from") {
-    const minimum = Math.max(roundToNearestFifty(center), profile.minimumJobPrice);
+    const minimum = Math.max(
+      roundToFriendlyPrice(center, "up"),
+      roundToFriendlyPrice(profile.minimumJobPrice, "up"),
+    );
 
     return {
       mode,
@@ -199,11 +202,11 @@ export function estimateCustomRequestPrice(
   }
 
   const minimum = Math.max(
-    roundToNearestFifty(center * (1 - spread / (mode === "soft_range" ? 1 : 1.5))),
-    profile.minimumJobPrice,
+    roundToFriendlyPrice(center * (1 - spread / (mode === "soft_range" ? 1 : 1.5)), "down"),
+    roundToFriendlyPrice(profile.minimumJobPrice, "up"),
   );
   const maximum = Math.max(
-    roundToNearestFifty(center * (1 + spread)),
+    roundToFriendlyPrice(center * (1 + spread), "up"),
     minimum,
   );
 
