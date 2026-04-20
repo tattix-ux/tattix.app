@@ -1,16 +1,19 @@
 import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
 import type { PublicLocale } from "@/lib/i18n/public";
-import type { RequestTypeValue } from "@/lib/constants/options";
+import type { RealismLevelValue, RequestTypeValue } from "@/lib/constants/options";
 import type { WorkStyleValue } from "@/lib/types";
 import type { PlacementBucket } from "./types";
-import textWordImage from "@/sample-tattoos/pricing-text-word.png";
-import smallSymbolImage from "@/sample-tattoos/pricing-small-symbol.png";
-import singleObjectImage from "@/sample-tattoos/pricing-single-object.png";
-import singleFigureImage from "@/sample-tattoos/pricing-single-figure.png";
-import multiElementImage from "@/sample-tattoos/pricing-multi-element.png";
+import reviewTextWordImage from "@/sample-tattoos/final-control/pricing-text-word.png";
+import reviewSmallSymbolImage from "@/sample-tattoos/final-control/pricing-small-symbol.png";
+import reviewSingleObjectImage from "@/sample-tattoos/final-control/Tekobje.png";
+import reviewMultiElementImage from "@/sample-tattoos/final-control/pricing-multi-element.png";
+import reviewSmallCoverUpImage from "@/sample-tattoos/final-control/pricing-small-cover-up.png";
+import reviewColorPieceImage from "@/sample-tattoos/final-control/cherry-blossom.png";
 import ornamentalImage from "@/sample-tattoos/pricing-ornamental-small.png";
 import colorPieceImage from "@/sample-tattoos/pricing-color-piece.png";
 import coverUpImage from "@/sample-tattoos/pricing-cover-up.png";
+import singleFigureImage from "@/sample-tattoos/pricing-single-figure.png";
+import singleObjectImage from "@/sample-tattoos/pricing-single-object.png";
 import advancedRealismImage from "@/sample-tattoos/pricing-statue.png";
 
 export type PricingOnboardingCase = {
@@ -21,6 +24,8 @@ export type PricingOnboardingCase = {
   placementDetail?: BodyAreaDetailValue;
   colorMode: "black-only" | "black-grey" | "full-color";
   workStyle: WorkStyleValue;
+  coverUp: boolean;
+  realismLevel?: RealismLevelValue | null;
   imageSlot: string;
   imagePresentation?: PricingCaseImagePresentation;
   title: Record<PublicLocale, string>;
@@ -36,6 +41,8 @@ export type PricingReviewCase = {
   placementDetail?: BodyAreaDetailValue;
   colorMode: "black-only" | "black-grey" | "full-color";
   workStyle: WorkStyleValue;
+  coverUp: boolean;
+  realismLevel?: RealismLevelValue | null;
   imageSlot: string;
   imagePresentation?: PricingCaseImagePresentation;
   title: Record<PublicLocale, string>;
@@ -63,6 +70,24 @@ export type PricingCaseImagePresentation = {
   imageClassName?: string;
   fit?: "cover" | "contain";
 };
+
+const CALIBRATION_IMAGE_SLOTS = {
+  singleObject: singleObjectImage.src,
+  singleFigure: singleFigureImage.src,
+  ornamental: ornamentalImage.src,
+  colorPiece: colorPieceImage.src,
+  coverUp: coverUpImage.src,
+  advancedRealism: advancedRealismImage.src,
+} as const;
+
+const FINAL_CONTROL_IMAGE_SLOTS = {
+  textWord: reviewTextWordImage.src,
+  smallSymbol: reviewSmallSymbolImage.src,
+  singleObject: reviewSingleObjectImage.src,
+  multiElement: reviewMultiElementImage.src,
+  coverUp: reviewSmallCoverUpImage.src,
+  colorPiece: reviewColorPieceImage.src,
+} as const;
 
 const IMAGE_PRESENTATIONS: Record<
   | "text"
@@ -158,7 +183,8 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "forearm-outer",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: singleObjectImage.src,
+    coverUp: false,
+    imageSlot: CALIBRATION_IMAGE_SLOTS.singleObject,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
     title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
@@ -174,7 +200,8 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "forearm-outer",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: singleObjectImage.src,
+    coverUp: false,
+    imageSlot: CALIBRATION_IMAGE_SLOTS.singleObject,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
     title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
@@ -190,7 +217,8 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "forearm-outer",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: singleObjectImage.src,
+    coverUp: false,
+    imageSlot: CALIBRATION_IMAGE_SLOTS.singleObject,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
     title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
@@ -206,12 +234,18 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "upper-arm-outer",
     colorMode: "black-grey",
     workStyle: "shaded_detailed",
-    imageSlot: singleFigureImage.src,
+    coverUp: false,
+    realismLevel: "standard",
+    imageSlot: CALIBRATION_IMAGE_SLOTS.singleFigure,
     imagePresentation: IMAGE_PRESENTATIONS.singleFigure,
-    title: { tr: "Tek figür", en: "Single figure" },
+    title: { tr: "Tek figürlü gölgeli parça", en: "Shaded single-figure piece" },
     metaLine: {
-      tr: "Üst kol · siyah-gri · daha dolu, gölgeli",
-      en: "Upper arm · black-grey · fuller / shaded",
+      tr: "Üst kol · siyah-gri · tek figür, gölgeli",
+      en: "Upper arm · black-grey · single figure, shaded",
+    },
+    description: {
+      tr: "Tek figürlü, orta seviye gölgeli bir iş düşün. Yoğun realistic örnekten daha hafif kalır.",
+      en: "Think of a single-figure piece with moderate shading. It should stay lighter than the dense realistic example.",
     },
   },
   {
@@ -222,12 +256,14 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "upper-arm-outer",
     colorMode: "black-grey",
     workStyle: "shaded_detailed",
-    imageSlot: advancedRealismImage.src,
+    coverUp: false,
+    realismLevel: "advanced",
+    imageSlot: CALIBRATION_IMAGE_SLOTS.advancedRealism,
     imagePresentation: IMAGE_PRESENTATIONS.advancedRealism,
-    title: { tr: "Yoğun realistik siyah-gri", en: "Dense realistic black-grey" },
+    title: { tr: "Yoğun realistic black-grey parça", en: "Dense realistic black-grey piece" },
     metaLine: {
-      tr: "Üst kol · siyah-gri · tek figür, yoğun gölgeli",
-      en: "Upper arm · black-grey · single subject, dense shading",
+      tr: "Üst kol · siyah-gri · yoğun realistic gölge",
+      en: "Upper arm · black-grey · dense realistic shading",
     },
     description: {
       tr: "Tek ana figürlü, yoğun gölgeli, realistik siyah-gri bir iş düşün. Bu örnek, standart gölgeli işlerden daha ileri teknik yoğunluğu temsil eder.",
@@ -242,12 +278,17 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "chest-center",
     colorMode: "black-only",
     workStyle: "precision_symmetric",
-    imageSlot: ornamentalImage.src,
+    coverUp: false,
+    imageSlot: CALIBRATION_IMAGE_SLOTS.ornamental,
     imagePresentation: IMAGE_PRESENTATIONS.ornamental,
     title: { tr: "Küçük düzenli kompozisyon", en: "Small structured composition" },
     metaLine: {
       tr: "Göğüs · sadece siyah · geometrik, ornamental",
       en: "Sternum · black only · geometric / ornamental",
+    },
+    description: {
+      tr: "Küçük ama düzenli bir kompozisyon düşün. Simetri ve temiz ölçü burada daha belirleyicidir.",
+      en: "Think of a small but structured composition where symmetry and clean spacing matter more.",
     },
   },
   {
@@ -258,12 +299,17 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "upper-arm-outer",
     colorMode: "full-color",
     workStyle: "shaded_detailed",
-    imageSlot: colorPieceImage.src,
+    coverUp: false,
+    imageSlot: CALIBRATION_IMAGE_SLOTS.colorPiece,
     imagePresentation: IMAGE_PRESENTATIONS.colorPiece,
-    title: { tr: "Renkli parça", en: "Color piece" },
+    title: { tr: "10–12 cm renkli parça", en: "10–12 cm color piece" },
     metaLine: {
-      tr: "Üst kol · renkli · orta yoğunluk",
-      en: "Upper arm · color · medium density",
+      tr: "Üst kol · renkli · tek ana parça",
+      en: "Upper arm · color · single main subject",
+    },
+    description: {
+      tr: "Renkli, tek ana parçalı bir iş düşün. Burada renk farkı baskın olsun; realism ya da cover-up sinyali vermesin.",
+      en: "Think of a color piece with one main subject. The color premium should be the main signal here.",
     },
   },
   {
@@ -274,12 +320,17 @@ export const PRICING_V2_ONBOARDING_CASES: PricingOnboardingCase[] = [
     placementDetail: "forearm-outer",
     colorMode: "black-only",
     workStyle: "shaded_detailed",
-    imageSlot: coverUpImage.src,
+    coverUp: true,
+    imageSlot: CALIBRATION_IMAGE_SLOTS.coverUp,
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · küçük dövme kapatma",
       en: "Forearm · mostly black · covering a small existing tattoo",
+    },
+    description: {
+      tr: "Küçük bir kapatma işi düşün. Yoğun siyah doluluk, sıradan bir floral parçadan daha belirgin olsun.",
+      en: "Think of a small cover-up with enough dark fill to clearly read as concealment work.",
     },
   },
 ] as const;
@@ -293,7 +344,8 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementDetail: "wrist",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: textWordImage.src,
+    coverUp: false,
+    imageSlot: FINAL_CONTROL_IMAGE_SLOTS.textWord,
     imagePresentation: IMAGE_PRESENTATIONS.text,
     title: { tr: "Kısa yazı", en: "Short text" },
     metaLine: {
@@ -309,7 +361,8 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementDetail: "ankle",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: smallSymbolImage.src,
+    coverUp: false,
+    imageSlot: FINAL_CONTROL_IMAGE_SLOTS.smallSymbol,
     imagePresentation: IMAGE_PRESENTATIONS.symbol,
     title: { tr: "Minimal sembol", en: "Minimal symbol" },
     metaLine: {
@@ -325,7 +378,8 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementDetail: "forearm-outer",
     colorMode: "black-only",
     workStyle: "clean_line",
-    imageSlot: singleObjectImage.src,
+    coverUp: false,
+    imageSlot: FINAL_CONTROL_IMAGE_SLOTS.singleObject,
     imagePresentation: IMAGE_PRESENTATIONS.singleObject,
     title: { tr: "Tek obje", en: "Single object" },
     metaLine: {
@@ -340,8 +394,9 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementBucket: "standard",
     placementDetail: "calf",
     colorMode: "black-only",
-    workStyle: "shaded_detailed",
-    imageSlot: multiElementImage.src,
+    workStyle: "clean_line",
+    coverUp: false,
+    imageSlot: FINAL_CONTROL_IMAGE_SLOTS.multiElement,
     imagePresentation: IMAGE_PRESENTATIONS.multiElement,
     title: { tr: "Çok öğeli tasarım", en: "Multi-element design" },
     metaLine: {
@@ -357,12 +412,30 @@ export const PRICING_V2_REVIEW_CASES: PricingReviewCase[] = [
     placementDetail: "forearm-outer",
     colorMode: "black-only",
     workStyle: "shaded_detailed",
-    imageSlot: coverUpImage.src,
+    coverUp: true,
+    imageSlot: FINAL_CONTROL_IMAGE_SLOTS.coverUp,
     imagePresentation: IMAGE_PRESENTATIONS.coverUp,
     title: { tr: "Küçük cover-up", en: "Small cover-up" },
     metaLine: {
       tr: "Ön kol · siyah ağırlıklı · kapatma",
       en: "Forearm · mostly black · covering a small tattoo",
+    },
+  },
+  {
+    id: "review-color",
+    requestType: "single_object",
+    referenceSizeCm: 12,
+    placementBucket: "easy",
+    placementDetail: "upper-arm-outer",
+    colorMode: "full-color",
+    workStyle: "clean_line",
+    coverUp: false,
+    imageSlot: FINAL_CONTROL_IMAGE_SLOTS.colorPiece,
+    imagePresentation: IMAGE_PRESENTATIONS.colorPiece,
+    title: { tr: "Renkli parça", en: "Color piece" },
+    metaLine: {
+      tr: "Üst kol · renkli · tek ana parça",
+      en: "Upper arm · color · single main subject",
     },
   },
 ] as const;

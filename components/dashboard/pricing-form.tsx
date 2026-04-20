@@ -350,7 +350,7 @@ function getReviewReasonOptions(
     options.splice(3, 0, "color_shading");
   }
 
-  if (item.requestType === "cover_up") {
+  if (item.coverUp) {
     options.splice(options.length - 1, 0, "cover_up");
   }
 
@@ -371,25 +371,33 @@ function createDefaultReviewCase(): ReviewCaseDraft {
 
 function buildReviewCaseState(initialProfile: ReturnType<typeof getArtistPricingV2Profile>) {
   return Object.fromEntries(
-    initialProfile.reviewCases.map((item) => [
-      item.id,
-      {
-        verdict: item.verdict,
-        reason: item.reason ?? "",
-        adjustmentBias:
-          typeof item.adjustmentBias === "number"
-            ? item.adjustmentBias
-            : item.verdict === "looks-right"
-              ? 1
-              : deriveReviewAdjustmentBias({
-                  verdict: item.verdict,
-                  reason: item.reason,
-                  currentBias: 1,
-                  iterationCount: item.iterationCount ?? 0,
-                }),
-        iterationCount: item.iterationCount ?? 0,
-      } satisfies ReviewCaseDraft,
-    ]),
+    PRICING_V2_REVIEW_CASES.map((reviewItem) => {
+      const item = initialProfile.reviewCases.find((entry) => entry.id === reviewItem.id);
+
+      if (!item) {
+        return [reviewItem.id, createDefaultReviewCase()];
+      }
+
+      return [
+        item.id,
+        {
+          verdict: item.verdict,
+          reason: item.reason ?? "",
+          adjustmentBias:
+            typeof item.adjustmentBias === "number"
+              ? item.adjustmentBias
+              : item.verdict === "looks-right"
+                ? 1
+                : deriveReviewAdjustmentBias({
+                    verdict: item.verdict,
+                    reason: item.reason,
+                    currentBias: 1,
+                    iterationCount: item.iterationCount ?? 0,
+                  }),
+          iterationCount: item.iterationCount ?? 0,
+        } satisfies ReviewCaseDraft,
+      ];
+    }),
   ) as Record<string, ReviewCaseDraft>;
 }
 
@@ -697,9 +705,10 @@ export function PricingForm({
               sizeCm: item.referenceSizeCm,
               colorMode: item.colorMode,
               workStyle: item.workStyle,
+              realismLevel: item.realismLevel,
               hasReferenceImage: true,
               hasReferenceNote: false,
-              coverUp: item.requestType === "cover_up",
+              coverUp: item.coverUp,
             },
             {
               locale,

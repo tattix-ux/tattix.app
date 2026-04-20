@@ -109,6 +109,14 @@ function applyCaseFamilyBias(
     return { ...current, coverUpBias: clamp(current.coverUpBias * weightedBias, 0.78, 1.34) };
   }
 
+  if (id === "review-color") {
+    return {
+      ...current,
+      singleObjectBias: clamp(current.singleObjectBias * clamp(1 + (bias - 1) * 0.34, 0.86, 1.18), 0.78, 1.34),
+      colorShadingBias: clamp(current.colorShadingBias * clamp(1 + (bias - 1) * 0.72, 0.82, 1.28), 0.82, 1.28),
+    };
+  }
+
   return current;
 }
 
