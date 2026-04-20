@@ -230,6 +230,47 @@ function toDisplayCurrency(value: number, locale: PublicLocale) {
   return formatCurrencyValue(value, locale, "TRY");
 }
 
+function getPublicImageSrc(path: string) {
+  return `/${encodeURI(path).replace(/%2F/g, "/")}`;
+}
+
+function ImageSlotPreview({
+  imageSlot,
+  placeholderAsset,
+  placeholderHelp,
+}: {
+  imageSlot: string;
+  placeholderAsset: string;
+  placeholderHelp: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  if (!imageSlot || hasError) {
+    return (
+      <div className="flex h-[124px] flex-col items-center justify-center rounded-[20px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] px-4 text-center">
+        <ImageIcon className="size-5 text-[var(--accent-soft)]" />
+        <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent-soft)]">
+          {placeholderAsset}
+        </p>
+        <p className="mt-2 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+          {placeholderHelp}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[124px] overflow-hidden rounded-[20px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)]">
+      <img
+        src={getPublicImageSrc(imageSlot)}
+        alt=""
+        className="h-full w-full object-cover"
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
+}
+
 export function PricingForm({
   pricingRules,
   styles: _styles,
@@ -539,15 +580,11 @@ export function PricingForm({
               return (
                 <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
                   <div className="grid gap-4 md:grid-cols-[124px_minmax(0,1fr)] md:items-start">
-                    <div className="flex h-[124px] flex-col items-center justify-center rounded-[20px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] px-4 text-center">
-                      <ImageIcon className="size-5 text-[var(--accent-soft)]" />
-                      <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent-soft)]">
-                        {copy.placeholderAsset}
-                      </p>
-                      <p className="mt-2 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
-                        {copy.placeholderHelp}
-                      </p>
-                    </div>
+                    <ImageSlotPreview
+                      imageSlot={item.imageSlot}
+                      placeholderAsset={copy.placeholderAsset}
+                      placeholderHelp={copy.placeholderHelp}
+                    />
                     <div className="space-y-3">
                       <div className="space-y-1.5">
                         <p className="text-[15px] font-semibold text-white">{item.title[locale]}</p>
@@ -607,15 +644,11 @@ export function PricingForm({
             {reviewEstimates.map((item) => (
               <div key={item.id} className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
                 <div className="grid gap-4 md:grid-cols-[120px_minmax(0,1fr)] md:items-start">
-                  <div className="flex h-[120px] flex-col items-center justify-center rounded-[20px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] px-4 text-center">
-                    <ImageIcon className="size-5 text-[var(--accent-soft)]" />
-                    <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent-soft)]">
-                      {copy.placeholderAsset}
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
-                      {copy.placeholderHelp}
-                    </p>
-                  </div>
+                  <ImageSlotPreview
+                    imageSlot={item.imageSlot}
+                    placeholderAsset={copy.placeholderAsset}
+                    placeholderHelp={copy.placeholderHelp}
+                  />
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <p className="text-[15px] font-semibold text-white">{item.title[locale]}</p>
