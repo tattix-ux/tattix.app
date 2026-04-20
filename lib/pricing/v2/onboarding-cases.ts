@@ -2,14 +2,14 @@ import type { PublicLocale } from "@/lib/i18n/public";
 import type { RequestTypeValue } from "@/lib/constants/options";
 import type { WorkStyleValue } from "@/lib/types";
 import type { PlacementBucket } from "./types";
-import textWordImage from "@/sample-tattoos/4 cm tek kelime yazı.png";
-import smallSymbolImage from "@/sample-tattoos/4 cm küçük sembol.png";
-import singleObjectImage from "@/sample-tattoos/tek obje.png";
-import singleFigureImage from "@/sample-tattoos/12 cm tek figür.png";
-import multiElementImage from "@/sample-tattoos/15 cm çok öğeli tasarım.png";
-import ornamentalImage from "@/sample-tattoos/Küçük ornamental parça.png";
-import colorPieceImage from "@/sample-tattoos/10–12 cm renkli parça.png";
-import coverUpImage from "@/sample-tattoos/Küçük cover-up örneği.png";
+import textWordImage from "@/sample-tattoos/pricing-text-word.png";
+import smallSymbolImage from "@/sample-tattoos/pricing-small-symbol.png";
+import singleObjectImage from "@/sample-tattoos/pricing-single-object.png";
+import singleFigureImage from "@/sample-tattoos/pricing-single-figure.png";
+import multiElementImage from "@/sample-tattoos/pricing-multi-element.png";
+import ornamentalImage from "@/sample-tattoos/pricing-ornamental-small.png";
+import colorPieceImage from "@/sample-tattoos/pricing-color-piece.png";
+import coverUpImage from "@/sample-tattoos/pricing-cover-up.png";
 
 export type PricingOnboardingCase = {
   id: string;
