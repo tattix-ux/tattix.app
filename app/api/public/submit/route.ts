@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       customer_gender: submission.gender ?? null,
       customer_age_range: submission.ageRange ?? null,
       work_style: submission.workStyle ?? null,
-      style: submission.style,
+      style: submission.style ?? "custom",
       notes: combinedNotes || null,
       estimated_min: estimate.min,
       estimated_max: estimate.max ?? estimate.min,

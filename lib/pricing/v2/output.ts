@@ -8,38 +8,26 @@ export function buildEstimateSummaryText(
   locale: PublicLocale,
 ) {
   if (locale === "tr") {
-    if (source === "featured_design") {
-      return mode === "starting_from"
-        ? "Bu tasarım için başlangıç seviyesi budur. Özel bir değişiklik düşünüyorsan bunu dövmeciyle görüşebilirsin."
-        : "Bu tasarım için başlangıç tahmini budur. Özel bir değişiklik düşünüyorsan bunu dövmeciyle görüşebilirsin.";
-    }
-
     if (mode === "range") {
-      return "Seçtiğin bilgilere göre yaklaşık başlangıç fiyatı budur. Net fiyat daha sonra değişebilir.";
+      return "Seçtiklerine göre çoğu durumda başlangıç seviyesi bu aralıkta olur.";
     }
 
     if (mode === "soft_range") {
       return "Bu tür işler seçilen boyut, bölge ve içeriğe göre genelde bu bantta değerlendirilir.";
     }
 
-    return "Bu tür işler genelde bu seviyeden başlayan bir değerlendirme gerektirir. Net fiyat dövmeciyle görüşüldükten sonra belirlenir.";
-  }
-
-  if (source === "featured_design") {
-    return mode === "starting_from"
-      ? "This is the usual starting level for this design. If you want a custom change, you can discuss it with the artist."
-      : "This is the usual starting estimate for this design. If you want a custom change, you can discuss it with the artist.";
+    return "Bu tür işler genelde bu seviyeden başlayan bir değerlendirme gerektirir. Net fiyat, tasarım ve detaylar netleştikten sonra belirlenir.";
   }
 
   if (mode === "range") {
-    return "This is the approximate starting price based on what you selected. The final price can still change later.";
+    return "Based on what you selected, the starting level usually falls within this range.";
   }
 
   if (mode === "soft_range") {
     return "Requests like this are usually evaluated within this band depending on size, placement, and content.";
   }
 
-  return "Requests like this usually start from this level. The final price is set after the artist reviews the details.";
+  return "Requests like this usually need an evaluation that starts from this level. The final price is set after the design and details are clarified.";
 }
 
 export function buildDisplayEstimateLabel(

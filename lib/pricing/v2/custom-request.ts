@@ -194,7 +194,9 @@ export function estimateCustomRequestPrice(
     input.requestType === "cover_up"
       ? profile.coverUpImpactPreference === "high"
         ? 1.22
-        : 1.12
+        : profile.coverUpImpactPreference === "medium"
+          ? 1.12
+          : 1.04
       : 1;
   const leadPreference = getLeadPreferenceAdjustment(profile.leadPreference);
   const rawCenter = Math.max(

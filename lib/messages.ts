@@ -75,6 +75,25 @@ function getGenderLabel(
   return "Prefer not to say";
 }
 
+function getColorLabel(
+  value: SubmissionRequest["colorMode"],
+  locale: PublicLocale,
+) {
+  if (!value) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    if (value === "black-only") return "Sadece siyah";
+    if (value === "black-grey") return "Siyah-gri";
+    return "Renkli";
+  }
+
+  if (value === "black-only") return "Black only";
+  if (value === "black-grey") return "Black and grey";
+  return "Color";
+}
+
 export function buildSubmissionMessage(
   submission: SubmissionRequest,
   options: {
@@ -111,8 +130,13 @@ export function buildSubmissionMessage(
     `${labels.size}: ${sizeLabel}${manualSize && manualSize !== sizeLabel ? ` (${manualSize})` : ""}`,
   );
 
+  const colorLabel = getColorLabel(submission.colorMode, locale);
+  if (colorLabel) {
+    lines.push(`${labels.color}: ${colorLabel}`);
+  }
+
   if (pricingSource === "custom_request" && submission.workStyle) {
-    lines.push(`${locale === "tr" ? "İşçilik karakteri" : "Work style"}: ${getWorkStyleLabel(submission.workStyle, locale)}`);
+    lines.push(`${locale === "tr" ? "İşin karakteri" : "Character of the piece"}: ${getWorkStyleLabel(submission.workStyle, locale)}`);
   }
 
   if (submission.referenceImage) {
@@ -122,9 +146,9 @@ export function buildSubmissionMessage(
     }
   }
 
-  if (submission.referenceDescription?.trim()) {
-    lines.push(`${labels.referenceDescription}: ${submission.referenceDescription.trim()}`);
-  }
+  const combinedNote = [submission.referenceDescription?.trim(), submission.notes?.trim()]
+    .filter(Boolean)
+    .join(" | ");
 
   if (submission.city?.trim()) {
     lines.push(`${labels.city}: ${submission.city.trim()}`);
@@ -140,7 +164,7 @@ export function buildSubmissionMessage(
     lines.push(`${locale === "tr" ? "Tarih" : labels.preferredTiming}: ${preferredTiming}`);
   }
 
-  lines.push(`${locale === "tr" ? "Not" : labels.notes}: ${submission.notes?.trim() ? submission.notes.trim() : labels.noNotes}`);
+  lines.push(`${locale === "tr" ? "Not" : labels.notes}: ${combinedNote || labels.noNotes}`);
 
   if (submission.gender) {
     lines.push(`${labels.gender}: ${getGenderLabel(submission.gender, locale)}`);

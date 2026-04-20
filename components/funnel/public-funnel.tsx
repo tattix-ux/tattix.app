@@ -37,33 +37,43 @@ function getCopy(locale: PublicLocale) {
     return {
       stepLabel: "Adım",
       heroCta: "Fiyat tahmini al",
+      introTitle: "Aklındaki dövmeyi birkaç adımda netleştirelim",
+      introDescription: "Seçtiklerine göre sana yaklaşık bir başlangıç fiyatı göstereceğiz.",
+      featuredFlowTitle: "Tasarımlardan birini seç, kalanını birlikte netleştirelim",
+      featuredFlowDescription: "Seçtiğin tasarıma göre yaklaşık başlangıç fiyatını gösterelim.",
       stepTitles: {
-        1: "Ne yaptırmak istiyorsun?",
-        2: "Nereye yapılacak?",
-        3: "Yaklaşık boyut kaç cm?",
-        4: "Renk ve işin havası",
-        5: "Birkaç son bilgi",
-        6: "Tahminin hazır",
+        1: "Aklındaki dövmeyi birkaç adımda netleştirelim",
+        2: "Nereye yaptırmak istiyorsun?",
+        3: "Yaklaşık boyut kaç cm olsun?",
+        4: "Renk olacak mı?",
+        5: "Referans görselin veya kısa notun var mı?",
+        6: "Tahmini başlangıç aralığın",
       },
       stepDescriptions: {
-        1: "Sana en yakın seçeneği işaretle.",
-        2: "Önce genel bölgeyi, sonra tam yeri seç.",
-        3: "Yaklaşık boyutu cm olarak seç.",
-        4: "Rengi seç, sonra işin genel karakterini işaretle.",
-        5: "İstersen görsel, kısa not, şehir ve zamanı ekle.",
+        1: "Seçtiklerine göre sana yaklaşık bir başlangıç fiyatı göstereceğiz.",
+        2: "En yakın bölgeyi seç.",
+        3: "En geniş noktayı düşünerek yaklaşık seçim yapabilirsin.",
+        4: "Dövmenin genel görünümüne en yakın seçeneği seç.",
+        5: "Varsa ekleyebilirsin. Yoksa bu adımı geçebilirsin.",
         6: "",
       },
       colorTitleCustom: "Renk olacak mı?",
       colorTitleFeatured: "Renk aynı mı kalsın?",
-      colorDescriptionCustom: "Bu seçim başlangıç fiyatını etkiler.",
-      colorDescriptionFeatured: "Özel değişiklik gerekiyorsa bunu dövmeciyle daha sonra konuşabilirsin.",
+      colorDescriptionCustom: "Dövmenin genel görünümüne en yakın seçeneği seç.",
+      colorDescriptionFeatured: "Tasarıma en yakın görünümü seç.",
       workStyleTitle: "Bu iş daha çok nasıl bir şey?",
-      workStyleDescription: "Yaklaşık işçiliği anlatan en yakın seçeneği işaretle.",
+      workStyleDescription: "Sana en yakın olan görünümü seç.",
       workStyles: {
         clean_line: "Sade çizgisel",
         shaded_detailed: "Daha işçilikli / gölgeli",
         precision_symmetric: "Hassas / simetrik",
         unsure: "Emin değilim",
+      },
+      workStyleDescriptions: {
+        clean_line: "Temiz çizgiler, daha sade görünüm",
+        shaded_detailed: "Daha dolu, gölgeli veya emek isteyen görünüm",
+        precision_symmetric: "Daha dikkatli ve kontrollü çalışma isteyen görünüm",
+        unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
       colorModes: {
         "black-only": "Sadece siyah",
@@ -71,19 +81,31 @@ function getCopy(locale: PublicLocale) {
         "full-color": "Renkli",
         same: "Aynı kalsın",
       },
+      featuredColorModes: {
+        same: "Aynı kalsın",
+        "black-only": "Sadece siyah olsun",
+        "black-grey": "Siyah-gri olsun",
+        "full-color": "Renkli olsun",
+      },
       continue: "Devam",
       back: "Geri",
       submit: "Tahmini gör",
       uploading: "Yükleniyor",
-      referenceTitle: "Referans görseli veya kısa not",
-      referenceUpload: "Referans yükle",
+      referenceTitle: "Referans görselin veya kısa notun var mı?",
+      referenceDescription: "Varsa ekleyebilirsin. Yoksa bu adımı geçebilirsin.",
+      referenceUpload: "Referans görsel ekle",
       referenceNote: "Kısa not",
-      referencePlaceholder: "Örn. ince çizgi bir gül, küçük ve sade.",
-      extraNotes: "Ek not",
-      extraNotesPlaceholder: "Varsa eklemek istediğin kısa bir not yazabilirsin.",
-      cityTitle: "Şehir",
+      referencePlaceholder: "Aklındaki fikir, önemli detaylar veya istediğin değişiklikler",
+      featuredNoteTitle: "Kısa bir not eklemek ister misin?",
+      featuredNoteDescription: "Varsa yazabilirsin. Yoksa geçebilirsin.",
+      featuredNotePlaceholder: "Randevu, yerleşim veya önemli bir not yazabilirsin",
+      cityTitle: "Hangi şehirde randevu düşünüyorsun?",
+      cityDescription: "Dövmecinin uygun olduğu şehirlerden birini seç.",
       cityPlaceholder: "Şehir seç",
-      timingTitle: "Uygun olduğun zaman",
+      timingTitle: "Ne zaman düşünüyorsun?",
+      timingDescription: "Sana en uygun zamanı seç.",
+      timingRangeTitle: "Hangi tarih aralığı sana daha uygun?",
+      timingRangeDescription: "Yaklaşık bir aralık seçmen yeterli.",
       timingSingle: "Tek gün",
       timingRange: "Tarih aralığı",
       startDate: "Başlangıç tarihi",
@@ -109,19 +131,19 @@ function getCopy(locale: PublicLocale) {
       calculatingBody: "Bu sadece birkaç saniye sürer.",
       resultTitles: {
         range: "Tahmini başlangıç aralığı",
-        soft_range: "Yaklaşık bant",
-        starting_from: "Başlangıç fiyatı",
+        soft_range: "Tahmini başlangıç aralığı",
+        starting_from: "Tahmini başlangıç aralığı",
       },
       summaryTitle: "Seçim özeti",
       summaryLabels: {
-        requestType: "Talep tipi",
+        requestType: "İş tipi",
         selectedDesign: "Tasarım",
-        placement: "Yerleşim",
+        placement: "Bölge",
         size: "Boyut",
         color: "Renk",
-        workStyle: "İşçilik karakteri",
+        workStyle: "İşin karakteri",
       },
-      sendWhatsapp: "WhatsApp ile gönder",
+      sendWhatsapp: "WhatsApp'tan gönder",
       copyMessage: "Mesajı kopyala",
       copied: "Mesaj kopyalandı",
       restart: "Baştan başla",
@@ -133,33 +155,43 @@ function getCopy(locale: PublicLocale) {
   return {
     stepLabel: "Step",
     heroCta: "Get estimate",
+    introTitle: "Let’s clarify the tattoo you have in mind in a few steps",
+    introDescription: "Based on your choices, we’ll show you an approximate starting price.",
+    featuredFlowTitle: "Pick one of the designs and let’s clarify the rest together",
+    featuredFlowDescription: "We’ll show you an approximate starting price based on the design you choose.",
     stepTitles: {
-      1: "What do you want to get?",
-      2: "Where will it go?",
-      3: "About how many cm?",
-      4: "Color and overall feel",
-      5: "A few final details",
-      6: "Your estimate is ready",
+      1: "Let’s clarify the tattoo you have in mind in a few steps",
+      2: "Where do you want it?",
+      3: "About how many cm should it be?",
+      4: "Will there be color?",
+      5: "Do you have a reference image or a short note?",
+      6: "Your estimated starting range",
     },
     stepDescriptions: {
-      1: "Pick the option that feels closest.",
-      2: "Choose the general area first, then the exact spot.",
-      3: "Choose the approximate size in cm.",
-      4: "Pick the color direction, then the closest overall feel.",
-      5: "You can add a reference, a short note, city, and timing.",
+      1: "Based on your choices, we’ll show you an approximate starting price.",
+      2: "Choose the closest area.",
+      3: "Think about the widest point and choose approximately.",
+      4: "Choose the option closest to the overall look.",
+      5: "You can add it if you want. If not, you can skip this step.",
       6: "",
     },
     colorTitleCustom: "Will there be color?",
     colorTitleFeatured: "Will the color stay the same?",
-    colorDescriptionCustom: "This helps shape the starting estimate.",
-    colorDescriptionFeatured: "If you want a custom change, you can discuss it with the artist later.",
+    colorDescriptionCustom: "Choose the option closest to the overall look of the tattoo.",
+    colorDescriptionFeatured: "Choose the look that feels closest to the design.",
     workStyleTitle: "What does this piece feel more like?",
-    workStyleDescription: "Pick the closest option for the overall workmanship.",
+    workStyleDescription: "Choose the look that feels closest.",
     workStyles: {
       clean_line: "Clean line",
       shaded_detailed: "More worked / shaded",
       precision_symmetric: "Precise / symmetric",
       unsure: "Not sure",
+    },
+    workStyleDescriptions: {
+      clean_line: "Clean lines and a simpler look",
+      shaded_detailed: "A fuller, shaded, or more labor-heavy look",
+      precision_symmetric: "A look that needs more control and precision",
+      unsure: "Choose this if you’re not sure yet",
     },
     colorModes: {
       "black-only": "Black only",
@@ -167,19 +199,31 @@ function getCopy(locale: PublicLocale) {
       "full-color": "Color",
       same: "Keep it the same",
     },
+    featuredColorModes: {
+      same: "Keep it the same",
+      "black-only": "Make it black only",
+      "black-grey": "Make it black and grey",
+      "full-color": "Make it color",
+    },
     continue: "Continue",
     back: "Back",
     submit: "See estimate",
     uploading: "Uploading",
-    referenceTitle: "Reference image or short note",
-    referenceUpload: "Upload reference",
+    referenceTitle: "Do you have a reference image or a short note?",
+    referenceDescription: "You can add it if you want. If not, you can skip this step.",
+    referenceUpload: "Add reference image",
     referenceNote: "Short note",
-    referencePlaceholder: "For example: a fine-line rose, small and simple.",
-    extraNotes: "Extra note",
-    extraNotesPlaceholder: "Add a short note if there is anything else to mention.",
-    cityTitle: "City",
+    referencePlaceholder: "The idea you have in mind, important details, or any change you want",
+    featuredNoteTitle: "Would you like to add a short note?",
+    featuredNoteDescription: "You can write it if you want. If not, you can skip it.",
+    featuredNotePlaceholder: "You can write a note about placement, timing, or anything important",
+    cityTitle: "Which city are you thinking about for the appointment?",
+    cityDescription: "Choose one of the cities where the artist is available.",
     cityPlaceholder: "Choose city",
-    timingTitle: "When are you available?",
+    timingTitle: "When are you thinking about it?",
+    timingDescription: "Choose the timing that suits you best.",
+    timingRangeTitle: "Which date range works better for you?",
+    timingRangeDescription: "An approximate range is enough.",
     timingSingle: "Single day",
     timingRange: "Date range",
     startDate: "Start date",
@@ -210,14 +254,14 @@ function getCopy(locale: PublicLocale) {
     },
     summaryTitle: "Summary",
     summaryLabels: {
-      requestType: "Request type",
+      requestType: "Job type",
       selectedDesign: "Design",
       placement: "Placement",
       size: "Size",
       color: "Color",
-      workStyle: "Work style",
+      workStyle: "Character of the piece",
     },
-    sendWhatsapp: "Send via WhatsApp",
+    sendWhatsapp: "Send on WhatsApp",
     copyMessage: "Copy message",
     copied: "Message copied",
     restart: "Start over",
@@ -306,8 +350,34 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const compactArtistHeader = step > 1 || Boolean(draft.pricingSource);
   const { tokens } = buildThemeStyles(artist.pageTheme);
   const resultStep = 6;
-  const currentTitle = copy.stepTitles[step as 1 | 2 | 3 | 4 | 5 | 6];
-  const currentDescription = copy.stepDescriptions[step as 1 | 2 | 3 | 4 | 5 | 6];
+  const currentTitle =
+    step === 1
+      ? draft.pricingSource === "featured_design"
+        ? copy.featuredFlowTitle
+        : copy.introTitle
+      : step === 4
+        ? draft.pricingSource === "featured_design"
+          ? copy.colorTitleFeatured
+          : copy.colorTitleCustom
+        : step === 5
+          ? draft.pricingSource === "featured_design"
+            ? copy.featuredNoteTitle
+            : copy.referenceTitle
+          : copy.stepTitles[step as 1 | 2 | 3 | 4 | 5 | 6];
+  const currentDescription =
+    step === 1
+      ? draft.pricingSource === "featured_design"
+        ? copy.featuredFlowDescription
+        : copy.introDescription
+      : step === 4
+        ? draft.pricingSource === "featured_design"
+          ? copy.colorDescriptionFeatured
+          : copy.colorDescriptionCustom
+        : step === 5
+          ? draft.pricingSource === "featured_design"
+            ? copy.featuredNoteDescription
+            : copy.referenceDescription
+          : copy.stepDescriptions[step as 1 | 2 | 3 | 4 | 5 | 6];
   const displayProgress = (Math.min(step, 5) / 5) * 100;
   const colorChoices =
     draft.pricingSource === "featured_design" && selectedDesign
@@ -368,8 +438,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       const sameColorMode = selectedDesign?.referenceColorMode ?? "black-only";
       const colorLabel =
         draft.pricingSource === "featured_design" && draft.colorMode === sameColorMode
-          ? copy.colorModes.same
-          : copy.colorModes[draft.colorMode];
+          ? copy.featuredColorModes.same
+          : draft.pricingSource === "featured_design"
+            ? copy.featuredColorModes[draft.colorMode]
+            : copy.colorModes[draft.colorMode];
       items.push({ label: copy.summaryLabels.color, value: colorLabel });
     }
 
@@ -455,7 +527,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         draft.pricingSource === "custom_request"
           ? draft.workStyle || undefined
           : undefined,
-      style: "custom",
       notes: draft.notes || undefined,
       coverUp: draft.requestType === "cover_up",
       customDesign: draft.pricingSource !== "featured_design",
@@ -695,11 +766,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     borderColor: "var(--artist-border)",
                     backgroundColor: "rgba(0,0,0,0.12)",
                   }}
-                >
-                  <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                    {draft.pricingSource === "featured_design" ? copy.colorTitleFeatured : copy.colorTitleCustom}
-                  </p>
-                  <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {draft.pricingSource === "featured_design" ? copy.colorTitleFeatured : copy.colorTitleCustom}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
                     {draft.pricingSource === "featured_design" ? copy.colorDescriptionFeatured : copy.colorDescriptionCustom}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -720,7 +791,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           }}
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <p className="font-medium">{copy.colorModes[option.labelKey]}</p>
+                            <p className="font-medium">
+                              {draft.pricingSource === "featured_design"
+                                ? copy.featuredColorModes[option.labelKey]
+                                : copy.colorModes[option.labelKey]}
+                            </p>
                             {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                           </div>
                         </button>
@@ -761,7 +836,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                             }}
                           >
                             <div className="flex items-start justify-between gap-3">
-                              <p className="font-medium">{option.label}</p>
+                              <div>
+                                <p className="font-medium">{option.label}</p>
+                                <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                  {copy.workStyleDescriptions[option.value]}
+                                </p>
+                              </div>
                               {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                             </div>
                           </button>
@@ -800,52 +880,65 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   }}
                 >
                   <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                    {copy.referenceTitle}
+                    {draft.pricingSource === "featured_design" ? copy.featuredNoteTitle : copy.referenceTitle}
+                  </p>
+                  <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                    {draft.pricingSource === "featured_design" ? copy.featuredNoteDescription : copy.referenceDescription}
                   </p>
                   <div className="mt-4 space-y-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
-                        {isUploadingReference ? <LoaderCircle className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
-                        {copy.referenceUpload}
-                        <input
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/gif"
-                          className="hidden"
-                          onChange={(event) => {
-                            const file = event.target.files?.[0];
-                            if (file) {
-                              void handleReferenceUpload(file);
-                            }
-                            event.currentTarget.value = "";
-                          }}
-                        />
-                      </label>
-                      {draft.referenceImage ? (
-                        <div className="size-14 overflow-hidden rounded-[16px] border border-white/10 bg-black/20">
-                          <img src={draft.referenceImage} alt="Reference" className="h-full w-full object-cover" />
+                    {draft.pricingSource === "custom_request" ? (
+                      <>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
+                            {isUploadingReference ? <LoaderCircle className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
+                            {copy.referenceUpload}
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp,image/gif"
+                              className="hidden"
+                              onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                if (file) {
+                                  void handleReferenceUpload(file);
+                                }
+                                event.currentTarget.value = "";
+                              }}
+                            />
+                          </label>
+                          {draft.referenceImage ? (
+                            <div className="size-14 overflow-hidden rounded-[16px] border border-white/10 bg-black/20">
+                              <img src={draft.referenceImage} alt="Reference" className="h-full w-full object-cover" />
+                            </div>
+                          ) : null}
                         </div>
-                      ) : null}
-                    </div>
-                    <Textarea
-                      style={{
-                        backgroundColor: "rgba(0,0,0,0.12)",
-                        borderColor: "var(--artist-border)",
-                        color: "var(--artist-card-text)",
-                      }}
-                      value={draft.referenceDescription}
-                      onChange={(event) => setField("referenceDescription", event.target.value)}
-                      placeholder={copy.referencePlaceholder}
-                    />
-                    <Textarea
-                      style={{
-                        backgroundColor: "rgba(0,0,0,0.12)",
-                        borderColor: "var(--artist-border)",
-                        color: "var(--artist-card-text)",
-                      }}
-                      value={draft.notes}
-                      onChange={(event) => setField("notes", event.target.value)}
-                      placeholder={copy.extraNotesPlaceholder}
-                    />
+                        <div className="space-y-2">
+                          <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                            {copy.referenceNote}
+                          </span>
+                          <Textarea
+                            style={{
+                              backgroundColor: "rgba(0,0,0,0.12)",
+                              borderColor: "var(--artist-border)",
+                              color: "var(--artist-card-text)",
+                            }}
+                            value={draft.referenceDescription}
+                            onChange={(event) => setField("referenceDescription", event.target.value)}
+                            placeholder={copy.referencePlaceholder}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <Textarea
+                        style={{
+                          backgroundColor: "rgba(0,0,0,0.12)",
+                          borderColor: "var(--artist-border)",
+                          color: "var(--artist-card-text)",
+                        }}
+                        value={draft.notes}
+                        onChange={(event) => setField("notes", event.target.value)}
+                        placeholder={copy.featuredNotePlaceholder}
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -898,6 +991,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
                         {copy.cityTitle}
                       </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {copy.cityDescription}
+                      </p>
                       <div className="mt-4">
                         <NativeSelect
                           value={draft.city}
@@ -926,7 +1022,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       }}
                     >
                       <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                        {copy.timingTitle}
+                        {bookingMode === "range" ? copy.timingRangeTitle : copy.timingTitle}
+                      </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                        {bookingMode === "range" ? copy.timingRangeDescription : copy.timingDescription}
                       </p>
                       <div className="mt-4 space-y-4">
                         <div className="flex flex-wrap gap-2">

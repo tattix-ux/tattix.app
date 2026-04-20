@@ -56,6 +56,10 @@ function deriveColorImpactPreference(rules: ArtistPricingRules): ColorImpactPref
 
 function deriveCoverUpImpactPreference(rules: ArtistPricingRules): CoverUpImpactPreferenceValue {
   const coverUpMidpoint = midpoint(rules.addonFees.coverUp.min, rules.addonFees.coverUp.max);
+  if (coverUpMidpoint < 500) {
+    return "low";
+  }
+
   return coverUpMidpoint >= 900 ? "high" : "medium";
 }
 
@@ -92,7 +96,12 @@ export function buildSuggestedOnboardingCases(input: SuggestedCaseInput) {
       : input.colorImpactPreference === "medium"
         ? 1.16
         : 1.22;
-  const coverUpMultiplier = input.coverUpImpactPreference === "high" ? 1.34 : 1.2;
+  const coverUpMultiplier =
+    input.coverUpImpactPreference === "low"
+      ? 1.08
+      : input.coverUpImpactPreference === "medium"
+        ? 1.2
+        : 1.34;
   const cleanLineMultiplier =
     input.workStyleSensitivity.clean_line === "low"
       ? 0.98

@@ -107,7 +107,8 @@ export function estimateTattooPrice(
   }
 
   const baseRange = context.pricingRules.sizeBaseRanges[submission.sizeCategory];
-  const styleMultiplier = resolveStyleMultiplier(submission.style, context.styleOptions);
+  const styleKey = submission.style ?? "custom";
+  const styleMultiplier = resolveStyleMultiplier(styleKey, context.styleOptions);
   const placementMultiplier = resolvePlacementMultiplier(
     submission.bodyAreaDetail,
     context.pricingRules,
@@ -132,9 +133,10 @@ export function buildEstimateSummary(
 ) {
   const intentLabel = getIntentLabel(submission.intent, locale);
   const sizeLabel = getSizeLabel(submission.sizeCategory, locale);
-  const localizedStyleLabel = getStyleLabel(submission.style, locale);
+  const styleKey = submission.style ?? "custom";
+  const localizedStyleLabel = getStyleLabel(styleKey, locale);
   const styleLabel =
-    locale === "tr" && styleLabelOverride && styleLabelOverride !== submission.style
+    locale === "tr" && styleLabelOverride && styleLabelOverride !== styleKey
       ? localizedStyleLabel
       : styleLabelOverride ?? localizedStyleLabel;
   const placementLabel = getPlacementDetailLocaleLabel(submission.bodyAreaDetail, locale);

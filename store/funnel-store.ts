@@ -42,7 +42,6 @@ const initialDraft: SubmissionDraft = {
   detailLevel: "",
   colorMode: "",
   coverUp: null,
-  style: "custom",
   notes: "",
 };
 

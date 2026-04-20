@@ -304,7 +304,7 @@ export const pricingOnboardingSchema = z.object({
   minimumJobPrice: z.coerce.number().gt(0),
   textStartingPrice: z.coerce.number().gt(0),
   colorImpactPreference: z.enum(["low", "medium", "high"]),
-  coverUpImpactPreference: z.enum(["medium", "high"]),
+  coverUpImpactPreference: z.enum(["low", "medium", "high"]),
   workStyleSensitivity: z.object({
     clean_line: z.enum(["low", "medium", "high"]),
     shaded_detailed: z.enum(["low", "medium", "high"]),
@@ -564,7 +564,7 @@ export const submissionSchema = z.object({
   coverUp: z.boolean().optional(),
   customDesign: z.boolean().optional(),
   designType: z.string().max(80).nullable().optional(),
-  style: z.string().min(1),
+  style: z.string().min(1).optional().default("custom"),
   notes: z.string().max(500).optional(),
 });
 

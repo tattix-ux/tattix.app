@@ -32,7 +32,7 @@ export type PricingSourceValue = "custom_request" | "featured_design";
 export type EstimateMode = "range" | "soft_range" | "starting_from";
 export type LeadPreferenceValue = "lead_friendly" | "balanced" | "filtered";
 export type ColorImpactPreferenceValue = "low" | "medium" | "high";
-export type CoverUpImpactPreferenceValue = "medium" | "high";
+export type CoverUpImpactPreferenceValue = "low" | "medium" | "high";
 export type WorkStyleSensitivityValue = "low" | "medium" | "high";
 export type FeaturedDesignPricingMode =
   | "fixed_range"
@@ -480,7 +480,6 @@ export type SubmissionDraft = {
   detailLevel: DetailLevelValue | "";
   colorMode: ColorModeValue | "";
   coverUp: boolean | null;
-  style: string;
   notes: string;
 };
 
@@ -559,6 +558,6 @@ export type SubmissionRequest = {
   coverUp?: boolean | null;
   customDesign?: boolean | null;
   designType?: string | null;
-  style: string;
+  style?: string;
   notes?: string;
 };
