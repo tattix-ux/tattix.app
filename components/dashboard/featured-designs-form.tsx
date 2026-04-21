@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
+import { BrandIcon } from "@/components/shared/logo";
 import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,7 +57,12 @@ type PricingModeValue = NonNullable<DesignDraft["pricingMode"]>;
 type ColorModeValue = NonNullable<DesignDraft["referenceColorMode"]>;
 type ColorImpactValue = NonNullable<DesignDraft["colorImpactPreference"]>;
 type PendingRemoval = { designId: string; title: string } | null;
-type PendingOpenState = { designId: string; isNew: boolean; focusTitle: boolean } | null;
+type PendingOpenState = {
+  designId: string;
+  isNew: boolean;
+  focusTitle: boolean;
+  imageFile?: File | null;
+} | null;
 type EditingSnapshot = {
   designId: string;
   values: DesignDraft;
@@ -489,6 +495,11 @@ export function FeaturedDesignsForm({
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval>(null);
   const [focusTitleOnOpen, setFocusTitleOnOpen] = useState(false);
+  const [quickAddTitle, setQuickAddTitle] = useState("");
+  const [quickAddPriceMin, setQuickAddPriceMin] = useState("");
+  const [quickAddPriceMax, setQuickAddPriceMax] = useState("");
+  const [quickAddImageFile, setQuickAddImageFile] = useState<File | null>(null);
+  const [quickAddImageName, setQuickAddImageName] = useState<string | null>(null);
   const editingSnapshotRef = useRef<EditingSnapshot | null>(null);
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -497,6 +508,29 @@ export function FeaturedDesignsForm({
     ? currentDesigns.findIndex((design) => design?.id === editingDesignId)
     : -1;
   const editingDesign = editingIndex >= 0 ? currentDesigns[editingIndex] : null;
+  const orderedDesignEntries = designsFieldArray.fields
+    .map((field, index) => ({
+      field,
+      index,
+      design: currentDesigns[index],
+    }))
+    .sort((left, right) => {
+      if ((left.design?.id || left.field.id) === editingDesignId) {
+        return -1;
+      }
+      if ((right.design?.id || right.field.id) === editingDesignId) {
+        return 1;
+      }
+      return left.index - right.index;
+    });
+
+  function resetQuickAdd() {
+    setQuickAddTitle("");
+    setQuickAddPriceMin("");
+    setQuickAddPriceMax("");
+    setQuickAddImageFile(null);
+    setQuickAddImageName(null);
+  }
 
   function getCurrentDesigns() {
     return (form.getValues("designs") ?? []).map((design, index) =>
@@ -577,7 +611,7 @@ export function FeaturedDesignsForm({
     beginEditing(designId, options);
   }
 
-  function addDesign(source?: PartialDesignDraft) {
+  function addDesign(source?: PartialDesignDraft, seed?: Partial<DesignDraft>, imageFile?: File | null) {
     if (editingSnapshotRef.current) {
       cancelEditing();
     }
@@ -585,6 +619,9 @@ export function FeaturedDesignsForm({
     const nextDesign = source
       ? cloneDesign(source, designsFieldArray.fields.length)
       : createEmptyDesign(designsFieldArray.fields.length);
+    if (seed) {
+      Object.assign(nextDesign, seed);
+    }
     const designId = nextDesign.id ?? crypto.randomUUID();
     nextDesign.id = designId;
 
@@ -593,6 +630,7 @@ export function FeaturedDesignsForm({
       designId,
       isNew: true,
       focusTitle: true,
+      imageFile,
     });
   }
 
@@ -613,6 +651,14 @@ export function FeaturedDesignsForm({
       isNew: pendingOpen.isNew,
       focusTitle: pendingOpen.focusTitle,
     });
+    if (pendingOpen.imageFile) {
+      const nextIndex = (form.getValues("designs") ?? []).findIndex(
+        (design) => design.id === pendingOpen.designId,
+      );
+      if (nextIndex !== -1) {
+        void handleImageUpload(nextIndex, pendingOpen.imageFile);
+      }
+    }
     setPendingOpen(null);
   }, [form, pendingOpen, watchedDesigns]);
 
@@ -796,6 +842,7 @@ export function FeaturedDesignsForm({
   }
 
   const statusMessage = form.formState.errors.root?.message ?? null;
+  const quickAddReady = Boolean(quickAddTitle.trim() || quickAddPriceMin.trim() || quickAddPriceMax.trim() || quickAddImageFile);
 
   return (
     <form
@@ -823,33 +870,92 @@ export function FeaturedDesignsForm({
           {flashMessage}
         </div>
       ) : null}
-      <Card className="surface-border overflow-hidden border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
-          <div className="min-w-0 space-y-1.5">
-            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)]">
-              {labels.introHint}
+      <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
+        <CardContent className="space-y-4 p-4 sm:p-5">
+          <div className="space-y-1.5">
+            <p className="text-sm text-[var(--text-secondary)]">{labels.introHint}</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-dim)]">
+              {labels.introSteps.join(" • ")}
             </p>
-            <div className="flex flex-wrap gap-1.5">
-              {labels.introSteps.map((step) => (
-                <span
-                  key={step}
-                  className="rounded-full border border-white/8 bg-white/[0.02] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]"
-                >
-                  {step}
-                </span>
-              ))}
-            </div>
             {statusMessage && !editingDesign ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
           </div>
 
-          <div className="shrink-0">
-            <Button
-              type="button"
-              onClick={() => addDesign()}
-            >
-              <Plus className="size-4" />
-              {labels.addDesign}
-            </Button>
+          <div className="grid gap-3 xl:grid-cols-[auto_minmax(0,1.2fr)_minmax(0,0.9fr)_auto] xl:items-end">
+            <Field label={labels.image} className="min-w-[150px]">
+              <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-4 text-sm text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
+                <Upload className="size-4" />
+                {quickAddImageName ? labels.replaceImage : labels.uploadImage}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) {
+                      setQuickAddImageFile(file);
+                      setQuickAddImageName(file.name);
+                    }
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+            </Field>
+
+            <Field label={labels.titleLabel}>
+              <Input
+                value={quickAddTitle}
+                onChange={(event) => setQuickAddTitle(event.target.value)}
+                className="h-12 rounded-[18px] bg-white/[0.03]"
+                placeholder={labels.titlePlaceholder}
+              />
+            </Field>
+
+            <Field label={labels.priceLabel} description={labels.priceHelp}>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  type="number"
+                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                  placeholder="6000"
+                  value={quickAddPriceMin}
+                  onChange={(event) => setQuickAddPriceMin(event.target.value)}
+                />
+                <Input
+                  type="number"
+                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                  placeholder="8500"
+                  value={quickAddPriceMax}
+                  onChange={(event) => setQuickAddPriceMax(event.target.value)}
+                />
+              </div>
+            </Field>
+
+            <div className="flex items-center gap-2">
+              {quickAddImageName ? (
+                <Button type="button" variant="ghost" size="sm" onClick={resetQuickAdd}>
+                  <X className="size-4" />
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                className="h-12 px-5"
+                onClick={() => {
+                  addDesign(
+                    undefined,
+                    {
+                      title: quickAddTitle,
+                      referencePriceMin: quickAddPriceMin ? Number(quickAddPriceMin) : null,
+                      referencePriceMax: quickAddPriceMax ? Number(quickAddPriceMax) : null,
+                    },
+                    quickAddImageFile,
+                  );
+                  resetQuickAdd();
+                }}
+                disabled={!quickAddReady}
+              >
+                <Plus className="size-4" />
+                {labels.addDesign}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -877,8 +983,7 @@ export function FeaturedDesignsForm({
         </Card>
       ) : (
         <div className="space-y-4">
-          {designsFieldArray.fields.map((field, index) => {
-            const design = watchedDesigns?.[index];
+          {orderedDesignEntries.map(({ field, index, design }) => {
             const title = design?.title?.trim() || `${labels.newItem} ${index + 1}`;
             const category = getCategoryLabel(design?.category || "flash-designs");
             const sizeValue = toNullableNumber(design?.referenceSizeCm);
@@ -988,11 +1093,11 @@ export function FeaturedDesignsForm({
                     </div>
 
                     {isEditing ? (
-                      <div className="sticky top-3 z-10 flex flex-col gap-3 self-start rounded-[20px] bg-[color:color-mix(in_srgb,var(--background)_92%,black_8%)] sm:ml-4 sm:min-w-[320px] sm:border sm:border-white/8 sm:p-3">
-                        <div className="flex items-start justify-between gap-3 rounded-[18px] border border-white/8 bg-white/[0.03] px-3 py-3">
-                          <div className="space-y-1">
-                            <p className="text-sm font-medium text-white">{labels.statusLabel}</p>
-                            <p className="text-xs leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]">
+                      <div className="sticky top-3 z-10 flex flex-wrap items-center justify-end gap-2 self-start sm:ml-4 sm:min-w-[350px]">
+                        <div className="flex items-center gap-3 rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3.5 py-2.5">
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-medium text-[var(--text-primary)]">{labels.statusLabel}</p>
+                            <p className="text-[11px] leading-5 text-[var(--text-muted)]">
                               {labels.statusHelp}
                             </p>
                           </div>
@@ -1008,12 +1113,13 @@ export function FeaturedDesignsForm({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                          <Button type="button" variant="secondary" onClick={cancelEditing}>
+                          <Button type="button" variant="secondary" onClick={cancelEditing} className="h-11">
                             {labels.cancel}
                           </Button>
                           <Button
                             type="submit"
                             disabled={form.formState.isSubmitting || !form.formState.isDirty}
+                            className="h-11"
                           >
                             {form.formState.isSubmitting ? (
                               <>
@@ -1074,10 +1180,23 @@ export function FeaturedDesignsForm({
                       {statusMessage ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
 
                       <EditorSection title={labels.detailsTitle} description={labels.detailsDescription}>
-                        <div className="space-y-4">
-                          <Field label={labels.image}>
-                            <div className="space-y-3">
-                              <div className="relative flex h-[180px] items-center justify-center overflow-hidden rounded-[20px] border border-white/8 bg-white/[0.03]">
+                        <div className="space-y-5">
+                          <div className="flex items-center gap-3 rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
+                            <BrandIcon size="sm" />
+                            <div className="min-w-0">
+                              <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-dim)]">
+                                {labels.drawerTitle}
+                              </p>
+                              <p className="truncate text-lg font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+                                {title}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-start">
+                            <Field label={labels.image}>
+                              <div className="space-y-3">
+                                <div className="relative flex h-[240px] items-center justify-center overflow-hidden rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]">
                                 {editingDesign?.imageUrl ? (
                                   <img
                                     src={editingDesign.imageUrl}
@@ -1085,117 +1204,121 @@ export function FeaturedDesignsForm({
                                     className="h-full w-full object-cover"
                                   />
                                 ) : (
-                                  <div className="space-y-2 text-center text-[var(--foreground-muted)]">
-                                    <div className="mx-auto flex size-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.03]">
+                                  <div className="space-y-2 text-center text-[var(--text-muted)]">
+                                    <div className="mx-auto flex size-12 items-center justify-center rounded-full border border-[var(--border-soft)] bg-white/[0.03]">
                                       <ImagePlus className="size-5" />
                                     </div>
-                                    <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_78%,white_10%)]">
+                                    <p className="text-xs text-[var(--text-muted)]">
                                       {labels.noImage}
                                     </p>
                                   </div>
                                 )}
                               </div>
-                              <div className="flex flex-wrap gap-2">
-                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
-                                  <Upload className="size-4" />
-                                  {editingDesign?.imageUrl ? labels.replaceImage : labels.uploadImage}
-                                  <input
-                                    type="file"
-                                    accept="image/png,image/jpeg,image/webp,image/gif"
-                                    className="hidden"
-                                    onChange={(event) => {
-                                      const file = event.target.files?.[0];
-                                      if (file) {
-                                        void handleImageUpload(editingIndex, file);
-                                      }
-                                      event.currentTarget.value = "";
-                                    }}
-                                  />
-                                </label>
-                                {editingDesign?.imageUrl ? (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-white/74 hover:text-white"
-                                    onClick={() => void handleImageRemove(editingIndex)}
-                                  >
-                                    <X className="size-4" />
-                                    {labels.removeImage}
-                                  </Button>
-                                ) : null}
+                                <div className="flex flex-wrap gap-2">
+                                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-[18px] border border-[var(--border-soft)] bg-white/[0.03] px-4 py-2 text-sm text-[var(--text-primary)] transition hover:bg-white/[0.06]">
+                                    <Upload className="size-4" />
+                                    {editingDesign?.imageUrl ? labels.replaceImage : labels.uploadImage}
+                                    <input
+                                      type="file"
+                                      accept="image/png,image/jpeg,image/webp,image/gif"
+                                      className="hidden"
+                                      onChange={(event) => {
+                                        const file = event.target.files?.[0];
+                                        if (file) {
+                                          void handleImageUpload(editingIndex, file);
+                                        }
+                                        event.currentTarget.value = "";
+                                      }}
+                                    />
+                                  </label>
+                                  {editingDesign?.imageUrl ? (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                      onClick={() => void handleImageRemove(editingIndex)}
+                                    >
+                                      <X className="size-4" />
+                                      {labels.removeImage}
+                                    </Button>
+                                  ) : null}
+                                </div>
                               </div>
-                            </div>
-                          </Field>
+                            </Field>
 
-                          <Field
-                            label={labels.titleLabel}
-                            error={form.formState.errors.designs?.[editingIndex]?.title?.message}
-                          >
-                            {(() => {
-                              const titleRegistration = form.register(`designs.${editingIndex}.title`);
-
-                              return (
-                                <Input
-                                  ref={(node) => {
-                                    titleRegistration.ref(node);
-                                    titleInputRef.current = node;
-                                  }}
-                                  className="h-12 rounded-[18px] bg-white/[0.03]"
-                                  placeholder={labels.titlePlaceholder}
-                                  name={titleRegistration.name}
-                                  onBlur={titleRegistration.onBlur}
-                                  onChange={titleRegistration.onChange}
-                                />
-                              );
-                            })()}
-                          </Field>
-
-                          <Field
-                            label={labels.sizeLabel}
-                            error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
-                          >
-                            <div className="relative">
-                              <Input
-                                type="number"
-                                className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
-                                placeholder={labels.sizePlaceholder}
-                                {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
-                              />
-                              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_76%,white_10%)]">
-                                cm
-                              </span>
-                            </div>
-                          </Field>
-
-                          <Field label={labels.priceLabel} description={labels.priceHelp}>
-                            <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="grid gap-4 xl:grid-cols-2">
                               <Field
-                                label={labels.priceMin}
-                                className="gap-2"
-                                error={form.formState.errors.designs?.[editingIndex]?.referencePriceMin?.message}
+                                label={labels.titleLabel}
+                                error={form.formState.errors.designs?.[editingIndex]?.title?.message}
+                                className="xl:col-span-2"
                               >
-                                <Input
-                                  type="number"
-                                  className="h-12 rounded-[18px] bg-white/[0.03]"
-                                  placeholder="6000"
-                                  {...form.register(`designs.${editingIndex}.referencePriceMin`)}
-                                />
+                                {(() => {
+                                  const titleRegistration = form.register(`designs.${editingIndex}.title`);
+
+                                  return (
+                                    <Input
+                                      ref={(node) => {
+                                        titleRegistration.ref(node);
+                                        titleInputRef.current = node;
+                                      }}
+                                      className="h-12 rounded-[18px] bg-white/[0.03]"
+                                      placeholder={labels.titlePlaceholder}
+                                      name={titleRegistration.name}
+                                      onBlur={titleRegistration.onBlur}
+                                      onChange={titleRegistration.onChange}
+                                    />
+                                  );
+                                })()}
                               </Field>
+
                               <Field
-                                label={labels.priceMax}
-                                className="gap-2"
-                                error={form.formState.errors.designs?.[editingIndex]?.referencePriceMax?.message}
+                                label={labels.sizeLabel}
+                                error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
                               >
-                                <Input
-                                  type="number"
-                                  className="h-12 rounded-[18px] bg-white/[0.03]"
-                                  placeholder="8500"
-                                  {...form.register(`designs.${editingIndex}.referencePriceMax`)}
-                                />
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
+                                    placeholder={labels.sizePlaceholder}
+                                    {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
+                                  />
+                                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)]">
+                                    cm
+                                  </span>
+                                </div>
+                              </Field>
+
+                              <Field label={labels.priceLabel} description={labels.priceHelp} className="xl:col-span-2">
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  <Field
+                                    label={labels.priceMin}
+                                    className="gap-2"
+                                    error={form.formState.errors.designs?.[editingIndex]?.referencePriceMin?.message}
+                                  >
+                                    <Input
+                                      type="number"
+                                      className="h-12 rounded-[18px] bg-white/[0.03]"
+                                      placeholder="6000"
+                                      {...form.register(`designs.${editingIndex}.referencePriceMin`)}
+                                    />
+                                  </Field>
+                                  <Field
+                                    label={labels.priceMax}
+                                    className="gap-2"
+                                    error={form.formState.errors.designs?.[editingIndex]?.referencePriceMax?.message}
+                                  >
+                                    <Input
+                                      type="number"
+                                      className="h-12 rounded-[18px] bg-white/[0.03]"
+                                      placeholder="8500"
+                                      {...form.register(`designs.${editingIndex}.referencePriceMax`)}
+                                    />
+                                  </Field>
+                                </div>
                               </Field>
                             </div>
-                          </Field>
+                          </div>
                         </div>
                       </EditorSection>
 
