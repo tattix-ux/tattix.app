@@ -1384,7 +1384,14 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                               }}
                             >
                               <div className="flex items-start justify-between gap-3">
-                                <p className="font-medium">{option.label}</p>
+                                <div>
+                                  <p className="font-medium">{option.label}</p>
+                                  {copy.layoutDescriptions[option.value] ? (
+                                    <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                                      {copy.layoutDescriptions[option.value]}
+                                    </p>
+                                  ) : null}
+                                </div>
                                 {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                               </div>
                             </button>
