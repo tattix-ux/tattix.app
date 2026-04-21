@@ -14,9 +14,16 @@ export function AppShell({
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(247,177,93,0.1),_transparent_24%),radial-gradient(circle_at_top,_rgba(255,236,214,0.02),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(66,45,36,0.22),_transparent_38%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,244,228,0.018),transparent_18%,transparent_78%,rgba(247,177,93,0.018))]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_left_18%,rgba(255,236,214,0.055),transparent_26%),radial-gradient(circle_at_left_top,rgba(255,242,225,0.028),transparent_34%)] opacity-80" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(214,165,116,0.08),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(141,91,52,0.06),_transparent_24%),linear-gradient(180deg,_#17181C_0%,_#121315_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.018),transparent_18%,transparent_78%,rgba(214,165,116,0.018))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(42,45,52,0.24),_transparent_34%),radial-gradient(circle_at_top,_rgba(255,255,255,0.018),_transparent_28%)] opacity-90" />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.045] mix-blend-soft-light"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E\")",
+        }}
+      />
       <div className="relative w-full min-w-0 max-w-full overflow-visible">{children}</div>
     </div>
   );

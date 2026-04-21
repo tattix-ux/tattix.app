@@ -10,13 +10,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-[0_14px_28px_rgba(0,0,0,0.28)] hover:-translate-y-0.5 hover:bg-[color:color-mix(in_srgb,var(--accent)_92%,white_8%)] hover:shadow-[0_18px_34px_rgba(0,0,0,0.34)]",
+          "border border-white/8 bg-[linear-gradient(180deg,#D6A574_0%,#C8925F_100%)] text-[var(--accent-foreground)] shadow-[0_8px_24px_rgba(214,165,116,0.18)] hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,#E4C08D_0%,#D6A574_100%)] hover:shadow-[0_10px_28px_rgba(214,165,116,0.24)] active:bg-[linear-gradient(180deg,#C8925F_0%,#B67C49_100%)]",
         secondary:
-          "border border-[rgba(214,173,126,0.1)] bg-[linear-gradient(180deg,rgba(255,243,227,0.03),rgba(255,243,227,0.014))] text-white shadow-[inset_0_1px_0_rgba(255,244,228,0.03)] hover:bg-[linear-gradient(180deg,rgba(255,243,227,0.05),rgba(255,243,227,0.022))] hover:border-[rgba(214,173,126,0.16)]",
-        ghost: "text-[var(--foreground-muted)] hover:bg-[rgba(255,243,227,0.04)] hover:text-white",
+          "border border-[rgba(255,255,255,0.09)] bg-[#1D1F24] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:bg-[#23262C] hover:border-[rgba(255,255,255,0.14)]",
+        ghost: "text-[var(--foreground-muted)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]",
         outline:
-          "border border-[rgba(214,173,126,0.12)] bg-transparent text-white hover:bg-[rgba(255,243,227,0.03)] hover:border-[rgba(214,173,126,0.18)]",
-        destructive: "bg-red-500 text-white hover:bg-red-400",
+          "border border-[rgba(255,255,255,0.09)] bg-transparent text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.14)]",
+        destructive: "border border-[rgba(184,106,99,0.28)] bg-[rgba(184,106,99,0.14)] text-white hover:bg-[rgba(184,106,99,0.2)]",
       },
       size: {
         default: "h-11 px-5",

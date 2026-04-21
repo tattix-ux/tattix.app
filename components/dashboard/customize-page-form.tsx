@@ -27,15 +27,15 @@ type CustomizePageArtist = {
   funnelSettings: ArtistFunnelSettings;
 };
 
-const accentSwatches = ["#A86E45", "#8E5F41", "#D6A574", "#C87856", "#8D7AE6", "#4D98C7", "#79A979", "#D35F6A"] as const;
-const solidSwatches = ["#F6F1E8", "#E8DCCF", "#EDE4D8", "#161922", "#0B0D11", "#132030"] as const;
-const cardSwatches = ["#FFFDF8", "#F7EFE6", "#EEE4D7", "#1E1B1A", "#17191E", "#12161C"] as const;
+const accentSwatches = ["#E4C08D", "#D6A574", "#C8925F", "#B67C49", "#C1A07C", "#A97C57", "#8D5B34", "#B8A28D"] as const;
+const solidSwatches = ["#121315", "#17181C", "#15171A", "#1A1B20", "#14161A", "#161A20"] as const;
+const cardSwatches = ["#1D1F24", "#23262C", "#2A2D34", "#2F2520", "#D8D0C7", "#C6BBB0"] as const;
 
 const backgroundPalettePresets = [
-  { key: "graphite", labelTr: "Graphite", labelEn: "Graphite", mode: "dark" as const, start: "#1A212A", end: "#0A0D12" },
-  { key: "sand", labelTr: "Sand", labelEn: "Sand", mode: "light" as const, start: "#F3ECE3", end: "#E6D7C7" },
-  { key: "midnight", labelTr: "Midnight", labelEn: "Midnight", mode: "dark" as const, start: "#151922", end: "#07090C" },
-  { key: "ink-blue", labelTr: "Ink blue", labelEn: "Ink blue", mode: "dark" as const, start: "#1B2B41", end: "#0C1119" },
+  { key: "graphite", labelTr: "Graphite", labelEn: "Graphite", mode: "dark" as const, start: "#1A1B20", end: "#121315" },
+  { key: "sand", labelTr: "Sand", labelEn: "Sand", mode: "dark" as const, start: "#221C18", end: "#161315" },
+  { key: "midnight", labelTr: "Midnight", labelEn: "Midnight", mode: "dark" as const, start: "#17181C", end: "#101114" },
+  { key: "ink-blue", labelTr: "Ink blue", labelEn: "Ink blue", mode: "dark" as const, start: "#1A2230", end: "#11161E" },
 ] as const;
 
 const fontOptions = [
@@ -48,26 +48,26 @@ const presetMeta: Record<
   ThemePresetKey,
   { title: string; descriptionTr: string; descriptionEn: string; chipsTr: string[]; chipsEn: string[] }
 > = {
-  "studio-light": {
-    title: "Studio Light",
-    descriptionTr: "Açık, temiz ve editoryal",
-    descriptionEn: "Bright, clean, and editorial",
-    chipsTr: ["Açık", "Editoryal", "Temiz"],
-    chipsEn: ["Light", "Editorial", "Clean"],
+  "bronze-studio": {
+    title: "Bronze Studio",
+    descriptionTr: "Sıcak, temiz ve rafine",
+    descriptionEn: "Warm, clean, and refined",
+    chipsTr: ["Sıcak", "Rafine", "Net"],
+    chipsEn: ["Warm", "Refined", "Clean"],
   },
-  "warm-canvas": {
-    title: "Warm Canvas",
-    descriptionTr: "Sıcak, yumuşak ve butik",
-    descriptionEn: "Warm, soft, and boutique",
-    chipsTr: ["Sıcak", "Yumuşak", "Butik"],
-    chipsEn: ["Warm", "Soft", "Boutique"],
+  "smoke-metal": {
+    title: "Smoke Metal",
+    descriptionTr: "Daha nötr, metalik ve kontrollü",
+    descriptionEn: "More neutral, metallic, and controlled",
+    chipsTr: ["Metalik", "Dengeli", "Operasyonel"],
+    chipsEn: ["Metallic", "Balanced", "Operational"],
   },
-  "midnight-ink": {
-    title: "Midnight Ink",
-    descriptionTr: "Koyu, net ve premium",
-    descriptionEn: "Dark, sharp, and premium",
-    chipsTr: ["Koyu", "Net", "Premium"],
-    chipsEn: ["Dark", "Sharp", "Premium"],
+  "dark-alloy": {
+    title: "Dark Alloy",
+    descriptionTr: "En derin, premium ve logoya en yakın",
+    descriptionEn: "The deepest, most premium, and closest to the logo",
+    chipsTr: ["Derin", "Premium", "Bronz vurgu"],
+    chipsEn: ["Deep", "Premium", "Bronze accent"],
   },
 };
 
@@ -156,7 +156,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="surface-border border-white/8 bg-white/[0.02] shadow-[0_12px_28px_rgba(0,0,0,0.14)]">
+    <Card className="surface-border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1D1F24_0%,#1A1C21_100%)] shadow-[0_18px_36px_rgba(0,0,0,0.2)]">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-3">
           {icon ? (
@@ -193,8 +193,8 @@ function SelectionPill({
       className={cn(
         "rounded-full border px-4 py-2.5 text-sm font-medium transition",
         active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_18%,transparent)] text-white shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
-          : "border-white/10 bg-white/[0.03] text-[var(--foreground-muted)] hover:border-white/18 hover:bg-white/[0.05] hover:text-white",
+          ? "border-[rgba(214,165,116,0.32)] bg-[rgba(214,165,116,0.14)] text-[#F0E4D2] shadow-[0_0_0_1px_rgba(214,165,116,0.1),0_8px_30px_rgba(214,165,116,0.12)]"
+          : "border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] hover:border-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
         className,
       )}
     >
@@ -220,8 +220,8 @@ function ColorDot({
       className={cn(
         "size-10 rounded-full border transition",
         active
-          ? "scale-[1.05] border-white/70 shadow-[0_0_0_4px_rgba(255,255,255,0.07)]"
-          : "border-white/10 hover:scale-[1.02] hover:border-white/20",
+          ? "scale-[1.05] border-[rgba(255,255,255,0.72)] shadow-[0_0_0_4px_rgba(214,165,116,0.1)]"
+          : "border-[rgba(255,255,255,0.1)] hover:scale-[1.02] hover:border-[rgba(255,255,255,0.2)]",
       )}
       style={{ backgroundColor: color }}
     />
@@ -402,9 +402,9 @@ function AppearancePreview({
       : "Clients share the key details here before they message you.");
 
   return (
-    <div className="relative overflow-hidden rounded-[30px] border border-white/8 bg-white/[0.02] p-4 shadow-[0_20px_46px_rgba(0,0,0,0.2)] sm:p-5">
+    <div className="relative overflow-hidden rounded-[30px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1D1F24_0%,#181A1F_100%)] p-4 shadow-[0_24px_52px_rgba(0,0,0,0.24)] sm:p-5">
       <div className="mx-auto max-w-[420px]">
-        <div className="rounded-[34px] border border-white/10 bg-black/10 p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.22)]">
+        <div className="rounded-[34px] border border-[rgba(255,255,255,0.08)] bg-[rgba(18,19,21,0.54)] p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.24)]">
           <div className="overflow-hidden rounded-[28px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
             <div className="p-4 sm:p-5">
               <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.28) }}>
@@ -693,7 +693,7 @@ export function CustomizePageForm({
   }
 
   function resetThemeToDefault() {
-    const defaultTheme = resolveArtistTheme({ presetTheme: "midnight-ink", artistId: artist.profile.id });
+    const defaultTheme = resolveArtistTheme({ presetTheme: "dark-alloy", artistId: artist.profile.id });
     form.reset(buildFormValues(defaultTheme));
     form.clearErrors("root");
   }
@@ -718,23 +718,16 @@ export function CustomizePageForm({
     }
 
     if (next === "solid") {
-      const solidColor =
-        currentThemeMode === "light"
-          ? themePresets["studio-light"].backgroundColor
-          : themePresets["midnight-ink"].backgroundColor;
       form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
-      form.setValue("backgroundColor", solidColor, { shouldDirty: true, shouldValidate: true });
+      form.setValue("themeMode", "dark", { shouldDirty: true, shouldValidate: true });
+      form.setValue("backgroundColor", currentBackgroundColor || themePresets[currentPreset].backgroundColor, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
       return;
     }
 
-    const preset =
-      next === "soft-gradient"
-        ? currentThemeMode === "light"
-          ? backgroundPalettePresets[1]
-          : backgroundPalettePresets[3]
-        : currentThemeMode === "light"
-          ? backgroundPalettePresets[1]
-          : backgroundPalettePresets[2];
+    const preset = next === "soft-gradient" ? backgroundPalettePresets[0] : backgroundPalettePresets[2];
     applyBackgroundPalette(preset.key);
   }
 
@@ -781,20 +774,10 @@ export function CustomizePageForm({
     if (!palette) return;
 
     form.setValue("backgroundType", "gradient", { shouldDirty: true, shouldValidate: true });
-    form.setValue("themeMode", palette.mode, { shouldDirty: true, shouldValidate: true });
+    form.setValue("themeMode", "dark", { shouldDirty: true, shouldValidate: true });
     form.setValue("backgroundColor", palette.start, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientStart", palette.start, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientEnd", palette.end, { shouldDirty: true, shouldValidate: true });
-
-    if (palette.mode === "light") {
-      form.setValue("textColor", themePresets["studio-light"].textColor, { shouldDirty: true, shouldValidate: true });
-      form.setValue("cardColor", themePresets["studio-light"].cardColor, { shouldDirty: true, shouldValidate: true });
-      form.setValue("secondaryColor", themePresets["studio-light"].secondaryColor, { shouldDirty: true, shouldValidate: true });
-    } else {
-      form.setValue("textColor", themePresets["midnight-ink"].textColor, { shouldDirty: true, shouldValidate: true });
-      form.setValue("cardColor", themePresets["midnight-ink"].cardColor, { shouldDirty: true, shouldValidate: true });
-      form.setValue("secondaryColor", themePresets["midnight-ink"].secondaryColor, { shouldDirty: true, shouldValidate: true });
-    }
   }
 
   async function saveTheme(values: ThemeValues) {
