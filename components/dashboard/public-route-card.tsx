@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy, ExternalLink } from "lucide-react";
 
+import { getAppOrigin } from "@/lib/config/site";
 import { Button } from "@/components/ui/button";
 
 export function PublicRouteCard({
@@ -18,13 +19,10 @@ export function PublicRouteCard({
 }) {
   const [copied, setCopied] = useState(false);
   const fallbackHref = `/${slug}`;
+  const publicHref = `${getAppOrigin()}${fallbackHref}`;
 
   async function copyLink() {
-    const value =
-      typeof window !== "undefined"
-        ? new URL(fallbackHref, window.location.origin).toString()
-        : fallbackHref;
-    await navigator.clipboard.writeText(value);
+    await navigator.clipboard.writeText(publicHref);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
   }
@@ -45,7 +43,7 @@ export function PublicRouteCard({
             {copyLabel}
           </Button>
           <Button type="button" size="sm" asChild>
-            <a href={fallbackHref} target="_blank" rel="noreferrer">
+            <a href={publicHref} target="_blank" rel="noreferrer">
               <ExternalLink className="size-4" />
               {openLabel}
             </a>
@@ -64,7 +62,7 @@ export function PublicRouteCard({
           </p>
           <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">{description}</p>
           <div className="mt-4 flex items-center justify-between gap-3 rounded-[18px] border border-white/8 bg-black/20 px-4 py-3">
-            <p className="min-w-0 truncate text-sm font-medium text-white">{fallbackHref}</p>
+            <p className="min-w-0 truncate text-sm font-medium text-white">{publicHref}</p>
             <Button type="button" size="sm" variant="outline" onClick={copyLink}>
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
               {copyLabel}
@@ -91,7 +89,7 @@ export function PublicRouteCard({
               {copyLabel}
             </Button>
             <Button type="button" size="sm" asChild>
-              <a href={fallbackHref} target="_blank" rel="noreferrer">
+              <a href={publicHref} target="_blank" rel="noreferrer">
                 <ExternalLink className="size-4" />
                 {openLabel}
               </a>

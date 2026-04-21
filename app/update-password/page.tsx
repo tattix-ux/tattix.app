@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
+
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 import { Logo } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
+import { buildPageMetadata } from "@/lib/config/site";
+
+export const metadata: Metadata = buildPageMetadata("/update-password", { noIndex: true });
 
 export default function UpdatePasswordPage() {
   return (

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Manrope, Outfit } from "next/font/google";
 import { AuthStateListener } from "@/components/auth/auth-state-listener";
+import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -25,6 +26,10 @@ export const metadata: Metadata = {
   title: {
     default: "Tattix",
     template: "%s | Tattix",
+  },
+  metadataBase: new URL(siteConfig.url),
+  alternates: {
+    canonical: "/",
   },
   description:
     "Tattix is a mobile-first link-in-bio funnel and tattoo pricing estimator for tattoo artists.",

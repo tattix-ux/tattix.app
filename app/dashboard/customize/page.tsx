@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
+
 import { CustomizePageForm } from "@/components/dashboard/customize-page-form";
 import { ProFeatureGate } from "@/components/dashboard/pro-feature-gate";
 import { SectionHeading } from "@/components/shared/shell";
 import { hasProAccess } from "@/lib/access";
+import { buildPageMetadata } from "@/lib/config/site";
 import { getDashboardCustomizeData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
+
+export const metadata: Metadata = buildPageMetadata("/dashboard/customize", { noIndex: true });
 
 export default async function DashboardCustomizePage() {
   const session = await getSupabaseSession();

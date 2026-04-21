@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
@@ -5,8 +6,11 @@ import { ProRequestActions } from "@/components/dashboard/pro-request-actions";
 import { SectionHeading } from "@/components/shared/shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { buildPageMetadata } from "@/lib/config/site";
 import { getDashboardShellData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
+
+export const metadata: Metadata = buildPageMetadata("/dashboard/upgrade", { noIndex: true });
 
 function buildMailto({
   accountEmail,

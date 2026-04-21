@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { buildPageMetadata } from "@/lib/config/site";
+
+export const metadata: Metadata = buildPageMetadata("/auth/status", { noIndex: true });
 
 export default async function AuthStatusPage({
   searchParams,

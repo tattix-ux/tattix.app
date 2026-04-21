@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
+
 import { LeadsTable } from "@/components/dashboard/leads-table";
 import { SectionHeading } from "@/components/shared/shell";
 import { hasProAccess } from "@/lib/access";
+import { buildPageMetadata } from "@/lib/config/site";
 import { getDashboardData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 import { ProFeatureGate } from "@/components/dashboard/pro-feature-gate";
+
+export const metadata: Metadata = buildPageMetadata("/dashboard/leads", { noIndex: true });
 
 export default async function DashboardLeadsPage() {
   const session = await getSupabaseSession();

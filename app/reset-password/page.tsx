@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { Logo } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
+import { buildPageMetadata } from "@/lib/config/site";
+
+export const metadata: Metadata = buildPageMetadata("/reset-password", { noIndex: true });
 
 export default function ResetPasswordPage() {
   return (

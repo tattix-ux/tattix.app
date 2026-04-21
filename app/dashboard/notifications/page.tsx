@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
 
 import { NotificationsTable } from "@/components/dashboard/notifications-table";
 import { SectionHeading } from "@/components/shared/shell";
+import { buildPageMetadata } from "@/lib/config/site";
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { getArtistNotifications } from "@/lib/support";
+
+export const metadata: Metadata = buildPageMetadata("/dashboard/notifications", { noIndex: true });
 
 export default async function DashboardNotificationsPage() {
   noStore();

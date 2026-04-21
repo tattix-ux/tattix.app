@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
+
 import { isAdminEmail } from "@/lib/access";
 import { AdminProAccessForm } from "@/components/dashboard/admin-pro-access-form";
 import { ProfilePageContent } from "@/components/dashboard/profile-page-content";
 import { SectionHeading } from "@/components/shared/shell";
+import { buildPageMetadata } from "@/lib/config/site";
 import { getDashboardProfileData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
+
+export const metadata: Metadata = buildPageMetadata("/dashboard/profile", { noIndex: true });
 
 export default async function DashboardProfilePage() {
   const session = await getSupabaseSession();

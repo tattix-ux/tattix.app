@@ -1,11 +1,22 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { DemoArtistPage } from "@/components/artist-page/demo-artist-page";
 import { ArtistPageShell } from "@/components/artist-page/artist-page-shell";
 import { PublicArtistContent } from "@/components/artist-page/public-artist-content";
 import { Container } from "@/components/shared/shell";
-import { siteConfig } from "@/lib/config/site";
+import { buildPageMetadata, siteConfig } from "@/lib/config/site";
 import { getPublicArtistPageData } from "@/lib/data/artist";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  return buildPageMetadata(`/${slug}`);
+}
 
 export default async function ArtistPage({
   params,

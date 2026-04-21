@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
+
 import { FeaturedDesignsForm } from "@/components/dashboard/featured-designs-form";
 import { ProFeatureGate } from "@/components/dashboard/pro-feature-gate";
 import { SectionHeading } from "@/components/shared/shell";
 import { hasProAccess } from "@/lib/access";
+import { buildPageMetadata } from "@/lib/config/site";
 import { getDashboardDesignsData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
+
+export const metadata: Metadata = buildPageMetadata("/dashboard/designs", { noIndex: true });
 
 export default async function DashboardDesignsPage() {
   const session = await getSupabaseSession();

@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
+
 import { PricingForm } from "@/components/dashboard/pricing-form";
 import { SectionHeading } from "@/components/shared/shell";
+import { buildPageMetadata } from "@/lib/config/site";
 import { getDashboardPricingData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
+
+export const metadata: Metadata = buildPageMetadata("/dashboard/pricing", { noIndex: true });
 
 export default async function DashboardPricingPage() {
   const session = await getSupabaseSession();
