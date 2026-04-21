@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border border-white/8 bg-[linear-gradient(180deg,var(--accent)_0%,var(--accent-deep-bronze)_100%)] text-[var(--accent-foreground)] shadow-[0_8px_24px_rgba(214,177,122,0.16)] hover:bg-[linear-gradient(180deg,var(--accent-hover)_0%,var(--accent)_100%)] hover:shadow-[0_10px_26px_rgba(214,177,122,0.2)]",
+          "border border-white/8 [background:linear-gradient(180deg,var(--accent)_0%,var(--accent-deep-bronze)_100%)] text-[var(--accent-foreground)] shadow-[0_8px_24px_rgba(214,177,122,0.16)] hover:[background:linear-gradient(180deg,var(--accent-hover)_0%,var(--accent)_100%)] hover:shadow-[0_10px_26px_rgba(214,177,122,0.2)]",
         secondary:
           "border border-[var(--border-soft)] bg-[var(--surface-1)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:bg-[var(--surface-2)] hover:border-[var(--border-strong)]",
         ghost: "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.035)] hover:text-[var(--text-primary)]",
@@ -19,10 +19,10 @@ const buttonVariants = cva(
         destructive: "border border-[rgba(184,106,99,0.28)] bg-[rgba(184,106,99,0.14)] text-white hover:bg-[rgba(184,106,99,0.2)]",
       },
       size: {
-        default: "h-10 px-5",
-        sm: "h-9 px-4 text-xs",
-        lg: "h-11 px-6 text-base",
-        icon: "size-10 rounded-[18px]",
+        default: "h-11 px-5",
+        sm: "h-10 px-4 text-xs",
+        lg: "h-12 px-6 text-base",
+        icon: "size-11 rounded-[18px]",
       },
     },
     defaultVariants: {

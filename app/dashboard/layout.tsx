@@ -44,7 +44,7 @@ export default async function DashboardLayout({
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
             <div className="mt-1 flex justify-end">
-              <div className="flex flex-wrap items-center gap-2 rounded-[20px] border border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface-1)_94%,black_6%)] p-2 shadow-[0_16px_32px_rgba(0,0,0,0.22)]">
+              <div className="flex flex-wrap items-center gap-2 rounded-[20px] border border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface-1)_94%,black_6%)] p-2 shadow-[0_14px_28px_rgba(0,0,0,0.2)]">
                 <DashboardNotificationBell
                   locale={isTurkish ? "tr" : "en"}
                   unreadCount={notificationUnreadCount}
@@ -53,17 +53,17 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-10">
+            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-8">
               <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[252px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] p-4 shadow-[0_24px_52px_rgba(0,0,0,0.3)]">
+                <div className="rounded-[22px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] p-4 shadow-[0_20px_44px_rgba(0,0,0,0.28)]">
                   <Link
                     href="/dashboard/profile"
-                    className="block rounded-[20px] border border-[var(--border-soft)] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.035),_transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.1))] p-4"
+                    className="block rounded-[20px] border border-[var(--border-soft)] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.03),_transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.018),rgba(0,0,0,0.08))] p-4"
                   >
                     <BrandLockup
                       iconOnlyOnMobile={false}
-                      iconSize="lg"
+                      iconSize="md"
                       className="justify-center"
                       subtitle="Tattoo lead & pricing workspace"
                     />

@@ -12,8 +12,8 @@
   --border-strong: rgba(214, 177, 122, 0.26);
   --text-primary: #f2eee7;
   --text-secondary: #a79d91;
-  --text-muted: #8f8579;
-  --text-dim: #736b61;
+  --text-muted: #988d81;
+  --text-dim: #7d7369;
   --accent-bronze-1: #d6b17a;
   --accent-bronze-2: #e3c08e;
   --accent-bronze-3: #9b6e45;
@@ -31,6 +31,7 @@
   --card: rgba(255, 255, 255, 0.025);
   --border: var(--border-default);
   --accent: var(--accent-bronze-1);
+  --accent-hover: var(--accent-bronze-2);
   --accent-soft: var(--accent-soft-gold);
   --accent-foreground: #1a1714;
   --ring: rgba(214, 177, 122, 0.42);
@@ -64,9 +65,9 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   background:
-    radial-gradient(circle at 16% 10%, rgba(214, 177, 122, 0.08), transparent 24%),
-    radial-gradient(circle at 84% 16%, rgba(28, 42, 68, 0.08), transparent 22%),
-    radial-gradient(circle at 50% 100%, rgba(155, 110, 69, 0.05), transparent 30%),
+    radial-gradient(circle at 16% 10%, rgba(214, 177, 122, 0.07), transparent 24%),
+    radial-gradient(circle at 84% 16%, rgba(42, 48, 60, 0.06), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(155, 110, 69, 0.045), transparent 30%),
     linear-gradient(180deg, var(--bg-app-alt) 0%, var(--bg-app) 100%);
   color: var(--foreground);
   font-family:
@@ -107,7 +108,7 @@ a {
 .surface-border {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 18px 38px rgba(0, 0, 0, 0.28),
+    0 16px 34px rgba(0, 0, 0, 0.26),
     0 2px 0 rgba(255, 255, 255, 0.015);
 }
 

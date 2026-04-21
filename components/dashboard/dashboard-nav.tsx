@@ -102,10 +102,10 @@ export function DashboardNav({
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3 lg:py-3 lg:text-sm lg:text-left",
+              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2.5 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3.5 lg:py-3 lg:text-sm lg:text-left",
               active
-                ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.14)_0%,rgba(155,110,69,0.08)_100%)] text-[var(--text-primary)] shadow-[0_0_0_1px_rgba(214,177,122,0.08),0_8px_24px_rgba(0,0,0,0.22)]"
-                : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-soft)] hover:bg-[rgba(255,255,255,0.028)] hover:text-[var(--text-primary)]",
+                ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.12)_0%,rgba(155,110,69,0.06)_100%)] text-[var(--text-primary)] shadow-[0_0_0_1px_rgba(214,177,122,0.06),0_8px_20px_rgba(0,0,0,0.18)]"
+                : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-soft)] hover:bg-[rgba(255,255,255,0.024)] hover:text-[var(--text-primary)]",
             )}
           >
             <Icon className="size-4" />

@@ -14,9 +14,9 @@ export function AppShell({
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(214,177,122,0.08),transparent_24%),radial-gradient(circle_at_88%_12%,rgba(24,36,58,0.08),transparent_22%),linear-gradient(180deg,#101114_0%,#0A0A0B_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(214,177,122,0.07),transparent_24%),radial-gradient(circle_at_88%_12%,rgba(40,46,56,0.06),transparent_22%),linear-gradient(180deg,#101114_0%,#0A0A0B_100%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.014),transparent_20%,transparent_76%,rgba(214,177,122,0.015))]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(24,30,40,0.18),_transparent_32%),radial-gradient(circle_at_top,_rgba(255,255,255,0.012),_transparent_24%)] opacity-90" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(28,30,34,0.16),_transparent_32%),radial-gradient(circle_at_top,_rgba(255,255,255,0.012),_transparent_24%)] opacity-90" />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.045] mix-blend-soft-light"
         style={{
@@ -51,7 +51,7 @@ export function SectionHeading({
   align?: "left" | "center";
 }) {
   return (
-    <div className={cn("space-y-4", align === "center" && "text-center")}>
+    <div className={cn("space-y-3.5", align === "center" && "text-center")}>
       {eyebrow ? (
         <p className="text-xs font-medium uppercase tracking-[0.34em] text-[var(--accent-soft)]/95">
           {eyebrow}
