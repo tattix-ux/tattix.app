@@ -8,7 +8,7 @@ import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-card";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
-import { BrandIconLarge, BrandWordmark } from "@/components/shared/logo";
+import { BrandLockup } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
 import { hasProAccess } from "@/lib/access";
@@ -61,9 +61,10 @@ export default async function DashboardLayout({
                     href="/dashboard/profile"
                     className="block rounded-[24px] border border-white/8 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.04),_transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.12))] p-4"
                   >
-                    <BrandIconLarge priority className="mx-auto w-[124px] sm:w-[140px] lg:w-[148px]" />
-                    <BrandWordmark
-                      className="mt-4 text-center"
+                    <BrandLockup
+                      iconOnlyOnMobile={false}
+                      iconSize="lg"
+                      className="justify-center"
                       subtitle="Tattoo lead & pricing workspace"
                     />
                   </Link>

@@ -8,6 +8,7 @@ import { RequestTypeSelectionStep } from "@/components/funnel/request-type-selec
 import { BodyPlacementSelector } from "@/components/funnel/body-placement-selector";
 import { SizeEstimationSelector } from "@/components/funnel/size-estimation-selector";
 import { AvatarTile } from "@/components/shared/avatar-tile";
+import { BrandMonogram, BrandPrimary } from "@/components/shared/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1016,6 +1017,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
               }
             />
             <CardContent className="-mt-10 min-w-0 space-y-3 p-4 sm:p-5">
+              <div className="relative overflow-hidden rounded-[28px] border p-4" style={{ borderColor: "var(--artist-border)", backgroundColor: "color-mix(in srgb, var(--artist-card) 18%, transparent)" }}>
+                <BrandMonogram className="left-auto right-0 top-0 h-full w-[52%]" opacity={0.06} />
+                <BrandPrimary className="mx-auto w-[160px] sm:w-[190px]" />
+              </div>
               <AvatarTile
                 name={artist.profile.artistName}
                 imageUrl={artist.profile.profileImageUrl}

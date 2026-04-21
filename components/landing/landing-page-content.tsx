@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, CircleAlert, Dot, MessageSquareText, Wallet } from "lucide-react";
 
-import { Logo } from "@/components/shared/logo";
+import { BrandMonogram, BrandPrimary, BrandWordmark, Logo } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,8 +69,13 @@ export function LandingPageContent() {
           </div>
         </header>
 
-        <section className="grid gap-6 py-10 sm:py-16 lg:grid-cols-[1.06fr_0.94fr] lg:items-center lg:gap-8">
+        <section className="relative grid gap-6 py-10 sm:py-16 lg:grid-cols-[1.06fr_0.94fr] lg:items-center lg:gap-8">
+          <BrandMonogram className="hidden lg:block lg:left-[8%] lg:top-6 lg:h-[360px] lg:w-[360px]" opacity={0.06} />
           <div className="space-y-5 sm:space-y-6">
+            <div className="max-w-[240px] sm:max-w-[280px]">
+              <BrandPrimary priority />
+              <BrandWordmark className="mt-4 text-center" />
+            </div>
             <Badge
               variant="accent"
               className="max-w-full whitespace-normal rounded-full px-4 py-1.5 text-center text-[12px] font-medium tracking-[0.04em] sm:text-left"

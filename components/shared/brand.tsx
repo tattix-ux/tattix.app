@@ -3,58 +3,59 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-const BRAND_REFERENCE_SRC = "/brand/tattix-brand-reference.png";
-const BRAND_ICON_SMALL_SRC = "/brand/tattix-koi-icon-small-source.png";
+const BRAND_PRIMARY_SRC = "/brand/tattix-primary-logo.png";
+const BRAND_ICON_SRC = "/brand/tattix-mark-icon.png";
+const BRAND_MONOGRAM_SRC = "/brand/tattix-monogram.png";
 
-export function BrandIconLarge({
+function getIconSizeClass(size: "sm" | "md" | "lg" | "xl") {
+  switch (size) {
+    case "sm":
+      return "size-9 rounded-[14px]";
+    case "lg":
+      return "size-12 rounded-[18px]";
+    case "xl":
+      return "size-14 rounded-[20px]";
+    default:
+      return "size-11 rounded-[16px]";
+  }
+}
+
+export function BrandIcon({
   className,
+  size = "md",
+  withStage = true,
   priority = false,
 }: {
   className?: string;
+  size?: "sm" | "md" | "lg" | "xl";
+  withStage?: boolean;
   priority?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "relative isolate aspect-square overflow-hidden rounded-[30px] border border-[rgba(214,165,116,0.16)] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.04),transparent_56%),linear-gradient(180deg,rgba(31,33,39,0.96),rgba(17,18,22,1))] shadow-[0_20px_48px_rgba(0,0,0,0.34)]",
+        "relative isolate shrink-0 overflow-hidden",
+        withStage
+          ? "border border-[rgba(214,165,116,0.14)] bg-[linear-gradient(180deg,rgba(32,34,40,0.98),rgba(18,19,23,1))] shadow-[0_10px_24px_rgba(0,0,0,0.24)]"
+          : "bg-transparent shadow-none border-0",
+        getIconSizeClass(size),
         className,
       )}
     >
       <Image
-        src={BRAND_REFERENCE_SRC}
+        src={BRAND_ICON_SRC}
         alt=""
         fill
         priority={priority}
-        sizes="(max-width: 768px) 128px, 160px"
-        className="object-cover object-[24%_16%] scale-[1.18] opacity-[0.97]"
+        sizes="(max-width: 768px) 44px, 56px"
+        className={cn("object-cover opacity-[0.97]", withStage ? "scale-[1.02]" : "scale-100")}
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_26%,rgba(214,165,116,0.12),transparent_46%)]" />
-      <div className="absolute inset-[1px] rounded-[29px] border border-white/[0.03]" />
-    </div>
-  );
-}
-
-export function BrandIconSmall({
-  className,
-}: {
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative isolate size-11 shrink-0 overflow-hidden rounded-[16px] border border-[rgba(214,165,116,0.14)] bg-[linear-gradient(180deg,rgba(32,34,40,0.98),rgba(18,19,23,1))] shadow-[0_10px_24px_rgba(0,0,0,0.24)]",
-        className,
-      )}
-    >
-      <Image
-        src={BRAND_ICON_SMALL_SRC}
-        alt=""
-        fill
-        sizes="44px"
-        className="object-cover opacity-[0.96]"
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(214,165,116,0.1),transparent_48%)]" />
-      <div className="absolute inset-[1px] rounded-[15px] border border-white/[0.03]" />
+      {withStage ? (
+        <>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(214,165,116,0.1),transparent_48%)]" />
+          <div className="absolute inset-[1px] rounded-[inherit] border border-white/[0.03]" />
+        </>
+      ) : null}
     </div>
   );
 }
@@ -85,15 +86,17 @@ export function BrandLockup({
   href = "/",
   iconOnlyOnMobile = true,
   subtitle,
+  iconSize = "md",
 }: {
   className?: string;
   href?: string;
   iconOnlyOnMobile?: boolean;
   subtitle?: string;
+  iconSize?: "sm" | "md" | "lg" | "xl";
 }) {
   const content = (
     <>
-      <BrandIconSmall />
+      <BrandIcon size={iconSize} />
       <BrandWordmark
         subtitle={subtitle}
         className={iconOnlyOnMobile ? "hidden sm:block" : undefined}
@@ -108,3 +111,58 @@ export function BrandLockup({
     </Link>
   );
 }
+
+export function BrandPrimary({
+  className,
+  priority = false,
+}: {
+  className?: string;
+  priority?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative isolate aspect-square overflow-hidden rounded-[34px] bg-[radial-gradient(circle_at_50%_18%,rgba(214,165,116,0.08),transparent_42%),linear-gradient(180deg,rgba(29,31,36,0.92),rgba(18,19,21,0.98))]",
+        className,
+      )}
+    >
+      <Image
+        src={BRAND_PRIMARY_SRC}
+        alt=""
+        fill
+        priority={priority}
+        sizes="(max-width: 768px) 220px, 340px"
+        className="object-contain p-[8%] opacity-[0.97]"
+      />
+    </div>
+  );
+}
+
+export function BrandMonogram({
+  className,
+  opacity = 0.08,
+  blur = 0,
+}: {
+  className?: string;
+  opacity?: number;
+  blur?: number;
+}) {
+  return (
+    <div
+      className={cn("pointer-events-none absolute inset-0 select-none", className)}
+      style={{ opacity, filter: blur ? `blur(${blur}px)` : undefined }}
+      aria-hidden="true"
+    >
+      <Image
+        src={BRAND_MONOGRAM_SRC}
+        alt=""
+        fill
+        sizes="(max-width: 768px) 280px, 480px"
+        className="object-contain"
+      />
+    </div>
+  );
+}
+
+export const BrandIconSmall = BrandIcon;
+export const BrandIconLarge = BrandPrimary;
