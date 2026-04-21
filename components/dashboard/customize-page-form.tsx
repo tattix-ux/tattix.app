@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Eye, EyeOff, LoaderCircle, Save, Sparkles, SwatchBook, Type } from "lucide-react";
+import { Check, Eye, EyeOff, ImagePlus, LoaderCircle, Save, Sparkles, SwatchBook, Type, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -9,18 +9,18 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { themePresetOptions, themePresets, type ThemePresetKey } from "@/lib/constants/theme";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
-import { resolveArtistTheme } from "@/lib/theme";
+import { uploadArtistAsset } from "@/lib/supabase/storage";
+import { buildThemeStyles, resolveArtistTheme } from "@/lib/theme";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistFunnelSettings, ArtistPageTheme, ArtistProfile, ArtistSavedTheme } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
-type BackgroundStyleChoice = "solid" | "soft-gradient" | "deep-gradient";
+type BackgroundStyleChoice = "solid" | "soft-gradient" | "deep-gradient" | "image";
 
 type CustomizePageArtist = {
   profile: ArtistProfile;
@@ -29,6 +29,7 @@ type CustomizePageArtist = {
 
 const accentSwatches = ["#A86E45", "#8E5F41", "#D6A574", "#C87856", "#8D7AE6", "#4D98C7", "#79A979", "#D35F6A"] as const;
 const solidSwatches = ["#F6F1E8", "#E8DCCF", "#EDE4D8", "#161922", "#0B0D11", "#132030"] as const;
+const cardSwatches = ["#FFFDF8", "#F7EFE6", "#EEE4D7", "#1E1B1A", "#17191E", "#12161C"] as const;
 
 const backgroundPalettePresets = [
   { key: "graphite", labelTr: "Graphite", labelEn: "Graphite", mode: "dark" as const, start: "#1A212A", end: "#0A0D12" },
@@ -138,6 +139,7 @@ function inferFontStyle(headingFont: string) {
 }
 
 function inferBackgroundStyle(backgroundType: string, themeMode: string): BackgroundStyleChoice {
+  if (backgroundType === "image") return "image";
   if (backgroundType === "solid") return "solid";
   return themeMode === "light" ? "soft-gradient" : "deep-gradient";
 }
@@ -236,6 +238,60 @@ function ThemeMiniPalette({ theme }: { theme: ArtistPageTheme }) {
   );
 }
 
+function MediaUploadField({
+  imageUrl,
+  emptyLabel,
+  uploadLabel,
+  removeLabel,
+  onUpload,
+  onRemove,
+}: {
+  imageUrl: string;
+  emptyLabel: string;
+  uploadLabel: string;
+  removeLabel: string;
+  onUpload: (file: File) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="relative flex h-32 items-center justify-center overflow-hidden rounded-[20px] border border-white/8 bg-white/[0.03]">
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={uploadLabel} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center gap-2 px-6 text-center text-sm text-[var(--foreground-muted)]">
+            <ImagePlus className="size-5" />
+            <span>{emptyLabel}</span>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-2 text-sm text-white transition hover:bg-white/[0.08]">
+          <Upload className="size-4" />
+          {uploadLabel}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) onUpload(file);
+              event.currentTarget.value = "";
+            }}
+          />
+        </label>
+        {imageUrl ? (
+          <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+            <X className="size-4" />
+            {removeLabel}
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function ThemePresetCard({
   active,
   title,
@@ -329,15 +385,15 @@ function AppearancePreview({
   theme: ArtistPageTheme;
   locale: PublicLocale;
 }) {
-  const headingColor = theme.textColor;
-  const mutedColor = theme.themeMode === "light" ? toRgba(theme.textColor, 0.64) : toRgba(theme.textColor, 0.7);
-  const shellBackground =
-    theme.backgroundType === "gradient"
-      ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
-      : theme.backgroundColor;
+  const { wrapperStyle, tokens } = buildThemeStyles(theme);
+  const headingColor = tokens.text;
+  const mutedColor = tokens.muted;
+  const cardText = tokens.cardText;
+  const cardMuted = tokens.cardMuted;
+  const shellBackground = String(wrapperStyle.background ?? theme.backgroundColor);
   const cardBackground = toRgba(theme.cardColor, theme.cardOpacity);
-  const cardBorder = toRgba(theme.textColor, theme.themeMode === "light" ? 0.08 : 0.1);
-  const accentForeground = theme.themeMode === "light" ? "#1B1511" : "#0b0d11";
+  const cardBorder = tokens.borderColor;
+  const accentForeground = tokens.primaryForeground;
   const title = artist.profile.welcomeHeadline?.trim() || (locale === "tr" ? "Aklında ne var?" : "What do you have in mind?");
   const intro =
     artist.profile.shortBio?.trim() ||
@@ -356,15 +412,15 @@ function AppearancePreview({
                   <div className="flex items-center gap-3">
                     <div className="size-11 rounded-[16px] border border-white/12 bg-white/10" />
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: headingColor, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
+                      <p className="text-sm font-semibold" style={{ color: cardText, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
                         {artist.profile.artistName}
                       </p>
-                      <p className="text-xs" style={{ color: mutedColor }}>
+                      <p className="text-xs" style={{ color: cardMuted }}>
                         {artist.profile.instagramHandle ? `@${artist.profile.instagramHandle}` : "tattix"}
                       </p>
                     </div>
                   </div>
-                  <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.18), color: headingColor }}>
+                  <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.18), color: cardText }}>
                     {locale === "tr" ? "Profil" : "Profile"}
                   </span>
                 </div>
@@ -375,10 +431,10 @@ function AppearancePreview({
                   {artist.funnelSettings.introEyebrow || (locale === "tr" ? "Talep formu" : "Request form")}
                 </div>
                 <div>
-                  <p className="text-[1.7rem] font-semibold leading-tight tracking-[-0.03em]" style={{ color: headingColor, fontFamily: headingPreviewFonts[theme.headingFont] }}>
+                  <p className="text-[1.7rem] font-semibold leading-tight tracking-[-0.03em]" style={{ color: cardText, fontFamily: headingPreviewFonts[theme.headingFont] }}>
                     {title}
                   </p>
-                  <p className="mt-3 text-sm leading-6" style={{ color: mutedColor, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
+                  <p className="mt-3 text-sm leading-6" style={{ color: cardMuted, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
                     {intro}
                   </p>
                 </div>
@@ -386,10 +442,10 @@ function AppearancePreview({
                   <div className="flex items-center gap-3 rounded-[22px] border p-3.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
                     <div className="size-12 rounded-[16px] border border-white/10 bg-white/10" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold" style={{ color: headingColor }}>
+                      <p className="truncate text-sm font-semibold" style={{ color: cardText }}>
                         {locale === "tr" ? "Hazır tasarımlar" : "Ready-made designs"}
                       </p>
-                      <p className="mt-1 text-xs" style={{ color: mutedColor }}>
+                      <p className="mt-1 text-xs" style={{ color: cardMuted }}>
                         {locale === "tr" ? "Flash tasarım • 10 cm" : "Flash design • 10 cm"}
                       </p>
                     </div>
@@ -397,10 +453,10 @@ function AppearancePreview({
                   <div className="flex items-center gap-3 rounded-[22px] border p-3.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
                     <div className="size-12 rounded-[16px] border border-white/10 bg-white/10" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold" style={{ color: headingColor }}>
+                      <p className="truncate text-sm font-semibold" style={{ color: cardText }}>
                         {locale === "tr" ? "Tahmini fiyat aralığı" : "Estimated price range"}
                       </p>
-                      <p className="mt-1 text-xs" style={{ color: mutedColor }}>
+                      <p className="mt-1 text-xs" style={{ color: cardMuted }}>
                         ₺8.000 – ₺10.500
                       </p>
                     </div>
@@ -445,11 +501,15 @@ export function CustomizePageForm({
           presetSectionDescription: "Tek tıkla görünümü değiştir.",
           customTitle: "Kendi görünümün",
           accentTitle: "Vurgu rengi",
-          customColorLabel: "Renk kodunu elle gir",
           backgroundTitle: "Arka plan stili",
           backgroundSolid: "Düz",
           backgroundSoft: "Yumuşak degrade",
           backgroundDeep: "Derin degrade",
+          backgroundImage: "Görsel",
+          backgroundUploadEmpty: "Arka plan görseli ekleyebilirsin.",
+          backgroundUpload: "Görsel yükle",
+          backgroundRemove: "Kaldır",
+          cardTitle: "Kart rengi",
           fontTitle: "Yazı stili",
           resetDefaults: "Varsayılana dön",
           save: "Görünümü uygula",
@@ -459,6 +519,11 @@ export function CustomizePageForm({
           demo: "Demo modunda yalnızca önizleme",
           selected: "Seçili",
           savedToast: "Görünüm güncellendi",
+          uploadUnavailable: "Demo modunda arka plan görseli yüklenemiyor.",
+          uploadType: "Sadece görsel dosyaları yükleyebilirsin.",
+          uploadSize: "Görseller en fazla 6 MB olabilir.",
+          uploadQueued: "Arka plan görseli yüklendi.",
+          uploadFailed: "Arka plan görseli yüklenemedi.",
         }
       : {
           presetMode: "Ready-made looks",
@@ -471,11 +536,15 @@ export function CustomizePageForm({
           presetSectionDescription: "Change the look in one click.",
           customTitle: "Your look",
           accentTitle: "Accent color",
-          customColorLabel: "Enter color code manually",
           backgroundTitle: "Background style",
           backgroundSolid: "Solid",
           backgroundSoft: "Soft gradient",
           backgroundDeep: "Deep gradient",
+          backgroundImage: "Image",
+          backgroundUploadEmpty: "You can add a background image.",
+          backgroundUpload: "Upload image",
+          backgroundRemove: "Remove",
+          cardTitle: "Card color",
           fontTitle: "Type style",
           resetDefaults: "Reset to default",
           save: "Apply look",
@@ -485,6 +554,11 @@ export function CustomizePageForm({
           demo: "Preview only in demo mode",
           selected: "Selected",
           savedToast: "Appearance updated",
+          uploadUnavailable: "Background uploads are unavailable in demo mode.",
+          uploadType: "Only image files are allowed.",
+          uploadSize: "Images must be 6 MB or smaller.",
+          uploadQueued: "Background image uploaded.",
+          uploadFailed: "Unable to upload background image.",
         };
 
   const form = useForm<ThemeFormInput, unknown, ThemeValues>({
@@ -509,7 +583,6 @@ export function CustomizePageForm({
 
   const [customizeMode, setCustomizeMode] = useState<"preset" | "custom">("preset");
   const [showMobilePreview, setShowMobilePreview] = useState(false);
-  const [showManualAccent, setShowManualAccent] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -639,6 +712,11 @@ export function CustomizePageForm({
   }
 
   function setBackgroundStyle(next: BackgroundStyleChoice) {
+    if (next === "image") {
+      form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true });
+      return;
+    }
+
     if (next === "solid") {
       const solidColor =
         currentThemeMode === "light"
@@ -658,6 +736,44 @@ export function CustomizePageForm({
           ? backgroundPalettePresets[1]
           : backgroundPalettePresets[2];
     applyBackgroundPalette(preset.key);
+  }
+
+  async function handleBackgroundUpload(file: File) {
+    form.clearErrors("root");
+
+    if (demoMode) {
+      form.setError("root", { message: copy.uploadUnavailable });
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      form.setError("root", { message: copy.uploadType });
+      return;
+    }
+
+    if (file.size > 6 * 1024 * 1024) {
+      form.setError("root", { message: copy.uploadSize });
+      return;
+    }
+
+    try {
+      const uploaded = await uploadArtistAsset(file, {
+        artistId: artist.profile.id,
+        prefix: "background",
+      });
+      form.setValue("backgroundImageUrl", uploaded.publicUrl, { shouldDirty: true, shouldValidate: true });
+      form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true });
+      setFlashMessage(copy.uploadQueued);
+    } catch {
+      form.setError("root", { message: copy.uploadFailed });
+    }
+  }
+
+  function clearBackgroundImage() {
+    form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
+    if (currentBackgroundType === "image") {
+      form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
+    }
   }
 
   function applyBackgroundPalette(paletteKey: (typeof backgroundPalettePresets)[number]["key"]) {
@@ -808,33 +924,6 @@ export function CustomizePageForm({
                         />
                       ))}
                     </div>
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.04] px-3 py-2 text-sm text-white">
-                        <span className="size-3 rounded-full" style={{ backgroundColor: currentPrimaryColor }} />
-                        {currentPrimaryColor}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowManualAccent((current) => !current)}
-                        className="text-sm text-[var(--foreground-muted)] underline decoration-white/10 underline-offset-4 transition hover:text-white"
-                      >
-                        {copy.customColorLabel}
-                      </button>
-                    </div>
-                    {showManualAccent ? (
-                      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                        <input
-                          type="color"
-                          value={currentPrimaryColor}
-                          onChange={(event) => form.setValue("primaryColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
-                          className="h-11 w-full rounded-[18px] border border-white/10 bg-transparent sm:w-16"
-                        />
-                        <Input
-                          value={currentPrimaryColor}
-                          onChange={(event) => form.setValue("primaryColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
-                        />
-                      </div>
-                    ) : null}
                   </div>
 
                   <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
@@ -851,21 +940,22 @@ export function CustomizePageForm({
                       <SelectionPill active={currentBackgroundStyle === "deep-gradient"} onClick={() => setBackgroundStyle("deep-gradient")}>
                         {copy.backgroundDeep}
                       </SelectionPill>
+                      <SelectionPill active={currentBackgroundStyle === "image"} onClick={() => setBackgroundStyle("image")}>
+                        {copy.backgroundImage}
+                      </SelectionPill>
                     </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {backgroundPalettePresets.map((preset) => (
-                        <button
-                          key={preset.key}
-                          type="button"
-                          onClick={() => applyBackgroundPalette(preset.key)}
-                          className="rounded-full border border-white/8 px-3.5 py-2 text-sm text-white transition hover:border-white/14 hover:bg-white/[0.05]"
-                        >
-                          {locale === "tr" ? preset.labelTr : preset.labelEn}
-                        </button>
-                      ))}
-                    </div>
-
-                    {currentBackgroundStyle === "solid" ? (
+                    {currentBackgroundStyle === "image" ? (
+                      <div className="mt-4">
+                        <MediaUploadField
+                          imageUrl={watchedValues.backgroundImageUrl || ""}
+                          emptyLabel={copy.backgroundUploadEmpty}
+                          uploadLabel={copy.backgroundUpload}
+                          removeLabel={copy.backgroundRemove}
+                          onUpload={handleBackgroundUpload}
+                          onRemove={clearBackgroundImage}
+                        />
+                      </div>
+                    ) : currentBackgroundStyle === "solid" ? (
                       <div className="mt-4 flex flex-wrap gap-3">
                         {solidSwatches.map((swatch) => (
                           <ColorDot
@@ -877,33 +967,45 @@ export function CustomizePageForm({
                         ))}
                       </div>
                     ) : (
-                      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                        <div className="flex gap-3">
-                          <input
-                            type="color"
-                            value={currentGradientStart}
-                            onChange={(event) => form.setValue("gradientStart", event.target.value, { shouldDirty: true, shouldValidate: true })}
-                            className="h-11 w-14 rounded-[18px] border border-white/10 bg-transparent"
-                          />
-                          <Input
-                            value={currentGradientStart}
-                            onChange={(event) => form.setValue("gradientStart", event.target.value, { shouldDirty: true, shouldValidate: true })}
-                          />
-                        </div>
-                        <div className="flex gap-3">
-                          <input
-                            type="color"
-                            value={currentGradientEnd}
-                            onChange={(event) => form.setValue("gradientEnd", event.target.value, { shouldDirty: true, shouldValidate: true })}
-                            className="h-11 w-14 rounded-[18px] border border-white/10 bg-transparent"
-                          />
-                          <Input
-                            value={currentGradientEnd}
-                            onChange={(event) => form.setValue("gradientEnd", event.target.value, { shouldDirty: true, shouldValidate: true })}
-                          />
-                        </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {backgroundPalettePresets.map((preset) => (
+                          <button
+                            key={preset.key}
+                            type="button"
+                            onClick={() => applyBackgroundPalette(preset.key)}
+                            className={cn(
+                              "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm transition",
+                              currentGradientStart.toLowerCase() === preset.start.toLowerCase() &&
+                                currentGradientEnd.toLowerCase() === preset.end.toLowerCase()
+                                ? "border-[color:color-mix(in_srgb,var(--accent)_48%,white)] bg-white/[0.08] text-white"
+                                : "border-white/8 bg-white/[0.03] text-white hover:border-white/14 hover:bg-white/[0.05]",
+                            )}
+                          >
+                            <span
+                              className="size-4 rounded-full border border-white/10"
+                              style={{ background: `linear-gradient(145deg, ${preset.start}, ${preset.end})` }}
+                            />
+                            {locale === "tr" ? preset.labelTr : preset.labelEn}
+                          </button>
+                        ))}
                       </div>
                     )}
+                  </div>
+
+                  <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-white">{copy.cardTitle}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {cardSwatches.map((swatch) => (
+                        <ColorDot
+                          key={swatch}
+                          color={swatch}
+                          active={currentCardColor.toLowerCase() === swatch.toLowerCase()}
+                          onClick={() => form.setValue("cardColor", swatch, { shouldDirty: true, shouldValidate: true })}
+                        />
+                      ))}
+                    </div>
                   </div>
 
                   <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">

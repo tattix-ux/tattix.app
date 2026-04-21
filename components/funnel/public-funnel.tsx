@@ -219,6 +219,7 @@ function getCopy(locale: PublicLocale) {
       summaryTitle: "Seçim özeti",
       startingFromExtra: "Net fiyat, detaylar netleştikten sonra belirlenir.",
       wideAreaExtraInfo: "Bu tür işler çoğu zaman görüşme sonrası netleşir.",
+      estimateChangeNote: "Bu sadece tahmini bir fiyattır. Dövmeciyle görüşüp detaylar netleştikçe fiyat büyük ölçüde değişebilir.",
       summaryLabels: {
         requestType: "İş tipi",
         areaScope: "Alan",
@@ -396,6 +397,7 @@ function getCopy(locale: PublicLocale) {
     summaryTitle: "Summary",
     startingFromExtra: "The final price is set after the details are clarified.",
     wideAreaExtraInfo: "Requests like this are often clarified after a conversation.",
+    estimateChangeNote: "This is only an estimate. The final price may change significantly after you speak with the artist and clarify the details.",
     summaryLabels: {
       requestType: "Job type",
       areaScope: "Area",
@@ -1783,6 +1785,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 >
                   <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                     {result.disclaimer}
+                  </p>
+                  <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                    {copy.estimateChangeNote}
                   </p>
                   {result.estimateMode === "starting_from" ? (
                     <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
