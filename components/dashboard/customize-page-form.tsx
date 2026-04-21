@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Eye, EyeOff, ImagePlus, LoaderCircle, Save, Sparkles, SwatchBook, Upload, X } from "lucide-react";
+import { Check, ImagePlus, LoaderCircle, Save, Sparkles, SwatchBook, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -108,33 +108,6 @@ const cardSurfaceOptions = [
     descriptionEn: "Deeper with a clearer contrast edge.",
   },
 ] as const;
-
-const presetMeta: Record<
-  ThemePresetKey,
-  { title: string; descriptionTr: string; descriptionEn: string; chipsTr: string[]; chipsEn: string[] }
-> = {
-  "bronze-studio": {
-    title: "Bronze Studio",
-    descriptionTr: "Sıcak grafit zemin, yumuşak bronz vurgu ve temiz editoryal denge.",
-    descriptionEn: "Warm graphite surfaces with soft bronze accents and an editorial balance.",
-    chipsTr: ["Sıcak", "Rafine", "Net"],
-    chipsEn: ["Warm", "Refined", "Clean"],
-  },
-  "smoke-metal": {
-    title: "Smoke Alloy",
-    descriptionTr: "Daha nötr, metalik yüzeyler ve kontrollü kontrast isteyenler için.",
-    descriptionEn: "A more neutral metallic surface system with controlled contrast.",
-    chipsTr: ["Nötr", "Metalik", "Kontrollü"],
-    chipsEn: ["Neutral", "Metallic", "Controlled"],
-  },
-  "dark-alloy": {
-    title: "Ink Midnight",
-    descriptionTr: "Daha derin koyu tonlar ve hafif ink-blue derinlik ile gece hissi verir.",
-    descriptionEn: "A deeper dark mood with a subtle ink-blue depth for a night feel.",
-    chipsTr: ["Derin", "Mürekkep tonu", "Gece hissi"],
-    chipsEn: ["Deep", "Ink-toned", "Midnight"],
-  },
-};
 
 const headingPreviewFonts = {
   inter: '"Inter", "Helvetica Neue", sans-serif',
@@ -333,178 +306,6 @@ function VisualOptionCard({
   );
 }
 
-function ThemeMiniPalette({ theme }: { theme: ArtistPageTheme }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="size-3 rounded-full border border-white/10" style={{ backgroundColor: theme.backgroundColor }} />
-      <span className="size-3 rounded-full border border-white/10" style={{ backgroundColor: theme.cardColor }} />
-      <span className="size-3 rounded-full border border-white/10" style={{ backgroundColor: theme.primaryColor }} />
-    </div>
-  );
-}
-
-function ThemePresetPreview({
-  theme,
-  title,
-  locale,
-}: {
-  theme: ArtistPageTheme;
-  title: string;
-  locale: PublicLocale;
-}) {
-  const accentGlow = toRgba(theme.primaryColor, 0.2);
-  const textSoft = toRgba(theme.textColor, 0.48);
-  const textStrong = toRgba(theme.textColor, 0.94);
-  const cardTint = toRgba(theme.cardColor, Math.min(theme.cardOpacity + 0.02, 0.96));
-  const heading =
-    locale === "tr" ? "Hazır tasarımlar ve talep akışı" : "Ready-made designs and request flow";
-  const supporting =
-    locale === "tr"
-      ? "Müşteri tasarımları görür, yaklaşık fiyatı inceler ve sana talep yollar."
-      : "Clients browse designs, review an estimate, and send a request.";
-
-  return (
-    <div
-      className="relative overflow-hidden rounded-[28px] border border-white/8 p-5"
-      style={{
-        background:
-          theme.backgroundType === "gradient"
-            ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
-            : theme.backgroundColor,
-        color: theme.textColor,
-      }}
-    >
-      <div
-        className="absolute inset-0 opacity-90"
-        style={{
-          background: `radial-gradient(circle at top left, ${accentGlow}, transparent 42%), radial-gradient(circle at 82% 20%, ${toRgba(theme.secondaryColor, 0.24)}, transparent 36%)`,
-        }}
-      />
-      <div className="relative space-y-5">
-        <div className="flex items-center justify-between gap-4">
-          <ThemeMiniPalette theme={theme} />
-          <span
-            className="rounded-full border border-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]"
-            style={{ color: textStrong, backgroundColor: toRgba(theme.primaryColor, 0.14) }}
-          >
-            {title}
-          </span>
-        </div>
-        <div className="max-w-[30rem] space-y-2">
-          <p
-            className="text-[1.02rem] font-semibold tracking-[-0.03em]"
-            style={{ color: textStrong, fontFamily: headingPreviewFonts[theme.headingFont] }}
-          >
-            {heading}
-          </p>
-          <p className="text-[12px] leading-6" style={{ color: textSoft, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
-            {supporting}
-          </p>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_220px] lg:items-center">
-          <div className="rounded-[22px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.09), backgroundColor: cardTint }}>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[18px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.72) }}>
-                <div className="space-y-2">
-                  <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: textSoft }}>
-                    {locale === "tr" ? "Profil üst alanı" : "Profile header"}
-                  </p>
-                  <p className="text-sm font-semibold" style={{ color: textStrong }}>
-                    Gizem Oder
-                  </p>
-                  <p className="text-[12px]" style={{ color: textSoft }}>
-                    {locale === "tr" ? "@itsgizo • Özel tasarım ve flash" : "@itsgizo • Custom work and flash"}
-                  </p>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.18), color: textStrong }}>
-                    {locale === "tr" ? "Hazır tasarımlar" : "Flash designs"}
-                  </span>
-                  <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.textColor, 0.08), color: textSoft }}>
-                    {locale === "tr" ? "Talep formu" : "Request form"}
-                  </span>
-                </div>
-              </div>
-              <div className="rounded-[18px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.68) }}>
-                <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: textSoft }}>
-                  {locale === "tr" ? "Tasarım listesi" : "Design list"}
-                </p>
-                <div className="mt-3 space-y-3">
-                  <div className="flex items-center gap-3 rounded-[14px] border px-3 py-2.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.58) }}>
-                    <div className="size-10 rounded-[12px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16) }} />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold" style={{ color: textStrong }}>
-                        Dagger
-                      </p>
-                      <p className="text-[11px]" style={{ color: textSoft }}>
-                        {locale === "tr" ? "Flash tasarım • 10 cm" : "Flash design • 10 cm"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-[14px] border px-3 py-2.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.58) }}>
-                    <div className="size-10 rounded-[12px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.12) }} />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold" style={{ color: textStrong }}>
-                        ₺8.000 – ₺10.500
-                      </p>
-                      <p className="text-[11px]" style={{ color: textSoft }}>
-                        {locale === "tr" ? "Yaklaşık fiyat aralığı" : "Estimated price range"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-center lg:justify-end">
-            <div className="w-[220px] rounded-[32px] border border-white/10 bg-[rgba(10,10,12,0.45)] p-2.5 shadow-[0_20px_48px_rgba(0,0,0,0.24)]">
-              <div
-                className="overflow-hidden rounded-[26px] border p-3"
-                style={{
-                  borderColor: toRgba(theme.textColor, 0.08),
-                  background:
-                    theme.backgroundType === "gradient"
-                      ? `linear-gradient(180deg, ${theme.gradientStart}, ${theme.gradientEnd})`
-                      : theme.backgroundColor,
-                }}
-              >
-                <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.09), backgroundColor: toRgba(theme.cardColor, 0.34) }}>
-                  <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-[14px] border border-white/10 bg-white/10" />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold" style={{ color: textStrong }}>
-                        Gizem Oder
-                      </p>
-                      <p className="text-[11px]" style={{ color: textSoft }}>
-                        @itsgizo
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 rounded-[20px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.09), backgroundColor: toRgba(theme.cardColor, 0.76) }}>
-                  <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16), color: textStrong }}>
-                    {locale === "tr" ? "Talep formu" : "Request form"}
-                  </span>
-                  <p
-                    className="mt-3 text-lg font-semibold leading-tight tracking-[-0.03em]"
-                    style={{ color: textStrong, fontFamily: headingPreviewFonts[theme.headingFont] }}
-                  >
-                    {locale === "tr" ? "Aklındaki işi birlikte netleştirelim." : "Let's shape the idea together."}
-                  </p>
-                  <div className="mt-4 space-y-2">
-                    <div className="h-10 rounded-[14px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16) }} />
-                    <div className="h-10 rounded-[14px] border" style={{ borderColor: toRgba(theme.textColor, 0.1), backgroundColor: toRgba(theme.cardColor, 0.58) }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function MediaUploadField({
   imageUrl,
   emptyLabel,
@@ -562,55 +363,32 @@ function MediaUploadField({
 function ThemePresetCard({
   active,
   title,
-  description,
-  chips,
   onSelect,
-  theme,
   selectedLabel,
-  locale,
 }: {
   active: boolean;
   title: string;
-  description: string;
-  chips: string[];
   onSelect: () => void;
-  theme: ArtistPageTheme;
   selectedLabel: string;
-  locale: PublicLocale;
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
-        "rounded-[30px] border p-5 text-left transition",
+        "relative min-h-[132px] rounded-[30px] border p-6 text-left transition",
         active
           ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_20px_40px_rgba(0,0,0,0.18)]"
           : "border-white/8 bg-white/[0.02] hover:border-white/14 hover:bg-white/[0.035]",
       )}
     >
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_220px] xl:items-start">
-        <div className="relative">
-          <ThemePresetPreview theme={theme} title={title} locale={locale} />
-          {active ? (
-            <span className="absolute right-4 top-4 rounded-full border border-white/18 bg-black/24 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
-              {selectedLabel}
-            </span>
-          ) : null}
-        </div>
-        <div className="flex h-full flex-col justify-between">
-          <div>
-            <p className="text-lg font-semibold tracking-[-0.02em] text-white">{title}</p>
-            <p className="mt-2 text-sm leading-7 text-[var(--foreground-muted)]">{description}</p>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {chips.map((chip) => (
-              <span key={chip} className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-[var(--text-muted)]">
-                {chip}
-              </span>
-            ))}
-          </div>
-        </div>
+      {active ? (
+        <span className="absolute right-4 top-4 rounded-full border border-white/18 bg-black/24 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+          {selectedLabel}
+        </span>
+      ) : null}
+      <div className="flex h-full items-end">
+        <p className="text-[1.15rem] font-semibold tracking-[-0.03em] text-white">{title}</p>
       </div>
     </button>
   );
@@ -735,11 +513,9 @@ export function CustomizePageForm({
           presetMode: "Hazır görünümler",
           customMode: "Kendi görünümün",
           previewTitle: "Önizleme",
-          previewDescription: "Müşterinin göreceği mobil profil burada anlık görünür.",
-          previewToggleOpen: "Önizlemeyi göster",
-          previewToggleClose: "Önizlemeyi gizle",
+          previewDescription: "Seçtiğin görünüm burada anlık görünür.",
           presetSectionTitle: "Hazır görünümler",
-          presetSectionDescription: "Her görünüm müşterinin göreceği mobil profil hissini farklı bir karakterle sunar.",
+          presetSectionDescription: "Bir görünüm seç. Alt taraftaki canlı önizleme anında değişir.",
           customTitle: "Kendi görünümün",
           accentTitle: "Vurgu rengi",
           accentDescription: "Butonlar, etiketler ve seçili alanlar bu tonla görünür.",
@@ -774,11 +550,9 @@ export function CustomizePageForm({
           presetMode: "Ready-made looks",
           customMode: "Your look",
           previewTitle: "Preview",
-          previewDescription: "The customer-facing mobile profile updates here instantly.",
-          previewToggleOpen: "Show preview",
-          previewToggleClose: "Hide preview",
+          previewDescription: "Your selected look updates here instantly.",
           presetSectionTitle: "Ready-made looks",
-          presetSectionDescription: "Each preset gives the client-facing mobile profile a distinct character.",
+          presetSectionDescription: "Choose a look. The live preview below updates instantly.",
           customTitle: "Your look",
           accentTitle: "Accent color",
           accentDescription: "Buttons, labels, and selected states use this tone.",
@@ -831,7 +605,6 @@ export function CustomizePageForm({
   const currentBackgroundStyle = inferBackgroundStyle(currentBackgroundType, currentThemeMode);
 
   const [customizeMode, setCustomizeMode] = useState<"preset" | "custom">("preset");
-  const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -1098,43 +871,19 @@ export function CustomizePageForm({
           </SelectionPill>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(440px,700px)] xl:items-start">
+        <div className="space-y-6">
           <div className="space-y-5">
             {customizeMode === "preset" ? (
               <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
-                <div className="grid gap-5">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {themePresetOptions.map((presetKey) => {
-                    const preset = themePresets[presetKey];
-                    const meta = presetMeta[presetKey];
-                    const resolvedTheme = resolveArtistTheme({
-                      artistId: artist.profile.id,
-                      presetTheme: presetKey,
-                      backgroundType: preset.backgroundType,
-                      backgroundColor: preset.backgroundColor,
-                      gradientStart: preset.gradientStart,
-                      gradientEnd: preset.gradientEnd,
-                      primaryColor: preset.primaryColor,
-                      secondaryColor: preset.secondaryColor,
-                      cardColor: preset.cardColor,
-                      cardOpacity: preset.cardOpacity,
-                      headingFont: preset.headingFont,
-                      bodyFont: preset.bodyFont,
-                      fontPairingPreset: preset.fontPairingPreset,
-                      radiusStyle: preset.radiusStyle,
-                      themeMode: preset.themeMode,
-                    });
-
                     return (
                       <ThemePresetCard
                         key={presetKey}
                         active={currentPreset === presetKey}
-                        title={meta.title}
-                        description={locale === "tr" ? meta.descriptionTr : meta.descriptionEn}
-                        chips={locale === "tr" ? meta.chipsTr : meta.chipsEn}
+                        title={themePresets[presetKey].label}
                         onSelect={() => applyPreset(presetKey)}
-                        theme={resolvedTheme}
                         selectedLabel={copy.selected}
-                        locale={locale}
                       />
                     );
                   })}
@@ -1322,35 +1071,15 @@ export function CustomizePageForm({
               </div>
             ) : null}
           </div>
-
-          <div className="space-y-4 xl:sticky xl:top-8">
-            <div className="xl:hidden">
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full"
-                onClick={() => setShowMobilePreview((current) => !current)}
-              >
-                {showMobilePreview ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                {showMobilePreview ? copy.previewToggleClose : copy.previewToggleOpen}
-              </Button>
-            </div>
-
-            <Card
-              className={cn(
-                "surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]",
-                !showMobilePreview && "hidden xl:block",
-              )}
-            >
-              <CardHeader className="pb-4">
-                <CardTitle className="text-[1.06rem] tracking-[-0.02em]">{copy.previewTitle}</CardTitle>
-                <CardDescription>{copy.previewDescription}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <AppearancePreview artist={artist} theme={previewTheme} locale={locale} />
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-[1.06rem] tracking-[-0.02em]">{copy.previewTitle}</CardTitle>
+              <CardDescription>{copy.previewDescription}</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <AppearancePreview artist={artist} theme={previewTheme} locale={locale} />
+            </CardContent>
+          </Card>
         </div>
 
         {form.formState.isDirty ? (

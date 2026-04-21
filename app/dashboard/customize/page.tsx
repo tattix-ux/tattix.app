@@ -22,8 +22,8 @@ export default async function DashboardCustomizePage() {
         title={isTurkish ? "Müşterinin Gördüğü Görünüm" : "Customer-Facing Appearance"}
         description={
           isTurkish
-            ? "Müşterilerin profil sayfanı nasıl gördüğünü burada ayarlarsın. Hazır bir görünüm seçebilir ya da kendi görünümünü oluşturabilirsin."
-            : "Control how clients see your profile page. Choose a ready-made look or build your own."
+            ? "Profil sayfanın müşteriye nasıl görüneceğini burada seçersin. Bir tema seçebilir ya da görünümü kendin şekillendirebilirsin."
+            : "Choose how your profile page appears to clients. Pick a theme or shape the look yourself."
         }
       />
       {hasProAccess(data.profile) ? (
