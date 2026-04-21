@@ -104,7 +104,7 @@ export function DashboardNav({
             className={cn(
               "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2.5 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3.5 lg:py-3 lg:text-sm lg:text-left",
               active
-                ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.12)_0%,rgba(155,110,69,0.06)_100%)] text-[var(--text-primary)] shadow-[0_0_0_1px_rgba(214,177,122,0.06),0_8px_20px_rgba(0,0,0,0.18)]"
+                ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(214,177,122,0.05)_100%)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_8px_20px_rgba(0,0,0,0.18)]"
                 : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-soft)] hover:bg-[rgba(255,255,255,0.024)] hover:text-[var(--text-primary)]",
             )}
           >

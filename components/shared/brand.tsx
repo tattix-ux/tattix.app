@@ -11,10 +11,12 @@ function getIconSizeClass(size: "sm" | "md" | "lg" | "xl") {
   switch (size) {
     case "sm":
       return "size-9 rounded-[14px]";
+    case "md":
+      return "size-11 rounded-[16px]";
     case "lg":
-      return "size-12 rounded-[18px]";
-    case "xl":
       return "size-14 rounded-[20px]";
+    case "xl":
+      return "size-[4.25rem] rounded-[22px]";
     default:
       return "size-11 rounded-[16px]";
   }
@@ -63,13 +65,22 @@ export function BrandIcon({
 export function BrandWordmark({
   className,
   subtitle,
+  size = "md",
 }: {
   className?: string;
   subtitle?: string;
+  size?: "sm" | "md" | "lg";
 }) {
   return (
     <div className={cn("min-w-0", className)}>
-      <div className="font-display text-[1.05rem] uppercase tracking-[0.42em] text-[var(--text-primary)]">
+      <div
+        className={cn(
+          "font-display uppercase text-[var(--text-primary)]",
+          size === "sm" && "text-[0.95rem] tracking-[0.34em]",
+          size === "md" && "text-[1.08rem] tracking-[0.42em]",
+          size === "lg" && "text-[1.34rem] tracking-[0.46em]",
+        )}
+      >
         Tattix
       </div>
       {subtitle ? (
@@ -87,18 +98,21 @@ export function BrandLockup({
   iconOnlyOnMobile = true,
   subtitle,
   iconSize = "md",
+  wordmarkSize = "md",
 }: {
   className?: string;
   href?: string;
   iconOnlyOnMobile?: boolean;
   subtitle?: string;
   iconSize?: "sm" | "md" | "lg" | "xl";
+  wordmarkSize?: "sm" | "md" | "lg";
 }) {
   const content = (
     <>
       <BrandIcon size={iconSize} />
       <BrandWordmark
         subtitle={subtitle}
+        size={wordmarkSize}
         className={iconOnlyOnMobile ? "hidden sm:block" : undefined}
       />
       {iconOnlyOnMobile ? <span className="sr-only">Tattix</span> : null}
@@ -106,7 +120,7 @@ export function BrandLockup({
   );
 
   return (
-    <Link href={href} className={cn("inline-flex items-center gap-3", className)} aria-label="Tattix">
+    <Link href={href} className={cn("inline-flex items-center gap-3.5", className)} aria-label="Tattix">
       {content}
     </Link>
   );
