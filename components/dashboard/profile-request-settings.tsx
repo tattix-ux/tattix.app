@@ -112,9 +112,9 @@ export function ProfileRequestSettings({
           datesDescription: "Bu şehirde randevu kabul ettiğin günleri seç.",
           addDate: "Tarih seç",
           noDates: "Tarih seçilmedi.",
-          selectedDays: "seçili gün",
-          openDays: "Günleri düzenle",
-          closeDays: "Takvimi kapat",
+          selectedDays: "gün seçili",
+          openDays: "Günleri göster",
+          closeDays: "Günleri gizle",
           remove: "Kaldır",
           resetStyles: "Sıfırla",
           addStyle: "Özel stil ekle",
@@ -149,9 +149,9 @@ export function ProfileRequestSettings({
           datesDescription: "Choose the days when you accept appointments in this city.",
           addDate: "Pick dates",
           noDates: "No dates selected.",
-          selectedDays: "selected days",
-          openDays: "Manage days",
-          closeDays: "Close calendar",
+          selectedDays: "days selected",
+          openDays: "Show days",
+          closeDays: "Hide days",
           remove: "Remove",
           resetStyles: "Reset",
           addStyle: "Add custom style",
@@ -574,23 +574,23 @@ export function ProfileRequestSettings({
 
   return (
     <div className="space-y-3">
-      <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)]">
+      <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
         <CardHeader className="pb-4">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
             <div className="min-w-0">
               <CardTitle className="text-[1.02rem]">{copy.bookingTitle}</CardTitle>
               <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
                 {copy.bookingDescription}
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <Input
                 value={pendingCity}
                 onChange={(event) => setPendingCity(event.target.value)}
                 placeholder={copy.cityPlaceholder}
-                className="h-11 min-w-[220px]"
+                className="h-12 min-w-[220px]"
               />
-              <Button type="button" onClick={addBookingCity} className="h-11">
+              <Button type="button" onClick={addBookingCity} className="h-12">
                 <Plus className="size-4" />
                 {copy.addCity}
               </Button>
@@ -615,24 +615,26 @@ export function ProfileRequestSettings({
                 const isExpanded = expandedCities[field.id] ?? availableDates.length === 0;
 
                 return (
-                  <div key={field.id} className="rounded-[22px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-4">
-                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                          <Input
-                            value={city?.cityName ?? ""}
-                            onChange={(event) =>
-                              form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              })
-                            }
-                            placeholder={copy.cityPlaceholder}
-                            className="h-11"
-                          />
-                          <Badge variant="muted" className="w-fit border-[var(--border-soft)] bg-white/[0.04] text-[var(--text-secondary)]">
-                            {availableDates.length} {copy.selectedDays}
-                          </Badge>
+                  <div key={field.id} className="rounded-[22px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-4 sm:p-5">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0 flex-1 space-y-3">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <Input
+                              value={city?.cityName ?? ""}
+                              onChange={(event) =>
+                                form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                })
+                              }
+                              placeholder={copy.cityPlaceholder}
+                              className="h-12"
+                            />
+                            <Badge variant="accent" className="w-fit border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-[var(--text-primary)]">
+                              {availableDates.length} {copy.selectedDays}
+                            </Badge>
+                          </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <Button
@@ -661,44 +663,44 @@ export function ProfileRequestSettings({
                           </Button>
                         </div>
                       </div>
-                    </div>
 
-                    {isExpanded ? (
-                    <div className="mt-4 space-y-3 border-t border-[var(--border-soft)] pt-4">
-                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium text-white">{copy.dates}</p>
-                          <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
-                        </div>
-                        <DateCalendarPopover
-                          locale={locale}
-                          mode="multiple"
-                          triggerLabel={copy.dates}
-                          emptyLabel={copy.addDate}
-                          selectedDates={availableDates}
-                          onToggleDate={(date) => toggleBookingDate(index, date)}
-                        />
-                      </div>
+                      {isExpanded ? (
+                        <div className="mt-4 space-y-3 border-t border-[var(--border-soft)] pt-4">
+                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-white">{copy.dates}</p>
+                              <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
+                            </div>
+                            <DateCalendarPopover
+                              locale={locale}
+                              mode="multiple"
+                              triggerLabel={copy.dates}
+                              emptyLabel={copy.addDate}
+                              selectedDates={availableDates}
+                              onToggleDate={(date) => toggleBookingDate(index, date)}
+                            />
+                          </div>
 
-                      {availableDates.length === 0 ? (
-                        <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {availableDates.map((date) => (
-                            <button
-                              key={date}
-                              type="button"
-                              onClick={() => removeBookingDate(index, date)}
-                              className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/[0.04] px-3 py-1.5 text-xs text-white"
-                            >
-                              {date}
-                              <X className="size-3" />
-                            </button>
-                          ))}
+                          {availableDates.length === 0 ? (
+                            <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {availableDates.map((date) => (
+                                <button
+                                  key={date}
+                                  type="button"
+                                  onClick={() => removeBookingDate(index, date)}
+                                  className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/[0.04] px-3 py-1.5 text-xs text-white"
+                                >
+                                  {date}
+                                  <X className="size-3" />
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
                     ) : null}
+                    </div>
                   </div>
                 );
               })}
