@@ -27,15 +27,14 @@ type CustomizePageArtist = {
   funnelSettings: ArtistFunnelSettings;
 };
 
-const accentSwatches = ["#E4C08D", "#D6A574", "#C8925F", "#B67C49", "#C1A07C", "#A97C57", "#8D5B34", "#B8A28D"] as const;
-const solidSwatches = ["#121315", "#17181C", "#15171A", "#1A1B20", "#14161A", "#161A20"] as const;
-const cardSwatches = ["#1D1F24", "#23262C", "#2A2D34", "#2F2520", "#D8D0C7", "#C6BBB0"] as const;
+const accentSwatches = ["#E3C08E", "#D6B17A", "#C79A68", "#B88352", "#C6B29A"] as const;
+const cardSwatches = ["#17191D", "#1D1F24", "#23262C", "#2A2D34", "#302A26"] as const;
 
 const backgroundPalettePresets = [
-  { key: "graphite", labelTr: "Graphite", labelEn: "Graphite", mode: "dark" as const, start: "#1A1B20", end: "#121315" },
-  { key: "sand", labelTr: "Sand", labelEn: "Sand", mode: "dark" as const, start: "#221C18", end: "#161315" },
-  { key: "midnight", labelTr: "Midnight", labelEn: "Midnight", mode: "dark" as const, start: "#17181C", end: "#101114" },
-  { key: "ink-blue", labelTr: "Ink blue", labelEn: "Ink blue", mode: "dark" as const, start: "#1A2230", end: "#11161E" },
+  { key: "graphite", labelTr: "Düz graphite", labelEn: "Solid graphite", mode: "dark" as const, start: "#121315", end: "#121315" },
+  { key: "soft-gradient", labelTr: "Soft gradient", labelEn: "Soft gradient", mode: "dark" as const, start: "#1E1E22", end: "#141518" },
+  { key: "deep-gradient", labelTr: "Deep gradient", labelEn: "Deep gradient", mode: "dark" as const, start: "#1A1C22", end: "#0F1012" },
+  { key: "ink-blue", labelTr: "Ink blue haze", labelEn: "Ink blue haze", mode: "dark" as const, start: "#1A2230", end: "#11161E" },
 ] as const;
 
 const fontOptions = [
@@ -56,18 +55,18 @@ const presetMeta: Record<
     chipsEn: ["Warm", "Refined", "Clean"],
   },
   "smoke-metal": {
-    title: "Smoke Metal",
+    title: "Smoke Alloy",
     descriptionTr: "Daha nötr, metalik ve kontrollü",
     descriptionEn: "More neutral, metallic, and controlled",
-    chipsTr: ["Metalik", "Dengeli", "Operasyonel"],
-    chipsEn: ["Metallic", "Balanced", "Operational"],
+    chipsTr: ["Nötr", "Metalik", "Kontrollü"],
+    chipsEn: ["Neutral", "Metallic", "Controlled"],
   },
   "dark-alloy": {
-    title: "Dark Alloy",
-    descriptionTr: "En derin, premium ve logoya en yakın",
-    descriptionEn: "The deepest, most premium, and closest to the logo",
-    chipsTr: ["Derin", "Premium", "Bronz vurgu"],
-    chipsEn: ["Deep", "Premium", "Bronze accent"],
+    title: "Ink Midnight",
+    descriptionTr: "Grafit zemin, hafif ink-blue derinlik",
+    descriptionEn: "Graphite base with a hint of ink-blue depth",
+    chipsTr: ["Derin", "Mürekkep tonu", "Gece hissi"],
+    chipsEn: ["Deep", "Ink-toned", "Midnight"],
   },
 };
 
@@ -238,6 +237,112 @@ function ThemeMiniPalette({ theme }: { theme: ArtistPageTheme }) {
   );
 }
 
+function ThemePresetPreview({
+  theme,
+  title,
+}: {
+  theme: ArtistPageTheme;
+  title: string;
+}) {
+  const accentGlow = toRgba(theme.primaryColor, 0.2);
+  const textSoft = toRgba(theme.textColor, 0.42);
+  const textStrong = toRgba(theme.textColor, 0.9);
+  const cardTint = toRgba(theme.cardColor, theme.cardOpacity);
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-[24px] border border-white/8 p-4"
+      style={{
+        background:
+          theme.backgroundType === "gradient"
+            ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
+            : theme.backgroundColor,
+        color: theme.textColor,
+      }}
+    >
+      <div
+        className="absolute inset-0 opacity-90"
+        style={{
+          background: `radial-gradient(circle at top left, ${accentGlow}, transparent 42%), radial-gradient(circle at 80% 18%, ${toRgba(theme.secondaryColor, 0.22)}, transparent 34%)`,
+        }}
+      />
+      <div className="relative space-y-4">
+        <div className="flex items-center justify-between">
+          <ThemeMiniPalette theme={theme} />
+          <div className="h-8 w-8 rounded-full border border-white/10" style={{ backgroundColor: toRgba(theme.primaryColor, 0.22) }} />
+        </div>
+        <div className="space-y-2">
+          <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: textSoft }}>
+            {title}
+          </p>
+          <p
+            className="text-[1.05rem] font-semibold tracking-[-0.03em]"
+            style={{ color: textStrong, fontFamily: headingPreviewFonts[theme.headingFont] }}
+          >
+            Aklında ne var?
+          </p>
+          <div className="h-2 rounded-full" style={{ width: "78%", backgroundColor: textSoft }} />
+        </div>
+        <div className="grid grid-cols-[1.15fr_0.85fr] gap-2">
+          <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: cardTint }}>
+            <div className="space-y-2">
+              <div className="h-2.5 rounded-full" style={{ width: "56%", backgroundColor: textStrong }} />
+              <div className="h-2 rounded-full" style={{ width: "84%", backgroundColor: textSoft }} />
+            </div>
+            <div className="mt-4 grid gap-2">
+              <div className="h-9 rounded-[14px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.18) }} />
+              <div className="h-9 rounded-[14px] border" style={{ borderColor: toRgba(theme.textColor, 0.12), backgroundColor: toRgba(theme.cardColor, 0.6) }} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: cardTint }}>
+              <div className="h-2.5 rounded-full" style={{ width: "66%", backgroundColor: textStrong }} />
+              <div className="mt-3 inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium" style={{ backgroundColor: theme.primaryColor, color: theme.themeMode === "light" ? "#1B1511" : "#0b0d11" }}>
+                CTA
+              </div>
+            </div>
+            <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.72) }}>
+              <div className="h-12 rounded-[14px]" style={{ background: `linear-gradient(180deg, ${toRgba(theme.primaryColor, 0.16)}, transparent)` }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BackgroundStyleCard({
+  title,
+  active,
+  preview,
+  onClick,
+}: {
+  title: string;
+  active: boolean;
+  preview: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-[22px] border p-3 text-left transition",
+        active
+          ? "border-[color:color-mix(in_srgb,var(--accent)_54%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]"
+          : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
+      )}
+    >
+      <div className="space-y-3">
+        <div className="overflow-hidden rounded-[16px] border border-white/8 p-3">
+          {preview}
+        </div>
+        <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
+      </div>
+    </button>
+  );
+}
+
 function MediaUploadField({
   imageUrl,
   emptyLabel,
@@ -320,53 +425,20 @@ function ThemePresetCard({
           : "border-white/8 bg-white/[0.02] hover:border-white/14 hover:bg-white/[0.04]",
       )}
     >
-      <div
-        className="relative overflow-hidden rounded-[22px] border border-white/8 p-4"
-        style={{
-          background:
-            theme.backgroundType === "gradient"
-              ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
-              : theme.backgroundColor,
-          color: theme.textColor,
-        }}
-      >
-        <div
-          className="absolute inset-x-0 top-0 h-20 opacity-80"
-          style={{ background: `radial-gradient(circle_at_top_left, ${toRgba(theme.primaryColor, 0.22)}, transparent 64%)` }}
-        />
-        <div className="relative space-y-4">
-          <div className="flex items-center justify-between">
-            <ThemeMiniPalette theme={theme} />
-            {active ? (
-              <span className="rounded-full border border-white/18 bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
-                {selectedLabel}
-              </span>
-            ) : null}
-          </div>
-          <div className="space-y-2">
-            <div className="h-3 rounded-full" style={{ width: "58%", backgroundColor: toRgba(theme.textColor, 0.9) }} />
-            <div className="h-2 rounded-full" style={{ width: "82%", backgroundColor: toRgba(theme.textColor, 0.36) }} />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-[18px] border p-3" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, theme.cardOpacity) }}>
-              <div className="h-2.5 w-10 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.82) }} />
-              <div className="mt-2 h-2 w-16 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.24) }} />
-            </div>
-            <div className="rounded-[18px] border p-3" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, theme.cardOpacity) }}>
-              <div className="h-2.5 w-9 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.82) }} />
-              <div className="mt-3 inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium" style={{ backgroundColor: theme.primaryColor, color: theme.themeMode === "light" ? "#1B1511" : "#0b0d11" }}>
-                CTA
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="relative">
+        <ThemePresetPreview theme={theme} title={title} />
+        {active ? (
+          <span className="absolute right-3 top-3 rounded-full border border-white/18 bg-black/24 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+            {selectedLabel}
+          </span>
+        ) : null}
       </div>
       <div className="mt-4">
         <p className="text-base font-semibold text-white">{title}</p>
         <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">{description}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {chips.map((chip) => (
-            <span key={chip} className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-[var(--foreground-muted)]">
+            <span key={chip} className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-[var(--text-muted)]">
               {chip}
             </span>
           ))}
@@ -402,10 +474,11 @@ function AppearancePreview({
       : "Clients share the key details here before they message you.");
 
   return (
-    <div className="relative overflow-hidden rounded-[30px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1D1F24_0%,#181A1F_100%)] p-4 shadow-[0_24px_52px_rgba(0,0,0,0.24)] sm:p-5">
-      <div className="mx-auto max-w-[420px]">
-        <div className="rounded-[34px] border border-[rgba(255,255,255,0.08)] bg-[rgba(18,19,21,0.54)] p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.24)]">
-          <div className="overflow-hidden rounded-[28px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
+    <div className="relative overflow-hidden rounded-[32px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1B1D21_0%,#15171B_100%)] p-4 shadow-[0_26px_60px_rgba(0,0,0,0.26)] sm:p-6">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,122,0.06),transparent_34%)]" />
+      <div className="relative mx-auto max-w-[470px]">
+        <div className="rounded-[38px] border border-[rgba(255,255,255,0.08)] bg-[rgba(16,17,20,0.7)] p-3 shadow-[0_20px_48px_rgba(0,0,0,0.28)]">
+          <div className="overflow-hidden rounded-[32px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
             <div className="p-4 sm:p-5">
               <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.28) }}>
                 <div className="flex items-center justify-between gap-3">
@@ -426,20 +499,20 @@ function AppearancePreview({
                 </div>
               </div>
 
-              <div className="mt-4 space-y-4 rounded-[28px] border p-5" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
+              <div className="mt-4 space-y-4 rounded-[30px] border p-5 sm:p-6" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
                 <div className="inline-flex rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16), color: headingColor }}>
                   {artist.funnelSettings.introEyebrow || (locale === "tr" ? "Talep formu" : "Request form")}
                 </div>
                 <div>
-                  <p className="text-[1.7rem] font-semibold leading-tight tracking-[-0.03em]" style={{ color: cardText, fontFamily: headingPreviewFonts[theme.headingFont] }}>
+                  <p className="text-[1.9rem] font-semibold leading-tight tracking-[-0.03em]" style={{ color: cardText, fontFamily: headingPreviewFonts[theme.headingFont] }}>
                     {title}
                   </p>
-                  <p className="mt-3 text-sm leading-6" style={{ color: cardMuted, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
+                  <p className="mt-3 text-sm leading-7" style={{ color: cardMuted, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
                     {intro}
                   </p>
                 </div>
                 <div className="grid gap-3">
-                  <div className="flex items-center gap-3 rounded-[22px] border p-3.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
+                  <div className="flex items-center gap-3 rounded-[22px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
                     <div className="size-12 rounded-[16px] border border-white/10 bg-white/10" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold" style={{ color: cardText }}>
@@ -450,7 +523,7 @@ function AppearancePreview({
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 rounded-[22px] border p-3.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
+                  <div className="flex items-center gap-3 rounded-[22px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
                     <div className="size-12 rounded-[16px] border border-white/10 bg-white/10" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold" style={{ color: cardText }}>
@@ -720,14 +793,14 @@ export function CustomizePageForm({
     if (next === "solid") {
       form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
       form.setValue("themeMode", "dark", { shouldDirty: true, shouldValidate: true });
-      form.setValue("backgroundColor", currentBackgroundColor || themePresets[currentPreset].backgroundColor, {
+      form.setValue("backgroundColor", "#121315", {
         shouldDirty: true,
         shouldValidate: true,
       });
       return;
     }
 
-    const preset = next === "soft-gradient" ? backgroundPalettePresets[0] : backgroundPalettePresets[2];
+    const preset = next === "soft-gradient" ? backgroundPalettePresets[1] : backgroundPalettePresets[2];
     applyBackgroundPalette(preset.key);
   }
 
@@ -840,16 +913,16 @@ export function CustomizePageForm({
           }
         }}
       >
-        <div className="inline-flex flex-wrap gap-1.5 rounded-full border border-white/8 bg-white/[0.02] p-1.5">
-          <SelectionPill active={customizeMode === "preset"} onClick={() => setCustomizeMode("preset")}>
+        <div className="inline-grid grid-cols-2 gap-1.5 rounded-[20px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <SelectionPill active={customizeMode === "preset"} onClick={() => setCustomizeMode("preset")} className="rounded-[16px] border-0 px-5 py-3">
             {copy.presetMode}
           </SelectionPill>
-          <SelectionPill active={customizeMode === "custom"} onClick={() => setCustomizeMode("custom")}>
+          <SelectionPill active={customizeMode === "custom"} onClick={() => setCustomizeMode("custom")} className="rounded-[16px] border-0 px-5 py-3">
             {copy.customMode}
           </SelectionPill>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_460px] xl:items-start">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_540px] xl:items-start">
           <div className="space-y-5">
             {customizeMode === "preset" ? (
               <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
@@ -913,66 +986,79 @@ export function CustomizePageForm({
                     <div className="mb-4">
                       <p className="text-sm font-medium text-white">{copy.backgroundTitle}</p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <SelectionPill active={currentBackgroundStyle === "solid"} onClick={() => setBackgroundStyle("solid")}>
-                        {copy.backgroundSolid}
-                      </SelectionPill>
-                      <SelectionPill active={currentBackgroundStyle === "soft-gradient"} onClick={() => setBackgroundStyle("soft-gradient")}>
-                        {copy.backgroundSoft}
-                      </SelectionPill>
-                      <SelectionPill active={currentBackgroundStyle === "deep-gradient"} onClick={() => setBackgroundStyle("deep-gradient")}>
-                        {copy.backgroundDeep}
-                      </SelectionPill>
-                      <SelectionPill active={currentBackgroundStyle === "image"} onClick={() => setBackgroundStyle("image")}>
-                        {copy.backgroundImage}
-                      </SelectionPill>
-                    </div>
-                    {currentBackgroundStyle === "image" ? (
-                      <div className="mt-4">
-                        <MediaUploadField
-                          imageUrl={watchedValues.backgroundImageUrl || ""}
-                          emptyLabel={copy.backgroundUploadEmpty}
-                          uploadLabel={copy.backgroundUpload}
-                          removeLabel={copy.backgroundRemove}
-                          onUpload={handleBackgroundUpload}
-                          onRemove={clearBackgroundImage}
-                        />
-                      </div>
-                    ) : currentBackgroundStyle === "solid" ? (
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        {solidSwatches.map((swatch) => (
-                          <ColorDot
-                            key={swatch}
-                            color={swatch}
-                            active={currentBackgroundColor.toLowerCase() === swatch.toLowerCase()}
-                            onClick={() => form.setValue("backgroundColor", swatch, { shouldDirty: true, shouldValidate: true })}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {backgroundPalettePresets.map((preset) => (
-                          <button
-                            key={preset.key}
-                            type="button"
-                            onClick={() => applyBackgroundPalette(preset.key)}
-                            className={cn(
-                              "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm transition",
-                              currentGradientStart.toLowerCase() === preset.start.toLowerCase() &&
-                                currentGradientEnd.toLowerCase() === preset.end.toLowerCase()
-                                ? "border-[color:color-mix(in_srgb,var(--accent)_48%,white)] bg-white/[0.08] text-white"
-                                : "border-white/8 bg-white/[0.03] text-white hover:border-white/14 hover:bg-white/[0.05]",
-                            )}
-                          >
-                            <span
-                              className="size-4 rounded-full border border-white/10"
-                              style={{ background: `linear-gradient(145deg, ${preset.start}, ${preset.end})` }}
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <BackgroundStyleCard
+                        title={locale === "tr" ? backgroundPalettePresets[0].labelTr : backgroundPalettePresets[0].labelEn}
+                        active={currentBackgroundStyle === "solid"}
+                        onClick={() => setBackgroundStyle("solid")}
+                        preview={
+                          <div className="space-y-2">
+                            <div className="h-12 rounded-[12px] bg-[#121315]" />
+                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#191B20]" />
+                          </div>
+                        }
+                      />
+                      <BackgroundStyleCard
+                        title={locale === "tr" ? backgroundPalettePresets[1].labelTr : backgroundPalettePresets[1].labelEn}
+                        active={
+                          currentBackgroundStyle === "soft-gradient" ||
+                          (currentGradientStart.toLowerCase() === backgroundPalettePresets[1].start.toLowerCase() &&
+                            currentGradientEnd.toLowerCase() === backgroundPalettePresets[1].end.toLowerCase())
+                        }
+                        onClick={() => setBackgroundStyle("soft-gradient")}
+                        preview={
+                          <div className="space-y-2">
+                            <div className="h-12 rounded-[12px]" style={{ background: `linear-gradient(145deg, ${backgroundPalettePresets[1].start}, ${backgroundPalettePresets[1].end})` }} />
+                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#201F22]" />
+                          </div>
+                        }
+                      />
+                      <BackgroundStyleCard
+                        title={locale === "tr" ? backgroundPalettePresets[2].labelTr : backgroundPalettePresets[2].labelEn}
+                        active={
+                          currentBackgroundStyle === "deep-gradient" &&
+                          currentGradientStart.toLowerCase() === backgroundPalettePresets[2].start.toLowerCase() &&
+                          currentGradientEnd.toLowerCase() === backgroundPalettePresets[2].end.toLowerCase()
+                        }
+                        onClick={() => setBackgroundStyle("deep-gradient")}
+                        preview={
+                          <div className="space-y-2">
+                            <div className="h-12 rounded-[12px]" style={{ background: `linear-gradient(160deg, ${backgroundPalettePresets[2].start}, ${backgroundPalettePresets[2].end})` }} />
+                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#17191E]" />
+                          </div>
+                        }
+                      />
+                      <BackgroundStyleCard
+                        title={locale === "tr" ? backgroundPalettePresets[3].labelTr : backgroundPalettePresets[3].labelEn}
+                        active={
+                          currentGradientStart.toLowerCase() === backgroundPalettePresets[3].start.toLowerCase() &&
+                          currentGradientEnd.toLowerCase() === backgroundPalettePresets[3].end.toLowerCase()
+                        }
+                        onClick={() => applyBackgroundPalette("ink-blue")}
+                        preview={
+                          <div className="space-y-2">
+                            <div
+                              className="h-12 rounded-[12px]"
+                              style={{
+                                background: `radial-gradient(circle at 24% 22%, rgba(76,108,160,0.18), transparent 42%), linear-gradient(160deg, ${backgroundPalettePresets[3].start}, ${backgroundPalettePresets[3].end})`,
+                              }}
                             />
-                            {locale === "tr" ? preset.labelTr : preset.labelEn}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#1B2130]" />
+                          </div>
+                        }
+                      />
+                    </div>
+                    <div className="mt-4 rounded-[20px] border border-white/8 bg-white/[0.02] p-4">
+                      <p className="mb-3 text-sm font-medium text-white">{copy.backgroundImage}</p>
+                      <MediaUploadField
+                        imageUrl={watchedValues.backgroundImageUrl || ""}
+                        emptyLabel={copy.backgroundUploadEmpty}
+                        uploadLabel={copy.backgroundUpload}
+                        removeLabel={copy.backgroundRemove}
+                        onUpload={handleBackgroundUpload}
+                        onRemove={clearBackgroundImage}
+                      />
+                    </div>
                   </div>
 
                   <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
@@ -1022,6 +1108,9 @@ export function CustomizePageForm({
                             <p className="mt-4 text-lg font-semibold tracking-[-0.03em] text-white" style={{ fontFamily: headingPreviewFonts[option.value] }}>
                               Aklında ne var?
                             </p>
+                            <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]" style={{ fontFamily: bodyPreviewFonts[option.value] }}>
+                              {locale === "tr" ? "Kısa açıklama ve net CTA görünümü." : "Short description with a clear CTA."}
+                            </p>
                           </button>
                         );
                       })}
@@ -1063,7 +1152,7 @@ export function CustomizePageForm({
 
             <Card
               className={cn(
-                "surface-border border-white/8 bg-white/[0.02] shadow-[0_16px_34px_rgba(0,0,0,0.16)]",
+                "surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]",
                 !showMobilePreview && "hidden xl:block",
               )}
             >
