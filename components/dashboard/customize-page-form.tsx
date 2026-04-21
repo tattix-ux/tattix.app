@@ -365,30 +365,54 @@ function ThemePresetCard({
   title,
   onSelect,
   selectedLabel,
+  theme,
 }: {
   active: boolean;
   title: string;
   onSelect: () => void;
   selectedLabel: string;
+  theme: ArtistPageTheme;
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
+      style={{
+        background:
+          theme.backgroundType === "gradient"
+            ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
+            : theme.backgroundColor,
+        borderColor: active ? toRgba(theme.primaryColor, 0.48) : toRgba(theme.textColor, 0.08),
+      }}
       className={cn(
-        "relative min-h-[132px] rounded-[30px] border p-6 text-left transition",
+        "relative min-h-[104px] rounded-[26px] border px-5 py-4 text-left transition",
         active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_20px_40px_rgba(0,0,0,0.18)]"
-          : "border-white/8 bg-white/[0.02] hover:border-white/14 hover:bg-white/[0.035]",
+          ? "shadow-[0_20px_40px_rgba(0,0,0,0.18)]"
+          : "hover:brightness-[1.05]",
       )}
     >
+      <div
+        className="absolute inset-0 rounded-[inherit]"
+        style={{
+          background: `radial-gradient(circle at top left, ${toRgba(theme.primaryColor, active ? 0.16 : 0.1)}, transparent 42%)`,
+        }}
+      />
       {active ? (
-        <span className="absolute right-4 top-4 rounded-full border border-white/18 bg-black/24 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+        <span
+          className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur-sm"
+          style={{
+            border: `1px solid ${toRgba(theme.textColor, 0.18)}`,
+            backgroundColor: "rgba(0,0,0,0.22)",
+            color: theme.textColor,
+          }}
+        >
           {selectedLabel}
         </span>
       ) : null}
-      <div className="flex h-full items-end">
-        <p className="text-[1.15rem] font-semibold tracking-[-0.03em] text-white">{title}</p>
+      <div className="relative flex h-full items-end">
+        <p className="text-[1.03rem] font-semibold tracking-[-0.03em]" style={{ color: theme.textColor }}>
+          {title}
+        </p>
       </div>
     </button>
   );
@@ -877,6 +901,25 @@ export function CustomizePageForm({
               <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {themePresetOptions.map((presetKey) => {
+                    const preset = themePresets[presetKey];
+                    const resolvedTheme = resolveArtistTheme({
+                      artistId: artist.profile.id,
+                      presetTheme: presetKey,
+                      backgroundType: preset.backgroundType,
+                      backgroundColor: preset.backgroundColor,
+                      gradientStart: preset.gradientStart,
+                      gradientEnd: preset.gradientEnd,
+                      primaryColor: preset.primaryColor,
+                      secondaryColor: preset.secondaryColor,
+                      cardColor: preset.cardColor,
+                      cardOpacity: preset.cardOpacity,
+                      headingFont: preset.headingFont,
+                      bodyFont: preset.bodyFont,
+                      fontPairingPreset: preset.fontPairingPreset,
+                      radiusStyle: preset.radiusStyle,
+                      themeMode: preset.themeMode,
+                    });
+
                     return (
                       <ThemePresetCard
                         key={presetKey}
@@ -884,6 +927,7 @@ export function CustomizePageForm({
                         title={themePresets[presetKey].label}
                         onSelect={() => applyPreset(presetKey)}
                         selectedLabel={copy.selected}
+                        theme={resolvedTheme}
                       />
                     );
                   })}

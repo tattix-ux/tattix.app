@@ -8,12 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 export function DashboardSupportCard({
   locale,
-  artistName,
-  accountEmail,
 }: {
   locale: "tr" | "en";
-  artistName: string;
-  accountEmail: string;
 }) {
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
@@ -106,9 +102,6 @@ export function DashboardSupportCard({
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold text-white">{copy.title}</h3>
                   <p className="text-sm text-[var(--foreground-muted)]">{copy.description}</p>
-                  <p className="text-xs text-[var(--foreground-muted)]">
-                    {artistName} · {accountEmail || "-"}
-                  </p>
                 </div>
                 <div className="mt-4 space-y-3">
                   <Textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder={copy.placeholder} />

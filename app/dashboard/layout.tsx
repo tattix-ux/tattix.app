@@ -129,11 +129,7 @@ export default async function DashboardLayout({
                 {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
                 {children}
                 <div className="mt-6 w-full max-w-none lg:max-w-none">
-                  <DashboardSupportCard
-                    locale={isTurkish ? "tr" : "en"}
-                    artistName={dashboardData.profile.artistName}
-                    accountEmail={session?.user.email ?? ""}
-                  />
+                  <DashboardSupportCard locale={isTurkish ? "tr" : "en"} />
                 </div>
               </main>
             </div>
