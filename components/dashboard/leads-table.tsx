@@ -18,22 +18,18 @@ import {
 } from "@/components/ui/table";
 import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/body-placement";
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
-import { intentOptions, styleOptions } from "@/lib/constants/options";
+import { intentOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
 import {
-  getAreaScopeLabel,
-  getLargeAreaCoverageLabel,
   getRequestTypeLabel,
-  getWideAreaTargetLabel,
-  getWorkStyleLabel,
 } from "@/lib/pricing/v2/output";
 import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
 import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
 type FilterRange = "7d" | "30d" | "90d" | "all";
-type ChartGranularity = "daily" | "weekly" | "monthly";
 type LeadStatusFilter = "all" | LeadStatus;
 type LeadSort = "waiting-first" | "newest" | "oldest" | "highest-estimate" | "lowest-estimate";
+type ChartGranularity = "daily" | "weekly" | "monthly";
 
 const leadCopy = {
   en: {
@@ -297,54 +293,6 @@ function formatIntent(intent: ClientSubmission["intent"], locale: PublicLocale) 
   return intentOptions.find((item) => item.value === intent)?.label ?? intent;
 }
 
-function formatStyle(style: ClientSubmission["style"], locale: PublicLocale) {
-  if (locale === "tr") {
-    return styleLabelsTr[style] ?? style;
-  }
-
-  return styleOptions.find((item) => item.value === style)?.label ?? style;
-}
-
-function getDisplayedWorkStyle(lead: ClientSubmission, locale: PublicLocale) {
-  if (lead.workStyle) {
-    return getWorkStyleLabel(lead.workStyle, locale);
-  }
-
-  return formatStyle(lead.style, locale);
-}
-
-function getDisplayedAreaScope(lead: ClientSubmission, locale: PublicLocale) {
-  if (!lead.areaScope) {
-    return null;
-  }
-
-  return getAreaScopeLabel(lead.areaScope, locale);
-}
-
-function getDisplayedCoverage(lead: ClientSubmission, locale: PublicLocale) {
-  return lead.largeAreaCoverage ? getLargeAreaCoverageLabel(lead.largeAreaCoverage, locale) : null;
-}
-
-function getDisplayedWideAreaTarget(lead: ClientSubmission, locale: PublicLocale) {
-  return lead.wideAreaTarget ? getWideAreaTargetLabel(lead.wideAreaTarget, locale) : null;
-}
-
-function getEstimateModeLabel(value: ClientSubmission["estimateMode"], locale: PublicLocale) {
-  if (!value) {
-    return null;
-  }
-
-  if (locale === "tr") {
-    if (value === "range") return "Aralık";
-    if (value === "soft_range") return "Yaklaşık bant";
-    return "Başlangıç seviyesi";
-  }
-
-  if (value === "range") return "Range";
-  if (value === "soft_range") return "Soft range";
-  return "Starting level";
-}
-
 function getCoverUpLabel(value: ClientSubmission["coverUp"], locale: PublicLocale) {
   if (value === null || value === undefined) {
     return null;
@@ -426,7 +374,249 @@ function getEstimateCenter(lead: ClientSubmission) {
   return (lead.estimatedMin + lead.estimatedMax) / 2;
 }
 
+function getDisplayedColor(lead: ClientSubmission, locale: PublicLocale) {
+  if (!lead.colorMode) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    if (lead.colorMode === "black-only") return "Sadece siyah";
+    if (lead.colorMode === "black-grey") return "Siyah-gri";
+    return "Renkli";
+  }
+
+  if (lead.colorMode === "black-only") return "Black only";
+  if (lead.colorMode === "black-grey") return "Black and grey";
+  return "Color";
+}
+
+function getDisplayedDetailLevel(lead: ClientSubmission, locale: PublicLocale) {
+  if (!lead.workStyle) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    if (lead.workStyle === "clean_line") {
+      return "Basit / çizgisel";
+    }
+
+    if (lead.workStyle === "shaded_detailed" && lead.realismLevel === "advanced") {
+      return "Çok detaylı / gerçekçi";
+    }
+
+    if (lead.workStyle === "shaded_detailed") {
+      return "Orta detaylı";
+    }
+  } else {
+    if (lead.workStyle === "clean_line") {
+      return "Simple / line-based";
+    }
+
+    if (lead.workStyle === "shaded_detailed" && lead.realismLevel === "advanced") {
+      return "Very detailed / realistic";
+    }
+
+    if (lead.workStyle === "shaded_detailed") {
+      return "Medium detail";
+    }
+  }
+
+  return null;
+}
+
+function getDisplayedLayout(lead: ClientSubmission, locale: PublicLocale) {
+  const layout = lead.layoutStyle ?? (lead.workStyle === "precision_symmetric" ? "precision" : null);
+
+  if (!layout || layout === "unsure") {
+    return null;
+  }
+
+  if (locale === "tr") {
+    return layout === "precision" ? "Geometrik / simetrik" : "Akışkan";
+  }
+
+  return layout === "precision" ? "Geometric / symmetric" : "Flowing";
+}
+
+function getLargePlacementBase(detail: ClientSubmission["bodyAreaDetail"], locale: PublicLocale) {
+  if (locale === "tr") {
+    switch (detail) {
+      case "forearm-outer":
+        return "Ön kolun";
+      case "upper-arm-outer":
+        return "Üst kolun";
+      case "calf":
+        return "Alt bacağın";
+      case "thigh-front":
+        return "Üst bacağın";
+      case "chest-center":
+        return "Göğsün";
+      case "ribs":
+        return "Kaburga bölgenin";
+      case "stomach":
+        return "Karın bölgenin";
+      case "upper-back":
+      case "lower-back":
+      case "spine-area":
+        return "Sırtın";
+      default:
+        return `${formatPlacement(detail, locale)} bölgesinin`;
+    }
+  }
+
+  switch (detail) {
+    case "forearm-outer":
+      return "Most of the forearm";
+    case "upper-arm-outer":
+      return "Most of the upper arm";
+    case "calf":
+      return "Most of the calf";
+    case "thigh-front":
+      return "Most of the thigh";
+    case "chest-center":
+      return "Most of the chest";
+    case "upper-back":
+    case "lower-back":
+    case "spine-area":
+      return "Most of the back";
+    default:
+      return formatPlacement(detail, locale);
+  }
+}
+
+function getLargeAreaPlacementSummary(lead: ClientSubmission, locale: PublicLocale) {
+  if (!lead.largeAreaCoverage) {
+    return formatPlacement(lead.bodyAreaDetail, locale);
+  }
+
+  if (locale === "tr") {
+    const base = getLargePlacementBase(lead.bodyAreaDetail, locale);
+
+    switch (lead.largeAreaCoverage) {
+      case "partial":
+        return `${base} bir kısmı`;
+      case "mostly":
+        return `${base} büyük kısmı`;
+      case "almost_full":
+        return `${base} neredeyse tamamı`;
+    }
+  }
+
+  const base = getLargePlacementBase(lead.bodyAreaDetail, locale);
+
+  switch (lead.largeAreaCoverage) {
+    case "partial":
+      return base.includes("Most of") ? base.replace("Most of", "Part of") : `Part of ${base}`;
+    case "mostly":
+      return base;
+    case "almost_full":
+      return base.includes("Most of") ? base.replace("Most of", "Almost all of") : `Almost all of ${base}`;
+  }
+}
+
+function getWideAreaPlacementSummary(lead: ClientSubmission, locale: PublicLocale) {
+  if (!lead.wideAreaTarget) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    switch (lead.wideAreaTarget) {
+      case "half_arm":
+        return "Yarım kol";
+      case "full_arm":
+        return "Tüm kol";
+      case "wide_chest":
+        return "Göğsün büyük kısmı";
+      case "wide_back":
+        return "Sırtın büyük kısmı";
+      case "half_leg":
+        return "Bacağın yarısı";
+      case "mostly_leg":
+        return "Bacağın büyük kısmı";
+      case "unsure":
+        return "Geniş alan";
+    }
+  }
+
+  switch (lead.wideAreaTarget) {
+    case "half_arm":
+      return "Half sleeve";
+    case "full_arm":
+      return "Full sleeve";
+    case "wide_chest":
+      return "Large chest area";
+    case "wide_back":
+      return "Large back area";
+    case "half_leg":
+      return "Half leg";
+    case "mostly_leg":
+      return "Most of the leg";
+    case "unsure":
+      return "Large area";
+  }
+}
+
+function formatLeadPlacementSummary(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.areaScope === "wide_area") {
+    return getWideAreaPlacementSummary(lead, locale) ?? formatPlacement(lead.bodyAreaDetail, locale);
+  }
+
+  if (lead.areaScope === "large_single_area") {
+    return getLargeAreaPlacementSummary(lead, locale);
+  }
+
+  return formatPlacement(lead.bodyAreaDetail, locale);
+}
+
+function getDisplayedAreaScope(lead: ClientSubmission, locale: PublicLocale) {
+  if (!lead.areaScope || lead.areaScope === "unsure") {
+    return null;
+  }
+
+  if (locale === "tr") {
+    if (lead.areaScope === "large_single_area") return "Tek bölgede büyük";
+    if (lead.areaScope === "wide_area") return "Çok geniş";
+    return "Küçük / orta";
+  }
+
+  if (lead.areaScope === "large_single_area") return "Large single area";
+  if (lead.areaScope === "wide_area") return "Wide area";
+  return "Small / medium";
+}
+
+function getDisplayedCoverage(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.areaScope === "large_single_area" && lead.largeAreaCoverage) {
+    if (locale === "tr") {
+      if (lead.largeAreaCoverage === "partial") return "Bir kısmı";
+      if (lead.largeAreaCoverage === "mostly") return "Büyük kısmı";
+      return "Neredeyse tamamı";
+    }
+
+    if (lead.largeAreaCoverage === "partial") return "Part of it";
+    if (lead.largeAreaCoverage === "mostly") return "Most of it";
+    return "Almost all of it";
+  }
+
+  if (lead.areaScope === "wide_area" && lead.wideAreaTarget) {
+    return getWideAreaPlacementSummary(lead, locale);
+  }
+
+  return null;
+}
+
+function getDisplayedWideAreaTarget(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.areaScope !== "wide_area") {
+    return null;
+  }
+
+  return getWideAreaPlacementSummary(lead, locale);
+}
+
 function getSizeLabel(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.areaScope === "large_single_area" || lead.areaScope === "wide_area") {
+    return null;
+  }
+
   if (lead.approximateSizeCm) {
     return `${Math.round(lead.approximateSizeCm)} cm`;
   }
@@ -441,29 +631,60 @@ function getDisplayedEstimate(lead: ClientSubmission, currency: string) {
   return lead.displayEstimateLabel ?? formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency);
 }
 
-function getPricingSourceLabel(lead: ClientSubmission, locale: PublicLocale) {
-  if (lead.pricingSource === "featured_design") {
-    return locale === "tr" ? "Hazır tasarım" : "Featured design";
-  }
-
-  return locale === "tr" ? "Serbest talep" : "Custom request";
+function getDisplayedWorkStyle(lead: ClientSubmission, locale: PublicLocale) {
+  return getDisplayedDetailLevel(lead, locale) ?? (locale === "tr" ? "Belirtilmedi" : "Not specified");
 }
 
-function getRequestLabel(lead: ClientSubmission, locale: PublicLocale, designs: ArtistFeaturedDesign[]) {
+function getEstimateModeLabel(estimateMode: ClientSubmission["estimateMode"], locale: PublicLocale) {
+  if (!estimateMode) {
+    return null;
+  }
+
+  if (locale === "tr") {
+    if (estimateMode === "range") return "Fiyat aralığı";
+    if (estimateMode === "soft_range") return "Esnek aralık";
+    return "Başlangıç fiyatı";
+  }
+
+  if (estimateMode === "range") return "Price range";
+  if (estimateMode === "soft_range") return "Flexible range";
+  return "Starting price";
+}
+
+function getPricingSourceLabel(lead: ClientSubmission, locale: PublicLocale) {
   if (lead.pricingSource === "featured_design") {
-    const selectedDesign = designs.find((design) => design.id === lead.selectedDesignId);
-    return selectedDesign?.title ?? formatIntent(lead.intent, locale);
+    return locale === "tr" ? "Hazır tasarım" : "Ready-made design";
+  }
+
+  return locale === "tr" ? "Özel talep" : "Custom request";
+}
+
+function getLeadTypeLabel(lead: ClientSubmission, locale: PublicLocale) {
+  if (lead.pricingSource === "featured_design" || lead.selectedDesignId) {
+    return locale === "tr" ? "Hazır tasarım" : "Ready-made design";
   }
 
   if (lead.requestType) {
     return getRequestTypeLabel(lead.requestType, locale);
   }
 
-  if (lead.areaScope) {
-    return getAreaScopeLabel(lead.areaScope, locale);
+  return formatIntent(lead.intent, locale);
+}
+
+function getRequestLabel(
+  lead: ClientSubmission,
+  locale: PublicLocale,
+  designs: ArtistFeaturedDesign[],
+) {
+  return getSelectedDesignLabel(lead, designs) ?? getLeadTypeLabel(lead, locale);
+}
+
+function getSelectedDesignLabel(lead: ClientSubmission, designs: ArtistFeaturedDesign[]) {
+  if (!lead.selectedDesignId) {
+    return null;
   }
 
-  return formatIntent(lead.intent, locale);
+  return designs.find((design) => design.id === lead.selectedDesignId)?.title ?? null;
 }
 
 function getPreferredTimingLabel(lead: ClientSubmission, locale: PublicLocale, noTiming: string) {

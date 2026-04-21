@@ -102,7 +102,10 @@ export async function POST(request: Request) {
       preferred_end_date: bookingCities.length > 0 ? null : submission.preferredEndDate || null,
       customer_gender: submission.gender ?? null,
       customer_age_range: submission.ageRange ?? null,
+      color_mode: submission.colorMode ?? null,
       work_style: submission.workStyle ?? null,
+      realism_level: submission.realismLevel ?? null,
+      layout_style: submission.layoutStyle ?? null,
       cover_up: submission.coverUp ?? null,
       style: "custom",
       notes: combinedNotes || null,
@@ -125,7 +128,10 @@ export async function POST(request: Request) {
       (error.message.toLowerCase().includes("status") ||
         error.message.toLowerCase().includes("customer_gender") ||
         error.message.toLowerCase().includes("customer_age_range") ||
+        error.message.toLowerCase().includes("color_mode") ||
         error.message.toLowerCase().includes("work_style") ||
+        error.message.toLowerCase().includes("realism_level") ||
+        error.message.toLowerCase().includes("layout_style") ||
         error.message.toLowerCase().includes("area_scope") ||
         error.message.toLowerCase().includes("large_area_coverage") ||
         error.message.toLowerCase().includes("wide_area_target") ||
@@ -139,7 +145,10 @@ export async function POST(request: Request) {
         status: _status,
         customer_gender: _customerGender,
         customer_age_range: _customerAgeRange,
+        color_mode: _colorMode,
         work_style: _workStyle,
+        realism_level: _realismLevel,
+        layout_style: _layoutStyle,
         area_scope: _areaScope,
         large_area_coverage: _largeAreaCoverage,
         wide_area_target: _wideAreaTarget,

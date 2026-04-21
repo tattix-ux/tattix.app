@@ -81,7 +81,10 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     preferredEndDate: row.preferred_end_date ? String(row.preferred_end_date) : null,
     gender: row.customer_gender ? String(row.customer_gender) as ClientSubmission["gender"] : null,
     ageRange: row.customer_age_range ? String(row.customer_age_range) as ClientSubmission["ageRange"] : null,
+    colorMode: row.color_mode ? String(row.color_mode) as ClientSubmission["colorMode"] : null,
     workStyle: row.work_style ? String(row.work_style) as ClientSubmission["workStyle"] : null,
+    realismLevel: row.realism_level ? String(row.realism_level) as ClientSubmission["realismLevel"] : null,
+    layoutStyle: row.layout_style ? String(row.layout_style) as ClientSubmission["layoutStyle"] : null,
     coverUp:
       typeof row.cover_up === "boolean"
         ? row.cover_up

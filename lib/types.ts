@@ -482,7 +482,10 @@ export type ClientSubmission = {
   preferredEndDate: string | null;
   gender: CustomerGenderValue | null;
   ageRange: CustomerAgeRangeValue | null;
+  colorMode: ColorModeValue | null;
   workStyle: WorkStyleValue | null;
+  realismLevel: RealismLevelValue | null;
+  layoutStyle: LayoutStyleValue | null;
   coverUp: boolean | null;
   style: string;
   notes: string | null;
