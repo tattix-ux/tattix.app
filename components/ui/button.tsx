@@ -5,24 +5,24 @@ import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[20px] text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
   {
     variants: {
       variant: {
         default:
-          "border border-white/8 bg-[linear-gradient(180deg,#D6A574_0%,#C8925F_100%)] text-[var(--accent-foreground)] shadow-[0_8px_24px_rgba(214,165,116,0.18)] hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,#E4C08D_0%,#D6A574_100%)] hover:shadow-[0_10px_28px_rgba(214,165,116,0.24)] active:bg-[linear-gradient(180deg,#C8925F_0%,#B67C49_100%)]",
+          "border border-white/8 bg-[linear-gradient(180deg,var(--accent)_0%,var(--accent-deep-bronze)_100%)] text-[var(--accent-foreground)] shadow-[0_8px_24px_rgba(214,177,122,0.16)] hover:bg-[linear-gradient(180deg,var(--accent-hover)_0%,var(--accent)_100%)] hover:shadow-[0_10px_26px_rgba(214,177,122,0.2)]",
         secondary:
-          "border border-[rgba(255,255,255,0.09)] bg-[#1D1F24] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:bg-[#23262C] hover:border-[rgba(255,255,255,0.14)]",
-        ghost: "text-[var(--foreground-muted)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]",
+          "border border-[var(--border-soft)] bg-[var(--surface-1)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:bg-[var(--surface-2)] hover:border-[var(--border-strong)]",
+        ghost: "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.035)] hover:text-[var(--text-primary)]",
         outline:
-          "border border-[rgba(255,255,255,0.09)] bg-transparent text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.14)]",
+          "border border-[var(--border-soft)] bg-transparent text-[var(--text-primary)] hover:bg-[rgba(255,255,255,0.028)] hover:border-[var(--border-strong)]",
         destructive: "border border-[rgba(184,106,99,0.28)] bg-[rgba(184,106,99,0.14)] text-white hover:bg-[rgba(184,106,99,0.2)]",
       },
       size: {
-        default: "h-11 px-5",
+        default: "h-10 px-5",
         sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-6 text-base",
-        icon: "size-10 rounded-full",
+        lg: "h-11 px-6 text-base",
+        icon: "size-10 rounded-[18px]",
       },
     },
     defaultVariants: {

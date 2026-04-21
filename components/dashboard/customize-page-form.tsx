@@ -156,11 +156,11 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="surface-border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1D1F24_0%,#1A1C21_100%)] shadow-[0_18px_36px_rgba(0,0,0,0.2)]">
+    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_36px_rgba(0,0,0,0.22)]">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-3">
           {icon ? (
-            <div className="mt-0.5 inline-flex size-10 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.04] text-[var(--accent)]">
+            <div className="mt-0.5 inline-flex size-10 items-center justify-center rounded-[18px] border border-[var(--border-soft)] bg-white/[0.03] text-[var(--accent)]">
               {icon}
             </div>
           ) : null}
@@ -193,8 +193,8 @@ function SelectionPill({
       className={cn(
         "rounded-full border px-4 py-2.5 text-sm font-medium transition",
         active
-          ? "border-[rgba(214,165,116,0.32)] bg-[rgba(214,165,116,0.14)] text-[#F0E4D2] shadow-[0_0_0_1px_rgba(214,165,116,0.1),0_8px_30px_rgba(214,165,116,0.12)]"
-          : "border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] hover:border-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
+          ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.14)] text-[var(--text-primary)] shadow-[0_0_0_1px_rgba(214,177,122,0.08),0_8px_24px_rgba(0,0,0,0.2)]"
+          : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] hover:border-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]",
         className,
       )}
     >
@@ -220,7 +220,7 @@ function ColorDot({
       className={cn(
         "size-10 rounded-full border transition",
         active
-          ? "scale-[1.05] border-[rgba(255,255,255,0.72)] shadow-[0_0_0_4px_rgba(214,165,116,0.1)]"
+          ? "scale-[1.05] border-[rgba(255,255,255,0.72)] shadow-[0_0_0_4px_rgba(214,177,122,0.08)]"
           : "border-[rgba(255,255,255,0.1)] hover:scale-[1.02] hover:border-[rgba(255,255,255,0.2)]",
       )}
       style={{ backgroundColor: color }}

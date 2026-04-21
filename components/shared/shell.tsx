@@ -14,9 +14,9 @@ export function AppShell({
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(214,165,116,0.08),_transparent_28%),radial-gradient(circle_at_80%_20%,_rgba(141,91,52,0.06),_transparent_24%),linear-gradient(180deg,_#17181C_0%,_#121315_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.018),transparent_18%,transparent_78%,rgba(214,165,116,0.018))]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(42,45,52,0.24),_transparent_34%),radial-gradient(circle_at_top,_rgba(255,255,255,0.018),_transparent_28%)] opacity-90" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(214,177,122,0.08),transparent_24%),radial-gradient(circle_at_88%_12%,rgba(24,36,58,0.08),transparent_22%),linear-gradient(180deg,#101114_0%,#0A0A0B_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.014),transparent_20%,transparent_76%,rgba(214,177,122,0.015))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(24,30,40,0.18),_transparent_32%),radial-gradient(circle_at_top,_rgba(255,255,255,0.012),_transparent_24%)] opacity-90" />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.045] mix-blend-soft-light"
         style={{
@@ -36,7 +36,7 @@ export function Container({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("mx-auto w-full min-w-0 max-w-full overflow-x-clip px-4 sm:max-w-7xl sm:px-6", className)}>{children}</div>;
+  return <div className={cn("mx-auto w-full min-w-0 max-w-full overflow-x-clip px-4 sm:max-w-7xl sm:px-6 lg:px-8", className)}>{children}</div>;
 }
 
 export function SectionHeading({
@@ -53,13 +53,13 @@ export function SectionHeading({
   return (
     <div className={cn("space-y-4", align === "center" && "text-center")}>
       {eyebrow ? (
-        <p className="text-xs font-medium uppercase tracking-[0.36em] text-[var(--accent-soft)]">
+        <p className="text-xs font-medium uppercase tracking-[0.34em] text-[var(--accent-soft)]/95">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="font-display text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">{title}</h2>
+      <h2 className="font-display text-3xl font-semibold leading-tight tracking-[-0.035em] text-[var(--text-primary)] sm:text-4xl">{title}</h2>
       {description ? (
-        <p className="max-w-2xl text-sm leading-7 text-[var(--foreground-muted)] sm:text-base">
+        <p className="max-w-2xl text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
           {description}
         </p>
       ) : null}

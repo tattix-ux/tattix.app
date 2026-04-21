@@ -44,7 +44,7 @@ export default async function DashboardLayout({
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
             <div className="mt-1 flex justify-end">
-              <div className="flex flex-wrap items-center gap-2 rounded-[22px] border border-white/8 bg-[color:color-mix(in_srgb,var(--surface-1)_92%,black_8%)] p-2 shadow-[0_18px_38px_rgba(0,0,0,0.22)]">
+              <div className="flex flex-wrap items-center gap-2 rounded-[20px] border border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface-1)_94%,black_6%)] p-2 shadow-[0_16px_32px_rgba(0,0,0,0.22)]">
                 <DashboardNotificationBell
                   locale={isTurkish ? "tr" : "en"}
                   unreadCount={notificationUnreadCount}
@@ -56,10 +56,10 @@ export default async function DashboardLayout({
             <div className="mt-6 grid items-start gap-6 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-10">
               <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[252px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="rounded-[30px] border border-[rgba(214,173,126,0.12)] bg-[linear-gradient(180deg,rgba(30,24,24,0.98),rgba(18,15,17,1))] p-4 shadow-[0_28px_64px_rgba(0,0,0,0.34)]">
+                <div className="rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] p-4 shadow-[0_24px_52px_rgba(0,0,0,0.3)]">
                   <Link
                     href="/dashboard/profile"
-                    className="block rounded-[24px] border border-white/8 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.04),_transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.12))] p-4"
+                    className="block rounded-[20px] border border-[var(--border-soft)] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.035),_transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.1))] p-4"
                   >
                     <BrandLockup
                       iconOnlyOnMobile={false}
@@ -76,7 +76,7 @@ export default async function DashboardLayout({
                       @{dashboardData.profile.slug}
                     </p>
                   </div>
-                  <div className="mt-5 rounded-[24px] border border-white/7 bg-white/[0.02] p-3">
+                  <div className="mt-5 rounded-[20px] border border-[var(--border-soft)] bg-white/[0.02] p-3">
                     <DashboardNav
                       locale={isTurkish ? "tr" : "en"}
                       hideProBadges={isProActive}

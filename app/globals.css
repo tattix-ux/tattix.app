@@ -1,39 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  --bg-app: #121315;
-  --bg-app-alt: #17181c;
-  --bg-section: #1a1b20;
-  --surface-1: #1d1f24;
-  --surface-2: #23262c;
-  --surface-3: #2a2d34;
-  --border-soft: rgba(255, 255, 255, 0.06);
+  --bg-app: #0a0a0b;
+  --bg-app-alt: #101114;
+  --bg-section: #14161a;
+  --surface-1: #14161a;
+  --surface-2: #191b20;
+  --surface-3: #1e2127;
+  --border-soft: rgba(214, 177, 122, 0.14);
   --border-default: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --text-primary: #eee7dd;
-  --text-secondary: #b8ada0;
-  --text-muted: #8b8176;
-  --text-dim: #6f675e;
-  --accent-bronze-1: #d6a574;
-  --accent-bronze-2: #c8925f;
-  --accent-bronze-3: #b67c49;
-  --accent-soft-gold: #e4c08d;
-  --accent-deep-bronze: #8d5b34;
+  --border-strong: rgba(214, 177, 122, 0.26);
+  --text-primary: #f2eee7;
+  --text-secondary: #a79d91;
+  --text-muted: #8f8579;
+  --text-dim: #736b61;
+  --accent-bronze-1: #d6b17a;
+  --accent-bronze-2: #e3c08e;
+  --accent-bronze-3: #9b6e45;
+  --accent-soft-gold: #e3c08e;
+  --accent-deep-bronze: #9b6e45;
   --metal-light: #d8d0c7;
   --metal-mid: #aaa096;
   --metal-dark: #5e564f;
-  --success: #7faf8f;
+  --success: #3f735a;
   --danger: #b86a63;
   --warning: #c99a58;
   --background: var(--bg-app);
   --foreground: var(--text-primary);
   --foreground-muted: var(--text-secondary);
-  --card: rgba(255, 255, 255, 0.03);
+  --card: rgba(255, 255, 255, 0.025);
   --border: var(--border-default);
   --accent: var(--accent-bronze-1);
   --accent-soft: var(--accent-soft-gold);
   --accent-foreground: #1a1714;
-  --ring: rgba(214, 165, 116, 0.42);
+  --ring: rgba(214, 177, 122, 0.42);
 }
 
 @theme inline {
@@ -64,8 +64,9 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   background:
-    radial-gradient(circle at top left, rgba(214, 165, 116, 0.08), transparent 28%),
-    radial-gradient(circle at 80% 20%, rgba(141, 91, 52, 0.06), transparent 24%),
+    radial-gradient(circle at 16% 10%, rgba(214, 177, 122, 0.08), transparent 24%),
+    radial-gradient(circle at 84% 16%, rgba(28, 42, 68, 0.08), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(155, 110, 69, 0.05), transparent 30%),
     linear-gradient(180deg, var(--bg-app-alt) 0%, var(--bg-app) 100%);
   color: var(--foreground);
   font-family:
@@ -84,8 +85,8 @@ a {
 }
 
 ::selection {
-  background: rgba(214, 165, 116, 0.22);
-  color: white;
+  background: rgba(214, 177, 122, 0.22);
+  color: var(--text-primary);
 }
 
 .font-display {
@@ -106,7 +107,7 @@ a {
 .surface-border {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 20px 44px rgba(0, 0, 0, 0.3),
+    0 18px 38px rgba(0, 0, 0, 0.28),
     0 2px 0 rgba(255, 255, 255, 0.015);
 }
 

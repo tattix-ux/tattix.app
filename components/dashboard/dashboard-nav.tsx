@@ -91,7 +91,7 @@ export function DashboardNav({
 
         return (
           <div key={group} className="space-y-3">
-            {groupIndex > 0 ? <div className="h-px rounded-full bg-white/6" /> : null}
+            {groupIndex > 0 ? <div className="h-px rounded-full bg-[var(--border-soft)]" /> : null}
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:flex lg:flex-col lg:overflow-visible">
               {groupItems.map((item) => {
         const active = pathname === item.href;
@@ -104,8 +104,8 @@ export function DashboardNav({
             className={cn(
               "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3 lg:py-3 lg:text-sm lg:text-left",
               active
-                ? "border-[rgba(214,165,116,0.2)] bg-[linear-gradient(180deg,rgba(214,165,116,0.16)_0%,rgba(182,124,73,0.1)_100%)] text-[#F0E4D2] shadow-[0_0_0_1px_rgba(214,165,116,0.1),0_8px_30px_rgba(214,165,116,0.12)]"
-                : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.03)] hover:text-[var(--text-primary)]",
+                ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.14)_0%,rgba(155,110,69,0.08)_100%)] text-[var(--text-primary)] shadow-[0_0_0_1px_rgba(214,177,122,0.08),0_8px_24px_rgba(0,0,0,0.22)]"
+                : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-soft)] hover:bg-[rgba(255,255,255,0.028)] hover:text-[var(--text-primary)]",
             )}
           >
             <Icon className="size-4" />
