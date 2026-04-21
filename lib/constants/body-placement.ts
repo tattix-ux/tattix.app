@@ -1,3 +1,5 @@
+type PlacementScopeValue = "standard_piece" | "large_single_area" | "wide_area" | "unsure";
+
 export const bodyPlacementGroups = [
   {
     value: "arm",
@@ -126,5 +128,85 @@ export function getPlacementCategoryByDetail(detailValue: BodyAreaDetailValue | 
     placementCategoryOptions.find((category) =>
       (category.details as readonly BodyAreaDetailValue[]).includes(detailValue),
     ) ?? null
+  );
+}
+
+const placementDetailsByAreaScope: Record<
+  PlacementScopeValue,
+  Partial<Record<BodyAreaGroupValue, readonly BodyAreaDetailValue[]>>
+> = {
+  standard_piece: {
+    arm: ["upper-arm-outer", "forearm-outer", "wrist", "arm-other"],
+    leg: ["thigh-front", "calf", "ankle", "leg-other"],
+    torso: ["chest-center", "ribs", "stomach", "torso-other"],
+    neck: ["neck-side", "neck-front", "neck-back", "neck-other"],
+    head: ["head", "head-other"],
+    hand: ["hand", "fingers", "hand-other"],
+    foot: ["foot", "toes", "foot-other"],
+    "not-sure": ["placement-not-sure"],
+  },
+  large_single_area: {
+    arm: ["upper-arm-outer", "forearm-outer", "arm-other"],
+    leg: ["thigh-front", "calf", "leg-other"],
+    torso: ["chest-center", "ribs", "stomach", "torso-other"],
+    "not-sure": ["placement-not-sure"],
+  },
+  wide_area: {
+    arm: ["upper-arm-outer", "forearm-outer", "arm-other"],
+    leg: ["thigh-front", "calf", "leg-other"],
+    torso: ["chest-center", "ribs", "stomach", "torso-other"],
+    back: ["upper-back", "lower-back", "spine-area", "back-other"],
+    "not-sure": ["placement-not-sure"],
+  },
+  unsure: bodyPlacementGroups.reduce(
+    (acc, group) => {
+      acc[group.value] = group.details.map((detail) => detail.value);
+      return acc;
+    },
+    {} as Record<BodyAreaGroupValue, readonly BodyAreaDetailValue[]>,
+  ),
+};
+
+export function getPlacementCategoriesForAreaScope(areaScope: PlacementScopeValue | "") {
+  const resolvedScope = areaScope || "unsure";
+  const scopedGroups = placementDetailsByAreaScope[resolvedScope] ?? placementDetailsByAreaScope.unsure;
+
+  return bodyPlacementGroups
+    .filter((group) => {
+      const allowedDetails = scopedGroups[group.value];
+      return Boolean(allowedDetails?.length);
+    })
+    .map((group) => {
+      const allowedDetails = scopedGroups[group.value] ?? [];
+      return {
+        ...group,
+        details: group.details
+          .filter((detail) => allowedDetails.includes(detail.value)),
+      };
+    })
+    .filter((group) => group.details.length > 0);
+}
+
+export function isPlacementGroupAllowedForAreaScope(
+  groupValue: BodyAreaGroupValue | "",
+  areaScope: PlacementScopeValue | "",
+) {
+  if (!groupValue) {
+    return true;
+  }
+
+  return getPlacementCategoriesForAreaScope(areaScope).some((group) => group.value === groupValue);
+}
+
+export function isPlacementDetailAllowedForAreaScope(
+  detailValue: BodyAreaDetailValue | "",
+  areaScope: PlacementScopeValue | "",
+) {
+  if (!detailValue) {
+    return true;
+  }
+
+  return getPlacementCategoriesForAreaScope(areaScope).some((group) =>
+    group.details.some((detail) => detail.value === detailValue),
   );
 }

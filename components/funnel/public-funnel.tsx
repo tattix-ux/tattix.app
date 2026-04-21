@@ -14,7 +14,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DateCalendarPopover } from "@/components/ui/date-calendar-popover";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-import type { BodyAreaDetailValue, BodyAreaGroupValue } from "@/lib/constants/body-placement";
+import {
+  isPlacementDetailAllowedForAreaScope,
+  isPlacementGroupAllowedForAreaScope,
+  type BodyAreaDetailValue,
+  type BodyAreaGroupValue,
+} from "@/lib/constants/body-placement";
 import { deriveSizeCategoryFromCm, getPlacementSizeConstraint } from "@/lib/constants/size-estimation";
 import { getPlacementDetailLocaleLabel, type PublicLocale } from "@/lib/i18n/public";
 import {
@@ -529,6 +534,36 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   useEffect(() => {
     flowCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [step]);
+
+  useEffect(() => {
+    if (draft.pricingSource !== "custom_request") {
+      return;
+    }
+
+    if (!draft.areaScope || draft.areaScope === "wide_area" || draft.areaScope === "unsure") {
+      return;
+    }
+
+    const invalidGroup = !isPlacementGroupAllowedForAreaScope(draft.bodyAreaGroup, draft.areaScope);
+    const invalidDetail = !isPlacementDetailAllowedForAreaScope(draft.bodyAreaDetail, draft.areaScope);
+
+    if (!invalidGroup && !invalidDetail) {
+      return;
+    }
+
+    setField("bodyAreaGroup", "");
+    setField("bodyAreaDetail", "");
+    setField("largeAreaCoverage", "");
+    setField("approximateSizeCm", null);
+    setField("sizeCategory", "");
+  }, [
+    draft.approximateSizeCm,
+    draft.areaScope,
+    draft.bodyAreaDetail,
+    draft.bodyAreaGroup,
+    draft.pricingSource,
+    setField,
+  ]);
 
   const copy = getCopy(locale);
   const activeDesigns = artist.featuredDesigns.filter((design) => design.active);
@@ -1116,6 +1151,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             {currentFlowStep === "placement" ? (
               <BodyPlacementSelector
                 selectedDetail={draft.bodyAreaDetail}
+                areaScope={draft.areaScope}
                 locale={locale}
                 onSelect={(group, detail) => {
                   setField("bodyAreaGroup", group);

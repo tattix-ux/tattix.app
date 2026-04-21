@@ -101,7 +101,7 @@ export function ProfileRequestSettings({
     locale === "tr"
       ? {
           bookingTitle: "Randevu kabul ettiğin şehirler ve günler",
-          bookingDescription: "Talep formunda müşteriye açık göstereceğin şehirleri ve müsait günlerini burada belirlersin.",
+          bookingDescription: "Randevuya açık olduğun şehirleri ve müsait günlerini burada belirleyebilirsin.",
           stylesTitle: "Çalıştığın stiller",
           cityName: "Şehir",
           cityPlaceholder: "Şehir adı yaz",
