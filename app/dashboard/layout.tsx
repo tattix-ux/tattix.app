@@ -44,7 +44,7 @@ export default async function DashboardLayout({
       <Container className="py-5 sm:py-9 lg:max-w-[1440px] 2xl:max-w-[1520px]">
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
-            <div className="mt-3 flex justify-end">
+            <div className="flex justify-end">
               <div className="flex flex-wrap items-center gap-2 rounded-[20px] border border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface-1)_94%,black_6%)] p-2 shadow-[0_14px_28px_rgba(0,0,0,0.2)]">
                 <DashboardNotificationBell
                   locale={isTurkish ? "tr" : "en"}
@@ -101,8 +101,8 @@ export default async function DashboardLayout({
                     />
                   </div>
                   <div className="mt-10 flex justify-center pt-4">
-                    <div className="relative size-[62px] overflow-hidden rounded-full border border-[rgba(214,177,122,0.24)] bg-white/[0.02]">
-                      <BrandMonogram className="inset-[12%]" opacity={0.46} />
+                    <div className="relative size-[72px] overflow-hidden rounded-full border border-[rgba(214,177,122,0.34)] bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.035),rgba(255,255,255,0.01))] shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_18px_36px_rgba(0,0,0,0.24)]">
+                      <BrandMonogram className="inset-[14%]" opacity={0.62} />
                     </div>
                   </div>
                 </div>
