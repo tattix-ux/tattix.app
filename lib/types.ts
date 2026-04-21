@@ -496,6 +496,7 @@ export type ClientSubmission = {
   convertedToSale: boolean;
   soldAt: string | null;
   createdAt: string;
+  updatedAt: string | null;
 };
 
 export type LeadStatus = "new" | "contacted" | "sold" | "lost";

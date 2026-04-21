@@ -56,13 +56,13 @@ export default async function DashboardLayout({
             <div className="mt-6 grid items-start gap-6 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-8">
               <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[252px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="rounded-[22px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] p-4 shadow-[0_20px_44px_rgba(0,0,0,0.28)]">
+                <div className="rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] p-4 shadow-[0_22px_48px_rgba(0,0,0,0.28)]">
                   <Link
                     href="/dashboard/profile"
-                    className="block rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(0,0,0,0.1))] px-5 py-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition hover:border-[var(--border-strong)]"
+                    className="block rounded-[26px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.12))] px-5 py-7 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition hover:border-[var(--border-strong)]"
                   >
-                    <BrandIcon size="2xl" className="mx-auto" priority />
-                    <BrandWordmark size="lg" className="mt-4 text-center" />
+                    <BrandIcon size="2xl" className="mx-auto size-[6rem] rounded-[30px]" priority />
+                    <BrandWordmark size="lg" className="mt-5 text-center" />
                   </Link>
                   <div className="mt-4 space-y-1 px-1">
                     <p className="text-base font-medium tracking-[-0.02em] text-white">

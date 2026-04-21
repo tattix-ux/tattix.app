@@ -352,6 +352,7 @@ export const demoLeads: ClientSubmission[] = [
     convertedToSale: true,
     soldAt: "2026-04-09T11:00:00.000Z",
     createdAt: "2026-04-08T18:30:00.000Z",
+    updatedAt: "2026-04-09T11:00:00.000Z",
   },
   {
     id: "submission-2",
@@ -398,6 +399,7 @@ export const demoLeads: ClientSubmission[] = [
     convertedToSale: false,
     soldAt: null,
     createdAt: "2026-04-07T12:10:00.000Z",
+    updatedAt: "2026-04-08T09:45:00.000Z",
   },
 ];
 

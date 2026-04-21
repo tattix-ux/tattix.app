@@ -100,6 +100,7 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
     convertedToSale: status === "sold",
     soldAt: status === "sold" && row.sold_at ? String(row.sold_at) : null,
     createdAt: String(row.created_at),
+    updatedAt: row.updated_at ? String(row.updated_at) : String(row.created_at),
   };
 }
 
