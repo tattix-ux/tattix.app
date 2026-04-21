@@ -576,7 +576,7 @@ export function ProfileRequestSettings({
     <div className="space-y-3">
       <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
         <CardHeader className="pb-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
             <div className="min-w-0">
               <CardTitle className="text-[1.02rem]">{copy.bookingTitle}</CardTitle>
               <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">

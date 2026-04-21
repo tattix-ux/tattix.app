@@ -388,7 +388,7 @@ export function ProfileForm({
           title={locale === "tr" ? "Temel profil" : "Core profile"}
           description={copy.coreSectionDescription}
         >
-          <div className="grid gap-5 xl:grid-cols-2">
+          <div className="grid gap-5 2xl:grid-cols-2">
             <MediaUploadField
               label={copy.profileImage}
               imageUrl={form.watch("profileImageUrl") || ""}
@@ -409,7 +409,7 @@ export function ProfileForm({
             />
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.86fr)]">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.86fr)]">
             <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
               <Input {...form.register("artistName")} className="h-12" />
             </Field>
@@ -448,7 +448,7 @@ export function ProfileForm({
           title={locale === "tr" ? "Link ve iletişim" : "Link and contact"}
           description={copy.contactSectionDescription}
         >
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_150px] xl:items-end">
             <Field label={copy.linkSection}>
               <div className="flex min-w-0 overflow-hidden rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)]">
                 <div className="flex items-center border-r border-[var(--border-soft)] px-4 text-sm text-[var(--text-muted)]">
@@ -508,7 +508,7 @@ export function ProfilePreviewCard({
         <p className="text-sm leading-6 text-[var(--text-secondary)]">{copy.previewDescription}</p>
       </CardHeader>
       <CardContent>
-        <div className="mx-auto max-w-[470px]">
+        <div className="mx-auto max-w-[440px] 2xl:max-w-[470px]">
           <div
             className="overflow-hidden rounded-[42px] border shadow-[0_30px_70px_rgba(0,0,0,0.34)]"
             style={{
