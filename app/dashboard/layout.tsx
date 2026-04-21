@@ -44,8 +44,8 @@ export default async function DashboardLayout({
     <AppShell>
       <Container className="py-5 sm:py-9 lg:max-w-[1440px] 2xl:max-w-[1520px]">
         <div className="overflow-x-hidden pb-2">
-          <div className="relative min-w-0">
-            <div className="absolute right-0 top-0 z-20">
+          <div className="min-w-0">
+            <div className="mb-5 flex justify-end lg:mb-6">
               <div className="flex flex-wrap items-center gap-2 rounded-[20px] border border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface-1)_94%,black_6%)] p-2 shadow-[0_14px_28px_rgba(0,0,0,0.2)]">
                 <DashboardNotificationBell
                   locale={isTurkish ? "tr" : "en"}
