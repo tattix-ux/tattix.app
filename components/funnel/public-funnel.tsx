@@ -131,31 +131,31 @@ function getCopy(locale: PublicLocale) {
       colorTitleFeatured: "Renk aynı mı kalsın?",
       colorDescriptionCustom: "Renk ve detay seviyesini seç.",
       colorDescriptionFeatured: "Tasarıma en yakın görünümü seç.",
-      intensityTitle: "Ne kadar detaylı?",
+      intensityTitle: "Ne kadar detaylı olsun?",
       intensityDescription: "Sana en yakın olanı seç.",
       intensityStyles: {
-        clean_line: "Sade / çizgisel",
-        shaded_detailed: "Gölgeli / detaylı",
-        advanced: "Çok yoğun / gerçekçi",
+        clean_line: "Basit / ince çizgili",
+        shaded_detailed: "Orta detaylı",
+        advanced: "Çok detaylı / gerçekçi",
         unsure: "Emin değilim",
       },
       intensityDescriptions: {
-        clean_line: "Temiz çizgiler, az detay",
-        shaded_detailed: "Daha dolu, gölgeli görünüm",
-        advanced: "Yüksek detay, gerçekçi görünüm",
+        clean_line: "Az detay, daha minimal görünüm",
+        shaded_detailed: "Biraz gölge ve detay içerir",
+        advanced: "Yoğun detay, daha gerçekçi görünüm",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
-      layoutTitle: "Daha çok nasıl bir düzen?",
-      layoutDescription: "İstersen bunu da seçebilirsin.",
+      layoutTitle: "Tasarım nasıl görünsün?",
+      layoutDescription: "Sana en yakın olanı seç.",
       layoutStyles: {
-        organic: "Serbest / doğal akış",
-        precision: "Daha düzenli / simetrik",
+        organic: "Akışkan tasarım",
+        precision: "Geometrik / düzenli",
         unsure: "Emin değilim",
       },
       layoutDescriptions: {
-        organic: "",
-        precision: "",
-        unsure: "",
+        organic: "Daha serbest yerleşim, yumuşak geçişler",
+        precision: "Düzenli, dengeli ve net çizgiler",
+        unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
       colorModes: {
         "black-only": "Sadece siyah",
@@ -308,31 +308,31 @@ function getCopy(locale: PublicLocale) {
     colorTitleFeatured: "Will the color stay the same?",
     colorDescriptionCustom: "Choose the color and detail level.",
     colorDescriptionFeatured: "Choose the look that feels closest to the design.",
-    intensityTitle: "How detailed is it?",
+    intensityTitle: "How detailed should it be?",
     intensityDescription: "Choose the closest option.",
     intensityStyles: {
-      clean_line: "Simple / line-based",
-      shaded_detailed: "Shaded / detailed",
-      advanced: "Very dense / realistic",
+      clean_line: "Simple / fine line",
+      shaded_detailed: "Medium detail",
+      advanced: "Very detailed / realistic",
       unsure: "Not sure",
     },
     intensityDescriptions: {
-      clean_line: "Clean lines, low detail",
-      shaded_detailed: "A fuller, shaded look",
-      advanced: "High detail, realistic look",
+      clean_line: "Low detail, more minimal look",
+      shaded_detailed: "Includes some shading and detail",
+      advanced: "Dense detail, more realistic look",
       unsure: "Choose this if you’re not sure yet",
     },
-    layoutTitle: "What kind of layout?",
-    layoutDescription: "You can skip this if you want.",
+    layoutTitle: "How should it look?",
+    layoutDescription: "Choose the closest option.",
     layoutStyles: {
-      organic: "Free / natural flow",
-      precision: "More ordered / symmetric",
+      organic: "Flowing design",
+      precision: "Geometric / orderly",
       unsure: "Not sure",
     },
     layoutDescriptions: {
-      organic: "",
-      precision: "",
-      unsure: "",
+      organic: "Freer placement with softer transitions",
+      precision: "Ordered, balanced, and cleaner lines",
+      unsure: "Choose this if you’re not sure yet",
     },
     colorModes: {
       "black-only": "Black only",
@@ -1261,18 +1261,15 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     {draft.pricingSource === "featured_design" ? copy.colorDescriptionFeatured : copy.colorDescriptionCustom}
                   </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    {colorChoices.map((option) => {
-                      const active = draft.colorMode === option.value;
-                      return (
-                        <button
-                          key={option.key}
-                          type="button"
-                          onClick={() => {
-                            setField("colorMode", option.value);
-                            if (option.value !== "black-grey" && draft.realismLevel === "advanced") {
-                              setField("realismLevel", "");
-                            }
-                          }}
+                        {colorChoices.map((option) => {
+                          const active = draft.colorMode === option.value;
+                          return (
+                            <button
+                              key={option.key}
+                              type="button"
+                              onClick={() => {
+                                setField("colorMode", option.value);
+                              }}
                           className="rounded-[22px] border px-4 py-4 text-left transition"
                           style={{
                             borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
@@ -1313,8 +1310,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       </p>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {intensityChoices.map((option) => {
-                          const isAdvanced = option.value === "advanced";
-                          const disabled = isAdvanced && draft.colorMode !== "black-grey";
                           const active =
                             option.value === "advanced"
                               ? draft.workStyle === "shaded_detailed" && draft.realismLevel === "advanced"
@@ -1325,10 +1320,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                               key={option.value}
                               type="button"
                               onClick={() => {
-                                if (disabled) {
-                                  return;
-                                }
-
                                 if (option.value === "advanced") {
                                   setField("workStyle", "shaded_detailed");
                                   setField("realismLevel", "advanced");
@@ -1338,8 +1329,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                                 setField("workStyle", option.value);
                                 setField("realismLevel", "");
                               }}
-                              disabled={disabled}
-                              className="rounded-[22px] border px-4 py-4 text-left transition disabled:cursor-not-allowed disabled:opacity-55"
+                              className="rounded-[22px] border px-4 py-4 text-left transition"
                               style={{
                                 borderColor: active ? "var(--artist-primary)" : "var(--artist-border)",
                                 backgroundColor: active
