@@ -20,15 +20,11 @@ export default async function DashboardLeadsPage() {
     <div className="space-y-6">
       <SectionHeading
         eyebrow={isTurkish ? "Talep yönetimi" : "Lead management"}
-        title={
-          isTurkish
-            ? "Kimlerin hâlâ yazmadığını ve satışa dönen talepleri takip et."
-            : "Track who still has not reached out and which requests turn into sales."
-        }
+        title={isTurkish ? "Talepler" : "Requests"}
         description={
           isTurkish
-            ? "Müşteri iletişimi kendisi başlatır. Yazdığında durumu güncelleyebilirsin."
-            : "Clients start the conversation. Update the status after they reach out."
+            ? "Gelen talepleri filtrele, durumu güncelle ve detayları sakin bir akışta yönet."
+            : "Filter requests, update statuses, and manage details in one calm flow."
         }
       />
       {hasPro ? (
