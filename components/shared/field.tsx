@@ -15,9 +15,9 @@ export function Field({
 }) {
   return (
     <label className={cn("flex flex-col gap-2", className)}>
-      <span className="text-sm font-medium text-white">{label}</span>
+      <span className="text-sm font-medium text-[var(--text-primary)]">{label}</span>
       {description ? (
-        <span className="text-xs leading-5 text-[var(--foreground-muted)]">{description}</span>
+        <span className="text-xs leading-5 text-[var(--text-muted)]">{description}</span>
       ) : null}
       {children}
       {error ? <span className="text-xs text-red-300">{error}</span> : null}

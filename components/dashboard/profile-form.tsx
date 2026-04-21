@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { CheckCircle2, ChevronDown, Copy, ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
+import { CheckCircle2, Copy, ImagePlus, LoaderCircle, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -100,6 +100,28 @@ const profileCopy = {
   },
 } as const;
 
+function SectionBlock({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)]">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-[1.02rem]">{title}</CardTitle>
+        {description ? (
+          <p className="text-sm leading-6 text-[var(--text-secondary)]">{description}</p>
+        ) : null}
+      </CardHeader>
+      <CardContent className="space-y-5">{children}</CardContent>
+    </Card>
+  );
+}
+
 function MediaUploadField({
   label,
   imageUrl,
@@ -118,21 +140,21 @@ function MediaUploadField({
   removeLabel: string;
 }) {
   return (
-    <Field label={label}>
+    <Field label={label} className="gap-3">
       <div className="space-y-3">
-        <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-[18px] border border-white/10 bg-white/5 sm:h-36 sm:rounded-[20px]">
+        <div className="relative flex h-36 items-center justify-center overflow-hidden rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] sm:h-44">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt={label} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--foreground-muted)]">
+            <div className="flex flex-col items-center gap-2 text-center text-sm text-[var(--text-muted)]">
               <ImagePlus className="size-5" />
               <span>{emptyLabel}</span>
             </div>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-2 text-xs text-white transition hover:bg-white/10 sm:px-4 sm:text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-xs text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)] sm:text-sm">
             <Upload className="size-4" />
             {uploadLabel}
             <input
@@ -166,14 +188,12 @@ export function ProfileForm({
   demoMode,
   locale,
   onPreviewChange,
-  onOpenChange,
 }: {
   profile: ArtistProfile;
   upperLabel: string;
   demoMode: boolean;
   locale: PublicLocale;
   onPreviewChange?: (draft: ProfilePreviewDraft) => void;
-  onOpenChange?: (open: boolean) => void;
 }) {
   const copy = profileCopy[locale];
   const [copied, setCopied] = useState(false);
@@ -201,7 +221,6 @@ export function ProfileForm({
   const watchedValues = useWatch({ control: form.control }) as ProfileValues | undefined;
   const lastSavedPayloadRef = useRef(JSON.stringify(defaultValues));
   const saveRequestIdRef = useRef(0);
-  const detailsRef = useRef<HTMLDetailsElement | null>(null);
   const slug = useWatch({ control: form.control, name: "slug" }) ?? "";
   const watchedArtistName = useWatch({ control: form.control, name: "artistName" }) ?? "";
   const watchedUpperLabel = useWatch({ control: form.control, name: "upperLabel" }) ?? "";
@@ -307,10 +326,6 @@ export function ProfileForm({
     watchedWelcomeHeadline,
   ]);
 
-  useEffect(() => {
-    onOpenChange?.(detailsRef.current?.open ?? false);
-  }, [onOpenChange]);
-
   async function handleMediaUpload(field: "profileImageUrl" | "coverImageUrl", file: File) {
     if (demoMode) {
       form.setError("root", { message: copy.uploadUnavailable });
@@ -374,24 +389,12 @@ export function ProfileForm({
 
   return (
     <div className="space-y-2">
-      <details
-        ref={detailsRef}
-        className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20"
-        onToggle={(event) => onOpenChange?.(event.currentTarget.open)}
-      >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
-          <div className="min-w-0">
-            <p className="text-base font-medium text-white">{copy.sectionTitle}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
-              {profileSummaryLabel}
-            </span>
-            <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
-          </div>
-        </summary>
-        <div className="space-y-5 border-t border-white/8 px-5 py-5">
-          <div className="grid gap-5 lg:grid-cols-2">
+      <div className="space-y-4">
+        <SectionBlock
+          title={locale === "tr" ? "Temel profil" : "Core profile"}
+          description={profileSummaryLabel}
+        >
+          <div className="grid gap-5 xl:grid-cols-2">
             <MediaUploadField
               label={copy.profileImage}
               imageUrl={form.watch("profileImageUrl") || ""}
@@ -412,26 +415,26 @@ export function ProfileForm({
             />
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-5 xl:grid-cols-2">
             <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
-              <Input {...form.register("artistName")} />
+              <Input {...form.register("artistName")} className="h-11" />
             </Field>
             <Field
               label={copy.upperLabel}
               description={copy.upperLabelDescription}
               error={form.formState.errors.upperLabel?.message}
             >
-              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} />
+              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-11" />
             </Field>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-5 xl:grid-cols-2">
             <Field
               label={copy.welcomeHeadline}
               description={copy.welcomeHeadlineDescription}
               error={form.formState.errors.welcomeHeadline?.message}
             >
-              <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} />
+              <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} className="h-11" />
             </Field>
             <Field
               label={copy.shortBio}
@@ -441,52 +444,45 @@ export function ProfileForm({
               <Textarea
                 {...form.register("shortBio")}
                 placeholder={copy.shortBioPlaceholder}
-                className="min-h-[104px]"
+                className="min-h-[132px]"
               />
             </Field>
           </div>
+        </SectionBlock>
 
-          <Card className="surface-border">
-            <CardHeader className="pb-3">
-              <CardTitle>{copy.linkSection}</CardTitle>
-              <p className="text-sm leading-6 text-[var(--foreground-muted)]">{copy.linkSectionDescription}</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <div className="flex min-w-0 flex-1 overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
-                  <div className="flex items-center border-r border-white/10 px-3 text-sm text-[var(--foreground-muted)]">
-                    {getAppOrigin()}/
-                  </div>
-                  <Input
-                    {...form.register("slug")}
-                    className="border-0 bg-transparent focus-visible:ring-0"
-                  />
+        <SectionBlock
+          title={locale === "tr" ? "Link ve iletişim" : "Link and contact"}
+          description={copy.linkSectionDescription}
+        >
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+            <Field label={copy.linkSection}>
+              <div className="flex min-w-0 overflow-hidden rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)]">
+                <div className="flex items-center border-r border-[var(--border-soft)] px-4 text-sm text-[var(--text-muted)]">
+                  {getAppOrigin()}/
                 </div>
-                <Button type="button" variant="secondary" onClick={() => void handleCopyLink()}>
-                  <Copy className="size-4" />
-                  {copied ? copy.copied : copy.copyLink}
-                </Button>
+                <Input
+                  {...form.register("slug")}
+                  className="h-11 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
               </div>
-            </CardContent>
-          </Card>
+            </Field>
+            <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-11">
+              <Copy className="size-4" />
+              {copied ? copy.copied : copy.copyLink}
+            </Button>
+          </div>
 
-          <Card className="surface-border">
-            <CardHeader className="pb-3">
-              <CardTitle>{copy.contactSection}</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-5 lg:grid-cols-2">
-              <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
-                <Input {...form.register("whatsappNumber")} />
-              </Field>
-              <Field label={copy.instagram} error={form.formState.errors.instagramHandle?.message}>
-                <Input {...form.register("instagramHandle")} />
-              </Field>
-            </CardContent>
-          </Card>
-
+          <div className="grid gap-5 xl:grid-cols-2">
+            <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
+              <Input {...form.register("whatsappNumber")} className="h-11" />
+            </Field>
+            <Field label={copy.instagram} error={form.formState.errors.instagramHandle?.message}>
+              <Input {...form.register("instagramHandle")} className="h-11" />
+            </Field>
+          </div>
           <input type="hidden" {...form.register("active")} />
-        </div>
-      </details>
+        </SectionBlock>
+      </div>
 
       <div className="flex min-h-6 items-center gap-2 px-1 text-sm text-[var(--foreground-muted)]">
         {autosaveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
@@ -516,9 +512,9 @@ export function ProfilePreviewCard({
         <CardTitle>{locale === "tr" ? "Sayfa Önizlemesi" : "Page preview"}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mx-auto max-w-[320px]">
+        <div className="mx-auto max-w-[380px]">
           <div
-            className="overflow-hidden rounded-[28px] border"
+            className="overflow-hidden rounded-[34px] border shadow-[0_28px_60px_rgba(0,0,0,0.34)]"
             style={{
               ...wrapperStyle,
               borderColor: "var(--artist-border)",
@@ -527,7 +523,7 @@ export function ProfilePreviewCard({
             }}
           >
             <div
-              className="h-32 border-b bg-grid"
+              className="h-40 border-b bg-grid"
               style={
                 profile.coverImageUrl
                   ? {
@@ -539,7 +535,7 @@ export function ProfilePreviewCard({
                   : { borderColor: "var(--artist-border)" }
               }
             />
-            <div className="-mt-10 space-y-3 p-4">
+            <div className="-mt-11 space-y-4 p-5">
               <AvatarTile
                 name={profile.artistName}
                 imageUrl={profile.profileImageUrl}
@@ -559,14 +555,14 @@ export function ProfilePreviewCard({
                   </div>
                 ) : null}
                 <p
-                  className="text-base"
+                  className="text-lg"
                   style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                 >
                   {profile.artistName}
                 </p>
                 {profile.welcomeHeadline.trim() ? (
                   <h3
-                    className="text-[1.55rem] leading-tight"
+                    className="text-[1.8rem] leading-tight"
                     style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                   >
                     {profile.welcomeHeadline}

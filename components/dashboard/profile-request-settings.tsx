@@ -9,6 +9,7 @@ import { z } from "zod";
 import { DateCalendarPopover } from "@/components/ui/date-calendar-popover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { requestSettingsSchema } from "@/lib/forms/schemas";
@@ -219,6 +220,7 @@ export function ProfileRequestSettings({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [uploadingStyleKey, setUploadingStyleKey] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [expandedCities, setExpandedCities] = useState<Record<string, boolean>>({});
   const initialSyncRef = useRef(true);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -566,67 +568,104 @@ export function ProfileRequestSettings({
 
   return (
     <div className="space-y-3">
-      <details className="surface-border overflow-hidden rounded-[24px] border border-white/8 bg-black/20">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
-          <div className="min-w-0">
-            <p className="text-base font-medium text-white">{copy.bookingTitle}</p>
-            <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.bookingDescription}</p>
+      <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)]">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="min-w-0">
+              <CardTitle className="text-[1.02rem]">{copy.bookingTitle}</CardTitle>
+              <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
+                {copy.bookingDescription}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Input
+                value={pendingCity}
+                onChange={(event) => setPendingCity(event.target.value)}
+                placeholder={copy.cityPlaceholder}
+                className="h-11 min-w-[220px]"
+              />
+              <Button type="button" onClick={addBookingCity} className="h-11">
+                <Plus className="size-4" />
+                {copy.addCity}
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="mt-3">
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
               {bookingSummaryLabel}
             </span>
-            <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
           </div>
-        </summary>
-        <div className="space-y-4 border-t border-white/8 px-5 py-5">
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Input
-              value={pendingCity}
-              onChange={(event) => setPendingCity(event.target.value)}
-              placeholder={copy.cityPlaceholder}
-            />
-            <Button type="button" onClick={addBookingCity}>
-              <Plus className="size-4" />
-              {copy.addCity}
-            </Button>
-          </div>
-
+        </CardHeader>
+        <CardContent className="space-y-4">
           {bookingCities.length === 0 ? (
-            <p className="text-sm text-[var(--foreground-muted)]">{copy.noCities}</p>
+            <div className="rounded-[20px] border border-dashed border-[var(--border-soft)] bg-[rgba(255,255,255,0.02)] px-4 py-6 text-sm text-[var(--text-muted)]">
+              {copy.noCities}
+            </div>
           ) : (
             <div className="space-y-4">
               {bookingCitiesFieldArray.fields.map((field, index) => {
                 const city = bookingCities[index];
                 const availableDates = city?.availableDates ?? [];
+                const isExpanded = expandedCities[field.id] ?? availableDates.length === 0;
 
                 return (
-                  <div key={field.id} className="rounded-[20px] border border-white/8 bg-white/[0.03] p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                      <div className="flex-1">
-                        <Input
-                          value={city?.cityName ?? ""}
-                          onChange={(event) =>
-                            form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
-                              shouldDirty: true,
-                              shouldValidate: true,
-                            })
-                          }
-                          placeholder={copy.cityPlaceholder}
-                        />
+                  <div key={field.id} className="rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-4">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                          <Input
+                            value={city?.cityName ?? ""}
+                            onChange={(event) =>
+                              form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              })
+                            }
+                            placeholder={copy.cityPlaceholder}
+                            className="h-11"
+                          />
+                          <Badge variant="muted" className="w-fit">
+                            {locale === "tr"
+                              ? `${availableDates.length} gün seçili`
+                              : `${availableDates.length} days selected`}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setExpandedCities((current) => ({
+                                ...current,
+                                [field.id]: !isExpanded,
+                              }))
+                            }
+                          >
+                            <ChevronDown className={cn("size-4 transition", isExpanded && "rotate-180")} />
+                            {locale === "tr"
+                              ? isExpanded
+                                ? "Günleri gizle"
+                                : "Günleri göster"
+                              : isExpanded
+                                ? "Hide days"
+                                : "Show days"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => bookingCitiesFieldArray.remove(index)}
+                          >
+                            <Trash2 className="size-4" />
+                            {copy.remove}
+                          </Button>
+                        </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => bookingCitiesFieldArray.remove(index)}
-                      >
-                        <Trash2 className="size-4" />
-                        {copy.remove}
-                      </Button>
                     </div>
 
-                    <div className="mt-4 space-y-3">
+                    {isExpanded ? (
+                    <div className="mt-4 space-y-3 border-t border-[var(--border-soft)] pt-4">
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-white">{copy.dates}</p>
                         <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
@@ -649,7 +688,7 @@ export function ProfileRequestSettings({
                               key={date}
                               type="button"
                               onClick={() => removeBookingDate(index, date)}
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-white"
+                              className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/[0.04] px-3 py-1.5 text-xs text-white"
                             >
                               {date}
                               <X className="size-3" />
@@ -658,13 +697,14 @@ export function ProfileRequestSettings({
                         </div>
                       )}
                     </div>
+                    ) : null}
                   </div>
                 );
               })}
             </div>
           )}
-        </div>
-      </details>
+        </CardContent>
+      </Card>
 
       <div className="flex min-h-6 items-center gap-2 px-1 text-sm text-[var(--foreground-muted)]">
         {saveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}

@@ -7,6 +7,7 @@ import { PublicRouteCard } from "@/components/dashboard/public-route-card";
 import { SectionHeading } from "@/components/shared/shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { buildPageMetadata } from "@/lib/config/site";
+import { getAppOrigin } from "@/lib/config/site";
 import { getDashboardProfileData } from "@/lib/data/dashboard";
 import { getSupabaseSession } from "@/lib/supabase/server";
 
@@ -29,6 +30,8 @@ export default async function DashboardProfilePage() {
     (total, city) => total + city.availableDates.length,
     0,
   );
+  const completionPercent = Math.max(20, Math.round(((4 - missingCount) / 4) * 100));
+  const publicHref = `${getAppOrigin()}/${data.profile.slug}`;
 
   return (
     <div className="mx-auto w-full max-w-[1180px] space-y-8">
@@ -52,63 +55,73 @@ export default async function DashboardProfilePage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <PublicRouteCard
-          slug={data.profile.slug}
-          locale={isTurkish ? "tr" : "en"}
-          variant="summary"
-        />
-        <Card className="surface-border border-white/8 bg-[linear-gradient(180deg,rgba(31,25,24,0.92),rgba(18,16,18,0.98))] shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
-          <CardContent className="space-y-3 p-5">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              {isTurkish ? "Durum" : "Status"}
-            </p>
-            <p className="text-xl font-semibold tracking-[-0.02em] text-white">
-              {missingCount === 0
-                ? isTurkish
-                  ? "Profil yayında"
-                  : "Profile live"
-                : isTurkish
-                  ? `${missingCount} alan eksik`
-                  : `${missingCount} fields missing`}
-            </p>
-            <p className="text-sm leading-6 text-[var(--foreground-muted)]">
-              {missingCount === 0
-                ? isTurkish
-                  ? "Temel profil bilgilerin tamamlandı."
-                  : "Your key profile details are complete."
-                : isTurkish
-                  ? "Profil kartını tamamlamak için eksik bilgileri doldur."
-                  : "Complete the missing details to strengthen your profile."}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="surface-border border-white/8 bg-[linear-gradient(180deg,rgba(31,25,24,0.92),rgba(18,16,18,0.98))] shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
-          <CardContent className="space-y-3 p-5">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-              {isTurkish ? "Randevu özeti" : "Booking overview"}
-            </p>
-            <p className="text-xl font-semibold tracking-[-0.02em] text-white">
-              {cityCount === 0
-                ? isTurkish
-                  ? "Henüz şehir yok"
-                  : "No cities yet"
-                : isTurkish
-                  ? `${cityCount} şehir açık`
-                  : `${cityCount} cities active`}
-            </p>
-            <p className="text-sm leading-6 text-[var(--foreground-muted)]">
-              {cityCount === 0
-                ? isTurkish
-                  ? "Müsait olduğun şehirleri ve günleri ekleyebilirsin."
-                  : "Add the cities and dates where you are available."
-                : isTurkish
-                  ? `${availableDateCount} uygun gün seçili.`
-                  : `${availableDateCount} available dates selected.`}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)]">
+        <CardContent className="p-0">
+          <div className="grid divide-y divide-[var(--border-soft)] md:grid-cols-3 md:divide-x md:divide-y-0">
+            <div className="space-y-2 px-5 py-4">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-dim)]">
+                {isTurkish ? "Profil linki" : "Profile link"}
+              </p>
+              <p className="truncate text-sm font-medium text-[var(--text-primary)]">{publicHref}</p>
+              <p className="text-xs text-[var(--text-muted)]">
+                {isTurkish
+                  ? "Müşteriler profil sayfana bu linkten ulaşır."
+                  : "Clients reach your profile through this link."}
+              </p>
+            </div>
+
+            <div className="space-y-3 px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-dim)]">
+                  {isTurkish ? "Profil durumu" : "Profile status"}
+                </p>
+                <span className="text-sm font-semibold text-[var(--text-primary)]">
+                  %{completionPercent}
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,var(--accent)_0%,var(--accent-hover)_100%)]"
+                  style={{ width: `${completionPercent}%` }}
+                />
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                {missingCount === 0
+                  ? isTurkish
+                    ? "Profilin yayında ve temel alanlar tamam."
+                    : "Your profile is live and the core fields are complete."
+                  : isTurkish
+                    ? `${missingCount} alan eksik. Tamamladığında profil daha güçlü görünür.`
+                    : `${missingCount} fields are missing. Completing them will strengthen your profile.`}
+              </p>
+            </div>
+
+            <div className="space-y-2 px-5 py-4">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-dim)]">
+                {isTurkish ? "Randevu özeti" : "Booking overview"}
+              </p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">
+                {cityCount === 0
+                  ? isTurkish
+                    ? "Henüz şehir eklenmedi"
+                    : "No cities added yet"
+                  : isTurkish
+                    ? `${cityCount} şehir, ${availableDateCount} uygun gün`
+                    : `${cityCount} cities, ${availableDateCount} available days`}
+              </p>
+              <p className="text-xs text-[var(--text-muted)]">
+                {cityCount === 0
+                  ? isTurkish
+                    ? "Müsait olduğun şehirleri ve günleri ekleyebilirsin."
+                    : "Add the cities and dates where you are available."
+                  : isTurkish
+                    ? "Şehir ve müsaitlik bilgilerin profilde gösterilir."
+                    : "Your city and availability details appear on the profile."}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       <ProfilePageContent
         profile={data.profile}
         pageTheme={data.pageTheme}

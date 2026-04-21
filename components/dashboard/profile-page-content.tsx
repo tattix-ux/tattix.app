@@ -22,7 +22,6 @@ export function ProfilePageContent({
   demoMode: boolean;
   locale: PublicLocale;
 }) {
-  const [isProfileFormOpen, setIsProfileFormOpen] = useState(false);
   const [previewDraft, setPreviewDraft] = useState<ProfilePreviewDraft>({
     artistName: profile.artistName,
     upperLabel: funnelSettings.introEyebrow,
@@ -44,7 +43,7 @@ export function ProfilePageContent({
   }, [funnelSettings.introEyebrow, profile]);
 
   return (
-    <div className={isProfileFormOpen ? "grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]" : "grid gap-4"}>
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px] xl:items-start">
       <div className="space-y-3">
         <ProfileForm
           profile={profile}
@@ -52,7 +51,6 @@ export function ProfilePageContent({
           demoMode={demoMode}
           locale={locale}
           onPreviewChange={setPreviewDraft}
-          onOpenChange={setIsProfileFormOpen}
         />
         <ProfileRequestSettings
           settings={funnelSettings}
@@ -61,21 +59,19 @@ export function ProfilePageContent({
           locale={locale}
         />
       </div>
-      {isProfileFormOpen ? (
-        <ProfilePreviewCard
-          profile={{
-            ...profile,
-            artistName: previewDraft.artistName,
-            profileImageUrl: previewDraft.profileImageUrl,
-            coverImageUrl: previewDraft.coverImageUrl,
-            welcomeHeadline: previewDraft.welcomeHeadline,
-            shortBio: previewDraft.shortBio,
-          }}
-          pageTheme={pageTheme}
-          upperLabel={previewDraft.upperLabel}
-          locale={locale}
-        />
-      ) : null}
+      <ProfilePreviewCard
+        profile={{
+          ...profile,
+          artistName: previewDraft.artistName,
+          profileImageUrl: previewDraft.profileImageUrl,
+          coverImageUrl: previewDraft.coverImageUrl,
+          welcomeHeadline: previewDraft.welcomeHeadline,
+          shortBio: previewDraft.shortBio,
+        }}
+        pageTheme={pageTheme}
+        upperLabel={previewDraft.upperLabel}
+        locale={locale}
+      />
     </div>
   );
 }
