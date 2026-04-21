@@ -43,6 +43,8 @@ const profileCopy = {
     bookingSummaryEmpty: "No booking cities added yet",
     bookingSummaryReady: (cityCount: number, dayCount: number) =>
       `${cityCount} cities • ${dayCount} available days`,
+    previewStatusReady: "Available",
+    previewStatusPending: "Setup",
     artistName: "Name shown on profile",
     upperLabel: "Short label",
     upperLabelDescription: "Appears as a small label above your name.",
@@ -88,6 +90,8 @@ const profileCopy = {
     bookingSummaryEmpty: "Henüz randevu şehri eklenmedi",
     bookingSummaryReady: (cityCount: number, dayCount: number) =>
       `${cityCount} şehir • ${dayCount} uygun gün`,
+    previewStatusReady: "Uygun",
+    previewStatusPending: "Hazırlanıyor",
     artistName: "Profilde görünen isim",
     upperLabel: "Kısa etiket",
     upperLabelDescription: "İsminin üstünde küçük bir etiket olarak görünür.",
@@ -505,6 +509,7 @@ export function ProfilePreviewCard({
   profile,
   pageTheme,
   upperLabel,
+  firstBookingCity,
   bookingCityCount,
   availableDateCount,
   locale,
@@ -512,6 +517,7 @@ export function ProfilePreviewCard({
   profile: ArtistProfile;
   pageTheme: ArtistPageTheme;
   upperLabel: string;
+  firstBookingCity: string | null;
   bookingCityCount: number;
   availableDateCount: number;
   locale: PublicLocale;
@@ -559,18 +565,22 @@ export function ProfilePreviewCard({
                     backdropFilter: "blur(8px)",
                   }}
                 >
-                  {copy.previewChip}
+                  {firstBookingCity || copy.previewChip}
                 </div>
                 <div
                   className="rounded-full border px-3.5 py-1.5 text-[11px] font-medium"
                   style={{
-                    borderColor: "color-mix(in srgb, var(--artist-border) 85%, transparent)",
-                    backgroundColor: "rgba(10,10,12,0.32)",
-                    color: "var(--artist-card-muted)",
+                    borderColor:
+                      bookingCityCount > 0
+                        ? "rgba(63,115,90,0.38)"
+                        : "color-mix(in srgb, var(--artist-border) 85%, transparent)",
+                    backgroundColor:
+                      bookingCityCount > 0 ? "rgba(63,115,90,0.14)" : "rgba(10,10,12,0.32)",
+                    color: bookingCityCount > 0 ? "#9ED1B2" : "var(--artist-card-muted)",
                     backdropFilter: "blur(8px)",
                   }}
                 >
-                  @{profile.slug}
+                  {bookingCityCount > 0 ? copy.previewStatusReady : copy.previewStatusPending}
                 </div>
               </div>
             </div>
