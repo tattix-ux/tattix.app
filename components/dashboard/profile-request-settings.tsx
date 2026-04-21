@@ -100,8 +100,8 @@ export function ProfileRequestSettings({
   const copy =
     locale === "tr"
       ? {
-          bookingTitle: "Randevu kabul ettiğin şehirler ve günler",
-          bookingDescription: "Randevuya açık olduğun şehirleri ve müsait günlerini burada belirleyebilirsin.",
+          bookingTitle: "Müsait olduğun şehirler ve günler",
+          bookingDescription: "Randevuya açık olduğun şehirleri ve müsait günlerini burada yönet.",
           stylesTitle: "Çalıştığın stiller",
           cityName: "Şehir",
           cityPlaceholder: "Şehir adı yaz",
@@ -555,6 +555,14 @@ export function ProfileRequestSettings({
     });
 
   const activeBuiltInStyleCards = builtInStyleCards.filter((style) => selectedStyles.includes(style.styleKey));
+  const bookingSummaryLabel =
+    locale === "tr"
+      ? bookingCities.length === 0
+        ? "Henüz seçilmedi"
+        : `${bookingCities.length} şehir seçili`
+      : bookingCities.length === 0
+        ? "Not set yet"
+        : `${bookingCities.length} cities selected`;
 
   return (
     <div className="space-y-3">
@@ -564,7 +572,12 @@ export function ProfileRequestSettings({
             <p className="text-base font-medium text-white">{copy.bookingTitle}</p>
             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{copy.bookingDescription}</p>
           </div>
-          <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
+          <div className="flex items-center gap-3">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
+              {bookingSummaryLabel}
+            </span>
+            <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
+          </div>
         </summary>
         <div className="space-y-4 border-t border-white/8 px-5 py-5">
           <div className="flex flex-col gap-3 sm:flex-row">

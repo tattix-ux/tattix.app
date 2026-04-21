@@ -1,4 +1,7 @@
+import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import tattixLogo from "../../tattix_logo2.png";
 
 import { isAdminEmail } from "@/lib/access";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
@@ -6,9 +9,7 @@ import { DashboardNotificationBell } from "@/components/dashboard/dashboard-noti
 import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-card";
 import { LogoutButton } from "@/components/dashboard/logout-button";
-import { PublicRouteCard } from "@/components/dashboard/public-route-card";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
-import { Logo } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
 import { hasProAccess } from "@/lib/access";
@@ -43,44 +44,40 @@ export default async function DashboardLayout({
       <Container className="py-4 sm:py-8 lg:max-w-[1440px] 2xl:max-w-[1520px]">
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <Logo className="min-w-0" />
-                  <DashboardNotificationBell
-                    locale={isTurkish ? "tr" : "en"}
-                    unreadCount={notificationUnreadCount}
-                  />
-                  <div className="flex shrink-0 items-center">
-                    <LogoutButton />
-                  </div>
-                </div>
-                {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
-              </div>
-              <div className="w-full max-w-none lg:w-full lg:max-w-none">
-                <PublicRouteCard
-                  slug={dashboardData.profile.slug}
+            <div className="mt-1 flex justify-end">
+              <div className="flex flex-wrap items-center gap-2 rounded-[22px] border border-white/8 bg-[color:color-mix(in_srgb,var(--surface-1)_92%,black_8%)] p-2 shadow-[0_18px_38px_rgba(0,0,0,0.22)]">
+                <DashboardNotificationBell
                   locale={isTurkish ? "tr" : "en"}
+                  unreadCount={notificationUnreadCount}
                 />
+                <LogoutButton locale={isTurkish ? "tr" : "en"} />
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-9">
-              <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[230px]">
+            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-10">
+              <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[252px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="rounded-[28px] border border-[rgba(214,173,126,0.1)] bg-[linear-gradient(180deg,rgba(30,24,24,0.98),rgba(18,15,17,1))] p-4 shadow-[0_26px_60px_rgba(0,0,0,0.34)]">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                    {isTurkish ? "Panel" : "Dashboard"}
-                  </p>
-                  <h2 className="mt-2 font-display text-[2rem] font-semibold tracking-[-0.04em] text-white">
-                    {dashboardData.profile.artistName}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">
-                    {isTurkish
-                      ? "Profil sayfanı, talep formunu ve fiyat ayarlarını buradan yönet."
-                      : "Manage the request form and profile page you present to clients here."}
-                  </p>
-                  <div className="mt-5">
+                <div className="rounded-[30px] border border-[rgba(214,173,126,0.12)] bg-[linear-gradient(180deg,rgba(30,24,24,0.98),rgba(18,15,17,1))] p-4 shadow-[0_28px_64px_rgba(0,0,0,0.34)]">
+                  <Link
+                    href="/dashboard/profile"
+                    className="block rounded-[24px] border border-white/8 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.04),_transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.12))] p-4"
+                  >
+                    <Image
+                      src={tattixLogo}
+                      alt="Tattix"
+                      priority
+                      className="mx-auto h-auto w-[132px] sm:w-[148px] lg:w-[156px]"
+                    />
+                  </Link>
+                  <div className="mt-4 space-y-1 px-1">
+                    <p className="text-base font-medium tracking-[-0.02em] text-white">
+                      {dashboardData.profile.artistName}
+                    </p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                      @{dashboardData.profile.slug}
+                    </p>
+                  </div>
+                  <div className="mt-5 rounded-[24px] border border-white/7 bg-white/[0.02] p-3">
                     <DashboardNav
                       locale={isTurkish ? "tr" : "en"}
                       hideProBadges={isProActive}
@@ -98,16 +95,16 @@ export default async function DashboardLayout({
                 ) : null}
               </aside>
               <main className="min-w-0 w-full max-w-none lg:w-full lg:max-w-none lg:justify-self-stretch">
+                {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
                 {children}
+                <div className="mt-6 w-full max-w-none lg:max-w-none">
+                  <DashboardSupportCard
+                    locale={isTurkish ? "tr" : "en"}
+                    artistName={dashboardData.profile.artistName}
+                    accountEmail={session?.user.email ?? ""}
+                  />
+                </div>
               </main>
-            </div>
-
-            <div className="mt-6 w-full max-w-none lg:max-w-none">
-              <DashboardSupportCard
-                locale={isTurkish ? "tr" : "en"}
-                artistName={dashboardData.profile.artistName}
-                accountEmail={session?.user.email ?? ""}
-              />
             </div>
           </div>
         </div>

@@ -19,27 +19,36 @@ type DashboardNavItem = {
   href: string;
   label: string;
   icon: typeof UserRound;
+  group: "primary" | "secondary";
   pro?: boolean;
   unreadCount?: number;
 };
 
 function getItems(locale: "en" | "tr"): DashboardNavItem[] {
   return [
-    { href: "/dashboard/profile", label: locale === "tr" ? "Profil" : "Profile", icon: UserRound },
-    { href: "/dashboard/pricing", label: locale === "tr" ? "Fiyatlama" : "Pricing", icon: CircleDollarSign },
+    { href: "/dashboard/profile", label: locale === "tr" ? "Profil" : "Profile", icon: UserRound, group: "primary" },
+    { href: "/dashboard/pricing", label: locale === "tr" ? "Fiyatlama" : "Pricing", icon: CircleDollarSign, group: "primary" },
     {
       href: "/dashboard/designs",
       label: locale === "tr" ? "Tasarımlar" : "Designs",
       icon: BookImage,
+      group: "primary",
       pro: true,
     },
     {
       href: "/dashboard/customize",
       label: locale === "tr" ? "Sayfayı Özelleştir" : "Customize Page",
       icon: PaintbrushVertical,
+      group: "secondary",
       pro: true,
     },
-    { href: "/dashboard/leads", label: locale === "tr" ? "Talepler" : "Requests", icon: MessageSquareText, pro: true },
+    {
+      href: "/dashboard/leads",
+      label: locale === "tr" ? "Talepler" : "Requests",
+      icon: MessageSquareText,
+      group: "secondary",
+      pro: true,
+    },
   ];
 }
 
@@ -63,6 +72,7 @@ export function DashboardNav({
         href: "/dashboard/messages",
         label: locale === "tr" ? "Mesajlar" : "Messages",
         icon: MessageSquareText,
+        group: "secondary",
         unreadCount: adminUnreadCount,
       });
     }
@@ -71,8 +81,19 @@ export function DashboardNav({
   }, [adminUnreadCount, locale, showAdminMessages]);
 
   return (
-    <nav className="grid grid-cols-3 gap-2.5 pb-2 lg:flex lg:flex-col lg:overflow-visible">
-      {items.map((item) => {
+    <nav className="space-y-4 pb-1">
+      {(["primary", "secondary"] as const).map((group, groupIndex) => {
+        const groupItems = items.filter((item) => item.group === group);
+
+        if (groupItems.length === 0) {
+          return null;
+        }
+
+        return (
+          <div key={group} className="space-y-3">
+            {groupIndex > 0 ? <div className="h-px rounded-full bg-white/6" /> : null}
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:flex lg:flex-col lg:overflow-visible">
+              {groupItems.map((item) => {
         const active = pathname === item.href;
         const Icon = item.icon;
 
@@ -101,6 +122,10 @@ export function DashboardNav({
               </Badge>
             ) : null}
           </Link>
+        );
+      })}
+            </div>
+          </div>
         );
       })}
     </nav>

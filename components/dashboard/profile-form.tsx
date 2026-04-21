@@ -210,6 +210,20 @@ export function ProfileForm({
   const watchedProfileImageUrl = useWatch({ control: form.control, name: "profileImageUrl" }) ?? "";
   const watchedCoverImageUrl = useWatch({ control: form.control, name: "coverImageUrl" }) ?? "";
   const publicLink = useMemo(() => `${getAppOrigin()}/${slug || profile.slug}`, [slug, profile.slug]);
+  const missingDetailsCount = [
+    watchedArtistName.trim(),
+    watchedShortBio.trim(),
+    form.getValues("whatsappNumber").trim(),
+    form.getValues("instagramHandle").trim(),
+  ].filter((value) => !value).length;
+  const profileSummaryLabel =
+    locale === "tr"
+      ? missingDetailsCount === 0
+        ? "Tamamlandı"
+        : `${missingDetailsCount} alan eksik`
+      : missingDetailsCount === 0
+        ? "Complete"
+        : `${missingDetailsCount} fields missing`;
 
   useEffect(() => {
     form.reset(defaultValues);
@@ -366,8 +380,15 @@ export function ProfileForm({
         onToggle={(event) => onOpenChange?.(event.currentTarget.open)}
       >
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
-          <p className="text-base font-medium text-white">{copy.sectionTitle}</p>
-          <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
+          <div className="min-w-0">
+            <p className="text-base font-medium text-white">{copy.sectionTitle}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
+              {profileSummaryLabel}
+            </span>
+            <ChevronDown className="size-4 text-[var(--foreground-muted)] transition details-open:rotate-180" />
+          </div>
         </summary>
         <div className="space-y-5 border-t border-white/8 px-5 py-5">
           <div className="grid gap-5 lg:grid-cols-2">

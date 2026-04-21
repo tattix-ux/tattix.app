@@ -1,12 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export function LogoutButton() {
+export function LogoutButton({
+  locale = "en",
+}: {
+  locale?: "en" | "tr";
+}) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -20,8 +25,9 @@ export function LogoutButton() {
   }
 
   return (
-    <Button variant="secondary" onClick={handleLogout}>
-      Logout
+    <Button variant="outline" size="sm" onClick={handleLogout}>
+      <LogOut className="size-4" />
+      {locale === "tr" ? "Çıkış" : "Logout"}
     </Button>
   );
 }

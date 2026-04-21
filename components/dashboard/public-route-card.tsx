@@ -56,13 +56,13 @@ export function PublicRouteCard({
   if (variant === "summary") {
     return (
       <div className={className}>
-        <div className="h-full rounded-[24px] border border-[rgba(214,173,126,0.1)] bg-[linear-gradient(180deg,rgba(31,25,24,0.92),rgba(18,16,18,0.98))] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
+        <div className="h-full rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,rgba(31,25,24,0.92),rgba(18,16,18,0.98))] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
           <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
             {locale === "tr" ? "Profil linkin" : "Profile link"}
           </p>
           <p className="mt-2 text-sm leading-6 text-[var(--foreground-muted)]">{description}</p>
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-[18px] border border-white/8 bg-black/20 px-4 py-3">
-            <p className="min-w-0 truncate text-sm font-medium text-white">{publicHref}</p>
+          <div className="mt-4 space-y-3">
+            <p className="truncate text-sm font-medium text-white">{publicHref}</p>
             <Button type="button" size="sm" variant="outline" onClick={copyLink}>
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
               {copyLabel}
