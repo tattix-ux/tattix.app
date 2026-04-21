@@ -49,22 +49,22 @@ const presetMeta: Record<
 > = {
   "bronze-studio": {
     title: "Bronze Studio",
-    descriptionTr: "Sıcak, temiz ve rafine",
-    descriptionEn: "Warm, clean, and refined",
+    descriptionTr: "Sıcak grafit zemin, yumuşak bronz vurgu ve temiz editoryal denge.",
+    descriptionEn: "Warm graphite surfaces with soft bronze accents and an editorial balance.",
     chipsTr: ["Sıcak", "Rafine", "Net"],
     chipsEn: ["Warm", "Refined", "Clean"],
   },
   "smoke-metal": {
     title: "Smoke Alloy",
-    descriptionTr: "Daha nötr, metalik ve kontrollü",
-    descriptionEn: "More neutral, metallic, and controlled",
+    descriptionTr: "Daha nötr, metalik yüzeyler ve kontrollü kontrast isteyenler için.",
+    descriptionEn: "A more neutral metallic surface system with controlled contrast.",
     chipsTr: ["Nötr", "Metalik", "Kontrollü"],
     chipsEn: ["Neutral", "Metallic", "Controlled"],
   },
   "dark-alloy": {
     title: "Ink Midnight",
-    descriptionTr: "Grafit zemin, hafif ink-blue derinlik",
-    descriptionEn: "Graphite base with a hint of ink-blue depth",
+    descriptionTr: "Daha derin koyu tonlar ve hafif ink-blue derinlik ile gece hissi verir.",
+    descriptionEn: "A deeper dark mood with a subtle ink-blue depth for a night feel.",
     chipsTr: ["Derin", "Mürekkep tonu", "Gece hissi"],
     chipsEn: ["Deep", "Ink-toned", "Midnight"],
   },
@@ -240,18 +240,26 @@ function ThemeMiniPalette({ theme }: { theme: ArtistPageTheme }) {
 function ThemePresetPreview({
   theme,
   title,
+  locale,
 }: {
   theme: ArtistPageTheme;
   title: string;
+  locale: PublicLocale;
 }) {
   const accentGlow = toRgba(theme.primaryColor, 0.2);
-  const textSoft = toRgba(theme.textColor, 0.42);
-  const textStrong = toRgba(theme.textColor, 0.9);
-  const cardTint = toRgba(theme.cardColor, theme.cardOpacity);
+  const textSoft = toRgba(theme.textColor, 0.48);
+  const textStrong = toRgba(theme.textColor, 0.94);
+  const cardTint = toRgba(theme.cardColor, Math.min(theme.cardOpacity + 0.02, 0.96));
+  const heading =
+    locale === "tr" ? "Hazır tasarımlar ve talep akışı" : "Ready-made designs and request flow";
+  const supporting =
+    locale === "tr"
+      ? "Müşteri tasarımları görür, yaklaşık fiyatı inceler ve sana talep yollar."
+      : "Clients browse designs, review an estimate, and send a request.";
 
   return (
     <div
-      className="relative overflow-hidden rounded-[24px] border border-white/8 p-4"
+      className="relative overflow-hidden rounded-[28px] border border-white/8 p-5"
       style={{
         background:
           theme.backgroundType === "gradient"
@@ -263,46 +271,126 @@ function ThemePresetPreview({
       <div
         className="absolute inset-0 opacity-90"
         style={{
-          background: `radial-gradient(circle at top left, ${accentGlow}, transparent 42%), radial-gradient(circle at 80% 18%, ${toRgba(theme.secondaryColor, 0.22)}, transparent 34%)`,
+          background: `radial-gradient(circle at top left, ${accentGlow}, transparent 42%), radial-gradient(circle at 82% 20%, ${toRgba(theme.secondaryColor, 0.24)}, transparent 36%)`,
         }}
       />
-      <div className="relative space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="relative space-y-5">
+        <div className="flex items-center justify-between gap-4">
           <ThemeMiniPalette theme={theme} />
-          <div className="h-8 w-8 rounded-full border border-white/10" style={{ backgroundColor: toRgba(theme.primaryColor, 0.22) }} />
-        </div>
-        <div className="space-y-2">
-          <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: textSoft }}>
+          <span
+            className="rounded-full border border-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]"
+            style={{ color: textStrong, backgroundColor: toRgba(theme.primaryColor, 0.14) }}
+          >
             {title}
-          </p>
+          </span>
+        </div>
+        <div className="max-w-[30rem] space-y-2">
           <p
-            className="text-[1.05rem] font-semibold tracking-[-0.03em]"
+            className="text-[1.02rem] font-semibold tracking-[-0.03em]"
             style={{ color: textStrong, fontFamily: headingPreviewFonts[theme.headingFont] }}
           >
-            Aklında ne var?
+            {heading}
           </p>
-          <div className="h-2 rounded-full" style={{ width: "78%", backgroundColor: textSoft }} />
+          <p className="text-[12px] leading-6" style={{ color: textSoft, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
+            {supporting}
+          </p>
         </div>
-        <div className="grid grid-cols-[1.15fr_0.85fr] gap-2">
-          <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: cardTint }}>
-            <div className="space-y-2">
-              <div className="h-2.5 rounded-full" style={{ width: "56%", backgroundColor: textStrong }} />
-              <div className="h-2 rounded-full" style={{ width: "84%", backgroundColor: textSoft }} />
-            </div>
-            <div className="mt-4 grid gap-2">
-              <div className="h-9 rounded-[14px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.18) }} />
-              <div className="h-9 rounded-[14px] border" style={{ borderColor: toRgba(theme.textColor, 0.12), backgroundColor: toRgba(theme.cardColor, 0.6) }} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: cardTint }}>
-              <div className="h-2.5 rounded-full" style={{ width: "66%", backgroundColor: textStrong }} />
-              <div className="mt-3 inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium" style={{ backgroundColor: theme.primaryColor, color: theme.themeMode === "light" ? "#1B1511" : "#0b0d11" }}>
-                CTA
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_220px] lg:items-center">
+          <div className="rounded-[22px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.09), backgroundColor: cardTint }}>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[18px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.72) }}>
+                <div className="space-y-2">
+                  <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: textSoft }}>
+                    {locale === "tr" ? "Profil üst alanı" : "Profile header"}
+                  </p>
+                  <p className="text-sm font-semibold" style={{ color: textStrong }}>
+                    Gizem Oder
+                  </p>
+                  <p className="text-[12px]" style={{ color: textSoft }}>
+                    {locale === "tr" ? "@itsgizo • Özel tasarım ve flash" : "@itsgizo • Custom work and flash"}
+                  </p>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.18), color: textStrong }}>
+                    {locale === "tr" ? "Hazır tasarımlar" : "Flash designs"}
+                  </span>
+                  <span className="rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.textColor, 0.08), color: textSoft }}>
+                    {locale === "tr" ? "Talep formu" : "Request form"}
+                  </span>
+                </div>
+              </div>
+              <div className="rounded-[18px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.68) }}>
+                <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: textSoft }}>
+                  {locale === "tr" ? "Tasarım listesi" : "Design list"}
+                </p>
+                <div className="mt-3 space-y-3">
+                  <div className="flex items-center gap-3 rounded-[14px] border px-3 py-2.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.58) }}>
+                    <div className="size-10 rounded-[12px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16) }} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold" style={{ color: textStrong }}>
+                        Dagger
+                      </p>
+                      <p className="text-[11px]" style={{ color: textSoft }}>
+                        {locale === "tr" ? "Flash tasarım • 10 cm" : "Flash design • 10 cm"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-[14px] border px-3 py-2.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.58) }}>
+                    <div className="size-10 rounded-[12px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.12) }} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold" style={{ color: textStrong }}>
+                        ₺8.000 – ₺10.500
+                      </p>
+                      <p className="text-[11px]" style={{ color: textSoft }}>
+                        {locale === "tr" ? "Yaklaşık fiyat aralığı" : "Estimated price range"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.08), backgroundColor: toRgba(theme.cardColor, 0.72) }}>
-              <div className="h-12 rounded-[14px]" style={{ background: `linear-gradient(180deg, ${toRgba(theme.primaryColor, 0.16)}, transparent)` }} />
+          </div>
+          <div className="flex justify-center lg:justify-end">
+            <div className="w-[220px] rounded-[32px] border border-white/10 bg-[rgba(10,10,12,0.45)] p-2.5 shadow-[0_20px_48px_rgba(0,0,0,0.24)]">
+              <div
+                className="overflow-hidden rounded-[26px] border p-3"
+                style={{
+                  borderColor: toRgba(theme.textColor, 0.08),
+                  background:
+                    theme.backgroundType === "gradient"
+                      ? `linear-gradient(180deg, ${theme.gradientStart}, ${theme.gradientEnd})`
+                      : theme.backgroundColor,
+                }}
+              >
+                <div className="rounded-[18px] border p-3.5" style={{ borderColor: toRgba(theme.textColor, 0.09), backgroundColor: toRgba(theme.cardColor, 0.34) }}>
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-[14px] border border-white/10 bg-white/10" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold" style={{ color: textStrong }}>
+                        Gizem Oder
+                      </p>
+                      <p className="text-[11px]" style={{ color: textSoft }}>
+                        @itsgizo
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 rounded-[20px] border p-4" style={{ borderColor: toRgba(theme.textColor, 0.09), backgroundColor: toRgba(theme.cardColor, 0.76) }}>
+                  <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16), color: textStrong }}>
+                    {locale === "tr" ? "Talep formu" : "Request form"}
+                  </span>
+                  <p
+                    className="mt-3 text-lg font-semibold leading-tight tracking-[-0.03em]"
+                    style={{ color: textStrong, fontFamily: headingPreviewFonts[theme.headingFont] }}
+                  >
+                    {locale === "tr" ? "Aklındaki işi birlikte netleştirelim." : "Let's shape the idea together."}
+                  </p>
+                  <div className="mt-4 space-y-2">
+                    <div className="h-10 rounded-[14px]" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16) }} />
+                    <div className="h-10 rounded-[14px] border" style={{ borderColor: toRgba(theme.textColor, 0.1), backgroundColor: toRgba(theme.cardColor, 0.58) }} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -405,6 +493,7 @@ function ThemePresetCard({
   onSelect,
   theme,
   selectedLabel,
+  locale,
 }: {
   active: boolean;
   title: string;
@@ -413,35 +502,40 @@ function ThemePresetCard({
   onSelect: () => void;
   theme: ArtistPageTheme;
   selectedLabel: string;
+  locale: PublicLocale;
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
-        "rounded-[28px] border p-4 text-left transition",
+        "rounded-[30px] border p-5 text-left transition",
         active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_16px_34px_rgba(0,0,0,0.16)]"
-          : "border-white/8 bg-white/[0.02] hover:border-white/14 hover:bg-white/[0.04]",
+          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_20px_40px_rgba(0,0,0,0.18)]"
+          : "border-white/8 bg-white/[0.02] hover:border-white/14 hover:bg-white/[0.035]",
       )}
     >
-      <div className="relative">
-        <ThemePresetPreview theme={theme} title={title} />
-        {active ? (
-          <span className="absolute right-3 top-3 rounded-full border border-white/18 bg-black/24 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
-            {selectedLabel}
-          </span>
-        ) : null}
-      </div>
-      <div className="mt-4">
-        <p className="text-base font-semibold text-white">{title}</p>
-        <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">{description}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {chips.map((chip) => (
-            <span key={chip} className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-[var(--text-muted)]">
-              {chip}
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_220px] xl:items-start">
+        <div className="relative">
+          <ThemePresetPreview theme={theme} title={title} locale={locale} />
+          {active ? (
+            <span className="absolute right-4 top-4 rounded-full border border-white/18 bg-black/24 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+              {selectedLabel}
             </span>
-          ))}
+          ) : null}
+        </div>
+        <div className="flex h-full flex-col justify-between">
+          <div>
+            <p className="text-lg font-semibold tracking-[-0.02em] text-white">{title}</p>
+            <p className="mt-2 text-sm leading-7 text-[var(--foreground-muted)]">{description}</p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {chips.map((chip) => (
+              <span key={chip} className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-[var(--text-muted)]">
+                {chip}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </button>
@@ -474,16 +568,16 @@ function AppearancePreview({
       : "Clients share the key details here before they message you.");
 
   return (
-    <div className="relative overflow-hidden rounded-[32px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1B1D21_0%,#15171B_100%)] p-4 shadow-[0_26px_60px_rgba(0,0,0,0.26)] sm:p-6">
+    <div className="relative overflow-hidden rounded-[34px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1B1D21_0%,#15171B_100%)] p-5 shadow-[0_28px_72px_rgba(0,0,0,0.26)] sm:p-7">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,122,0.06),transparent_34%)]" />
-      <div className="relative mx-auto max-w-[470px]">
-        <div className="rounded-[38px] border border-[rgba(255,255,255,0.08)] bg-[rgba(16,17,20,0.7)] p-3 shadow-[0_20px_48px_rgba(0,0,0,0.28)]">
-          <div className="overflow-hidden rounded-[32px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
-            <div className="p-4 sm:p-5">
+      <div className="relative mx-auto max-w-[560px]">
+        <div className="rounded-[42px] border border-[rgba(255,255,255,0.08)] bg-[rgba(16,17,20,0.72)] p-3.5 shadow-[0_24px_56px_rgba(0,0,0,0.28)]">
+          <div className="overflow-hidden rounded-[34px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
+            <div className="p-5 sm:p-6">
               <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.28) }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="size-11 rounded-[16px] border border-white/12 bg-white/10" />
+                    <div className="size-12 rounded-[18px] border border-white/12 bg-white/10" />
                     <div>
                       <p className="text-sm font-semibold" style={{ color: cardText, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
                         {artist.profile.artistName}
@@ -499,7 +593,7 @@ function AppearancePreview({
                 </div>
               </div>
 
-              <div className="mt-4 space-y-4 rounded-[30px] border p-5 sm:p-6" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
+              <div className="mt-5 space-y-5 rounded-[32px] border p-6 sm:p-7" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
                 <div className="inline-flex rounded-full px-3 py-1 text-[11px] font-medium" style={{ backgroundColor: toRgba(theme.primaryColor, 0.16), color: headingColor }}>
                   {artist.funnelSettings.introEyebrow || (locale === "tr" ? "Talep formu" : "Request form")}
                 </div>
@@ -511,8 +605,8 @@ function AppearancePreview({
                     {intro}
                   </p>
                 </div>
-                <div className="grid gap-3">
-                  <div className="flex items-center gap-3 rounded-[22px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
+                <div className="grid gap-3.5">
+                  <div className="flex items-center gap-3 rounded-[24px] border p-4.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
                     <div className="size-12 rounded-[16px] border border-white/10 bg-white/10" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold" style={{ color: cardText }}>
@@ -523,7 +617,7 @@ function AppearancePreview({
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 rounded-[22px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
+                  <div className="flex items-center gap-3 rounded-[24px] border p-4.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.46) }}>
                     <div className="size-12 rounded-[16px] border border-white/10 bg-white/10" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold" style={{ color: cardText }}>
@@ -535,7 +629,7 @@ function AppearancePreview({
                     </div>
                   </div>
                 </div>
-                <div className="inline-flex rounded-full px-4 py-2 text-sm font-medium" style={{ backgroundColor: theme.primaryColor, color: accentForeground }}>
+                <div className="inline-flex rounded-full px-4 py-2.5 text-sm font-medium shadow-[0_10px_24px_rgba(0,0,0,0.18)]" style={{ backgroundColor: theme.primaryColor, color: accentForeground }}>
                   {locale === "tr" ? "Fiyat tahmini al" : "Start estimate"}
                 </div>
               </div>
@@ -567,11 +661,11 @@ export function CustomizePageForm({
           presetMode: "Hazır görünümler",
           customMode: "Kendi görünümün",
           previewTitle: "Önizleme",
-          previewDescription: "Değişiklikler burada anlık görünür.",
+          previewDescription: "Müşterinin göreceği mobil profil burada anlık görünür.",
           previewToggleOpen: "Önizlemeyi göster",
           previewToggleClose: "Önizlemeyi gizle",
           presetSectionTitle: "Hazır görünümler",
-          presetSectionDescription: "Tek tıkla görünümü değiştir.",
+          presetSectionDescription: "Her görünüm müşterinin göreceği mobil profil hissini farklı bir karakterle sunar.",
           customTitle: "Kendi görünümün",
           accentTitle: "Vurgu rengi",
           backgroundTitle: "Arka plan stili",
@@ -602,11 +696,11 @@ export function CustomizePageForm({
           presetMode: "Ready-made looks",
           customMode: "Your look",
           previewTitle: "Preview",
-          previewDescription: "Changes appear here instantly.",
+          previewDescription: "The customer-facing mobile profile updates here instantly.",
           previewToggleOpen: "Show preview",
           previewToggleClose: "Hide preview",
           presetSectionTitle: "Ready-made looks",
-          presetSectionDescription: "Change the look in one click.",
+          presetSectionDescription: "Each preset gives the client-facing mobile profile a distinct character.",
           customTitle: "Your look",
           accentTitle: "Accent color",
           backgroundTitle: "Background style",
@@ -922,11 +1016,11 @@ export function CustomizePageForm({
           </SelectionPill>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_540px] xl:items-start">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(400px,620px)] xl:items-start">
           <div className="space-y-5">
             {customizeMode === "preset" ? (
               <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
-                <div className="grid gap-4 lg:grid-cols-3">
+                <div className="grid gap-5">
                   {themePresetOptions.map((presetKey) => {
                     const preset = themePresets[presetKey];
                     const meta = presetMeta[presetKey];
@@ -958,6 +1052,7 @@ export function CustomizePageForm({
                         onSelect={() => applyPreset(presetKey)}
                         theme={resolvedTheme}
                         selectedLabel={copy.selected}
+                        locale={locale}
                       />
                     );
                   })}
@@ -1106,10 +1201,10 @@ export function CustomizePageForm({
                               {active ? <Check className="size-4 text-[var(--accent)]" /> : null}
                             </div>
                             <p className="mt-4 text-lg font-semibold tracking-[-0.03em] text-white" style={{ fontFamily: headingPreviewFonts[option.value] }}>
-                              Aklında ne var?
+                              {locale === "tr" ? "Profiline göz at" : "View your profile"}
                             </p>
                             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]" style={{ fontFamily: bodyPreviewFonts[option.value] }}>
-                              {locale === "tr" ? "Kısa açıklama ve net CTA görünümü." : "Short description with a clear CTA."}
+                              {locale === "tr" ? "Başlık, kısa not ve fiyat alanı birlikte görünür." : "Headings, short notes, and pricing stay easy to scan."}
                             </p>
                           </button>
                         );
