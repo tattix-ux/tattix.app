@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -9,7 +10,7 @@ import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-c
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { AvatarTile } from "@/components/shared/avatar-tile";
-import { BrandIcon, BrandMonogram, BrandWordmark } from "@/components/shared/logo";
+import { BrandWordmark } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
 import { hasProAccess } from "@/lib/access";
@@ -60,12 +61,16 @@ export default async function DashboardLayout({
                 <div className="relative overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] px-4 py-5 shadow-[0_22px_48px_rgba(0,0,0,0.24)]">
                   <div className="space-y-6">
                     <Link href="/dashboard/profile" className="block text-center">
-                      <BrandIcon
-                        size="2xl"
-                        withStage={false}
-                        className="mx-auto size-[5.8rem] rounded-[32px]"
-                        priority
-                      />
+                      <div className="relative mx-auto size-[6.4rem] overflow-hidden rounded-full border border-[rgba(214,177,122,0.28)] bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.05),rgba(255,255,255,0.012)_58%),linear-gradient(180deg,rgba(25,27,32,0.98),rgba(15,16,19,1))] shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_18px_36px_rgba(0,0,0,0.28)]">
+                        <Image
+                          src="/brand/tattix-primary-logo.png"
+                          alt=""
+                          fill
+                          priority
+                          sizes="(max-width: 768px) 102px, 102px"
+                          className="object-cover scale-[1.22]"
+                        />
+                      </div>
                       <BrandWordmark size="lg" className="mt-5 text-center" />
                     </Link>
                     <div className="rounded-[22px] border border-white/5 bg-white/[0.02] px-3 py-3.5">
@@ -101,8 +106,14 @@ export default async function DashboardLayout({
                     />
                   </div>
                   <div className="mt-10 flex justify-center pt-4">
-                    <div className="relative size-[72px] overflow-hidden rounded-full border border-[rgba(214,177,122,0.34)] bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.035),rgba(255,255,255,0.01))] shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_18px_36px_rgba(0,0,0,0.24)]">
-                      <BrandMonogram className="inset-[14%]" opacity={0.62} />
+                    <div className="relative size-[78px] overflow-hidden rounded-full border border-[rgba(214,177,122,0.4)] bg-[radial-gradient(circle_at_50%_28%,rgba(214,177,122,0.1),rgba(255,255,255,0.012)_54%),linear-gradient(180deg,rgba(25,27,32,0.98),rgba(15,16,19,1))] shadow-[0_0_0_1px_rgba(255,255,255,0.035),0_18px_38px_rgba(0,0,0,0.28)]">
+                      <Image
+                        src="/brand/tattix-monogram.png"
+                        alt=""
+                        fill
+                        sizes="78px"
+                        className="object-contain scale-[1.14] opacity-[0.84]"
+                      />
                     </div>
                   </div>
                 </div>

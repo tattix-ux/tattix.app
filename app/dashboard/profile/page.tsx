@@ -4,7 +4,6 @@ import { isAdminEmail } from "@/lib/access";
 import { AdminProAccessForm } from "@/components/dashboard/admin-pro-access-form";
 import { ProfilePageContent } from "@/components/dashboard/profile-page-content";
 import { PublicRouteCard } from "@/components/dashboard/public-route-card";
-import { BrandPrimary } from "@/components/shared/logo";
 import { SectionHeading } from "@/components/shared/shell";
 import { buildPageMetadata } from "@/lib/config/site";
 import { getDashboardProfileData } from "@/lib/data/dashboard";
@@ -22,18 +21,15 @@ export default async function DashboardProfilePage() {
   return (
     <div className="mx-auto w-full max-w-[1240px] space-y-8">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-        <div className="grid gap-4 md:grid-cols-[92px_minmax(0,1fr)] md:items-center">
-          <BrandPrimary className="mx-auto w-[84px] md:mx-0 md:w-[92px]" priority />
-          <SectionHeading
-            eyebrow={isTurkish ? "Profil" : "Profile"}
-            title={isTurkish ? "Profilin" : "Your profile"}
-            description={
-              isTurkish
-                ? "Profil bilgilerini, iletişim detaylarını ve uygunluk durumunu buradan yönet."
-                : "Manage your profile details, contact information, and availability here."
-            }
-          />
-        </div>
+        <SectionHeading
+          eyebrow={isTurkish ? "Profil" : "Profile"}
+          title={isTurkish ? "Profilin" : "Your profile"}
+          description={
+            isTurkish
+              ? "Profil bilgilerini, iletişim detaylarını ve uygunluk durumunu buradan yönet."
+              : "Manage your profile details, contact information, and availability here."
+          }
+        />
         <PublicRouteCard
           slug={data.profile.slug}
           locale={isTurkish ? "tr" : "en"}
