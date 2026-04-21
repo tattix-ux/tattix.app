@@ -17,9 +17,15 @@ import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
 import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
 import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
-type FilterRange = "7d" | "30d" | "90d" | "all";
-type LeadStatusFilter = "all" | LeadStatus;
-type LeadSort = "waiting-first" | "newest" | "oldest" | "highest-estimate" | "lowest-estimate";
+type LeadSort =
+  | "newest"
+  | "oldest"
+  | "highest-estimate"
+  | "lowest-estimate"
+  | "new-first"
+  | "contacted-first"
+  | "sold-first"
+  | "lost-first";
 
 const leadCopy = {
   en: {
@@ -28,8 +34,6 @@ const leadCopy = {
     note: "Note: clients start the conversation. Update the status after they reach out.",
     empty: "No requests yet.",
     emptyDescription: "Share your link to start collecting requests.",
-    emptyFiltered: "No requests match these filters.",
-    resetFilters: "Clear filters",
     summary: {
       waiting: "Contacted",
       total: "Total requests",
@@ -37,17 +41,10 @@ const leadCopy = {
       rate: "Sale rate",
     },
     filters: {
-      status: "Status",
-      time: "Date range",
-      waitingOnly: "Only waiting for contact",
-      all: "All",
-      "7d": "Last 7 days",
-      "30d": "Last 30 days",
-      "90d": "Last 3 months",
-      contacted: "Contacted",
-      sold: "Sold",
-      lost: "Lost",
-      waitingFirst: "Waiting first",
+      newFirst: "Waiting first",
+      contactedFirst: "Contacted first",
+      soldFirst: "Sold first",
+      lostFirst: "Lost first",
       newest: "Newest",
       oldest: "Oldest",
       highestEstimate: "Highest estimate",
@@ -105,8 +102,6 @@ const leadCopy = {
     note: "Not: Müşteri iletişimi kendisi başlatır. Yazdığında durumu güncelleyebilirsin.",
     empty: "Henüz talep yok.",
     emptyDescription: "Linkini paylaşarak müşteri toplamaya başla.",
-    emptyFiltered: "Bu filtrelerle eşleşen talep bulunamadı.",
-    resetFilters: "Filtreleri temizle",
     summary: {
       waiting: "İletişime geçilen",
       total: "Toplam talep",
@@ -114,17 +109,10 @@ const leadCopy = {
       rate: "Satış oranı",
     },
     filters: {
-      status: "Durum",
-      time: "Zaman",
-      waitingOnly: "Sadece iletişim bekleyenler",
-      all: "Tümü",
-      "7d": "Son 7 gün",
-      "30d": "Son 30 gün",
-      "90d": "Son 3 ay",
-      contacted: "İletişime geçildi",
-      sold: "Satış yapıldı",
-      lost: "Satış olmadı",
-      waitingFirst: "İletişim bekleyen önce",
+      newFirst: "İletişim bekleyen önce",
+      contactedFirst: "İletişime geçildi önce",
+      soldFirst: "Satış yapıldı önce",
+      lostFirst: "Satış olmadı önce",
       newest: "En yeni",
       oldest: "En eski",
       highestEstimate: "En yüksek tahmin",
@@ -296,23 +284,6 @@ function formatLeadDate(value: string, locale: PublicLocale) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
-}
-
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function getRangeStart(range: FilterRange) {
-  const now = new Date();
-
-  if (range === "all") {
-    return null;
-  }
-
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
-  const start = new Date(now);
-  start.setDate(now.getDate() - days + 1);
-  return startOfDay(start);
 }
 
 function getEstimateCenter(lead: ClientSubmission) {
@@ -667,43 +638,27 @@ function getStatusPriority(status: LeadStatus) {
   }
 }
 
-function filterLeads(
-  leads: ClientSubmission[],
-  {
-    status,
-    range,
-    waitingOnly,
-  }: {
-    status: LeadStatusFilter;
-    range: FilterRange;
-    waitingOnly: boolean;
-  },
-) {
-  const start = getRangeStart(range);
-
-  return leads.filter((lead) => {
-    if (waitingOnly && lead.status !== "new") {
-      return false;
-    }
-
-    if (status !== "all" && lead.status !== status) {
-      return false;
-    }
-
-    if (start && new Date(lead.createdAt) < start) {
-      return false;
-    }
-
-    return true;
-  });
-}
-
 function sortLeads(leads: ClientSubmission[], sort: LeadSort) {
   const sorted = [...leads];
 
   sorted.sort((left, right) => {
-    if (sort === "waiting-first") {
-      const priority = getStatusPriority(left.status) - getStatusPriority(right.status);
+    if (
+      sort === "new-first" ||
+      sort === "contacted-first" ||
+      sort === "sold-first" ||
+      sort === "lost-first"
+    ) {
+      const preferredStatus: LeadStatus =
+        sort === "new-first"
+          ? "new"
+          : sort === "contacted-first"
+            ? "contacted"
+            : sort === "sold-first"
+              ? "sold"
+              : "lost";
+      const leftPriority = left.status === preferredStatus ? -1 : getStatusPriority(left.status);
+      const rightPriority = right.status === preferredStatus ? -1 : getStatusPriority(right.status);
+      const priority = leftPriority - rightPriority;
 
       if (priority !== 0) {
         return priority;
@@ -868,10 +823,7 @@ export function LeadsTable({
   const copy = leadCopy[locale];
   const [localLeads, setLocalLeads] = useState(leads);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
-  const [waitingOnly, setWaitingOnly] = useState(false);
-  const [range, setRange] = useState<FilterRange>("all");
-  const [sort, setSort] = useState<LeadSort>("waiting-first");
+  const [sort, setSort] = useState<LeadSort>("newest");
   const [page, setPage] = useState(1);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const pageSize = 10;
@@ -919,18 +871,7 @@ export function LeadsTable({
     }
   }
 
-  const filteredLeads = useMemo(
-    () =>
-      sortLeads(
-        filterLeads(localLeads, {
-          status: statusFilter,
-          range,
-          waitingOnly,
-        }),
-        sort,
-      ),
-    [localLeads, range, sort, statusFilter, waitingOnly],
-  );
+  const filteredLeads = useMemo(() => sortLeads(localLeads, sort), [localLeads, sort]);
 
   const totalCount = localLeads.length;
   const contactedCount = localLeads.filter((lead) => lead.status !== "new").length;
@@ -955,7 +896,7 @@ export function LeadsTable({
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, range, sort, waitingOnly]);
+  }, [sort]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -1132,195 +1073,118 @@ export function LeadsTable({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4">
-            <div className="grid gap-3 xl:grid-cols-4">
-              <FilterCluster label={copy.filters.status}>
-                <div className="flex flex-wrap gap-2">
-                  {(["all", "new", "contacted", "sold", "lost"] as const).map((item) => (
-                    <Button
-                      key={item}
-                      type="button"
-                      size="sm"
-                      variant={statusFilter === item ? "secondary" : "outline"}
-                      className="rounded-full"
-                      onClick={() => {
-                        setStatusFilter(item);
-                        if (item !== "all" && item !== "new") {
-                          setWaitingOnly(false);
-                        }
-                      }}
-                    >
-                      {copy.statusLabels[item]}
-                    </Button>
-                  ))}
-                </div>
-              </FilterCluster>
-
-              <FilterCluster label={copy.filters.time}>
-                <div className="flex flex-wrap gap-2">
-                  {(["all", "7d", "30d", "90d"] as const).map((item) => (
-                    <Button
-                      key={item}
-                      type="button"
-                      size="sm"
-                      variant={range === item ? "secondary" : "outline"}
-                      className="rounded-full"
-                      onClick={() => setRange(item)}
-                    >
-                      {item === "all" ? copy.filters.all : copy.filters[item]}
-                    </Button>
-                  ))}
-                </div>
-              </FilterCluster>
-
-              <FilterCluster label={copy.filters.waitingOnly}>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={waitingOnly ? "secondary" : "outline"}
-                  className="rounded-full"
-                  onClick={() => {
-                    setWaitingOnly((current) => {
-                      const next = !current;
-                      if (next) {
-                        setStatusFilter("all");
-                      }
-                      return next;
-                    });
-                  }}
-                >
-                  {copy.filters.waitingOnly}
-                </Button>
-              </FilterCluster>
-
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,340px)]">
               <FilterCluster label={copy.filters.sort}>
                 <NativeSelect value={sort} onChange={(event) => setSort(event.target.value as LeadSort)}>
-                  <option value="waiting-first">{copy.filters.waitingFirst}</option>
                   <option value="newest">{copy.filters.newest}</option>
                   <option value="oldest">{copy.filters.oldest}</option>
                   <option value="highest-estimate">{copy.filters.highestEstimate}</option>
                   <option value="lowest-estimate">{copy.filters.lowestEstimate}</option>
+                  <option value="new-first">{copy.filters.newFirst}</option>
+                  <option value="contacted-first">{copy.filters.contactedFirst}</option>
+                  <option value="sold-first">{copy.filters.soldFirst}</option>
+                  <option value="lost-first">{copy.filters.lostFirst}</option>
                 </NativeSelect>
               </FilterCluster>
             </div>
           </div>
 
-          {filteredLeads.length === 0 ? (
-            <div className="relative overflow-hidden rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-6 text-center">
-              <BrandMonogram className="left-auto right-[-10%] top-[-12%] h-[180px] w-[180px]" opacity={0.05} />
-              <div className="relative">
-                <p className="text-lg font-medium text-white">{copy.emptyFiltered}</p>
-                <p className="mt-2 text-sm text-[var(--text-muted)]">{copy.description}</p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-4"
-                onClick={() => {
-                  setStatusFilter("all");
-                  setWaitingOnly(false);
-                  setRange("all");
-                  setSort("waiting-first");
-                }}
-              >
-                {copy.resetFilters}
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-3">
-                {paginatedLeads.map((lead) => {
-                  const placementSummary = formatLeadPlacementSummary(lead, locale);
-                  const sizeLabel = getSizeLabel(lead, locale);
-                  const requestLabel = getRequestLabel(lead, locale, designs);
-                  const notesLabel = lead.notes ? notesPreview(lead.notes, copy.table.noNotes) : lead.city || copy.table.noCity;
+          <div className="space-y-3">
+            {paginatedLeads.map((lead) => {
+              const placementSummary = formatLeadPlacementSummary(lead, locale);
+              const sizeLabel = getSizeLabel(lead, locale);
+              const requestLabel = getRequestLabel(lead, locale, designs);
+              const notesLabel = lead.notes ? notesPreview(lead.notes, copy.table.noNotes) : lead.city || copy.table.noCity;
+              const colorLabel = getDisplayedColor(lead, locale);
+              const detailLabel = getDisplayedDetailLevel(lead, locale);
+              const layoutLabel = getDisplayedLayout(lead, locale);
 
-                  return (
-                    <div
-                      key={lead.id}
-                      className="group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
-                    >
-                      <div className="grid gap-4 xl:grid-cols-[minmax(170px,0.8fr)_minmax(0,1.35fr)_minmax(220px,0.95fr)] xl:items-center">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-3 xl:block">
-                            <div>
-                              <p className="text-[1.7rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency)}</p>
-                              <p className="mt-1 text-xs text-[var(--text-muted)]">{formatLeadDate(lead.createdAt, locale)}</p>
-                            </div>
-                            <StatusBadge status={lead.status} locale={locale} />
-                          </div>
+              return (
+                <div
+                  key={lead.id}
+                  className="group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
+                >
+                  <div className="grid gap-4 xl:grid-cols-[minmax(190px,0.82fr)_minmax(0,1.45fr)_minmax(220px,0.95fr)] xl:items-center">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-3 xl:block">
+                        <div>
+                          <p className="text-[1.7rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency)}</p>
+                          <p className="mt-1 text-xs text-[var(--text-muted)]">{formatLeadDate(lead.createdAt, locale)}</p>
                         </div>
-
-                        <div className="min-w-0 space-y-2">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="truncate text-base font-semibold text-white">{requestLabel}</p>
-                              <p className="mt-1 text-sm text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
-                            </div>
-                          </div>
-                          <p className="line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">{notesLabel}</p>
-                          <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
-                            {lead.city ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{lead.city}</span> : null}
-                            {lead.selectedDesignId ? (
-                              <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{getSelectedDesignLabel(lead, designs)}</span>
-                            ) : null}
-                            {getReferenceImageUrl(lead) ? (
-                              <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{copy.table.reference}</span>
-                            ) : null}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3 xl:items-end">
-                          <div className="w-full xl:max-w-[220px]">
-                            <StatusSelect
-                              value={lead.status}
-                              locale={locale}
-                              compact
-                              onChange={(status) => void updateLeadStatus(lead.id, status)}
-                            />
-                          </div>
-                          <div className="flex w-full justify-end gap-3 xl:w-auto xl:items-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="rounded-full"
-                              onClick={() => toggleLeadDetails(lead.id)}
-                            >
-                              {copy.table.detailButton}
-                              <ChevronRight className="size-4" />
-                            </Button>
-                          </div>
-                        </div>
+                        <StatusBadge status={lead.status} locale={locale} />
                       </div>
                     </div>
-                  );
-                })}
-              </div>
 
-              <div className="flex flex-col gap-3 rounded-[24px] border border-white/8 bg-white/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-[var(--text-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={page === 1}
-                    onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  >
-                    {copy.table.previous}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    disabled={page === totalPages}
-                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                  >
-                    {copy.table.next}
-                  </Button>
+                    <div className="min-w-0 space-y-2.5">
+                      <div className="min-w-0">
+                        <p className="truncate text-base font-semibold text-white">{requestLabel}</p>
+                        <p className="mt-1 text-sm text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
+                      </div>
+                      <p className="line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">{notesLabel}</p>
+                      <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
+                        {lead.city ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{lead.city}</span> : null}
+                        {colorLabel ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{colorLabel}</span> : null}
+                        {detailLabel ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{detailLabel}</span> : null}
+                        {layoutLabel ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{layoutLabel}</span> : null}
+                        {lead.selectedDesignId ? (
+                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{getSelectedDesignLabel(lead, designs)}</span>
+                        ) : null}
+                        {getReferenceImageUrl(lead) ? (
+                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{copy.table.reference}</span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3 xl:items-end">
+                      <div className="w-full xl:max-w-[220px]">
+                        <StatusSelect
+                          value={lead.status}
+                          locale={locale}
+                          compact
+                          onChange={(status) => void updateLeadStatus(lead.id, status)}
+                        />
+                      </div>
+                      <div className="flex w-full justify-end gap-3 xl:w-auto xl:items-center">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => toggleLeadDetails(lead.id)}
+                        >
+                          {copy.table.detailButton}
+                          <ChevronRight className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-[24px] border border-white/8 bg-white/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-[var(--text-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={page === 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+              >
+                {copy.table.previous}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={page === totalPages}
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              >
+                {copy.table.next}
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
