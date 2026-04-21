@@ -1,8 +1,6 @@
-import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import {
   getPlacementDetailLocaleLabel,
   getPublicCopy,
-  getSizeLabel,
   type PublicLocale,
 } from "@/lib/i18n/public";
 import {
@@ -125,12 +123,10 @@ export function buildSubmissionMessage(
   const { locale, pricingSource, requestTypeLabel, selectedDesignTitle, displayEstimateLabel } = options;
   const copy = getPublicCopy(locale);
   const labels = copy.summaryLabels;
-  const sizeLabel = submission.sizeCategory ? getSizeLabel(submission.sizeCategory, locale) : null;
-  const manualSize = formatApproximateSizeLabel(submission);
   const displayedSize =
-    sizeLabel && manualSize && manualSize !== sizeLabel
-      ? `${sizeLabel} (${manualSize})`
-      : manualSize ?? sizeLabel;
+    typeof submission.selectedSizeCm === "number" && Number.isFinite(submission.selectedSizeCm)
+      ? `${Math.round(submission.selectedSizeCm)} cm`
+      : null;
   const areaScopeLine =
     pricingSource === "custom_request" && submission.areaScope
       ? `${locale === "tr" ? "Alan büyüklüğü" : "Area size"}: ${getAreaScopeLabel(submission.areaScope, locale)}`

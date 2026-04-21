@@ -520,6 +520,9 @@ export type SubmissionDraft = {
   bodyAreaGroup: BodyAreaGroupValue | "";
   bodyAreaDetail: BodyAreaDetailValue | "";
   sizeMode: SizeMode;
+  selectedSizeCm: number | null;
+  inferredSizeCm: number | null;
+  isSizeExplicit: boolean;
   approximateSizeCm: number | null;
   sizeCategory: SizeValue | "";
   widthCm: number | null;
@@ -601,6 +604,9 @@ export type SubmissionRequest = {
   bodyAreaGroup: BodyAreaGroupValue;
   bodyAreaDetail: BodyAreaDetailValue;
   sizeMode: SizeMode;
+  selectedSizeCm?: number | null;
+  inferredSizeCm?: number | null;
+  isSizeExplicit?: boolean | null;
   approximateSizeCm?: number | null;
   sizeCategory: SizeValue;
   widthCm?: number | null;

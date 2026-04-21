@@ -238,6 +238,8 @@ function getCopy(locale: PublicLocale) {
         layoutStyle: "Düzen",
         coverUp: "Kapatma durumu",
       },
+      sizeNotSelected: "Belirtilmedi",
+      sizeFallbackNote: "Boyut seçilmediği için bu tahmin daha temkinli yorumlanmalıdır.",
       sendWhatsapp: "WhatsApp'tan gönder",
       copyMessage: "Mesajı kopyala",
       copied: "Mesaj kopyalandı",
@@ -416,6 +418,8 @@ function getCopy(locale: PublicLocale) {
       layoutStyle: "Layout",
       coverUp: "Cover-up",
     },
+    sizeNotSelected: "Not specified",
+    sizeFallbackNote: "Because no size was selected, this estimate should be read more cautiously.",
     sendWhatsapp: "Send on WhatsApp",
     copyMessage: "Copy message",
     copied: "Message copied",
@@ -554,14 +558,18 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("bodyAreaGroup", "");
     setField("bodyAreaDetail", "");
     setField("largeAreaCoverage", "");
+    setField("selectedSizeCm", null);
+    setField("inferredSizeCm", null);
+    setField("isSizeExplicit", false);
     setField("approximateSizeCm", null);
     setField("sizeCategory", "");
   }, [
-    draft.approximateSizeCm,
     draft.areaScope,
     draft.bodyAreaDetail,
     draft.bodyAreaGroup,
     draft.pricingSource,
+    draft.selectedSizeCm,
+    draft.inferredSizeCm,
     setField,
   ]);
 
@@ -683,7 +691,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         : currentFlowStep === "placement"
           ? Boolean(draft.bodyAreaGroup && draft.bodyAreaDetail)
           : currentFlowStep === "size"
-            ? Boolean(draft.approximateSizeCm && draft.sizeCategory)
+            ? Boolean(draft.selectedSizeCm && draft.sizeCategory)
             : currentFlowStep === "large_coverage"
               ? Boolean(draft.largeAreaCoverage)
               : currentFlowStep === "wide_area_target"
@@ -735,10 +743,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       });
     }
 
-    if (draft.approximateSizeCm) {
+    if (
+      draft.pricingSource === "featured_design" ||
+      draft.areaScope === "standard_piece" ||
+      draft.areaScope === "unsure" ||
+      draft.selectedSizeCm ||
+      draft.inferredSizeCm
+    ) {
       items.push({
         label: copy.summaryLabels.size,
-        value: `${draft.approximateSizeCm} cm`,
+        value: draft.selectedSizeCm ? `${draft.selectedSizeCm} cm` : copy.sizeNotSelected,
       });
     }
 
@@ -779,7 +793,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     }
 
     return items;
-  }, [copy.colorModes, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.coverUp, copy.summaryLabels.layoutStyle, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.approximateSizeCm, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.coverUp, draft.largeAreaCoverage, draft.layoutStyle, draft.pricingSource, draft.realismLevel, draft.requestType, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
+  }, [copy.colorModes, copy.sizeNotSelected, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.coverUp, copy.summaryLabels.layoutStyle, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.coverUp, draft.inferredSizeCm, draft.largeAreaCoverage, draft.layoutStyle, draft.pricingSource, draft.realismLevel, draft.requestType, draft.selectedSizeCm, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
 
   function resetCustomPathState(nextAreaScope?: AreaScopeValue | "") {
     setField("requestType", "");
@@ -787,6 +801,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("wideAreaTarget", "");
     setField("bodyAreaGroup", "");
     setField("bodyAreaDetail", "");
+    setField("selectedSizeCm", null);
+    setField("inferredSizeCm", null);
+    setField("isSizeExplicit", false);
     setField("approximateSizeCm", null);
     setField("sizeCategory", "");
     setField("colorMode", "");
@@ -801,6 +818,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     setField("wideAreaTarget", value);
     setField("bodyAreaGroup", mapped.group);
     setField("bodyAreaDetail", mapped.detail);
+    setField("selectedSizeCm", null);
+    setField("inferredSizeCm", mapped.sizeCm);
+    setField("isSizeExplicit", false);
     setField("approximateSizeCm", mapped.sizeCm);
     setField("sizeCategory", deriveSizeCategoryFromCm(mapped.sizeCm));
   }
@@ -869,6 +889,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       bodyAreaGroup: draft.bodyAreaGroup,
       bodyAreaDetail: draft.bodyAreaDetail,
       sizeMode: "quick" as const,
+      selectedSizeCm: draft.selectedSizeCm,
+      inferredSizeCm: draft.inferredSizeCm,
+      isSizeExplicit: draft.isSizeExplicit,
       approximateSizeCm: draft.approximateSizeCm ?? null,
       sizeCategory: draft.sizeCategory,
       widthCm: null,
@@ -1084,6 +1107,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     setField("wideAreaTarget", "");
                     setField("bodyAreaGroup", "");
                     setField("bodyAreaDetail", "");
+                    setField("selectedSizeCm", null);
+                    setField("inferredSizeCm", null);
+                    setField("isSizeExplicit", false);
                     setField("approximateSizeCm", null);
                     setField("sizeCategory", "");
                     setField("colorMode", "");
@@ -1101,6 +1127,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   if (value === "unsure") {
                     setField("bodyAreaGroup", "");
                     setField("bodyAreaDetail", "");
+                    setField("selectedSizeCm", null);
+                    setField("inferredSizeCm", null);
+                    setField("isSizeExplicit", false);
                   }
                 }}
                 onDesignCategoryChange={(value) => {
@@ -1126,6 +1155,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("wideAreaTarget", "");
                   setField("bodyAreaGroup", "");
                   setField("bodyAreaDetail", "");
+                  setField("selectedSizeCm", null);
+                  setField("inferredSizeCm", null);
+                  setField("isSizeExplicit", false);
                   setField("approximateSizeCm", null);
                   setField("sizeCategory", "");
                   setField("colorMode", design?.referenceColorMode ?? "black-only");
@@ -1159,6 +1191,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
                   if (!detail) {
                     setField("largeAreaCoverage", "");
+                    setField("selectedSizeCm", null);
+                    setField("inferredSizeCm", null);
+                    setField("isSizeExplicit", false);
                     setField("approximateSizeCm", null);
                     setField("sizeCategory", "");
                     return;
@@ -1166,14 +1201,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
                   if (draft.areaScope === "large_single_area") {
                     setField("largeAreaCoverage", "");
+                    setField("selectedSizeCm", null);
+                    setField("inferredSizeCm", null);
+                    setField("isSizeExplicit", false);
                     setField("approximateSizeCm", null);
                     setField("sizeCategory", "");
                     return;
                   }
 
-                  const defaultSize = getPlacementSizeConstraint(detail).defaultCm;
-                  setField("approximateSizeCm", defaultSize);
-                  setField("sizeCategory", deriveSizeCategoryFromCm(defaultSize));
+                  setField("selectedSizeCm", null);
+                  setField("inferredSizeCm", null);
+                  setField("isSizeExplicit", false);
+                  setField("approximateSizeCm", null);
+                  setField("sizeCategory", "");
                 }}
               />
             ) : null}
@@ -1205,6 +1245,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           }
                           const sizeCm = getLargeAreaSize(draft.bodyAreaDetail, option.value);
                           setField("largeAreaCoverage", option.value);
+                          setField("selectedSizeCm", null);
+                          setField("inferredSizeCm", sizeCm);
+                          setField("isSizeExplicit", false);
                           setField("approximateSizeCm", sizeCm);
                           setField("sizeCategory", deriveSizeCategoryFromCm(sizeCm));
                         }}
@@ -1273,10 +1316,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             {currentFlowStep === "size" ? (
               <SizeEstimationSelector
                 selectedPlacement={draft.bodyAreaDetail}
-                approximateSizeCm={draft.approximateSizeCm}
-                sizeTimeRanges={artist.pricingRules.sizeTimeRanges}
+                selectedSizeCm={draft.selectedSizeCm}
                 locale={locale}
                 onApproximateSizeChange={(cm) => {
+                  setField("selectedSizeCm", cm);
+                  setField("inferredSizeCm", null);
+                  setField("isSizeExplicit", true);
                   setField("approximateSizeCm", cm);
                   setField("sizeCategory", deriveSizeCategoryFromCm(cm));
                 }}
@@ -1822,6 +1867,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                     {result.disclaimer}
                   </p>
+                  {!draft.selectedSizeCm ? (
+                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.sizeFallbackNote}
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                     {copy.estimateChangeNote}
                   </p>

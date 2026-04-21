@@ -397,10 +397,15 @@ export function getPlacementSizingGuidance(
 
 export function formatApproximateSizeLabel(submission: {
   sizeMode?: SizeMode | null;
+  selectedSizeCm?: number | null;
   approximateSizeCm?: number | null;
   widthCm?: number | null;
   heightCm?: number | null;
 }) {
+  if (submission.selectedSizeCm) {
+    return `${Math.round(submission.selectedSizeCm)} cm`;
+  }
+
   if (submission.approximateSizeCm) {
     return `${Math.round(submission.approximateSizeCm)} cm`;
   }

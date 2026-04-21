@@ -2,12 +2,10 @@
 
 import {
   clampCm,
-  deriveSizeCategoryFromCm,
   getPlacementSizeConstraint,
 } from "@/lib/constants/size-estimation";
 import { getPlacementDetailLocaleLabel, getPublicCopy, type PublicLocale } from "@/lib/i18n/public";
 import type { BodyAreaDetailValue } from "@/lib/constants/body-placement";
-import type { ArtistPricingRules } from "@/lib/types";
 
 const placementGuidance = {
   tr: {
@@ -71,14 +69,12 @@ function getPlacementGuidance(
 
 export function SizeEstimationSelector({
   selectedPlacement,
-  approximateSizeCm,
-  sizeTimeRanges,
+  selectedSizeCm,
   locale,
   onApproximateSizeChange,
 }: {
   selectedPlacement: BodyAreaDetailValue | "";
-  approximateSizeCm: number | null;
-  sizeTimeRanges?: ArtistPricingRules["sizeTimeRanges"];
+  selectedSizeCm: number | null;
   locale: PublicLocale;
   onApproximateSizeChange: (cm: number) => void;
 }) {
@@ -105,7 +101,8 @@ export function SizeEstimationSelector({
   }
 
   const constraint = getPlacementSizeConstraint(selectedPlacement);
-  const safeCm = clampCm(approximateSizeCm ?? constraint.defaultCm, constraint);
+  const safeCm = clampCm(selectedSizeCm ?? constraint.defaultCm, constraint);
+  const hasExplicitSelection = typeof selectedSizeCm === "number" && Number.isFinite(selectedSizeCm);
   return (
     <div className="w-full min-w-0 max-w-full space-y-3 sm:space-y-4">
       <div
@@ -128,7 +125,7 @@ export function SizeEstimationSelector({
           </div>
           <div className="text-left sm:text-right">
             <p className="text-[1.65rem] font-semibold sm:text-2xl" style={{ color: "var(--artist-card-text)" }}>
-              {safeCm} cm
+              {hasExplicitSelection ? `${safeCm} cm` : copy.sizeNotSelected}
             </p>
             <p className="text-sm" style={{ color: "var(--artist-primary)" }}>
               {copy.approxSize}
