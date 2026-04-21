@@ -420,33 +420,45 @@ export function ProfileForm({
               <Input {...form.register("artistName")} className="h-11" />
             </Field>
             <Field
-              label={copy.upperLabel}
-              description={copy.upperLabelDescription}
-              error={form.formState.errors.upperLabel?.message}
-            >
-              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-11" />
-            </Field>
-          </div>
-
-          <div className="grid gap-5 xl:grid-cols-2">
-            <Field
               label={copy.welcomeHeadline}
               description={copy.welcomeHeadlineDescription}
               error={form.formState.errors.welcomeHeadline?.message}
             >
               <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} className="h-11" />
             </Field>
+          </div>
+
+          <Field
+            label={copy.shortBio}
+            description={copy.shortBioDescription}
+            error={form.formState.errors.shortBio?.message}
+          >
+            <Textarea
+              {...form.register("shortBio")}
+              placeholder={copy.shortBioPlaceholder}
+              className="min-h-[144px]"
+            />
+          </Field>
+
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
             <Field
-              label={copy.shortBio}
-              description={copy.shortBioDescription}
-              error={form.formState.errors.shortBio?.message}
+              label={copy.upperLabel}
+              description={copy.upperLabelDescription}
+              error={form.formState.errors.upperLabel?.message}
             >
-              <Textarea
-                {...form.register("shortBio")}
-                placeholder={copy.shortBioPlaceholder}
-                className="min-h-[132px]"
-              />
+              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-11" />
             </Field>
+            <div className="rounded-[20px] border border-[var(--border-soft)] bg-white/[0.025] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-dim)]">
+                {locale === "tr" ? "Profil durumu" : "Profile status"}
+              </p>
+              <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">{profileSummaryLabel}</p>
+              <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">
+                {locale === "tr"
+                  ? "İsim, başlık ve kısa açıklama alanları profilde en görünür bölümler olur."
+                  : "Name, heading, and short bio are the most visible parts of the profile."}
+              </p>
+            </div>
           </div>
         </SectionBlock>
 
@@ -512,9 +524,9 @@ export function ProfilePreviewCard({
         <CardTitle>{locale === "tr" ? "Sayfa Önizlemesi" : "Page preview"}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mx-auto max-w-[380px]">
+        <div className="mx-auto max-w-[430px]">
           <div
-            className="overflow-hidden rounded-[34px] border shadow-[0_28px_60px_rgba(0,0,0,0.34)]"
+            className="overflow-hidden rounded-[38px] border shadow-[0_28px_60px_rgba(0,0,0,0.34)]"
             style={{
               ...wrapperStyle,
               borderColor: "var(--artist-border)",
@@ -523,7 +535,7 @@ export function ProfilePreviewCard({
             }}
           >
             <div
-              className="h-40 border-b bg-grid"
+              className="relative h-48 border-b bg-grid"
               style={
                 profile.coverImageUrl
                   ? {
@@ -534,8 +546,33 @@ export function ProfilePreviewCard({
                     }
                   : { borderColor: "var(--artist-border)" }
               }
-            />
-            <div className="-mt-11 space-y-4 p-5">
+            >
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 py-4">
+                <div
+                  className="rounded-full border px-3 py-1 text-[11px] font-medium"
+                  style={{
+                    borderColor: "color-mix(in srgb, var(--artist-border) 85%, transparent)",
+                    backgroundColor: "rgba(10,10,12,0.32)",
+                    color: "var(--artist-card-text)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  {locale === "tr" ? "Profil sayfası" : "Profile page"}
+                </div>
+                <div
+                  className="rounded-full border px-3 py-1 text-[11px] font-medium"
+                  style={{
+                    borderColor: "color-mix(in srgb, var(--artist-border) 85%, transparent)",
+                    backgroundColor: "rgba(10,10,12,0.32)",
+                    color: "var(--artist-card-muted)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  @{profile.slug}
+                </div>
+              </div>
+            </div>
+            <div className="-mt-11 space-y-4 p-6">
               <AvatarTile
                 name={profile.artistName}
                 imageUrl={profile.profileImageUrl}
@@ -562,7 +599,7 @@ export function ProfilePreviewCard({
                 </p>
                 {profile.welcomeHeadline.trim() ? (
                   <h3
-                    className="text-[1.8rem] leading-tight"
+                    className="text-[2rem] leading-tight"
                     style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                   >
                     {profile.welcomeHeadline}
@@ -573,14 +610,28 @@ export function ProfilePreviewCard({
                     {profile.shortBio}
                   </p>
                 ) : null}
-                <div
-                  className="inline-flex h-10 items-center rounded-full px-4 text-sm font-medium"
-                  style={{
-                    backgroundColor: "var(--artist-primary)",
-                    color: "var(--artist-primary-foreground)",
-                  }}
-                >
-                  {pageTheme.customCtaLabel || (locale === "tr" ? "Fiyat tahmini al" : "Get an estimate")}
+                <div className="grid gap-3 sm:grid-cols-[auto_1fr] sm:items-center">
+                  <div
+                    className="inline-flex h-11 items-center rounded-full px-5 text-sm font-medium"
+                    style={{
+                      backgroundColor: "var(--artist-primary)",
+                      color: "var(--artist-primary-foreground)",
+                    }}
+                  >
+                    {pageTheme.customCtaLabel || (locale === "tr" ? "Fiyat tahmini al" : "Get an estimate")}
+                  </div>
+                  <div
+                    className="rounded-[18px] border px-4 py-3 text-sm"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "color-mix(in srgb, var(--artist-card) 82%, transparent)",
+                      color: "var(--artist-card-muted)",
+                    }}
+                  >
+                    {locale === "tr"
+                      ? "Müşteri burada tasarım, fiyat ve uygunluk bilgini birlikte görür."
+                      : "Clients see your designs, pricing, and availability here together."}
+                  </div>
                 </div>
               </div>
             </div>

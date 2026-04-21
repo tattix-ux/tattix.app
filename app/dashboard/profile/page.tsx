@@ -19,18 +19,23 @@ export default async function DashboardProfilePage() {
   const isTurkish = data.funnelSettings.defaultLanguage === "tr";
   const showAdminControls =
     isAdminEmail(session?.user.email) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-  const missingCount = [
-    data.profile.profileImageUrl,
-    data.profile.shortBio.trim(),
-    data.profile.whatsappNumber.trim(),
-    data.profile.instagramHandle.trim(),
-  ].filter((value) => !value).length;
+  const profileChecklist = [
+    { label: isTurkish ? "Profil fotoğrafı" : "Profile photo", complete: Boolean(data.profile.profileImageUrl) },
+    { label: isTurkish ? "Kapak görseli" : "Cover image", complete: Boolean(data.profile.coverImageUrl) },
+    { label: isTurkish ? "Kısa başlık" : "Short heading", complete: Boolean(data.profile.welcomeHeadline.trim()) },
+    { label: isTurkish ? "Kısa açıklama" : "Short bio", complete: Boolean(data.profile.shortBio.trim()) },
+    { label: isTurkish ? "WhatsApp" : "WhatsApp", complete: Boolean(data.profile.whatsappNumber.trim()) },
+    { label: isTurkish ? "Instagram" : "Instagram", complete: Boolean(data.profile.instagramHandle.trim()) },
+    { label: isTurkish ? "Şehir bilgisi" : "City info", complete: data.funnelSettings.bookingCities.length > 0 },
+  ];
+  const missingItems = profileChecklist.filter((item) => !item.complete);
+  const completedCount = profileChecklist.length - missingItems.length;
   const cityCount = data.funnelSettings.bookingCities.length;
   const availableDateCount = data.funnelSettings.bookingCities.reduce(
     (total, city) => total + city.availableDates.length,
     0,
   );
-  const completionPercent = Math.max(20, Math.round(((4 - missingCount) / 4) * 100));
+  const completionPercent = Math.round((completedCount / profileChecklist.length) * 100);
   const publicHref = `${getAppOrigin()}/${data.profile.slug}`;
 
   return (
@@ -58,7 +63,7 @@ export default async function DashboardProfilePage() {
       <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)]">
         <CardContent className="p-0">
           <div className="grid divide-y divide-[var(--border-soft)] md:grid-cols-3 md:divide-x md:divide-y-0">
-            <div className="space-y-2 px-5 py-4">
+            <div className="space-y-2.5 px-5 py-4">
               <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-dim)]">
                 {isTurkish ? "Profil linki" : "Profile link"}
               </p>
@@ -86,17 +91,29 @@ export default async function DashboardProfilePage() {
                 />
               </div>
               <p className="text-sm text-[var(--text-secondary)]">
-                {missingCount === 0
+                {missingItems.length === 0
                   ? isTurkish
                     ? "Profilin yayında ve temel alanlar tamam."
                     : "Your profile is live and the core fields are complete."
                   : isTurkish
-                    ? `${missingCount} alan eksik. Tamamladığında profil daha güçlü görünür.`
-                    : `${missingCount} fields are missing. Completing them will strengthen your profile.`}
+                    ? `${missingItems.length} alan eksik. Tamamladığında profil daha güçlü görünür.`
+                    : `${missingItems.length} fields are missing. Completing them will strengthen your profile.`}
               </p>
+              <div className="flex flex-wrap gap-2">
+                {(missingItems.length > 0 ? missingItems : profileChecklist.slice(0, 3)).map((item) => (
+                  <span
+                    key={item.label}
+                    className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[11px] text-[var(--text-muted)]"
+                  >
+                    {missingItems.length > 0
+                      ? `${isTurkish ? "Eksik" : "Missing"} · ${item.label}`
+                      : `${isTurkish ? "Tamam" : "Done"} · ${item.label}`}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            <div className="space-y-2 px-5 py-4">
+            <div className="space-y-2.5 px-5 py-4">
               <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-dim)]">
                 {isTurkish ? "Randevu özeti" : "Booking overview"}
               </p>

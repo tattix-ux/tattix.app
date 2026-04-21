@@ -112,6 +112,9 @@ export function ProfileRequestSettings({
           datesDescription: "Bu şehirde randevu kabul ettiğin günleri seç.",
           addDate: "Tarih seç",
           noDates: "Tarih seçilmedi.",
+          selectedDays: "seçili gün",
+          openDays: "Günleri düzenle",
+          closeDays: "Takvimi kapat",
           remove: "Kaldır",
           resetStyles: "Sıfırla",
           addStyle: "Özel stil ekle",
@@ -146,6 +149,9 @@ export function ProfileRequestSettings({
           datesDescription: "Choose the days when you accept appointments in this city.",
           addDate: "Pick dates",
           noDates: "No dates selected.",
+          selectedDays: "selected days",
+          openDays: "Manage days",
+          closeDays: "Close calendar",
           remove: "Remove",
           resetStyles: "Reset",
           addStyle: "Add custom style",
@@ -609,7 +615,7 @@ export function ProfileRequestSettings({
                 const isExpanded = expandedCities[field.id] ?? availableDates.length === 0;
 
                 return (
-                  <div key={field.id} className="rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-4">
+                  <div key={field.id} className="rounded-[22px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-4">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-start">
                       <div className="flex-1 space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -624,10 +630,8 @@ export function ProfileRequestSettings({
                             placeholder={copy.cityPlaceholder}
                             className="h-11"
                           />
-                          <Badge variant="muted" className="w-fit">
-                            {locale === "tr"
-                              ? `${availableDates.length} gün seçili`
-                              : `${availableDates.length} days selected`}
+                          <Badge variant="muted" className="w-fit border-[var(--border-soft)] bg-white/[0.04] text-[var(--text-secondary)]">
+                            {availableDates.length} {copy.selectedDays}
                           </Badge>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -635,6 +639,7 @@ export function ProfileRequestSettings({
                             type="button"
                             variant="outline"
                             size="sm"
+                            className={cn("rounded-full", isExpanded && "border-[var(--border-strong)] bg-white/[0.04]")}
                             onClick={() =>
                               setExpandedCities((current) => ({
                                 ...current,
@@ -643,13 +648,7 @@ export function ProfileRequestSettings({
                             }
                           >
                             <ChevronDown className={cn("size-4 transition", isExpanded && "rotate-180")} />
-                            {locale === "tr"
-                              ? isExpanded
-                                ? "Günleri gizle"
-                                : "Günleri göster"
-                              : isExpanded
-                                ? "Hide days"
-                                : "Show days"}
+                            {isExpanded ? copy.closeDays : copy.openDays}
                           </Button>
                           <Button
                             type="button"
@@ -666,18 +665,20 @@ export function ProfileRequestSettings({
 
                     {isExpanded ? (
                     <div className="mt-4 space-y-3 border-t border-[var(--border-soft)] pt-4">
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-white">{copy.dates}</p>
-                        <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-white">{copy.dates}</p>
+                          <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
+                        </div>
+                        <DateCalendarPopover
+                          locale={locale}
+                          mode="multiple"
+                          triggerLabel={copy.dates}
+                          emptyLabel={copy.addDate}
+                          selectedDates={availableDates}
+                          onToggleDate={(date) => toggleBookingDate(index, date)}
+                        />
                       </div>
-                      <DateCalendarPopover
-                        locale={locale}
-                        mode="multiple"
-                        triggerLabel={copy.dates}
-                        emptyLabel={copy.addDate}
-                        selectedDates={availableDates}
-                        onToggleDate={(date) => toggleBookingDate(index, date)}
-                      />
 
                       {availableDates.length === 0 ? (
                         <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
