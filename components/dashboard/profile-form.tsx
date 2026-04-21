@@ -36,29 +36,20 @@ const profileCopy = {
     contactSectionDescription: "Keep your profile link and contact channels clean and easy to share.",
     previewTitle: "Live profile preview",
     previewDescription: "Changes on the left appear here instantly.",
-    previewChip: "Client view",
-    previewInfoTitle: "What clients see first",
-    previewInfoBody: "Your profile image, short intro, designs, pricing hint, and booking cities all come together in this first view.",
-    bookingChipLabel: "Booking",
-    bookingSummaryEmpty: "No booking cities added yet",
-    bookingSummaryReady: (cityCount: number, dayCount: number) =>
-      `${cityCount} cities • ${dayCount} available days`,
-    previewStatusReady: "Available",
-    previewStatusPending: "Setup",
     artistName: "Name shown on profile",
-    upperLabel: "Short label",
-    upperLabelDescription: "Appears as a small label above your name.",
+    upperLabel: "Label",
+    upperLabelDescription: "You can use your studio or brand name here.",
     upperLabelPlaceholder: "My tattoo studio",
     profileImage: "Profile photo",
     coverImage: "Cover image",
     noImage: "No image selected yet",
     upload: "Upload image",
     remove: "Remove image",
-    shortBio: "Short description",
+    shortBio: "Description",
     shortBioDescription: "This is where clients get to know you at a glance. Describe your work in 1–2 sentences.",
     shortBioPlaceholder: "I create fine line, minimal, and mostly blackwork tattoos. Available for small and medium-size pieces.",
-    welcomeHeadline: "Short heading",
-    welcomeHeadlineDescription: "Appears below your name. This is often the first thing your client reads.",
+    welcomeHeadline: "Heading",
+    welcomeHeadlineDescription: "Appears below the label. This is often the first thing your client reads.",
     welcomeHeadlinePlaceholder: "What do you have in mind?",
     linkSection: "Profile link",
     linkSectionDescription: "You can add this link to your Instagram profile, stories, or messages.",
@@ -83,29 +74,20 @@ const profileCopy = {
     contactSectionDescription: "Profil linkini ve iletişim alanlarını temiz ve paylaşması kolay tut.",
     previewTitle: "Canlı profil önizlemesi",
     previewDescription: "Soldaki değişiklikler burada anında görünür.",
-    previewChip: "Müşteri görünümü",
-    previewInfoTitle: "Müşterinin ilk gördüğü alan",
-    previewInfoBody: "Profil fotoğrafın, kısa anlatımın, tasarımların, fiyat ipucun ve randevu şehirlerin burada birlikte görünür.",
-    bookingChipLabel: "Randevu",
-    bookingSummaryEmpty: "Henüz randevu şehri eklenmedi",
-    bookingSummaryReady: (cityCount: number, dayCount: number) =>
-      `${cityCount} şehir • ${dayCount} uygun gün`,
-    previewStatusReady: "Uygun",
-    previewStatusPending: "Hazırlanıyor",
     artistName: "Profilde görünen isim",
-    upperLabel: "Kısa etiket",
-    upperLabelDescription: "İsminin üstünde küçük bir etiket olarak görünür.",
+    upperLabel: "Etiket",
+    upperLabelDescription: "Buraya stüdyo veya marka adını yazabilirsin.",
     upperLabelPlaceholder: "Dövme stüdyosu",
     profileImage: "Profil fotoğrafı",
     coverImage: "Kapak görseli",
     noImage: "Henüz görsel seçilmedi",
     upload: "Görsel yükle",
     remove: "Görseli kaldır",
-    shortBio: "Kısa açıklama",
+    shortBio: "Açıklama",
     shortBioDescription: "Müşteri seni ilk bakışta burada tanır. Ne tarz çalıştığını 1–2 cümleyle yaz.",
     shortBioPlaceholder: "İnce çizgi, minimal ve siyah ağırlıklı dövmeler yapıyorum. Küçük ve orta boy çalışmalar için uygunum.",
-    welcomeHeadline: "Kısa başlık",
-    welcomeHeadlineDescription: "İsminin altında görünür. Müşterin ilk burayı okuyacaktır.",
+    welcomeHeadline: "Başlık",
+    welcomeHeadlineDescription: "Etiketin altında görünür. Müşterin ilk burayı okuyacaktır.",
     welcomeHeadlinePlaceholder: "Aklında ne var?",
     linkSection: "Profil Linkin",
     linkSectionDescription: "Bu linki Instagram sayfana, storylerine veya mesajlarına ekleyebilirsin.",
@@ -509,17 +491,11 @@ export function ProfilePreviewCard({
   profile,
   pageTheme,
   upperLabel,
-  firstBookingCity,
-  bookingCityCount,
-  availableDateCount,
   locale,
 }: {
   profile: ArtistProfile;
   pageTheme: ArtistPageTheme;
   upperLabel: string;
-  firstBookingCity: string | null;
-  bookingCityCount: number;
-  availableDateCount: number;
   locale: PublicLocale;
 }) {
   const copy = profileCopy[locale];
@@ -555,34 +531,6 @@ export function ProfilePreviewCard({
                   : { borderColor: "var(--artist-border)" }
               }
             >
-              <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 py-4">
-                <div
-                  className="rounded-full border px-3.5 py-1.5 text-[11px] font-medium"
-                  style={{
-                    borderColor: "color-mix(in srgb, var(--artist-border) 85%, transparent)",
-                    backgroundColor: "rgba(10,10,12,0.32)",
-                    color: "var(--artist-card-text)",
-                    backdropFilter: "blur(8px)",
-                  }}
-                >
-                  {firstBookingCity || copy.previewChip}
-                </div>
-                <div
-                  className="rounded-full border px-3.5 py-1.5 text-[11px] font-medium"
-                  style={{
-                    borderColor:
-                      bookingCityCount > 0
-                        ? "rgba(63,115,90,0.38)"
-                        : "color-mix(in srgb, var(--artist-border) 85%, transparent)",
-                    backgroundColor:
-                      bookingCityCount > 0 ? "rgba(63,115,90,0.14)" : "rgba(10,10,12,0.32)",
-                    color: bookingCityCount > 0 ? "#9ED1B2" : "var(--artist-card-muted)",
-                    backdropFilter: "blur(8px)",
-                  }}
-                >
-                  {bookingCityCount > 0 ? copy.previewStatusReady : copy.previewStatusPending}
-                </div>
-              </div>
             </div>
             <div className="-mt-12 space-y-5 p-6 sm:p-7">
               <AvatarTile
@@ -603,12 +551,6 @@ export function ProfilePreviewCard({
                     {upperLabel}
                   </div>
                 ) : null}
-                <p
-                  className="text-lg"
-                  style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
-                >
-                  {profile.artistName}
-                </p>
                 {profile.welcomeHeadline.trim() ? (
                   <h3
                     className="text-[2rem] leading-tight"
@@ -622,31 +564,7 @@ export function ProfilePreviewCard({
                     {profile.shortBio}
                   </p>
                 ) : null}
-                <div className="flex flex-wrap gap-2">
-                  <div
-                    className="inline-flex items-center rounded-full border px-3.5 py-1.5 text-[11px] font-medium"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "color-mix(in srgb, var(--artist-card) 88%, transparent)",
-                      color: "var(--artist-card-text)",
-                    }}
-                  >
-                    {copy.bookingChipLabel}
-                  </div>
-                  <div
-                    className="inline-flex items-center rounded-full border px-3.5 py-1.5 text-[11px]"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "color-mix(in srgb, var(--artist-card) 82%, transparent)",
-                      color: "var(--artist-card-muted)",
-                    }}
-                  >
-                    {bookingCityCount > 0
-                      ? copy.bookingSummaryReady(bookingCityCount, availableDateCount)
-                      : copy.bookingSummaryEmpty}
-                  </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-[auto_1fr] sm:items-center">
+                <div className="pt-1">
                   <div
                     className="inline-flex h-11 items-center rounded-full px-5 text-sm font-medium"
                     style={{
@@ -655,24 +573,6 @@ export function ProfilePreviewCard({
                     }}
                   >
                     {pageTheme.customCtaLabel || (locale === "tr" ? "Fiyat tahmini al" : "Get an estimate")}
-                  </div>
-                  <div
-                    className="rounded-[20px] border px-4 py-3.5 text-sm"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "color-mix(in srgb, var(--artist-card) 82%, transparent)",
-                      color: "var(--artist-card-muted)",
-                    }}
-                  >
-                    <p
-                      className="text-[11px] uppercase tracking-[0.18em]"
-                      style={{ color: "var(--artist-card-text)" }}
-                    >
-                      {copy.previewInfoTitle}
-                    </p>
-                    <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.previewInfoBody}
-                    </p>
                   </div>
                 </div>
               </div>
