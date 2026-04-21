@@ -379,7 +379,7 @@ function getCopy(locale: PublicLocale) {
     startDate: "Start date",
     endDate: "End date",
     noDates: "There are no selectable dates for this city right now.",
-    customerInfo: "A few optional details",
+    customerInfo: "A few extra details",
     gender: "Gender",
     genderPlaceholder: "If you want",
     ageRange: "Age range",

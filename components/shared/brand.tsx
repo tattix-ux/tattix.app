@@ -71,7 +71,7 @@ export function BrandWordmark({
 }: {
   className?: string;
   subtitle?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }) {
   return (
     <div className={cn("min-w-0", className)}>
@@ -81,6 +81,7 @@ export function BrandWordmark({
           size === "sm" && "text-[0.95rem] tracking-[0.34em]",
           size === "md" && "text-[1.08rem] tracking-[0.42em]",
           size === "lg" && "text-[1.34rem] tracking-[0.46em]",
+          size === "xl" && "text-[1.52rem] tracking-[0.5em]",
         )}
       >
         Tattix
@@ -107,7 +108,7 @@ export function BrandLockup({
   iconOnlyOnMobile?: boolean;
   subtitle?: string;
   iconSize?: "sm" | "md" | "lg" | "xl" | "2xl";
-  wordmarkSize?: "sm" | "md" | "lg";
+  wordmarkSize?: "sm" | "md" | "lg" | "xl";
 }) {
   const content = (
     <>

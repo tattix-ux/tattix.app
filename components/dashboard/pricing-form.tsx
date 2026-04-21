@@ -150,7 +150,7 @@ function getText(locale: PublicLocale) {
       caseTitle: "",
       largeAreasChoice: "Bu adımı açmak ister misin?",
       largeAreasChoiceDescription: "İstersen büyük alan kaplayan işler için de ayrı başlangıç fiyatları belirleyebilirsin.",
-      phaseFiveNote: "Bu adım isteğe bağlıdır. Büyük alan çalışmaları almıyorsan boş bırakabilirsin.",
+      phaseFiveNote: "Büyük alan çalışmaları almıyorsan bu kısmı boş bırakabilirsin.",
       largeAreasOptions: {
         enabled: "Evet",
         disabled: "Şimdilik hayır",
@@ -256,7 +256,7 @@ function getText(locale: PublicLocale) {
       currency: "TRY",
       phaseOneNote: "The range shown to the client is an approximate price.",
       reviewNote: "These choices help pull the system estimates closer to your pricing.",
-      phaseFiveNote: "This step is optional. Leave it blank if you do not take large coverage work.",
+      phaseFiveNote: "Leave this blank if you do not take large coverage work.",
       optionalSinglePriceHint: "For these pieces, showing a single starting price is usually more suitable.",
     };
 }
