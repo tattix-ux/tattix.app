@@ -150,7 +150,7 @@ function MediaUploadField({
   return (
     <Field label={label} className="gap-3">
       <div className="space-y-3">
-        <div className="relative flex h-40 items-center justify-center overflow-hidden rounded-[22px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] sm:h-52">
+        <div className="relative flex h-40 items-center justify-center overflow-hidden rounded-[22px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] sm:h-44 xl:h-40 2xl:h-44">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt={label} className="h-full w-full object-cover" />
@@ -388,7 +388,7 @@ export function ProfileForm({
           title={locale === "tr" ? "Temel profil" : "Core profile"}
           description={copy.coreSectionDescription}
         >
-          <div className="grid gap-5 2xl:grid-cols-2">
+          <div className="grid gap-5 xl:grid-cols-2">
             <MediaUploadField
               label={copy.profileImage}
               imageUrl={form.watch("profileImageUrl") || ""}
@@ -409,7 +409,7 @@ export function ProfileForm({
             />
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.86fr)]">
+          <div className="grid gap-5 xl:grid-cols-2">
             <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
               <Input {...form.register("artistName")} className="h-12" />
             </Field>
@@ -448,7 +448,7 @@ export function ProfileForm({
           title={locale === "tr" ? "Link ve iletişim" : "Link and contact"}
           description={copy.contactSectionDescription}
         >
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_150px] xl:items-end">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_140px] xl:items-end">
             <Field label={copy.linkSection}>
               <div className="flex min-w-0 overflow-hidden rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)]">
                 <div className="flex items-center border-r border-[var(--border-soft)] px-4 text-sm text-[var(--text-muted)]">
