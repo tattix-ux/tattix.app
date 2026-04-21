@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, X } from "lucide-react";
+import { ArrowUpDown, ChevronRight, X } from "lucide-react";
 
 import { BrandMonogram } from "@/components/shared/logo";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
@@ -308,7 +308,7 @@ function getDisplayedColor(lead: ClientSubmission, locale: PublicLocale) {
 
 function getDisplayedDetailLevel(lead: ClientSubmission, locale: PublicLocale) {
   if (!lead.workStyle) {
-    return locale === "tr" ? "Emin değil" : "Not sure";
+    return null;
   }
 
   if (locale === "tr") {
@@ -337,7 +337,7 @@ function getDisplayedDetailLevel(lead: ClientSubmission, locale: PublicLocale) {
     }
   }
 
-  return locale === "tr" ? "Emin değil" : "Not sure";
+  return null;
 }
 
 function getDisplayedLayout(lead: ClientSubmission, locale: PublicLocale) {
@@ -742,21 +742,6 @@ function SummaryStat({
   );
 }
 
-function FilterCluster({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[22px] border border-white/8 bg-white/[0.025] p-3.5">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">{label}</p>
-      <div className="mt-3">{children}</div>
-    </div>
-  );
-}
-
 function DetailField({
   label,
   value,
@@ -957,7 +942,10 @@ export function LeadsTable({
                 <DetailField label={copy.table.size} value={explicitCm ?? sizeLabel ?? "—"} />
               ) : null}
               {colorLabel ? <DetailField label={copy.table.color} value={colorLabel} /> : null}
-              <DetailField label={copy.table.detailLevel} value={detailLevel} />
+              <DetailField
+                label={copy.table.detailLevel}
+                value={detailLevel ?? (locale === "tr" ? "Belirtilmedi" : "Not specified")}
+              />
               {layoutLabel ? <DetailField label={copy.table.layout} value={layoutLabel} /> : null}
               {lead.style ? <DetailField label={copy.table.styleNote} value={lead.style} /> : null}
               {coverUpLabel ? <DetailField label={copy.table.coverUp} value={coverUpLabel} /> : null}
@@ -1072,20 +1060,26 @@ export function LeadsTable({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4">
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,340px)]">
-              <FilterCluster label={copy.filters.sort}>
-                <NativeSelect value={sort} onChange={(event) => setSort(event.target.value as LeadSort)}>
-                  <option value="newest">{copy.filters.newest}</option>
-                  <option value="oldest">{copy.filters.oldest}</option>
-                  <option value="highest-estimate">{copy.filters.highestEstimate}</option>
-                  <option value="lowest-estimate">{copy.filters.lowestEstimate}</option>
-                  <option value="new-first">{copy.filters.newFirst}</option>
-                  <option value="contacted-first">{copy.filters.contactedFirst}</option>
-                  <option value="sold-first">{copy.filters.soldFirst}</option>
-                  <option value="lost-first">{copy.filters.lostFirst}</option>
-                </NativeSelect>
-              </FilterCluster>
+          <div className="flex items-center justify-end">
+            <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.025] px-3 py-2">
+              <ArrowUpDown className="size-4 text-[var(--text-muted)]" />
+              <span className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                {copy.filters.sort}
+              </span>
+              <NativeSelect
+                value={sort}
+                onChange={(event) => setSort(event.target.value as LeadSort)}
+                className="h-9 min-w-[190px] rounded-full border-white/8 bg-[var(--surface-1)] py-0 text-sm"
+              >
+                <option value="newest">{copy.filters.newest}</option>
+                <option value="oldest">{copy.filters.oldest}</option>
+                <option value="highest-estimate">{copy.filters.highestEstimate}</option>
+                <option value="lowest-estimate">{copy.filters.lowestEstimate}</option>
+                <option value="new-first">{copy.filters.newFirst}</option>
+                <option value="contacted-first">{copy.filters.contactedFirst}</option>
+                <option value="sold-first">{copy.filters.soldFirst}</option>
+                <option value="lost-first">{copy.filters.lostFirst}</option>
+              </NativeSelect>
             </div>
           </div>
 
@@ -1094,10 +1088,21 @@ export function LeadsTable({
               const placementSummary = formatLeadPlacementSummary(lead, locale);
               const sizeLabel = getSizeLabel(lead, locale);
               const requestLabel = getRequestLabel(lead, locale, designs);
-              const notesLabel = lead.notes ? notesPreview(lead.notes, copy.table.noNotes) : lead.city || copy.table.noCity;
+              const notesLabel = lead.notes ? notesPreview(lead.notes, copy.table.noNotes) : null;
               const colorLabel = getDisplayedColor(lead, locale);
               const detailLabel = getDisplayedDetailLevel(lead, locale);
               const layoutLabel = getDisplayedLayout(lead, locale);
+              const coverageLabel = getCoverageLabel(lead, locale);
+              const selectedDesignLabel = getSelectedDesignLabel(lead, designs);
+              const referenceImageUrl = getReferenceImageUrl(lead);
+              const metadataTags = [
+                colorLabel ? `${copy.table.color}: ${colorLabel}` : null,
+                detailLabel ? `${copy.table.detailLevel}: ${detailLabel}` : null,
+                layoutLabel ? `${copy.table.layout}: ${layoutLabel}` : null,
+                coverageLabel ? `${copy.table.coverage}: ${coverageLabel}` : null,
+                selectedDesignLabel ? `${copy.table.selectedDesign}: ${selectedDesignLabel}` : null,
+                referenceImageUrl ? copy.table.reference : null,
+              ].filter(Boolean) as string[];
 
               return (
                 <div
@@ -1120,18 +1125,21 @@ export function LeadsTable({
                         <p className="truncate text-base font-semibold text-white">{requestLabel}</p>
                         <p className="mt-1 text-sm text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
                       </div>
-                      <p className="line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">{notesLabel}</p>
+                      {lead.city ? (
+                        <p className="text-sm text-[var(--text-muted)]">{lead.city}</p>
+                      ) : null}
+                      {notesLabel ? (
+                        <p className="line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">{notesLabel}</p>
+                      ) : null}
                       <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
-                        {lead.city ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{lead.city}</span> : null}
-                        {colorLabel ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{colorLabel}</span> : null}
-                        {detailLabel ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{detailLabel}</span> : null}
-                        {layoutLabel ? <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{layoutLabel}</span> : null}
-                        {lead.selectedDesignId ? (
-                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{getSelectedDesignLabel(lead, designs)}</span>
-                        ) : null}
-                        {getReferenceImageUrl(lead) ? (
-                          <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1">{copy.table.reference}</span>
-                        ) : null}
+                        {metadataTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
 
