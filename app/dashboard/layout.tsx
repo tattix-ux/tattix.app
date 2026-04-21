@@ -44,8 +44,8 @@ export default async function DashboardLayout({
     <AppShell>
       <Container className="py-5 sm:py-9 lg:max-w-[1440px] 2xl:max-w-[1520px]">
         <div className="overflow-x-hidden pb-2">
-          <div className="min-w-0">
-            <div className="flex justify-end">
+          <div className="relative min-w-0">
+            <div className="absolute right-0 top-0 z-20">
               <div className="flex flex-wrap items-center gap-2 rounded-[20px] border border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface-1)_94%,black_6%)] p-2 shadow-[0_14px_28px_rgba(0,0,0,0.2)]">
                 <DashboardNotificationBell
                   locale={isTurkish ? "tr" : "en"}
@@ -55,7 +55,7 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-8">
+            <div className="grid items-start gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-8">
               <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[236px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <div className="relative overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] px-4 py-5 shadow-[0_22px_48px_rgba(0,0,0,0.24)]">

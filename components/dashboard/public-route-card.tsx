@@ -28,7 +28,7 @@ export function PublicRouteCard({
   }
 
   const copyLabel = copied ? (locale === "tr" ? "Kopyalandı" : "Copied") : locale === "tr" ? "Kopyala" : "Copy";
-  const openLabel = locale === "tr" ? "Profili aç" : "Open profile";
+  const openLabel = locale === "tr" ? "Müşteri ekranına git" : "Go to client page";
   const description =
     locale === "tr"
       ? "Müşteriler profil sayfana bu linkten ulaşır."
@@ -38,10 +38,6 @@ export function PublicRouteCard({
     return (
       <div className={className}>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button type="button" size="sm" variant="outline" onClick={copyLink}>
-            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-            {copyLabel}
-          </Button>
           <Button type="button" size="sm" asChild>
             <a href={publicHref} target="_blank" rel="noreferrer">
               <ExternalLink className="size-4" />
