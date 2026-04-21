@@ -95,7 +95,7 @@ export function estimateSubmissionPriceV2(
         ...quote,
         pricingSource,
         requestType: null,
-        featuredDesignPricingMode: design.pricingMode ?? "size_adjusted",
+        featuredDesignPricingMode: "size_and_placement_adjusted",
         submission,
       };
     }

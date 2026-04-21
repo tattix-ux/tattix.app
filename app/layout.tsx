@@ -31,14 +31,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-  icons: {
-    icon: [
-      { url: "/icon.png?v=3", type: "image/png", sizes: "any" },
-      { url: "/brand/tattix-mark-icon.png?v=3", type: "image/png", sizes: "512x512" },
-    ],
-    apple: [{ url: "/apple-icon.png?v=3", type: "image/png", sizes: "180x180" }],
-    shortcut: ["/icon.png?v=3"],
-  },
   description:
     "Tattix is a mobile-first link-in-bio funnel and tattoo pricing estimator for tattoo artists.",
 };

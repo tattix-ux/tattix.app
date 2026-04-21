@@ -442,31 +442,12 @@ function getIntentForSubmission(pricingSource: PricingSourceValue, requestType: 
   return requestType === "unsure" ? "not-sure" : "design-in-mind";
 }
 
-function getFeaturedColorOptions(referenceColorMode: ColorModeValue) {
-  const options: Array<{ key: string; value: ColorModeValue; labelKey: "same" | ColorModeValue }> = [
-    { key: "same", value: referenceColorMode, labelKey: "same" },
-  ];
-  const fallbacks: ColorModeValue[] = ["black-grey", "full-color", "black-only"];
-
-  for (const candidate of fallbacks) {
-    if (candidate !== referenceColorMode) {
-      options.push({ key: candidate, value: candidate, labelKey: candidate });
-    }
-
-    if (options.length === 3) {
-      break;
-    }
-  }
-
-  return options;
-}
-
 function getFlowSteps(
   pricingSource: PricingSourceValue | "",
   areaScope: AreaScopeValue | "",
 ): FunnelFlowStep[] {
   if (pricingSource === "featured_design") {
-    return ["start", "placement", "size", "color_only", "extras"];
+    return ["start", "placement", "size", "extras"];
   }
 
   if (areaScope === "large_single_area") {
@@ -644,14 +625,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       : copy.referenceDescription
                     : copy.stepDescriptions[6];
   const displayProgress = (Math.min(step, lastInteractiveStep) / lastInteractiveStep) * 100;
-  const colorChoices =
-    draft.pricingSource === "featured_design" && selectedDesign
-      ? getFeaturedColorOptions(selectedDesign.referenceColorMode ?? "black-only")
-      : [
-          { key: "black-only", value: "black-only" as ColorModeValue, labelKey: "black-only" as const },
-          { key: "black-grey", value: "black-grey" as ColorModeValue, labelKey: "black-grey" as const },
-          { key: "full-color", value: "full-color" as ColorModeValue, labelKey: "full-color" as const },
-        ];
+  const colorChoices = [
+    { key: "black-only", value: "black-only" as ColorModeValue, labelKey: "black-only" as const },
+    { key: "black-grey", value: "black-grey" as ColorModeValue, labelKey: "black-grey" as const },
+    { key: "full-color", value: "full-color" as ColorModeValue, labelKey: "full-color" as const },
+  ];
   const intensityChoices: Array<{
     value: "clean_line" | "shaded_detailed" | "advanced" | "unsure";
     label: string;
@@ -757,15 +735,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       });
     }
 
-    if (draft.colorMode) {
-      const sameColorMode = selectedDesign?.referenceColorMode ?? "black-only";
-      const colorLabel =
-        draft.pricingSource === "featured_design" && draft.colorMode === sameColorMode
-          ? copy.featuredColorModes.same
-          : draft.pricingSource === "featured_design"
-            ? copy.featuredColorModes[draft.colorMode]
-            : copy.colorModes[draft.colorMode];
-      items.push({ label: copy.summaryLabels.color, value: colorLabel });
+    if (draft.colorMode && draft.pricingSource !== "featured_design") {
+      items.push({ label: copy.summaryLabels.color, value: copy.colorModes[draft.colorMode] });
     }
 
     if (draft.pricingSource === "custom_request" && draft.workStyle) {
@@ -1141,13 +1112,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("pricingSource", "featured_design");
                   setField("selectedDesignCategory", value);
                   setField("selectedDesignId", "");
-                  setField("colorMode", "");
+                  setField("colorMode", "black-only");
                 }}
                 onDesignSelect={(designId) => {
                   if (!designId) {
                     setField("pricingSource", "featured_design");
                     setField("selectedDesignId", "");
-                    setField("colorMode", "");
+                    setField("colorMode", "black-only");
                     return;
                   }
                   const design = activeDesigns.find((item) => item.id === designId) ?? null;
@@ -1165,7 +1136,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("isSizeExplicit", false);
                   setField("approximateSizeCm", null);
                   setField("sizeCategory", "");
-                  setField("colorMode", design?.referenceColorMode ?? "black-only");
+                  setField("colorMode", "black-only");
                   setField("workStyle", "");
                   setField("realismLevel", "");
                   setField("layoutStyle", "");

@@ -7,7 +7,7 @@ const BRAND_PRIMARY_SRC = "/brand/tattix-primary-logo.png";
 const BRAND_ICON_SRC = "/brand/tattix-mark-icon.png";
 const BRAND_MONOGRAM_SRC = "/brand/tattix-monogram.png";
 
-function getIconSizeClass(size: "sm" | "md" | "lg" | "xl") {
+function getIconSizeClass(size: "sm" | "md" | "lg" | "xl" | "2xl") {
   switch (size) {
     case "sm":
       return "size-9 rounded-[14px]";
@@ -16,7 +16,9 @@ function getIconSizeClass(size: "sm" | "md" | "lg" | "xl") {
     case "lg":
       return "size-14 rounded-[20px]";
     case "xl":
-      return "size-[4.25rem] rounded-[22px]";
+      return "size-[4.75rem] rounded-[24px]";
+    case "2xl":
+      return "size-[5.5rem] rounded-[26px]";
     default:
       return "size-11 rounded-[16px]";
   }
@@ -29,7 +31,7 @@ export function BrandIcon({
   priority = false,
 }: {
   className?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl";
   withStage?: boolean;
   priority?: boolean;
 }) {
@@ -50,7 +52,7 @@ export function BrandIcon({
         fill
         priority={priority}
         sizes="(max-width: 768px) 44px, 56px"
-        className={cn("object-cover opacity-[0.97]", withStage ? "scale-[1.02]" : "scale-100")}
+        className={cn("object-cover opacity-[0.98]", withStage ? "scale-[1.12]" : "scale-[1.08]")}
       />
       {withStage ? (
         <>
@@ -104,7 +106,7 @@ export function BrandLockup({
   href?: string;
   iconOnlyOnMobile?: boolean;
   subtitle?: string;
-  iconSize?: "sm" | "md" | "lg" | "xl";
+  iconSize?: "sm" | "md" | "lg" | "xl" | "2xl";
   wordmarkSize?: "sm" | "md" | "lg";
 }) {
   const content = (

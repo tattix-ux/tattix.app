@@ -8,7 +8,7 @@ import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-card";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
-import { BrandLockup, BrandMonogram } from "@/components/shared/logo";
+import { BrandIcon, BrandWordmark } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
 import { hasProAccess } from "@/lib/access";
@@ -59,16 +59,10 @@ export default async function DashboardLayout({
                 <div className="rounded-[22px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] p-4 shadow-[0_20px_44px_rgba(0,0,0,0.28)]">
                   <Link
                     href="/dashboard/profile"
-                    className="relative block overflow-hidden rounded-[22px] border border-[var(--border-soft)] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.03),_transparent_62%),linear-gradient(180deg,rgba(255,255,255,0.018),rgba(0,0,0,0.08))] px-5 py-5"
+                    className="block rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(0,0,0,0.1))] px-5 py-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition hover:border-[var(--border-strong)]"
                   >
-                    <BrandMonogram className="left-auto right-[-12%] top-[-6%] h-[150%] w-[150%]" opacity={0.075} />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(214,177,122,0.08),transparent_38%)]" />
-                    <BrandLockup
-                      iconOnlyOnMobile={false}
-                      iconSize="xl"
-                      wordmarkSize="lg"
-                      className="relative justify-center"
-                    />
+                    <BrandIcon size="2xl" className="mx-auto" priority />
+                    <BrandWordmark size="lg" className="mt-4 text-center" />
                   </Link>
                   <div className="mt-4 space-y-1 px-1">
                     <p className="text-base font-medium tracking-[-0.02em] text-white">
