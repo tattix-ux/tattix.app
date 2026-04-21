@@ -8,7 +8,8 @@ import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-card";
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
-import { BrandIcon, BrandWordmark } from "@/components/shared/logo";
+import { AvatarTile } from "@/components/shared/avatar-tile";
+import { BrandIcon, BrandMonogram, BrandWordmark } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
 import { Badge } from "@/components/ui/badge";
 import { hasProAccess } from "@/lib/access";
@@ -56,28 +57,54 @@ export default async function DashboardLayout({
             <div className="mt-6 grid items-start gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-8">
               <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[236px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <Link
-                  href="/dashboard/profile"
-                  className="block rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.08))] px-5 py-6 text-center shadow-[0_16px_34px_rgba(0,0,0,0.22)] transition hover:border-[var(--border-strong)]"
-                >
-                  <BrandIcon size="xl" className="mx-auto size-[5.4rem] rounded-[30px]" priority />
-                  <BrandWordmark size="lg" className="mt-5 text-center" />
-                </Link>
-                <div className="space-y-1 px-1">
-                  <p className="text-base font-medium tracking-[-0.02em] text-white">
-                    {dashboardData.profile.artistName}
-                  </p>
-                  <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
-                    @{dashboardData.profile.slug}
-                  </p>
-                </div>
-                <div className="rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] p-3.5 shadow-[0_20px_40px_rgba(0,0,0,0.24)]">
-                  <DashboardNav
-                    locale={isTurkish ? "tr" : "en"}
-                    hideProBadges={isProActive}
-                    showAdminMessages={showAdminMessages}
-                    adminUnreadCount={adminUnreadCount}
-                  />
+                <div className="relative overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] px-4 py-5 shadow-[0_22px_48px_rgba(0,0,0,0.24)]">
+                  <div className="space-y-6">
+                    <Link href="/dashboard/profile" className="block text-center">
+                      <BrandIcon
+                        size="2xl"
+                        withStage={false}
+                        className="mx-auto size-[5.8rem] rounded-[32px]"
+                        priority
+                      />
+                      <BrandWordmark size="lg" className="mt-5 text-center" />
+                    </Link>
+                    <div className="rounded-[22px] border border-white/5 bg-white/[0.02] px-3 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <AvatarTile
+                          name={dashboardData.profile.artistName}
+                          imageUrl={dashboardData.profile.profileImageUrl}
+                          size="sm"
+                          planType={dashboardData.profile.planType}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[15px] font-medium tracking-[-0.02em] text-white">
+                            {dashboardData.profile.artistName}
+                          </p>
+                          <p className="truncate text-sm text-[var(--foreground-muted)]">
+                            @{dashboardData.profile.slug}
+                          </p>
+                        </div>
+                      </div>
+                      {isProActive ? (
+                        <Badge variant="accent" className="mt-3 rounded-full px-3 py-1 text-[11px]">
+                          {isTurkish ? "Pro Üye" : "Pro member"}
+                        </Badge>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <DashboardNav
+                      locale={isTurkish ? "tr" : "en"}
+                      hideProBadges={isProActive}
+                      showAdminMessages={showAdminMessages}
+                      adminUnreadCount={adminUnreadCount}
+                    />
+                  </div>
+                  <div className="mt-10 flex justify-center pt-4">
+                    <div className="relative size-[62px] overflow-hidden rounded-full border border-[rgba(214,177,122,0.24)] bg-white/[0.02]">
+                      <BrandMonogram className="inset-[12%]" opacity={0.46} />
+                    </div>
+                  </div>
                 </div>
                 {!isProActive ? (
                   <UpgradeCard

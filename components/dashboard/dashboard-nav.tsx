@@ -92,7 +92,7 @@ export function DashboardNav({
         return (
           <div key={group} className="space-y-3">
             {groupIndex > 0 ? <div className="h-px rounded-full bg-[var(--border-soft)]" /> : null}
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:flex lg:flex-col lg:overflow-visible">
+            <div className="flex flex-col gap-2">
               {groupItems.map((item) => {
         const active = pathname === item.href;
         const Icon = item.icon;
@@ -102,22 +102,22 @@ export function DashboardNav({
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[18px] border px-2.5 py-3 text-center text-[11px] leading-4 transition sm:px-3 sm:text-xs lg:min-w-fit lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3.5 lg:py-3 lg:text-sm lg:text-left",
+              "inline-flex min-w-0 items-center justify-start gap-3 rounded-[16px] border px-3.5 py-3 text-sm transition",
               active
-                ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(214,177,122,0.05)_100%)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_8px_20px_rgba(0,0,0,0.18)]"
+                ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(214,177,122,0.07)_100%)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
                 : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-soft)] hover:bg-[rgba(255,255,255,0.024)] hover:text-[var(--text-primary)]",
             )}
           >
             <Icon className="size-4" />
-            <span className="break-words">{item.label}</span>
+            <span className="min-w-0 flex-1 break-words">{item.label}</span>
             {item.pro && !hideProBadges ? (
-              <Badge variant="muted" className="gap-1 lg:ml-1">
+              <Badge variant="muted" className="ml-auto gap-1">
                 <Crown className="size-3" />
                 Pro
               </Badge>
             ) : null}
             {item.unreadCount ? (
-              <Badge variant="accent" className="lg:ml-1">
+              <Badge variant="accent" className="ml-auto">
                 {item.unreadCount}
               </Badge>
             ) : null}
