@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
@@ -445,6 +446,7 @@ export function FeaturedDesignsForm({
   locale?: PublicLocale;
 }) {
   const labels = copy[locale];
+  const router = useRouter();
   const form = useForm<FeaturedDesignFormInput, unknown, FeaturedDesignValues>({
     resolver: zodResolver(featuredDesignsSchema),
     defaultValues: {
@@ -765,10 +767,10 @@ export function FeaturedDesignsForm({
       },
       body: JSON.stringify(normalizedValues),
     });
-    await response.json().catch(() => null);
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
 
     if (!response.ok) {
-      form.setError("root", { message: labels.saveFailed });
+      form.setError("root", { message: payload?.message ?? labels.saveFailed });
       return;
     }
 
@@ -789,6 +791,8 @@ export function FeaturedDesignsForm({
         syncEditorState({ ...savedDesign, id: savedDesignId });
       }
     }
+
+    router.refresh();
   }
 
   const statusMessage = form.formState.errors.root?.message ?? null;

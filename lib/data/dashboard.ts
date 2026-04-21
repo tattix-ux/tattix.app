@@ -259,9 +259,7 @@ export const getDashboardPricingData = cache(async function getDashboardPricingD
   };
 });
 
-export const getDashboardDesignsData = cache(async function getDashboardDesignsData(
-  userId: string | null,
-) {
+export async function getDashboardDesignsData(userId: string | null) {
   const artistId = await resolveDashboardArtistId(userId);
 
   if (!artistId) {
@@ -287,7 +285,7 @@ export const getDashboardDesignsData = cache(async function getDashboardDesignsD
     featuredDesigns: (designRows.data ?? []).map((row) => mapFeaturedDesign(row as Record<string, unknown>)),
     demoMode: false,
   };
-});
+}
 
 export const getDashboardCustomizeData = cache(async function getDashboardCustomizeData(
   userId: string | null,
