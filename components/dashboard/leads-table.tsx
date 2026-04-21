@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ImageIcon, StickyNote } from "lucide-react";
 
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Badge } from "@/components/ui/badge";
@@ -20,16 +19,13 @@ import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/bo
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import { intentOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
-import {
-  getRequestTypeLabel,
-} from "@/lib/pricing/v2/output";
+import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
 import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
 import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
 type FilterRange = "7d" | "30d" | "90d" | "all";
 type LeadStatusFilter = "all" | LeadStatus;
 type LeadSort = "waiting-first" | "newest" | "oldest" | "highest-estimate" | "lowest-estimate";
-type ChartGranularity = "daily" | "weekly" | "monthly";
 
 const leadCopy = {
   en: {
@@ -41,9 +37,8 @@ const leadCopy = {
     emptyFiltered: "No requests match these filters.",
     resetFilters: "Clear filters",
     summary: {
-      waiting: "Waiting for contact",
+      waiting: "Contacted",
       total: "Total requests",
-      fresh: "Waiting for contact",
       sold: "Sold",
       rate: "Sale rate",
     },
@@ -72,16 +67,6 @@ const leadCopy = {
       sold: "Sold",
       lost: "Lost",
     },
-    chartTitle: "Request trend",
-    chartDescription: "Show chart",
-    chartToggle: "Chart view",
-    requests: "Requests",
-    sales: "Sales",
-    granularity: {
-      daily: "Daily",
-      weekly: "Weekly",
-      monthly: "Monthly",
-    },
     table: {
       estimate: "Estimate",
       request: "Request",
@@ -89,18 +74,12 @@ const leadCopy = {
       status: "Status",
       actions: "Status tracking",
       detailButton: "Details",
-      markContacted: "Mark as contacted",
-      markSold: "Mark as sold",
-      markLost: "Mark as lost",
+      color: "Color",
+      detailLevel: "Detail level",
+      layout: "Layout",
       placement: "Placement",
       size: "Size",
-      areaScope: "Area size",
-      areaCoverage: "Coverage",
-      wideAreaTarget: "Closest area",
       intent: "Request type",
-      style: "Style",
-      workStyle: "Work style",
-      estimateType: "Estimate type",
       coverUp: "Cover-up",
       city: "City",
       timing: "Preferred time",
@@ -108,13 +87,12 @@ const leadCopy = {
       reference: "Reference image",
       shownEstimate: "Estimate shown",
       selectedDesign: "Selected design",
-      source: "Source",
       noCity: "Not shared",
       noTiming: "Not shared",
       noNotes: "No notes",
       noReference: "No reference image",
       noDesign: "No design selected",
-      soldAt: "Marked sold",
+      soldAt: "Sale date",
       pageSummary: (current: number, total: number) => `Page ${current} / ${total}`,
       previous: "Previous",
       next: "Next",
@@ -130,9 +108,8 @@ const leadCopy = {
     emptyFiltered: "Bu filtrelerle eşleşen talep bulunamadı.",
     resetFilters: "Filtreleri temizle",
     summary: {
-      waiting: "İletişim bekleniyor",
+      waiting: "İletişime geçilen",
       total: "Toplam talep",
-      fresh: "İletişim bekleniyor",
       sold: "Satış yapıldı",
       rate: "Satış oranı",
     },
@@ -161,16 +138,6 @@ const leadCopy = {
       sold: "Satış yapıldı",
       lost: "Satış olmadı",
     },
-    chartTitle: "Talep görünümü",
-    chartDescription: "Grafiği göster",
-    chartToggle: "Grafik görünümü",
-    requests: "Talep",
-    sales: "Satış",
-    granularity: {
-      daily: "Günlük",
-      weekly: "Haftalık",
-      monthly: "Aylık",
-    },
     table: {
       estimate: "Tahmin",
       request: "Talep",
@@ -178,18 +145,12 @@ const leadCopy = {
       status: "Durum",
       actions: "Durum takibi",
       detailButton: "Detay",
-      markContacted: "İletişime geçildi olarak işaretle",
-      markSold: "Satış yapıldı",
-      markLost: "Satış olmadı",
+      color: "Renk",
+      detailLevel: "Detay seviyesi",
+      layout: "Düzen",
       placement: "Yerleşim",
       size: "Yaklaşık boyut",
-      areaScope: "Alan büyüklüğü",
-      areaCoverage: "Kaplama seviyesi",
-      wideAreaTarget: "Yakın olduğu alan",
       intent: "Talep tipi",
-      style: "Stil",
-      workStyle: "İşçilik karakteri",
-      estimateType: "Tahmin tipi",
       coverUp: "Kapatma durumu",
       city: "Şehir",
       timing: "Tercih edilen zaman",
@@ -197,7 +158,6 @@ const leadCopy = {
       reference: "Referans görsel",
       shownEstimate: "Müşteriye gösterilen tahmin",
       selectedDesign: "Seçilen tasarım",
-      source: "Kaynak",
       noCity: "Paylaşılmadı",
       noTiming: "Paylaşılmadı",
       noNotes: "Not yok",
@@ -218,17 +178,6 @@ const intentLabelsTr: Record<ClientSubmission["intent"], string> = {
   "flash-design": "Flash tasarım",
   "discounted-design": "İndirimli tasarım",
   "not-sure": "Emin değilim",
-};
-
-const styleLabelsTr: Record<string, string> = {
-  "fine-line": "Fine line",
-  minimal: "Minimal",
-  blackwork: "Blackwork",
-  realistic: "Realistic",
-  realism: "Realistic",
-  "micro-realism": "Micro realism",
-  "not-sure-style": "Emin değilim",
-  custom: "Özel",
 };
 
 const sizeLabels = {
@@ -327,36 +276,6 @@ function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-function startOfWeek(date: Date) {
-  const day = date.getDay();
-  const diff = (day + 6) % 7;
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - diff);
-}
-
-function startOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function formatBucketLabel(date: Date, granularity: ChartGranularity, locale: PublicLocale) {
-  if (granularity === "daily") {
-    return new Intl.DateTimeFormat(locale === "tr" ? "tr-TR" : "en-GB", {
-      day: "2-digit",
-      month: "short",
-    }).format(date);
-  }
-
-  if (granularity === "weekly") {
-    return locale === "tr"
-      ? `Hf ${new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(date)}`
-      : `Wk ${new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(date)}`;
-  }
-
-  return new Intl.DateTimeFormat(locale === "tr" ? "tr-TR" : "en-GB", {
-    month: "short",
-    year: "2-digit",
-  }).format(date);
-}
-
 function getRangeStart(range: FilterRange) {
   const now = new Date();
 
@@ -392,7 +311,7 @@ function getDisplayedColor(lead: ClientSubmission, locale: PublicLocale) {
 
 function getDisplayedDetailLevel(lead: ClientSubmission, locale: PublicLocale) {
   if (!lead.workStyle) {
-    return null;
+    return locale === "tr" ? "Emin değil" : "Not sure";
   }
 
   if (locale === "tr") {
@@ -421,7 +340,7 @@ function getDisplayedDetailLevel(lead: ClientSubmission, locale: PublicLocale) {
     }
   }
 
-  return null;
+  return locale === "tr" ? "Emin değil" : "Not sure";
 }
 
 function getDisplayedLayout(lead: ClientSubmission, locale: PublicLocale) {
@@ -568,50 +487,6 @@ function formatLeadPlacementSummary(lead: ClientSubmission, locale: PublicLocale
   return formatPlacement(lead.bodyAreaDetail, locale);
 }
 
-function getDisplayedAreaScope(lead: ClientSubmission, locale: PublicLocale) {
-  if (!lead.areaScope || lead.areaScope === "unsure") {
-    return null;
-  }
-
-  if (locale === "tr") {
-    if (lead.areaScope === "large_single_area") return "Tek bölgede büyük";
-    if (lead.areaScope === "wide_area") return "Çok geniş";
-    return "Küçük / orta";
-  }
-
-  if (lead.areaScope === "large_single_area") return "Large single area";
-  if (lead.areaScope === "wide_area") return "Wide area";
-  return "Small / medium";
-}
-
-function getDisplayedCoverage(lead: ClientSubmission, locale: PublicLocale) {
-  if (lead.areaScope === "large_single_area" && lead.largeAreaCoverage) {
-    if (locale === "tr") {
-      if (lead.largeAreaCoverage === "partial") return "Bir kısmı";
-      if (lead.largeAreaCoverage === "mostly") return "Büyük kısmı";
-      return "Neredeyse tamamı";
-    }
-
-    if (lead.largeAreaCoverage === "partial") return "Part of it";
-    if (lead.largeAreaCoverage === "mostly") return "Most of it";
-    return "Almost all of it";
-  }
-
-  if (lead.areaScope === "wide_area" && lead.wideAreaTarget) {
-    return getWideAreaPlacementSummary(lead, locale);
-  }
-
-  return null;
-}
-
-function getDisplayedWideAreaTarget(lead: ClientSubmission, locale: PublicLocale) {
-  if (lead.areaScope !== "wide_area") {
-    return null;
-  }
-
-  return getWideAreaPlacementSummary(lead, locale);
-}
-
 function getSizeLabel(lead: ClientSubmission, locale: PublicLocale) {
   if (lead.areaScope === "large_single_area" || lead.areaScope === "wide_area") {
     return null;
@@ -631,34 +506,6 @@ function getDisplayedEstimate(lead: ClientSubmission, currency: string) {
   return lead.displayEstimateLabel ?? formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency);
 }
 
-function getDisplayedWorkStyle(lead: ClientSubmission, locale: PublicLocale) {
-  return getDisplayedDetailLevel(lead, locale) ?? (locale === "tr" ? "Belirtilmedi" : "Not specified");
-}
-
-function getEstimateModeLabel(estimateMode: ClientSubmission["estimateMode"], locale: PublicLocale) {
-  if (!estimateMode) {
-    return null;
-  }
-
-  if (locale === "tr") {
-    if (estimateMode === "range") return "Fiyat aralığı";
-    if (estimateMode === "soft_range") return "Esnek aralık";
-    return "Başlangıç fiyatı";
-  }
-
-  if (estimateMode === "range") return "Price range";
-  if (estimateMode === "soft_range") return "Flexible range";
-  return "Starting price";
-}
-
-function getPricingSourceLabel(lead: ClientSubmission, locale: PublicLocale) {
-  if (lead.pricingSource === "featured_design") {
-    return locale === "tr" ? "Hazır tasarım" : "Ready-made design";
-  }
-
-  return locale === "tr" ? "Özel talep" : "Custom request";
-}
-
 function getLeadTypeLabel(lead: ClientSubmission, locale: PublicLocale) {
   if (lead.pricingSource === "featured_design" || lead.selectedDesignId) {
     return locale === "tr" ? "Hazır tasarım" : "Ready-made design";
@@ -671,20 +518,20 @@ function getLeadTypeLabel(lead: ClientSubmission, locale: PublicLocale) {
   return formatIntent(lead.intent, locale);
 }
 
-function getRequestLabel(
-  lead: ClientSubmission,
-  locale: PublicLocale,
-  designs: ArtistFeaturedDesign[],
-) {
-  return getSelectedDesignLabel(lead, designs) ?? getLeadTypeLabel(lead, locale);
-}
-
 function getSelectedDesignLabel(lead: ClientSubmission, designs: ArtistFeaturedDesign[]) {
   if (!lead.selectedDesignId) {
     return null;
   }
 
   return designs.find((design) => design.id === lead.selectedDesignId)?.title ?? null;
+}
+
+function getRequestLabel(
+  lead: ClientSubmission,
+  locale: PublicLocale,
+  designs: ArtistFeaturedDesign[],
+) {
+  return getSelectedDesignLabel(lead, designs) ?? getLeadTypeLabel(lead, locale);
 }
 
 function getPreferredTimingLabel(lead: ClientSubmission, locale: PublicLocale, noTiming: string) {
@@ -799,38 +646,6 @@ function sortLeads(leads: ClientSubmission[], sort: LeadSort) {
   return sorted;
 }
 
-function buildChartData(
-  leads: ClientSubmission[],
-  granularity: ChartGranularity,
-  locale: PublicLocale,
-) {
-  const buckets = new Map<string, { label: string; total: number; sold: number; date: Date }>();
-
-  leads.forEach((lead) => {
-    const source = new Date(lead.createdAt);
-    const bucketDate =
-      granularity === "daily"
-        ? startOfDay(source)
-        : granularity === "weekly"
-          ? startOfWeek(source)
-          : startOfMonth(source);
-
-    const key = bucketDate.toISOString();
-    const existing = buckets.get(key) ?? {
-      label: formatBucketLabel(bucketDate, granularity, locale),
-      total: 0,
-      sold: 0,
-      date: bucketDate,
-    };
-
-    existing.total += 1;
-    existing.sold += lead.status === "sold" ? 1 : 0;
-    buckets.set(key, existing);
-  });
-
-  return Array.from(buckets.values()).sort((left, right) => left.date.getTime() - right.date.getTime());
-}
-
 function formatConversionRate(total: number, sold: number) {
   if (total === 0) {
     return "0%";
@@ -907,11 +722,9 @@ export function LeadsTable({
   const [localLeads, setLocalLeads] = useState(leads);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
-  const [waitingOnly, setWaitingOnly] = useState(true);
+  const [waitingOnly, setWaitingOnly] = useState(false);
   const [range, setRange] = useState<FilterRange>("all");
   const [sort, setSort] = useState<LeadSort>("waiting-first");
-  const [granularity, setGranularity] = useState<ChartGranularity>("weekly");
-  const [chartOpen, setChartOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const pageSize = 10;
@@ -955,7 +768,6 @@ export function LeadsTable({
           ? "Durum güncellenemedi. Tekrar dene."
           : "Status could not be updated. Please try again.",
       );
-      return;
     }
   }
 
@@ -972,20 +784,14 @@ export function LeadsTable({
     [localLeads, range, sort, statusFilter, waitingOnly],
   );
 
-  const totalCount = filteredLeads.length;
-  const newCount = filteredLeads.filter((lead) => lead.status === "new").length;
-  const contactedCount = filteredLeads.filter((lead) => lead.status !== "new").length;
-  const soldCount = filteredLeads.filter((lead) => lead.status === "sold").length;
+  const totalCount = localLeads.length;
+  const contactedCount = localLeads.filter((lead) => lead.status !== "new").length;
+  const soldCount = localLeads.filter((lead) => lead.status === "sold").length;
   const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
   const paginatedLeads = useMemo(
     () => filteredLeads.slice((page - 1) * pageSize, page * pageSize),
     [filteredLeads, page],
   );
-  const chartData = useMemo(
-    () => buildChartData(filteredLeads, granularity, locale),
-    [filteredLeads, granularity, locale],
-  );
-  const chartMax = Math.max(...chartData.flatMap((item) => [item.total, item.sold]), 1);
 
   useEffect(() => {
     setLocalLeads(leads);
@@ -1020,159 +826,116 @@ export function LeadsTable({
   }
 
   function renderLeadActions(lead: ClientSubmission, compact = false) {
-    if (lead.status === "new") {
-      return (
-        <Button
-          size={compact ? "sm" : "default"}
-          onClick={() => void updateLeadStatus(lead.id, "contacted")}
-          className={cn(compact ? "h-9" : "h-10", "rounded-full")}
-        >
-          {copy.table.markContacted}
-        </Button>
-      );
-    }
+    const statuses: LeadStatus[] = ["new", "contacted", "sold", "lost"];
 
-    if (lead.status === "contacted") {
-      return (
-        <div className={cn("flex gap-2", compact ? "flex-col" : "flex-wrap")}>
-          <Button
-            size={compact ? "sm" : "default"}
-            onClick={() => void updateLeadStatus(lead.id, "sold")}
-            className={cn(compact ? "h-9" : "h-10", "rounded-full")}
-          >
-            {copy.table.markSold}
-          </Button>
-          <Button
-            size={compact ? "sm" : "default"}
-            variant="outline"
-            onClick={() => void updateLeadStatus(lead.id, "lost")}
-            className={cn(compact ? "h-9" : "h-10", "rounded-full")}
-          >
-            {copy.table.markLost}
-          </Button>
-        </div>
-      );
-    }
+    return (
+      <div className={cn("flex gap-2", compact ? "flex-col" : "flex-wrap")}>
+        {statuses.map((status) => {
+          const isSelected = lead.status === status;
 
-    return null;
+          return (
+            <Button
+              key={status}
+              type="button"
+              size={compact ? "sm" : "default"}
+              variant={isSelected ? "secondary" : "outline"}
+              className={cn(compact ? "h-9" : "h-10", "justify-center rounded-full")}
+              onClick={() => void updateLeadStatus(lead.id, status)}
+            >
+              {copy.statusLabels[status]}
+            </Button>
+          );
+        })}
+      </div>
+    );
   }
 
   function renderLeadDetailPanel(lead: ClientSubmission) {
-    const selectedDesign = lead.selectedDesignId
-      ? designs.find((design) => design.id === lead.selectedDesignId)?.title ?? copy.table.noDesign
-      : copy.table.noDesign;
+    const selectedDesign = getSelectedDesignLabel(lead, designs);
+    const placementSummary = formatLeadPlacementSummary(lead, locale);
+    const sizeLabel = getSizeLabel(lead, locale);
+    const colorLabel = getDisplayedColor(lead, locale);
+    const detailLevel = getDisplayedDetailLevel(lead, locale);
+    const layoutLabel = getDisplayedLayout(lead, locale);
+    const coverUpLabel =
+      lead.coverUp === true || lead.requestType === "cover_up"
+        ? getCoverUpLabel(true, locale)
+        : null;
+    const referenceImageUrl = getReferenceImageUrl(lead);
+    const summaryItems = [
+      { label: copy.table.intent, value: getLeadTypeLabel(lead, locale) },
+      { label: copy.table.placement, value: placementSummary },
+      ...(sizeLabel ? [{ label: copy.table.size, value: sizeLabel }] : []),
+      ...(colorLabel ? [{ label: copy.table.color, value: colorLabel }] : []),
+      ...(detailLevel ? [{ label: copy.table.detailLevel, value: detailLevel }] : []),
+      ...(layoutLabel ? [{ label: copy.table.layout, value: layoutLabel }] : []),
+      ...(coverUpLabel ? [{ label: copy.table.coverUp, value: coverUpLabel }] : []),
+      { label: copy.table.city, value: lead.city || copy.table.noCity },
+      { label: copy.table.timing, value: getPreferredTimingLabel(lead, locale, copy.table.noTiming) },
+      { label: copy.table.shownEstimate, value: getDisplayedEstimate(lead, currency) },
+      ...(selectedDesign ? [{ label: copy.table.selectedDesign, value: selectedDesign }] : []),
+      ...(lead.status === "sold"
+        ? [{ label: copy.table.soldAt, value: lead.soldAt ? formatLeadDate(lead.soldAt, locale) : "—" }]
+        : []),
+    ];
 
     return (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
         <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.intent}</p>
-              <p className="text-sm text-white">{getRequestLabel(lead, locale, designs)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.placement}</p>
-              <p className="text-sm text-white">{formatPlacement(lead.bodyAreaDetail, locale)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.size}</p>
-              <p className="text-sm text-white">{getSizeLabel(lead, locale)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.areaScope}</p>
-              <p className="text-sm text-white">{getDisplayedAreaScope(lead, locale) ?? "—"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.areaCoverage}</p>
-              <p className="text-sm text-white">{getDisplayedCoverage(lead, locale) ?? "—"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.wideAreaTarget}</p>
-              <p className="text-sm text-white">{getDisplayedWideAreaTarget(lead, locale) ?? "—"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
-                {lead.workStyle ? copy.table.workStyle : copy.table.style}
-              </p>
-              <p className="text-sm text-white">{getDisplayedWorkStyle(lead, locale)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.coverUp}</p>
-              <p className="text-sm text-white">{getCoverUpLabel(lead.coverUp, locale) ?? "—"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.city}</p>
-              <p className="text-sm text-white">{lead.city || copy.table.noCity}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.timing}</p>
-              <p className="text-sm text-white">{getPreferredTimingLabel(lead, locale, copy.table.noTiming)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.shownEstimate}</p>
-              <p className="text-sm text-white">{getDisplayedEstimate(lead, currency)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.estimateType}</p>
-              <p className="text-sm text-white">{getEstimateModeLabel(lead.estimateMode, locale) ?? "—"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.selectedDesign}</p>
-              <p className="text-sm text-white">{selectedDesign}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.source}</p>
-              <p className="text-sm text-white">{getPricingSourceLabel(lead, locale)}</p>
-            </div>
-            <div className="space-y-1 sm:col-span-2">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.notes}</p>
-              <p className="text-sm text-white">{lead.notes || copy.table.noNotes}</p>
-            </div>
-            <div className="space-y-1 sm:col-span-2">
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.soldAt}</p>
-              <p className="text-sm text-white">
-                {lead.soldAt ? formatLeadDate(lead.soldAt, locale) : copy.statusLabels[lead.status]}
-              </p>
-            </div>
+            {summaryItems.map((item) => (
+              <div key={item.label} className="space-y-1">
+                <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{item.label}</p>
+                <p className="text-sm text-white">{item.value}</p>
+              </div>
+            ))}
+            {lead.notes ? (
+              <div className="space-y-1 sm:col-span-2">
+                <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.notes}</p>
+                <p className="text-sm text-white">{lead.notes}</p>
+              </div>
+            ) : null}
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.reference}</p>
-                <p className="mt-1 text-sm text-white">{lead.referenceDescription || copy.table.noReference}</p>
+          {referenceImageUrl || lead.referenceDescription ? (
+            <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.reference}</p>
+                  <p className="mt-1 text-sm text-white">{lead.referenceDescription || copy.table.reference}</p>
+                </div>
+                <StatusBadge status={lead.status} locale={locale} />
               </div>
-              <StatusBadge status={lead.status} locale={locale} />
+              {referenceImageUrl ? (
+                <div className="mt-4 space-y-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={referenceImageUrl}
+                    alt="Reference"
+                    className="h-56 w-full rounded-[18px] object-cover"
+                  />
+                  <a
+                    href={referenceImageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-[var(--accent-soft)] underline-offset-4 hover:underline"
+                  >
+                    {copy.table.openImage}
+                  </a>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-[var(--foreground-muted)]">{copy.table.noReference}</p>
+              )}
             </div>
-            {getReferenceImageUrl(lead) ? (
-              <div className="mt-4 space-y-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={getReferenceImageUrl(lead) ?? ""}
-                  alt="Reference"
-                  className="h-56 w-full rounded-[18px] object-cover"
-                />
-                <a
-                  href={getReferenceImageUrl(lead) ?? "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-[var(--accent-soft)] underline-offset-4 hover:underline"
-                >
-                  {copy.table.openImage}
-                </a>
-              </div>
-            ) : (
-              <p className="mt-4 text-sm text-[var(--foreground-muted)]">{copy.table.noReference}</p>
-            )}
-          </div>
+          ) : null}
 
           <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">{copy.table.status}</p>
             <div className="mt-3 flex flex-col gap-3">
               <StatusBadge status={lead.status} locale={locale} />
-              {renderLeadActions(lead) ? <div>{renderLeadActions(lead)}</div> : null}
+              <div>{renderLeadActions(lead)}</div>
               <p className="text-sm text-[var(--foreground-muted)]">
                 {copy.statusLabels[lead.status]}
               </p>
@@ -1200,80 +963,10 @@ export function LeadsTable({
                 {copy.note}
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard label={copy.summary.waiting} value={newCount} tone="accent" />
-                <StatCard label={copy.summary.total} value={totalCount} />
+                <StatCard label={copy.summary.total} value={totalCount} tone="accent" />
+                <StatCard label={copy.summary.waiting} value={contactedCount} />
                 <StatCard label={copy.summary.sold} value={soldCount} />
                 <StatCard label={copy.summary.rate} value={formatConversionRate(contactedCount, soldCount)} />
-              </div>
-
-              <div className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-between rounded-[18px] border-white/10 bg-black/20 text-left text-white hover:bg-white/5"
-                  onClick={() => setChartOpen((current) => !current)}
-                >
-                  <span>{copy.chartToggle}</span>
-                  <ChevronDown
-                    className={cn("size-5 text-[var(--foreground-muted)] transition-transform", chartOpen ? "rotate-180" : "")}
-                  />
-                </Button>
-
-                {chartOpen ? (
-                  <div className="mt-5 space-y-4">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
-                        <span className="inline-flex items-center gap-2">
-                          <span className="size-2 rounded-full bg-white" />
-                          {copy.requests}
-                        </span>
-                        <span className="inline-flex items-center gap-2">
-                          <span className="size-2 rounded-full bg-[var(--accent)]" />
-                          {copy.sales}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {(["daily", "weekly", "monthly"] as const).map((item) => (
-                          <Button
-                            key={item}
-                            type="button"
-                            size="sm"
-                            variant={granularity === item ? "secondary" : "outline"}
-                            onClick={() => setGranularity(item)}
-                          >
-                            {copy.granularity[item]}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {chartData.length === 0 ? (
-                      <p className="text-sm text-[var(--foreground-muted)]">{copy.emptyFiltered}</p>
-                    ) : (
-                      <div className="grid h-52 grid-cols-[repeat(auto-fit,minmax(52px,1fr))] items-end gap-3">
-                        {chartData.map((item) => (
-                          <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
-                            <div className="flex h-36 w-full items-end justify-center gap-1">
-                              <div
-                                className="w-3 rounded-t-full bg-white/85"
-                                style={{ height: `${Math.max((item.total / chartMax) * 100, 8)}%` }}
-                                title={`${copy.requests}: ${item.total}`}
-                              />
-                              <div
-                                className="w-3 rounded-t-full bg-[var(--accent)]"
-                                style={{ height: `${Math.max((item.sold / chartMax) * 100, item.sold ? 8 : 0)}%` }}
-                                title={`${copy.sales}: ${item.sold}`}
-                              />
-                            </div>
-                            <p className="truncate text-center text-[11px] text-[var(--foreground-muted)]">
-                              {item.label}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : null}
               </div>
             </>
           ) : (
@@ -1358,10 +1051,7 @@ export function LeadsTable({
                 <p className="mb-2 text-xs uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
                   {copy.filters.sort}
                 </p>
-                <NativeSelect
-                  value={sort}
-                  onChange={(event) => setSort(event.target.value as LeadSort)}
-                >
+                <NativeSelect value={sort} onChange={(event) => setSort(event.target.value as LeadSort)}>
                   <option value="waiting-first">{copy.filters.waitingFirst}</option>
                   <option value="newest">{copy.filters.newest}</option>
                   <option value="oldest">{copy.filters.oldest}</option>
@@ -1375,16 +1065,14 @@ export function LeadsTable({
           {filteredLeads.length === 0 ? (
             <div className="rounded-[24px] border border-white/8 bg-black/20 p-6 text-center">
               <p className="text-lg font-medium text-white">{copy.emptyFiltered}</p>
-              <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-                {copy.description}
-              </p>
+              <p className="mt-2 text-sm text-[var(--foreground-muted)]">{copy.description}</p>
               <Button
                 type="button"
                 variant="outline"
                 className="mt-4"
                 onClick={() => {
                   setStatusFilter("all");
-                  setWaitingOnly(true);
+                  setWaitingOnly(false);
                   setRange("all");
                   setSort("waiting-first");
                 }}
@@ -1395,59 +1083,49 @@ export function LeadsTable({
           ) : (
             <>
               <div className="space-y-3 lg:hidden">
-                {paginatedLeads.map((lead) => (
-                  <div key={lead.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-2xl font-semibold text-white">
-                          {getDisplayedEstimate(lead, currency)}
-                        </p>
-                        <p className="mt-1 text-sm text-white">
-                          {formatPlacement(lead.bodyAreaDetail, locale)} · {getSizeLabel(lead, locale)}
-                        </p>
-                        <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                          {getRequestLabel(lead, locale, designs)}
-                        </p>
+                {paginatedLeads.map((lead) => {
+                  const placementSummary = formatLeadPlacementSummary(lead, locale);
+                  const sizeLabel = getSizeLabel(lead, locale);
+                  return (
+                    <div key={lead.id} className="rounded-[24px] border border-white/8 bg-black/20 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-2xl font-semibold text-white">{getDisplayedEstimate(lead, currency)}</p>
+                          <p className="mt-1 text-sm text-white">
+                            {[placementSummary, sizeLabel].filter(Boolean).join(" • ")}
+                          </p>
+                          <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+                            {getRequestLabel(lead, locale, designs)}
+                          </p>
+                        </div>
+                        <StatusBadge status={lead.status} locale={locale} />
                       </div>
-                      <StatusBadge status={lead.status} locale={locale} />
-                    </div>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--foreground-muted)]">
-                      <span>{formatLeadDate(lead.createdAt, locale)}</span>
-                      <span>{copy.table.source}: {getPricingSourceLabel(lead, locale)}</span>
-                      {getDisplayedAreaScope(lead, locale) ? <span>{getDisplayedAreaScope(lead, locale)}</span> : null}
-                      {getReferenceImageUrl(lead) ? (
-                        <span className="inline-flex items-center gap-1">
-                          <ImageIcon className="size-4" />
-                          {copy.table.reference}
-                        </span>
-                      ) : null}
+                      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--foreground-muted)]">
+                        <span>{formatLeadDate(lead.createdAt, locale)}</span>
+                        {lead.city ? <span>{lead.city}</span> : null}
+                        {lead.selectedDesignId ? <span>{getSelectedDesignLabel(lead, designs)}</span> : null}
+                      </div>
+
                       {lead.notes ? (
-                        <span className="inline-flex items-center gap-1">
-                          <StickyNote className="size-4" />
-                          {copy.table.notes}
-                        </span>
+                        <p className="mt-3 text-sm text-[var(--foreground-muted)]">
+                          {notesPreview(lead.notes, copy.table.noNotes)}
+                        </p>
+                      ) : null}
+
+                      <div className="mt-4 space-y-2">
+                        <div>{renderLeadActions(lead, true)}</div>
+                        <Button variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
+                          {copy.table.detailButton}
+                        </Button>
+                      </div>
+
+                      {selectedLeadId === lead.id ? (
+                        <div className="mt-4">{renderLeadDetailPanel(lead)}</div>
                       ) : null}
                     </div>
-
-                    <p className="mt-3 text-sm text-[var(--foreground-muted)]">
-                      {notesPreview(lead.notes, copy.table.noNotes)}
-                    </p>
-
-                    <div className="mt-4 space-y-2">
-                      {renderLeadActions(lead, true)}
-                      <Button variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
-                        {copy.table.detailButton}
-                      </Button>
-                    </div>
-
-                    {selectedLeadId === lead.id ? (
-                      <div className="mt-4">
-                        {renderLeadDetailPanel(lead)}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="hidden overflow-hidden rounded-[24px] border border-white/8 lg:block">
@@ -1462,95 +1140,77 @@ export function LeadsTable({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedLeads.map((lead) => (
-                      <Fragment key={lead.id}>
-                        <TableRow>
-                          <TableCell className="align-top">
-                            <div className="space-y-1">
-                              <p className="text-lg font-semibold text-white">
-                                {getDisplayedEstimate(lead, currency)}
-                              </p>
-                              <p className="text-xs text-[var(--foreground-muted)]">
-                                {formatLeadDate(lead.createdAt, locale)}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <div className="space-y-1">
-                              <p className="font-medium text-white">
-                                {formatPlacement(lead.bodyAreaDetail, locale)} · {getSizeLabel(lead, locale)}
-                              </p>
-                              <p className="text-sm text-[var(--foreground-muted)]">
-                                {getRequestLabel(lead, locale, designs)}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <div className="space-y-2">
-                              <p className="text-sm text-[var(--foreground-muted)]">
-                                {copy.table.source}: {getPricingSourceLabel(lead, locale)}
-                              </p>
-                              <p className="text-sm text-[var(--foreground-muted)]">
-                                {notesPreview(lead.notes, copy.table.noNotes)}
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {getDisplayedAreaScope(lead, locale) ? (
-                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
-                                    {getDisplayedAreaScope(lead, locale)}
-                                  </span>
-                                ) : null}
-                                {getEstimateModeLabel(lead.estimateMode, locale) ? (
-                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
-                                    {getEstimateModeLabel(lead.estimateMode, locale)}
-                                  </span>
-                                ) : null}
-                                {getReferenceImageUrl(lead) ? (
-                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                      src={getReferenceImageUrl(lead) ?? ""}
-                                      alt="Reference"
-                                      className="size-5 rounded-full object-cover"
-                                    />
-                                    {copy.table.reference}
-                                  </span>
-                                ) : null}
-                                {lead.notes ? (
-                                  <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
-                                    <StickyNote className="size-3.5" />
-                                    {copy.table.notes}
-                                  </span>
-                                ) : null}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <StatusBadge status={lead.status} locale={locale} />
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <div className="flex min-w-[240px] flex-col gap-2">
-                              {renderLeadActions(lead, true)}
-                              <Button size="sm" variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
-                                {copy.table.detailButton}
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                        {selectedLeadId === lead.id ? (
+                    {paginatedLeads.map((lead) => {
+                      const placementSummary = formatLeadPlacementSummary(lead, locale);
+                      const sizeLabel = getSizeLabel(lead, locale);
+                      return (
+                        <Fragment key={lead.id}>
                           <TableRow>
-                            <TableCell colSpan={5}>{renderLeadDetailPanel(lead)}</TableCell>
+                            <TableCell className="align-top">
+                              <div className="space-y-1">
+                                <p className="text-lg font-semibold text-white">
+                                  {getDisplayedEstimate(lead, currency)}
+                                </p>
+                                <p className="text-xs text-[var(--foreground-muted)]">
+                                  {formatLeadDate(lead.createdAt, locale)}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="align-top">
+                              <div className="space-y-1">
+                                <p className="font-medium text-white">
+                                  {[placementSummary, sizeLabel].filter(Boolean).join(" • ")}
+                                </p>
+                                <p className="text-sm text-[var(--foreground-muted)]">
+                                  {getRequestLabel(lead, locale, designs)}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="align-top">
+                              <div className="space-y-2">
+                                <p className="text-sm text-[var(--foreground-muted)]">
+                                  {lead.notes ? notesPreview(lead.notes, copy.table.noNotes) : lead.city || copy.table.noCity}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {lead.selectedDesignId ? (
+                                    <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
+                                      {getSelectedDesignLabel(lead, designs)}
+                                    </span>
+                                  ) : null}
+                                  {getReferenceImageUrl(lead) ? (
+                                    <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1 text-xs text-[var(--foreground-muted)]">
+                                      {copy.table.reference}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="align-top">
+                              <StatusBadge status={lead.status} locale={locale} />
+                            </TableCell>
+                            <TableCell className="align-top">
+                              <div className="flex min-w-[240px] flex-col gap-2">
+                                <div>{renderLeadActions(lead, true)}</div>
+                                <Button size="sm" variant="outline" onClick={() => toggleLeadDetails(lead.id)}>
+                                  {copy.table.detailButton}
+                                </Button>
+                              </div>
+                            </TableCell>
                           </TableRow>
-                        ) : null}
-                      </Fragment>
-                    ))}
+                          {selectedLeadId === lead.id ? (
+                            <TableRow>
+                              <TableCell colSpan={5}>{renderLeadDetailPanel(lead)}</TableCell>
+                            </TableRow>
+                          ) : null}
+                        </Fragment>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
 
               <div className="flex flex-col gap-3 rounded-[24px] border border-white/8 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-[var(--foreground-muted)]">
-                  {copy.table.pageSummary(page, totalPages)}
-                </p>
+                <p className="text-sm text-[var(--foreground-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
                 <div className="flex gap-2">
                   <Button
                     type="button"

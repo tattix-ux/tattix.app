@@ -752,9 +752,9 @@ export function FeaturedDesignsForm({
     form.clearErrors("root");
   }
 
-  async function onSubmit(values: FeaturedDesignValues) {
+  async function onSubmit(_values: FeaturedDesignValues) {
     const normalizedValues: FeaturedDesignValues = {
-      designs: values.designs.map((design, index) => ({
+      designs: getCurrentDesigns().map((design, index) => ({
         ...design,
         sortOrder: index,
       })),
@@ -1064,6 +1064,10 @@ export function FeaturedDesignsForm({
                   {isEditing ? (
                     <>
                       <input type="hidden" {...form.register(`designs.${editingIndex}.id`)} />
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.category`)} />
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.pricingMode`)} />
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.referenceColorMode`)} />
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.colorImpactPreference`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.imagePath`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.imageUrl`)} />
 
