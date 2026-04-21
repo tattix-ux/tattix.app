@@ -53,8 +53,8 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-8">
-              <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[252px]">
+            <div className="mt-6 grid items-start gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-8">
+              <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[236px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
                 <Link
                   href="/dashboard/profile"

@@ -39,6 +39,10 @@ const profileCopy = {
     previewChip: "Client view",
     previewInfoTitle: "What clients see first",
     previewInfoBody: "Your profile image, short intro, designs, pricing hint, and booking cities all come together in this first view.",
+    bookingChipLabel: "Booking",
+    bookingSummaryEmpty: "No booking cities added yet",
+    bookingSummaryReady: (cityCount: number, dayCount: number) =>
+      `${cityCount} cities • ${dayCount} available days`,
     artistName: "Name shown on profile",
     upperLabel: "Short label",
     upperLabelDescription: "Appears as a small label above your name.",
@@ -80,6 +84,10 @@ const profileCopy = {
     previewChip: "Müşteri görünümü",
     previewInfoTitle: "Müşterinin ilk gördüğü alan",
     previewInfoBody: "Profil fotoğrafın, kısa anlatımın, tasarımların, fiyat ipucun ve randevu şehirlerin burada birlikte görünür.",
+    bookingChipLabel: "Randevu",
+    bookingSummaryEmpty: "Henüz randevu şehri eklenmedi",
+    bookingSummaryReady: (cityCount: number, dayCount: number) =>
+      `${cityCount} şehir • ${dayCount} uygun gün`,
     artistName: "Profilde görünen isim",
     upperLabel: "Kısa etiket",
     upperLabelDescription: "İsminin üstünde küçük bir etiket olarak görünür.",
@@ -497,11 +505,15 @@ export function ProfilePreviewCard({
   profile,
   pageTheme,
   upperLabel,
+  bookingCityCount,
+  availableDateCount,
   locale,
 }: {
   profile: ArtistProfile;
   pageTheme: ArtistPageTheme;
   upperLabel: string;
+  bookingCityCount: number;
+  availableDateCount: number;
   locale: PublicLocale;
 }) {
   const copy = profileCopy[locale];
@@ -600,6 +612,30 @@ export function ProfilePreviewCard({
                     {profile.shortBio}
                   </p>
                 ) : null}
+                <div className="flex flex-wrap gap-2">
+                  <div
+                    className="inline-flex items-center rounded-full border px-3.5 py-1.5 text-[11px] font-medium"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "color-mix(in srgb, var(--artist-card) 88%, transparent)",
+                      color: "var(--artist-card-text)",
+                    }}
+                  >
+                    {copy.bookingChipLabel}
+                  </div>
+                  <div
+                    className="inline-flex items-center rounded-full border px-3.5 py-1.5 text-[11px]"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "color-mix(in srgb, var(--artist-card) 82%, transparent)",
+                      color: "var(--artist-card-muted)",
+                    }}
+                  >
+                    {bookingCityCount > 0
+                      ? copy.bookingSummaryReady(bookingCityCount, availableDateCount)
+                      : copy.bookingSummaryEmpty}
+                  </div>
+                </div>
                 <div className="grid gap-3 sm:grid-cols-[auto_1fr] sm:items-center">
                   <div
                     className="inline-flex h-11 items-center rounded-full px-5 text-sm font-medium"

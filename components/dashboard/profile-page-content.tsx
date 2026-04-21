@@ -70,6 +70,11 @@ export function ProfilePageContent({
         }}
         pageTheme={pageTheme}
         upperLabel={previewDraft.upperLabel}
+        bookingCityCount={funnelSettings.bookingCities.length}
+        availableDateCount={funnelSettings.bookingCities.reduce(
+          (total, city) => total + city.availableDates.length,
+          0,
+        )}
         locale={locale}
       />
     </div>
