@@ -1,12 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Eye, EyeOff, ImagePlus, LoaderCircle, Save, Sparkles, SwatchBook, Type, Upload, X } from "lucide-react";
+import { Check, Eye, EyeOff, ImagePlus, LoaderCircle, Save, Sparkles, SwatchBook, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
+import { BrandMonogram } from "@/components/shared/brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { themePresetOptions, themePresets, type ThemePresetKey } from "@/lib/constants/theme";
@@ -27,9 +28,6 @@ type CustomizePageArtist = {
   funnelSettings: ArtistFunnelSettings;
 };
 
-const accentSwatches = ["#E3C08E", "#D6B17A", "#C79A68", "#B88352", "#C6B29A"] as const;
-const cardSwatches = ["#17191D", "#1D1F24", "#23262C", "#2A2D34", "#302A26"] as const;
-
 const backgroundPalettePresets = [
   { key: "graphite", labelTr: "Düz graphite", labelEn: "Solid graphite", mode: "dark" as const, start: "#121315", end: "#121315" },
   { key: "soft-gradient", labelTr: "Soft gradient", labelEn: "Soft gradient", mode: "dark" as const, start: "#1E1E22", end: "#141518" },
@@ -41,6 +39,74 @@ const fontOptions = [
   { value: "inter", label: "Inter", helperTr: "Temiz ve dengeli", helperEn: "Clean and balanced" },
   { value: "manrope", label: "Manrope", helperTr: "Yumuşak ve çağdaş", helperEn: "Soft and contemporary" },
   { value: "outfit", label: "Outfit", helperTr: "Net ve daha karakterli", helperEn: "Crisp and more distinctive" },
+] as const;
+
+const accentOptions = [
+  {
+    value: "#E3C08E",
+    labelTr: "Yumuşak bronz",
+    labelEn: "Soft bronze",
+    descriptionTr: "Daha açık, rafine ve yumuşak vurgu.",
+    descriptionEn: "A lighter, softer bronze accent.",
+  },
+  {
+    value: "#D6B17A",
+    labelTr: "Stüdyo bronzu",
+    labelEn: "Studio bronze",
+    descriptionTr: "Dengeli ve sıcak ana vurgu.",
+    descriptionEn: "A balanced, warm primary accent.",
+  },
+  {
+    value: "#C79A68",
+    labelTr: "Sıcak metal",
+    labelEn: "Warm metal",
+    descriptionTr: "Biraz daha tok ve karakterli görünür.",
+    descriptionEn: "Slightly deeper with more presence.",
+  },
+  {
+    value: "#B88352",
+    labelTr: "Derin bronz",
+    labelEn: "Deep bronze",
+    descriptionTr: "Daha koyu ve kontrollü bir vurgu verir.",
+    descriptionEn: "A deeper, more controlled accent tone.",
+  },
+  {
+    value: "#C6B29A",
+    labelTr: "Nötr şampanya",
+    labelEn: "Neutral champagne",
+    descriptionTr: "Daha sakin ve nötr bir premium his verir.",
+    descriptionEn: "A quieter, more neutral premium feel.",
+  },
+] as const;
+
+const cardSurfaceOptions = [
+  {
+    key: "matte",
+    color: "#211F1B",
+    opacity: 0.9,
+    labelTr: "Matte",
+    labelEn: "Matte",
+    descriptionTr: "Daha sıcak ve yekpare kart yüzeyi.",
+    descriptionEn: "A warmer, more unified card surface.",
+  },
+  {
+    key: "softer",
+    color: "#2B2F35",
+    opacity: 0.92,
+    labelTr: "Softer",
+    labelEn: "Softer",
+    descriptionTr: "Daha yumuşak, nötr ve hafif metalik.",
+    descriptionEn: "Softer, neutral, and lightly metallic.",
+  },
+  {
+    key: "contrast",
+    color: "#171C25",
+    opacity: 0.95,
+    labelTr: "Contrast",
+    labelEn: "Contrast",
+    descriptionTr: "Daha derin ve daha belirgin kontrast.",
+    descriptionEn: "Deeper with a clearer contrast edge.",
+  },
 ] as const;
 
 const presetMeta: Record<
@@ -202,28 +268,68 @@ function SelectionPill({
   );
 }
 
-function ColorDot({
+function CustomGroup({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[26px] border border-white/8 bg-white/[0.02] p-4 sm:p-5">
+      <div className="mb-4 space-y-1.5">
+        <p className="text-sm font-medium text-white">{title}</p>
+        {description ? <p className="text-sm leading-6 text-[var(--foreground-muted)]">{description}</p> : null}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function VisualOptionCard({
   active,
-  color,
+  title,
+  description,
   onClick,
+  children,
 }: {
   active: boolean;
-  color: string;
+  title: string;
+  description: string;
   onClick: () => void;
+  children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={color}
       className={cn(
-        "size-10 rounded-full border transition",
+        "relative overflow-hidden rounded-[22px] border p-4 text-left transition",
         active
-          ? "scale-[1.05] border-[rgba(255,255,255,0.72)] shadow-[0_0_0_4px_rgba(214,177,122,0.08)]"
-          : "border-[rgba(255,255,255,0.1)] hover:scale-[1.02] hover:border-[rgba(255,255,255,0.2)]",
+          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_16px_32px_rgba(0,0,0,0.16)]"
+          : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
       )}
-      style={{ backgroundColor: color }}
-    />
+    >
+      {active ? (
+        <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
+          <span className="relative size-4 overflow-hidden rounded-full bg-white/5">
+            <BrandMonogram className="inset-[1px]" opacity={0.42} />
+          </span>
+          <Check className="size-3.5 text-[var(--accent)]" />
+        </span>
+      ) : null}
+      <div className="space-y-4">
+        <div className="overflow-hidden rounded-[18px] border border-white/8 p-3.5">
+          {children}
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-white">{title}</p>
+          <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">{description}</p>
+        </div>
+      </div>
+    </button>
   );
 }
 
@@ -396,38 +502,6 @@ function ThemePresetPreview({
         </div>
       </div>
     </div>
-  );
-}
-
-function BackgroundStyleCard({
-  title,
-  active,
-  preview,
-  onClick,
-}: {
-  title: string;
-  active: boolean;
-  preview: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-[22px] border p-3 text-left transition",
-        active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_54%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]"
-          : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
-      )}
-    >
-      <div className="space-y-3">
-        <div className="overflow-hidden rounded-[16px] border border-white/8 p-3">
-          {preview}
-        </div>
-        <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
-      </div>
-    </button>
   );
 }
 
@@ -668,7 +742,9 @@ export function CustomizePageForm({
           presetSectionDescription: "Her görünüm müşterinin göreceği mobil profil hissini farklı bir karakterle sunar.",
           customTitle: "Kendi görünümün",
           accentTitle: "Vurgu rengi",
+          accentDescription: "Butonlar, etiketler ve seçili alanlar bu tonla görünür.",
           backgroundTitle: "Arka plan stili",
+          backgroundDescription: "Profil sayfasının genel atmosferini ve derinliğini belirler.",
           backgroundSolid: "Düz",
           backgroundSoft: "Yumuşak degrade",
           backgroundDeep: "Derin degrade",
@@ -677,7 +753,9 @@ export function CustomizePageForm({
           backgroundUpload: "Görsel yükle",
           backgroundRemove: "Kaldır",
           cardTitle: "Kart rengi",
+          cardDescription: "Bilgi kartlarının ne kadar sıcak, nötr ya da kontrast görüneceğini seç.",
           fontTitle: "Yazı stili",
+          fontDescription: "Başlık ve açıklama dili birlikte değişir.",
           resetDefaults: "Varsayılana dön",
           save: "Görünümü uygula",
           cancel: "Vazgeç",
@@ -703,7 +781,9 @@ export function CustomizePageForm({
           presetSectionDescription: "Each preset gives the client-facing mobile profile a distinct character.",
           customTitle: "Your look",
           accentTitle: "Accent color",
+          accentDescription: "Buttons, labels, and selected states use this tone.",
           backgroundTitle: "Background style",
+          backgroundDescription: "Sets the overall atmosphere and depth of the profile page.",
           backgroundSolid: "Solid",
           backgroundSoft: "Soft gradient",
           backgroundDeep: "Deep gradient",
@@ -712,7 +792,9 @@ export function CustomizePageForm({
           backgroundUpload: "Upload image",
           backgroundRemove: "Remove",
           cardTitle: "Card color",
+          cardDescription: "Choose whether cards feel warmer, softer, or more contrasty.",
           fontTitle: "Type style",
+          fontDescription: "Headings and supporting copy shift together.",
           resetDefaults: "Reset to default",
           save: "Apply look",
           cancel: "Discard",
@@ -1016,7 +1098,7 @@ export function CustomizePageForm({
           </SelectionPill>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(400px,620px)] xl:items-start">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(440px,700px)] xl:items-start">
           <div className="space-y-5">
             {customizeMode === "preset" ? (
               <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
@@ -1061,89 +1143,100 @@ export function CustomizePageForm({
             ) : (
               <SectionCard title={copy.customTitle} icon={<SwatchBook className="size-4" />}>
                 <div className="space-y-5">
-                  <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-white">{copy.accentTitle}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      {accentSwatches.map((swatch) => (
-                        <ColorDot
-                          key={swatch}
-                          color={swatch}
-                          active={currentPrimaryColor.toLowerCase() === swatch.toLowerCase()}
-                          onClick={() => form.setValue("primaryColor", swatch, { shouldDirty: true, shouldValidate: true })}
-                        />
+                  <CustomGroup title={copy.accentTitle} description={copy.accentDescription}>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {accentOptions.map((option) => (
+                        <VisualOptionCard
+                          key={option.value}
+                          active={currentPrimaryColor.toLowerCase() === option.value.toLowerCase()}
+                          title={locale === "tr" ? option.labelTr : option.labelEn}
+                          description={locale === "tr" ? option.descriptionTr : option.descriptionEn}
+                          onClick={() => form.setValue("primaryColor", option.value, { shouldDirty: true, shouldValidate: true })}
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
+                                {locale === "tr" ? "Vurgu" : "Accent"}
+                              </span>
+                              <span className="size-4 rounded-full border border-white/10" style={{ backgroundColor: option.value }} />
+                            </div>
+                            <div className="h-10 rounded-[14px]" style={{ backgroundColor: toRgba(option.value, 0.2) }} />
+                            <div className="grid grid-cols-[1fr_auto] gap-2">
+                              <div className="h-8 rounded-[12px] border border-white/8 bg-white/[0.04]" />
+                              <div className="rounded-[12px] px-3 py-2 text-[11px] font-medium" style={{ backgroundColor: option.value, color: "#1A1714" }}>
+                                {locale === "tr" ? "Buton" : "Button"}
+                              </div>
+                            </div>
+                          </div>
+                        </VisualOptionCard>
                       ))}
                     </div>
-                  </div>
+                  </CustomGroup>
 
-                  <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-white">{copy.backgroundTitle}</p>
-                    </div>
+                  <CustomGroup title={copy.backgroundTitle} description={copy.backgroundDescription}>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <BackgroundStyleCard
+                      <VisualOptionCard
                         title={locale === "tr" ? backgroundPalettePresets[0].labelTr : backgroundPalettePresets[0].labelEn}
+                        description={locale === "tr" ? "Temiz ve sakin graphite zemin." : "A calm, clean graphite base."}
                         active={currentBackgroundStyle === "solid"}
                         onClick={() => setBackgroundStyle("solid")}
-                        preview={
-                          <div className="space-y-2">
-                            <div className="h-12 rounded-[12px] bg-[#121315]" />
-                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#191B20]" />
-                          </div>
-                        }
-                      />
-                      <BackgroundStyleCard
+                      >
+                        <div className="space-y-2">
+                          <div className="h-14 rounded-[14px] bg-[#121315]" />
+                          <div className="h-9 rounded-[14px] border border-white/8 bg-[#1B1D21]" />
+                        </div>
+                      </VisualOptionCard>
+                      <VisualOptionCard
                         title={locale === "tr" ? backgroundPalettePresets[1].labelTr : backgroundPalettePresets[1].labelEn}
+                        description={locale === "tr" ? "Daha yumuşak bir geçiş ve hafif sıcaklık." : "A softer transition with a touch of warmth."}
                         active={
                           currentBackgroundStyle === "soft-gradient" ||
                           (currentGradientStart.toLowerCase() === backgroundPalettePresets[1].start.toLowerCase() &&
                             currentGradientEnd.toLowerCase() === backgroundPalettePresets[1].end.toLowerCase())
                         }
                         onClick={() => setBackgroundStyle("soft-gradient")}
-                        preview={
-                          <div className="space-y-2">
-                            <div className="h-12 rounded-[12px]" style={{ background: `linear-gradient(145deg, ${backgroundPalettePresets[1].start}, ${backgroundPalettePresets[1].end})` }} />
-                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#201F22]" />
-                          </div>
-                        }
-                      />
-                      <BackgroundStyleCard
+                      >
+                        <div className="space-y-2">
+                          <div className="h-14 rounded-[14px]" style={{ background: `linear-gradient(145deg, ${backgroundPalettePresets[1].start}, ${backgroundPalettePresets[1].end})` }} />
+                          <div className="h-9 rounded-[14px] border border-white/8 bg-[#211F22]" />
+                        </div>
+                      </VisualOptionCard>
+                      <VisualOptionCard
                         title={locale === "tr" ? backgroundPalettePresets[2].labelTr : backgroundPalettePresets[2].labelEn}
+                        description={locale === "tr" ? "Daha derin koyuluk ve belirgin katman." : "Deeper darkness with a stronger layered feel."}
                         active={
                           currentBackgroundStyle === "deep-gradient" &&
                           currentGradientStart.toLowerCase() === backgroundPalettePresets[2].start.toLowerCase() &&
                           currentGradientEnd.toLowerCase() === backgroundPalettePresets[2].end.toLowerCase()
                         }
                         onClick={() => setBackgroundStyle("deep-gradient")}
-                        preview={
-                          <div className="space-y-2">
-                            <div className="h-12 rounded-[12px]" style={{ background: `linear-gradient(160deg, ${backgroundPalettePresets[2].start}, ${backgroundPalettePresets[2].end})` }} />
-                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#17191E]" />
-                          </div>
-                        }
-                      />
-                      <BackgroundStyleCard
+                      >
+                        <div className="space-y-2">
+                          <div className="h-14 rounded-[14px]" style={{ background: `linear-gradient(160deg, ${backgroundPalettePresets[2].start}, ${backgroundPalettePresets[2].end})` }} />
+                          <div className="h-9 rounded-[14px] border border-white/8 bg-[#17191E]" />
+                        </div>
+                      </VisualOptionCard>
+                      <VisualOptionCard
                         title={locale === "tr" ? backgroundPalettePresets[3].labelTr : backgroundPalettePresets[3].labelEn}
+                        description={locale === "tr" ? "Hafif ink-blue derinlik, hâlâ koyu ve premium." : "A slight ink-blue depth while staying dark and premium."}
                         active={
                           currentGradientStart.toLowerCase() === backgroundPalettePresets[3].start.toLowerCase() &&
                           currentGradientEnd.toLowerCase() === backgroundPalettePresets[3].end.toLowerCase()
                         }
                         onClick={() => applyBackgroundPalette("ink-blue")}
-                        preview={
-                          <div className="space-y-2">
-                            <div
-                              className="h-12 rounded-[12px]"
-                              style={{
-                                background: `radial-gradient(circle at 24% 22%, rgba(76,108,160,0.18), transparent 42%), linear-gradient(160deg, ${backgroundPalettePresets[3].start}, ${backgroundPalettePresets[3].end})`,
-                              }}
-                            />
-                            <div className="h-8 rounded-[12px] border border-white/8 bg-[#1B2130]" />
-                          </div>
-                        }
-                      />
+                      >
+                        <div className="space-y-2">
+                          <div
+                            className="h-14 rounded-[14px]"
+                            style={{
+                              background: `radial-gradient(circle at 24% 22%, rgba(76,108,160,0.18), transparent 42%), linear-gradient(160deg, ${backgroundPalettePresets[3].start}, ${backgroundPalettePresets[3].end})`,
+                            }}
+                          />
+                          <div className="h-9 rounded-[14px] border border-white/8 bg-[#1B2130]" />
+                        </div>
+                      </VisualOptionCard>
                     </div>
-                    <div className="mt-4 rounded-[20px] border border-white/8 bg-white/[0.02] p-4">
+                    <div className="mt-4 rounded-[22px] border border-white/8 bg-white/[0.02] p-4">
                       <p className="mb-3 text-sm font-medium text-white">{copy.backgroundImage}</p>
                       <MediaUploadField
                         imageUrl={watchedValues.backgroundImageUrl || ""}
@@ -1154,63 +1247,61 @@ export function CustomizePageForm({
                         onRemove={clearBackgroundImage}
                       />
                     </div>
-                  </div>
+                  </CustomGroup>
 
-                  <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-white">{copy.cardTitle}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      {cardSwatches.map((swatch) => (
-                        <ColorDot
-                          key={swatch}
-                          color={swatch}
-                          active={currentCardColor.toLowerCase() === swatch.toLowerCase()}
-                          onClick={() => form.setValue("cardColor", swatch, { shouldDirty: true, shouldValidate: true })}
-                        />
+                  <CustomGroup title={copy.cardTitle} description={copy.cardDescription}>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {cardSurfaceOptions.map((option) => (
+                        <VisualOptionCard
+                          key={option.key}
+                          active={currentCardColor.toLowerCase() === option.color.toLowerCase()}
+                          title={locale === "tr" ? option.labelTr : option.labelEn}
+                          description={locale === "tr" ? option.descriptionTr : option.descriptionEn}
+                          onClick={() => {
+                            form.setValue("cardColor", option.color, { shouldDirty: true, shouldValidate: true });
+                            form.setValue("cardOpacity", option.opacity, { shouldDirty: true, shouldValidate: true });
+                          }}
+                        >
+                          <div className="space-y-3 rounded-[16px] bg-[#111215] p-2.5">
+                            <div className="h-12 rounded-[14px]" style={{ backgroundColor: toRgba(option.color, option.opacity) }} />
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="h-8 rounded-[12px]" style={{ backgroundColor: toRgba(option.color, Math.max(option.opacity - 0.08, 0.72)) }} />
+                              <div className="h-8 rounded-[12px] border border-white/8" style={{ backgroundColor: toRgba(option.color, Math.min(option.opacity + 0.04, 1)) }} />
+                            </div>
+                          </div>
+                        </VisualOptionCard>
                       ))}
                     </div>
-                  </div>
+                  </CustomGroup>
 
-                  <div className="rounded-[24px] border border-white/8 bg-white/[0.02] p-4">
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-white">{copy.fontTitle}</p>
-                    </div>
+                  <CustomGroup title={copy.fontTitle} description={copy.fontDescription}>
                     <div className="grid gap-3 sm:grid-cols-3">
                       {fontOptions.map((option) => {
                         const active = currentFontStyle === option.value;
                         return (
-                          <button
+                          <VisualOptionCard
                             key={option.value}
-                            type="button"
+                            active={active}
+                            title={option.label}
+                            description={locale === "tr" ? option.helperTr : option.helperEn}
                             onClick={() => setFontStyle(option.value)}
-                            className={cn(
-                              "rounded-[22px] border p-4 text-left transition",
-                              active
-                                ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]"
-                                : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
-                            )}
                           >
-                            <div className="flex items-center justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-semibold text-white">{option.label}</p>
-                                <p className="mt-1 text-sm text-[var(--foreground-muted)]">
-                                  {locale === "tr" ? option.helperTr : option.helperEn}
-                                </p>
-                              </div>
-                              {active ? <Check className="size-4 text-[var(--accent)]" /> : null}
+                            <div className="space-y-2">
+                              <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
+                                {locale === "tr" ? "Yazı önizlemesi" : "Type preview"}
+                              </p>
+                              <p className="text-[1.05rem] font-semibold tracking-[-0.03em] text-white" style={{ fontFamily: headingPreviewFonts[option.value] }}>
+                                {locale === "tr" ? "Profiline göz at" : "View your profile"}
+                              </p>
+                              <p className="text-sm leading-6 text-[var(--text-muted)]" style={{ fontFamily: bodyPreviewFonts[option.value] }}>
+                                {locale === "tr" ? "Başlık, açıklama ve fiyat alanı birlikte okunur." : "Headings, descriptions, and pricing stay easy to scan."}
+                              </p>
                             </div>
-                            <p className="mt-4 text-lg font-semibold tracking-[-0.03em] text-white" style={{ fontFamily: headingPreviewFonts[option.value] }}>
-                              {locale === "tr" ? "Profiline göz at" : "View your profile"}
-                            </p>
-                            <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]" style={{ fontFamily: bodyPreviewFonts[option.value] }}>
-                              {locale === "tr" ? "Başlık, kısa not ve fiyat alanı birlikte görünür." : "Headings, short notes, and pricing stay easy to scan."}
-                            </p>
-                          </button>
+                          </VisualOptionCard>
                         );
                       })}
                     </div>
-                  </div>
+                  </CustomGroup>
 
                   <div className="flex justify-start">
                     <button
@@ -1232,7 +1323,7 @@ export function CustomizePageForm({
             ) : null}
           </div>
 
-          <div className="space-y-4 xl:sticky xl:top-6">
+          <div className="space-y-4 xl:sticky xl:top-8">
             <div className="xl:hidden">
               <Button
                 type="button"

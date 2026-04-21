@@ -31,6 +31,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon.png",
+  },
   description:
     "Tattix is a mobile-first link-in-bio funnel and tattoo pricing estimator for tattoo artists.",
 };
