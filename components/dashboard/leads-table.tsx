@@ -9,11 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
-import { bodyPlacementGroups, getPlacementDetailLabel, getPlacementGroupLabel } from "@/lib/constants/body-placement";
+import { bodyPlacementGroups, getPlacementDetailLabel } from "@/lib/constants/body-placement";
 import { formatApproximateSizeLabel } from "@/lib/constants/size-estimation";
 import { intentOptions } from "@/lib/constants/options";
 import type { PublicLocale } from "@/lib/i18n/public";
-import { getRequestTypeLabel } from "@/lib/pricing/v2/output";
+import {
+  getAreaScopeLabel,
+  getLargeAreaCoverageLabel,
+  getRequestTypeLabel,
+  getWideAreaTargetLabel,
+} from "@/lib/pricing/v2/output";
 import type { ArtistFeaturedDesign, ClientSubmission, LeadStatus } from "@/lib/types";
 import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
@@ -67,10 +72,9 @@ const leadCopy = {
       detailButton: "Details",
       color: "Color",
       detailLevel: "Detail level",
-      layout: "Layout",
+      layout: "Placement style",
       styleNote: "Style note",
-      placementGroup: "Main area",
-      placementDetail: "Sub-area",
+      area: "Area",
       coverage: "Coverage",
       placement: "Placement",
       size: "Size",
@@ -135,11 +139,10 @@ const leadCopy = {
       detailButton: "Detay",
       color: "Renk",
       detailLevel: "Detay seviyesi",
-      layout: "Düzen",
+      layout: "Yerleşim tarzı",
       styleNote: "Tarz notu",
-      placementGroup: "Ana bölge",
-      placementDetail: "Alt bölge",
-      coverage: "Alan kapsamı",
+      area: "Alan",
+      coverage: "Kaplayacağı alan",
       placement: "Yerleşim",
       size: "Yaklaşık boyut",
       intent: "Talep tipi",
@@ -228,18 +231,6 @@ const placementLabelsTr = Object.fromEntries(
   ),
 );
 
-const placementGroupLabelsTr: Record<ClientSubmission["bodyAreaGroup"], string> = {
-  arm: "Kol",
-  leg: "Bacak",
-  torso: "Gövde",
-  back: "Sırt",
-  neck: "Boyun",
-  head: "Baş",
-  hand: "El",
-  foot: "Ayak",
-  "not-sure": "Emin değil",
-};
-
 function formatIntent(intent: ClientSubmission["intent"], locale: PublicLocale) {
   if (locale === "tr") {
     return intentLabelsTr[intent] ?? intent;
@@ -266,14 +257,6 @@ function formatPlacement(detail: ClientSubmission["bodyAreaDetail"], locale: Pub
   }
 
   return getPlacementDetailLabel(detail);
-}
-
-function formatPlacementGroup(group: ClientSubmission["bodyAreaGroup"], locale: PublicLocale) {
-  if (locale === "tr") {
-    return placementGroupLabelsTr[group] ?? getPlacementGroupLabel(group);
-  }
-
-  return getPlacementGroupLabel(group);
 }
 
 function formatLeadDate(value: string, locale: PublicLocale) {
@@ -311,10 +294,10 @@ function getDisplayedDetailLevel(lead: ClientSubmission, locale: PublicLocale) {
     return null;
   }
 
-  if (locale === "tr") {
-    if (lead.workStyle === "clean_line") {
-      return "Basit / çizgisel";
-    }
+    if (locale === "tr") {
+      if (lead.workStyle === "clean_line") {
+      return "Daha sade";
+      }
 
     if (lead.workStyle === "shaded_detailed" && lead.realismLevel === "advanced") {
       return "Çok detaylı / gerçekçi";
@@ -348,7 +331,7 @@ function getDisplayedLayout(lead: ClientSubmission, locale: PublicLocale) {
   }
 
   if (locale === "tr") {
-    return layout === "precision" ? "Geometrik / simetrik" : "Akışkan";
+    return layout === "precision" ? "Düzenli/Simetrik" : "Akışkan";
   }
 
   return layout === "precision" ? "Geometric / symmetric" : "Flowing";
@@ -505,45 +488,18 @@ function getDisplayedEstimate(lead: ClientSubmission, currency: string) {
 
 function getCoverageLabel(lead: ClientSubmission, locale: PublicLocale) {
   if (lead.areaScope === "wide_area") {
-    const target = getWideAreaPlacementSummary(lead, locale);
-    if (locale === "tr") {
-      return target ? `Çok geniş • ${target}` : "Çok geniş";
-    }
-
-    return target ? `Wide area • ${target}` : "Wide area";
+    return lead.wideAreaTarget ? getWideAreaTargetLabel(lead.wideAreaTarget, locale) : null;
   }
 
   if (lead.areaScope === "large_single_area") {
-    if (locale === "tr") {
-      switch (lead.largeAreaCoverage) {
-        case "partial":
-          return "Tek bölgede büyük • Bir kısmı";
-        case "mostly":
-          return "Tek bölgede büyük • Büyük kısmı";
-        case "almost_full":
-          return "Tek bölgede büyük • Neredeyse tamamı";
-        default:
-          return "Tek bölgede büyük";
-      }
-    }
-
-    switch (lead.largeAreaCoverage) {
-      case "partial":
-        return "Large single area • Part of it";
-      case "mostly":
-        return "Large single area • Most of it";
-      case "almost_full":
-        return "Large single area • Almost all of it";
-      default:
-        return "Large single area";
-    }
-  }
-
-  if (lead.areaScope === "standard_piece") {
-    return locale === "tr" ? "Küçük / orta" : "Small / medium";
+    return lead.largeAreaCoverage ? getLargeAreaCoverageLabel(lead.largeAreaCoverage, locale) : null;
   }
 
   return null;
+}
+
+function getAreaLabel(lead: ClientSubmission, locale: PublicLocale) {
+  return lead.areaScope ? getAreaScopeLabel(lead.areaScope, locale) : null;
 }
 
 function getLeadTypeLabel(lead: ClientSubmission, locale: PublicLocale) {
@@ -909,11 +865,10 @@ export function LeadsTable({
 
   function renderLeadDetailPanel(lead: ClientSubmission) {
     const selectedDesign = getSelectedDesignLabel(lead, designs);
+    const areaLabel = getAreaLabel(lead, locale);
     const placementSummary = formatLeadPlacementSummary(lead, locale);
-    const placementGroup = formatPlacementGroup(lead.bodyAreaGroup, locale);
     const placementDetail = formatPlacement(lead.bodyAreaDetail, locale);
     const sizeLabel = getSizeLabel(lead, locale);
-    const explicitCm = lead.approximateSizeCm ? `${Math.round(lead.approximateSizeCm)} cm` : null;
     const coverageLabel = getCoverageLabel(lead, locale);
     const colorLabel = getDisplayedColor(lead, locale);
     const detailLevel = getDisplayedDetailLevel(lead, locale);
@@ -934,21 +889,19 @@ export function LeadsTable({
           <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <DetailField label={copy.table.intent} value={getLeadTypeLabel(lead, locale)} />
-              <DetailField label={copy.table.placement} value={placementSummary} />
-              <DetailField label={copy.table.placementGroup} value={placementGroup} />
-              <DetailField label={copy.table.placementDetail} value={placementDetail} />
-              {coverageLabel ? <DetailField label={copy.table.coverage} value={coverageLabel} /> : null}
-              {explicitCm || sizeLabel ? (
-                <DetailField label={copy.table.size} value={explicitCm ?? sizeLabel ?? "—"} />
-              ) : null}
-              {colorLabel ? <DetailField label={copy.table.color} value={colorLabel} /> : null}
+              {areaLabel ? <DetailField label={copy.table.area} value={areaLabel} /> : null}
               <DetailField
-                label={copy.table.detailLevel}
-                value={detailLevel ?? (locale === "tr" ? "Belirtilmedi" : "Not specified")}
+                label={copy.table.placement}
+                value={lead.areaScope === "wide_area" ? placementSummary : placementDetail}
               />
+              {coverageLabel ? <DetailField label={copy.table.coverage} value={coverageLabel} /> : null}
+              {sizeLabel ? <DetailField label={copy.table.size} value={sizeLabel} /> : null}
+              {colorLabel ? <DetailField label={copy.table.color} value={colorLabel} /> : null}
+              {detailLevel ? <DetailField label={copy.table.detailLevel} value={detailLevel} /> : null}
               {layoutLabel ? <DetailField label={copy.table.layout} value={layoutLabel} /> : null}
               {lead.style ? <DetailField label={copy.table.styleNote} value={lead.style} /> : null}
               {coverUpLabel ? <DetailField label={copy.table.coverUp} value={coverUpLabel} /> : null}
+              {selectedDesign ? <DetailField label={copy.table.selectedDesign} value={selectedDesign} /> : null}
             </div>
           </div>
 
@@ -962,7 +915,6 @@ export function LeadsTable({
               {lead.status === "sold" ? (
                 <DetailField label={copy.table.soldAt} value={lead.soldAt ? formatLeadDate(lead.soldAt, locale) : "—"} />
               ) : null}
-              {selectedDesign ? <DetailField label={copy.table.selectedDesign} value={selectedDesign} /> : null}
             </div>
           </div>
 
@@ -1089,6 +1041,7 @@ export function LeadsTable({
               const sizeLabel = getSizeLabel(lead, locale);
               const requestLabel = getRequestLabel(lead, locale, designs);
               const notesLabel = lead.notes ? notesPreview(lead.notes, copy.table.noNotes) : null;
+              const areaLabel = getAreaLabel(lead, locale);
               const colorLabel = getDisplayedColor(lead, locale);
               const detailLabel = getDisplayedDetailLevel(lead, locale);
               const layoutLabel = getDisplayedLayout(lead, locale);
@@ -1096,10 +1049,11 @@ export function LeadsTable({
               const selectedDesignLabel = getSelectedDesignLabel(lead, designs);
               const referenceImageUrl = getReferenceImageUrl(lead);
               const metadataTags = [
+                areaLabel ? `${copy.table.area}: ${areaLabel}` : null,
+                coverageLabel ? `${copy.table.coverage}: ${coverageLabel}` : null,
                 colorLabel ? `${copy.table.color}: ${colorLabel}` : null,
                 detailLabel ? `${copy.table.detailLevel}: ${detailLabel}` : null,
                 layoutLabel ? `${copy.table.layout}: ${layoutLabel}` : null,
-                coverageLabel ? `${copy.table.coverage}: ${coverageLabel}` : null,
                 selectedDesignLabel ? `${copy.table.selectedDesign}: ${selectedDesignLabel}` : null,
                 referenceImageUrl ? copy.table.reference : null,
               ].filter(Boolean) as string[];
@@ -1204,7 +1158,13 @@ export function LeadsTable({
                 <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--text-muted)]">{copy.table.details}</p>
                 <h3 className="text-2xl font-semibold tracking-[-0.03em] text-white">{getRequestLabel(selectedLead, locale, designs)}</h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  {[formatLeadPlacementSummary(selectedLead, locale), getSizeLabel(selectedLead, locale)].filter(Boolean).join(" • ")}
+                  {[
+                    getAreaLabel(selectedLead, locale),
+                    selectedLead.areaScope === "wide_area"
+                      ? formatLeadPlacementSummary(selectedLead, locale)
+                      : formatPlacement(selectedLead.bodyAreaDetail, locale),
+                    getSizeLabel(selectedLead, locale),
+                  ].filter(Boolean).join(" • ")}
                 </p>
               </div>
               <div className="flex items-center gap-3">
