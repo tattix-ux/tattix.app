@@ -42,38 +42,28 @@ export default async function DashboardLayout({
 
   return (
     <AppShell>
-      <Container className="py-5 sm:py-9 lg:max-w-[1440px] 2xl:max-w-[1520px]">
+      <Container className="py-3 sm:py-4 lg:max-w-[1360px] 2xl:max-w-[1420px]">
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
-            <div className="mb-5 flex justify-end lg:mb-6">
-              <div className="flex flex-wrap items-center gap-2 rounded-[20px] border border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface-1)_94%,black_6%)] p-2 shadow-[0_14px_28px_rgba(0,0,0,0.2)]">
-                <DashboardNotificationBell
-                  locale={isTurkish ? "tr" : "en"}
-                  unreadCount={notificationUnreadCount}
-                />
-                <LogoutButton locale={isTurkish ? "tr" : "en"} />
-              </div>
-            </div>
-
-            <div className="grid items-start gap-6 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-8">
-              <aside className="w-full max-w-none space-y-4 lg:sticky lg:top-6 lg:max-w-[236px]">
+            <div className="grid items-start gap-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-6">
+              <aside className="w-full max-w-none space-y-3 lg:sticky lg:top-4 lg:max-w-[220px]">
                 {dashboardData.demoMode ? <DemoModeBanner /> : null}
-                <div className="relative overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] px-4 py-5 shadow-[0_22px_48px_rgba(0,0,0,0.24)]">
-                  <div className="space-y-6">
+                <div className="relative flex flex-col overflow-hidden rounded-[26px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] px-3.5 py-4 shadow-[0_18px_40px_rgba(0,0,0,0.22)] lg:min-h-[calc(100vh-2rem)]">
+                  <div className="space-y-5">
                     <Link href="/dashboard/profile" className="block text-center">
-                      <div className="relative mx-auto size-[6.4rem] overflow-hidden rounded-full border border-[rgba(214,177,122,0.28)] bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.05),rgba(255,255,255,0.012)_58%),linear-gradient(180deg,rgba(25,27,32,0.98),rgba(15,16,19,1))] shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_18px_36px_rgba(0,0,0,0.28)]">
+                      <div className="relative mx-auto size-[5.2rem] overflow-hidden rounded-full border border-[rgba(214,177,122,0.28)] bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.05),rgba(255,255,255,0.012)_58%),linear-gradient(180deg,rgba(25,27,32,0.98),rgba(15,16,19,1))] shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_14px_30px_rgba(0,0,0,0.24)]">
                         <Image
                           src="/brand/tattix-primary-logo.png"
                           alt=""
                           fill
                           priority
-                          sizes="(max-width: 768px) 102px, 102px"
+                          sizes="(max-width: 768px) 84px, 84px"
                           className="object-cover scale-[1.22]"
                         />
                       </div>
-                      <BrandWordmark size="lg" className="mt-5 text-center" />
+                      <BrandWordmark size="md" className="mt-4 text-center" />
                     </Link>
-                    <div className="rounded-[22px] border border-white/5 bg-white/[0.02] px-3 py-3.5">
+                    <div className="rounded-[20px] border border-white/5 bg-white/[0.02] px-3 py-3">
                       <div className="flex items-center gap-3">
                         <AvatarTile
                           name={dashboardData.profile.artistName}
@@ -90,14 +80,14 @@ export default async function DashboardLayout({
                           </p>
                         </div>
                       </div>
-                      {isProActive ? (
-                        <Badge variant="accent" className="mt-3 rounded-full px-3 py-1 text-[11px]">
+                        {isProActive ? (
+                        <Badge variant="accent" className="mt-2.5 rounded-full px-3 py-1 text-[10px]">
                           {isTurkish ? "Pro Üye" : "Pro member"}
                         </Badge>
                       ) : null}
                     </div>
                   </div>
-                  <div className="mt-5">
+                  <div className="mt-4">
                     <DashboardNav
                       locale={isTurkish ? "tr" : "en"}
                       hideProBadges={isProActive}
@@ -105,15 +95,14 @@ export default async function DashboardLayout({
                       adminUnreadCount={adminUnreadCount}
                     />
                   </div>
-                  <div className="mt-10 flex justify-center pt-4">
-                    <div className="relative size-[78px] overflow-hidden rounded-full border border-[rgba(214,177,122,0.4)] bg-[radial-gradient(circle_at_50%_28%,rgba(214,177,122,0.1),rgba(255,255,255,0.012)_54%),linear-gradient(180deg,rgba(25,27,32,0.98),rgba(15,16,19,1))] shadow-[0_0_0_1px_rgba(255,255,255,0.035),0_18px_38px_rgba(0,0,0,0.28)]">
-                      <Image
-                        src="/brand/tattix-monogram.png"
-                        alt=""
-                        fill
-                        sizes="78px"
-                        className="object-contain scale-[1.14] opacity-[0.84]"
+                  <div className="mt-auto border-t border-[var(--border-soft)] pt-3">
+                    <div className="flex items-center gap-2">
+                      <DashboardNotificationBell
+                        locale={isTurkish ? "tr" : "en"}
+                        unreadCount={notificationUnreadCount}
+                        className="size-9 shrink-0 rounded-full"
                       />
+                      <LogoutButton locale={isTurkish ? "tr" : "en"} className="flex-1 justify-center" />
                     </div>
                   </div>
                 </div>

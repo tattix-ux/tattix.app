@@ -9,8 +9,10 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export function LogoutButton({
   locale = "en",
+  className,
 }: {
   locale?: "en" | "tr";
+  className?: string;
 }) {
   const router = useRouter();
 
@@ -25,7 +27,7 @@ export function LogoutButton({
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleLogout}>
+    <Button variant="outline" size="sm" onClick={handleLogout} className={className}>
       <LogOut className="size-4" />
       {locale === "tr" ? "Çıkış" : "Logout"}
     </Button>

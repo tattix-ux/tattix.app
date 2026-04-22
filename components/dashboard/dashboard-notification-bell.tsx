@@ -2,18 +2,24 @@ import Link from "next/link";
 import { Bell } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export function DashboardNotificationBell({
   locale,
   unreadCount,
+  className,
 }: {
   locale: "tr" | "en";
   unreadCount: number;
+  className?: string;
 }) {
   return (
     <Link
       href="/dashboard/notifications"
-      className="relative inline-flex size-10 items-center justify-center rounded-full border border-white/8 bg-white/4 text-[var(--foreground-muted)] transition hover:border-white/14 hover:bg-white/8 hover:text-white"
+      className={cn(
+        "relative inline-flex size-10 items-center justify-center rounded-full border border-white/8 bg-white/4 text-[var(--foreground-muted)] transition hover:border-white/14 hover:bg-white/8 hover:text-white",
+        className,
+      )}
       aria-label={locale === "tr" ? "Bildirimler" : "Notifications"}
     >
       <Bell className="size-4" />
