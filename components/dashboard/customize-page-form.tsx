@@ -23,11 +23,12 @@ import { useRouter } from "next/navigation";
 import { BrandMonogram } from "@/components/shared/brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { themePresetOptions, themePresets, type ThemePresetKey } from "@/lib/constants/theme";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
 import { uploadArtistAsset } from "@/lib/supabase/storage";
-import { buildThemeStyles, resolveArtistTheme } from "@/lib/theme";
+import { buildThemeStyles, deriveThemeColorTokens, resolveArtistTheme } from "@/lib/theme";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type { ArtistFunnelSettings, ArtistPageTheme, ArtistProfile, ArtistSavedTheme } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -56,43 +57,12 @@ const fontOptions = [
   { value: "outfit", label: "Outfit", helperTr: "Net ve daha karakterli", helperEn: "Crisp and more distinctive" },
 ] as const;
 
-const accentOptions = [
-  {
-    value: "#E3C08E",
-    labelTr: "Yumuşak bronz",
-    labelEn: "Soft bronze",
-    descriptionTr: "Daha açık, rafine ve yumuşak vurgu.",
-    descriptionEn: "A lighter, softer bronze accent.",
-  },
-  {
-    value: "#D6B17A",
-    labelTr: "Stüdyo bronzu",
-    labelEn: "Studio bronze",
-    descriptionTr: "Dengeli ve sıcak ana vurgu.",
-    descriptionEn: "A balanced, warm primary accent.",
-  },
-  {
-    value: "#C79A68",
-    labelTr: "Sıcak metal",
-    labelEn: "Warm metal",
-    descriptionTr: "Biraz daha tok ve karakterli görünür.",
-    descriptionEn: "Slightly deeper with more presence.",
-  },
-  {
-    value: "#B88352",
-    labelTr: "Derin bronz",
-    labelEn: "Deep bronze",
-    descriptionTr: "Daha koyu ve kontrollü bir vurgu verir.",
-    descriptionEn: "A deeper, more controlled accent tone.",
-  },
-  {
-    value: "#C6B29A",
-    labelTr: "Nötr şampanya",
-    labelEn: "Neutral champagne",
-    descriptionTr: "Daha sakin ve nötr bir premium his verir.",
-    descriptionEn: "A quieter, more neutral premium feel.",
-  },
-] as const;
+const themeColorSuggestions = {
+  primary: ["#C89B5D", "#D6C6A5", "#8B5CF6", "#B68A56", "#7BA7D9", "#E7E5E4"],
+  secondary: ["#8E6B43", "#8A7F73", "#C084FC", "#6F7B5C", "#4E6FAE", "#A8A29E"],
+  background: ["#121212", "#141518", "#100F16", "#111111", "#131512", "#10141B"],
+  surface: ["#1A1A1C", "#1C1E22", "#181622", "#181818", "#1B1E1A", "#171D26"],
+} as const;
 
 const cardSurfaceOptions = [
   {
@@ -157,6 +127,30 @@ function hexToRgb(hex: string) {
 function toRgba(hex: string, alpha: number) {
   const { r, g, b } = hexToRgb(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function mixHex(colorA: string, colorB: string, weightA = 0.68) {
+  const a = hexToRgb(colorA);
+  const b = hexToRgb(colorB);
+  const ratioA = Math.min(Math.max(weightA, 0), 1);
+  const ratioB = 1 - ratioA;
+
+  const toHex = (value: number) => value.toString(16).padStart(2, "0");
+  const r = Math.round(a.r * ratioA + b.r * ratioB);
+  const g = Math.round(a.g * ratioA + b.g * ratioB);
+  const blue = Math.round(a.b * ratioA + b.b * ratioB);
+
+  return `#${toHex(r)}${toHex(g)}${toHex(blue)}`;
+}
+
+function normalizeHexInput(value: string) {
+  const trimmed = value.trim().replace(/[^#0-9a-f]/gi, "");
+  const withPrefix = trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+  return withPrefix.slice(0, 7).toUpperCase();
+}
+
+function isValidHexInput(value: string) {
+  return /^#([0-9A-F]{6}|[0-9A-F]{3})$/.test(value);
 }
 
 function buildFormValues(source: ArtistPageTheme): ThemeValues {
@@ -492,6 +486,115 @@ function ThemePresetCard({
   );
 }
 
+function ColorField({
+  label,
+  description,
+  value,
+  suggestions,
+  pickerId,
+  onCommit,
+  selectLabel,
+}: {
+  label: string;
+  description: string;
+  value: string;
+  suggestions: readonly string[];
+  pickerId: string;
+  onCommit: (value: string) => void;
+  selectLabel: string;
+}) {
+  const [draft, setDraft] = useState(value.toUpperCase());
+
+  useEffect(() => {
+    setDraft(value.toUpperCase());
+  }, [value]);
+
+  function commit(next: string) {
+    const normalized = normalizeHexInput(next);
+    if (isValidHexInput(normalized)) {
+      onCommit(normalized);
+      setDraft(normalized);
+      return;
+    }
+
+    setDraft(value.toUpperCase());
+  }
+
+  return (
+    <div className="rounded-[20px] border border-white/8 bg-white/[0.025] p-3.5">
+      <div className="space-y-1">
+        <p className="text-[13px] font-medium text-white">{label}</p>
+        <p className="text-[12px] leading-5 text-[var(--foreground-muted)]">{description}</p>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2.5">
+        <span
+          className="inline-flex size-9 shrink-0 rounded-[14px] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+          style={{ backgroundColor: value }}
+        />
+        <Input
+          value={draft}
+          onChange={(event) => {
+            const normalized = normalizeHexInput(event.target.value);
+            if (normalized.length <= 7) setDraft(normalized);
+          }}
+          onBlur={() => commit(draft)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              commit(draft);
+            }
+          }}
+          className="h-10 rounded-[14px] border-white/10 bg-white/[0.03] font-mono text-[13px] uppercase tracking-[0.08em]"
+          inputMode="text"
+        />
+        <label
+          htmlFor={pickerId}
+          className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:bg-white/[0.08]"
+        >
+          {selectLabel}
+        </label>
+        <input
+          id={pickerId}
+          type="color"
+          value={value}
+          className="sr-only"
+          onChange={(event) => {
+            const next = event.target.value.toUpperCase();
+            setDraft(next);
+            onCommit(next);
+          }}
+        />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {suggestions.map((suggestion) => {
+          const active = suggestion.toLowerCase() === value.toLowerCase();
+          return (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => onCommit(suggestion)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-[11px] font-medium transition",
+                active
+                  ? "border-[color:color-mix(in_srgb,var(--accent)_45%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-white"
+                  : "border-white/8 bg-white/[0.025] text-[var(--foreground-muted)] hover:border-white/14 hover:bg-white/[0.05] hover:text-white",
+              )}
+            >
+              <span
+                className="inline-flex size-3 rounded-full border border-white/10"
+                style={{ backgroundColor: suggestion }}
+              />
+              {suggestion}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AppearancePreview({
   artist,
   theme,
@@ -702,8 +805,24 @@ export function CustomizePageForm({
           colorsModule: "Renkler",
           backgroundModule: "Arka Plan",
           surfacesModule: "Butonlar ve Kartlar",
-          accentTitle: "Vurgu rengi",
-          accentDescription: "Butonlar, etiketler ve seçili alanlar bu tonla görünür.",
+          colorsTitle: "Renkler",
+          colorsDescription: "Sayfanın ana tonlarını seç. Yazı ve yardımcı tonlar otomatik olarak dengelenir.",
+          primaryColorTitle: "Ana Renk",
+          primaryColorDescription: "Butonlar, linkler ve ana vurgu alanlarında kullanılır.",
+          secondaryColorTitle: "Yardımcı Renk",
+          secondaryColorDescription: "İkincil vurgu ve destekleyici detaylarda kullanılır.",
+          backgroundColorTitle: "Sayfa Zemini",
+          backgroundColorDescription: "Sayfanın ana arka plan tonudur.",
+          surfaceColorTitle: "Kart Zemini",
+          surfaceColorDescription: "Kartlar ve içerik yüzeylerinde kullanılır.",
+          selectColor: "Seç",
+          tokenPreviewTitle: "Renk sistemi önizlemesi",
+          tokenPreviewDescription: "Seçtiğin ana tonların arayüzde nasıl dengelendiğini burada görebilirsin.",
+          primaryButtonSample: "Ana buton",
+          secondaryButtonSample: "İkincil buton",
+          cardSampleTitle: "Kart örneği",
+          cardSampleBody: "Başlık, açıklama ve etiketler otomatik dengelenmiş tonlarla görünür.",
+          badgeSample: "Küçük rozet",
           backgroundTitle: "Arka plan stili",
           backgroundDescription: "Profil sayfasının genel atmosferini ve derinliğini belirler.",
           backgroundSolid: "Düz",
@@ -751,8 +870,24 @@ export function CustomizePageForm({
           colorsModule: "Colors",
           backgroundModule: "Background",
           surfacesModule: "Buttons & Cards",
-          accentTitle: "Accent color",
-          accentDescription: "Buttons, labels, and selected states use this tone.",
+          colorsTitle: "Colors",
+          colorsDescription: "Choose the main tones of the page. Text and supporting tones are balanced automatically.",
+          primaryColorTitle: "Primary Color",
+          primaryColorDescription: "Used for buttons, links, and the main accent moments.",
+          secondaryColorTitle: "Secondary Color",
+          secondaryColorDescription: "Used for secondary emphasis and supporting details.",
+          backgroundColorTitle: "Page Background",
+          backgroundColorDescription: "The main background tone of the page.",
+          surfaceColorTitle: "Card Surface",
+          surfaceColorDescription: "Used across cards and content surfaces.",
+          selectColor: "Pick",
+          tokenPreviewTitle: "Color system preview",
+          tokenPreviewDescription: "See how your core tones balance the interface before checking the full preview.",
+          primaryButtonSample: "Primary button",
+          secondaryButtonSample: "Secondary button",
+          cardSampleTitle: "Card sample",
+          cardSampleBody: "Heading, description, and small labels stay automatically balanced.",
+          badgeSample: "Badge",
           backgroundTitle: "Background style",
           backgroundDescription: "Sets the overall atmosphere and depth of the profile page.",
           backgroundSolid: "Solid",
@@ -794,13 +929,23 @@ export function CustomizePageForm({
   const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
   const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
   const currentPrimaryColor = watchedValues.primaryColor ?? theme.primaryColor;
+  const currentSecondaryColor = watchedValues.secondaryColor ?? theme.secondaryColor;
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
-  const currentTextColor = watchedValues.textColor ?? theme.textColor;
   const currentCardOpacity =
     typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
   const currentThemeMode = watchedValues.themeMode ?? theme.themeMode;
   const currentFontStyle = inferFontStyle(watchedValues.headingFont ?? theme.headingFont);
   const currentBackgroundStyle = inferBackgroundStyle(currentBackgroundType, currentThemeMode);
+  const derivedColorTokens = useMemo(
+    () =>
+      deriveThemeColorTokens({
+        backgroundColor: currentBackgroundColor,
+        cardColor: currentCardColor,
+        primaryColor: currentPrimaryColor,
+        secondaryColor: currentSecondaryColor,
+      }),
+    [currentBackgroundColor, currentCardColor, currentPrimaryColor, currentSecondaryColor],
+  );
 
   const [activeModule, setActiveModule] = useState<CustomizeModule>("presets");
   const [previewViewport, setPreviewViewport] = useState<PreviewViewport>("mobile");
@@ -828,6 +973,20 @@ export function CustomizePageForm({
     if (storedTheme) form.reset(buildFormValues(storedTheme));
   }, [demoMode, form]);
 
+  function applyBackgroundTone(nextColor: string) {
+    form.setValue("backgroundColor", nextColor, { shouldDirty: true, shouldValidate: true });
+    if (currentBackgroundType !== "image") {
+      form.setValue("gradientStart", mixHex(nextColor, currentCardColor, 0.82), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      form.setValue("gradientEnd", mixHex(nextColor, currentSecondaryColor, 0.68), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }
+
   const previewTheme = useMemo(
     () =>
       resolveArtistTheme({
@@ -838,9 +997,9 @@ export function CustomizePageForm({
         gradientStart: currentGradientStart,
         gradientEnd: currentGradientEnd,
         backgroundImageUrl: watchedValues.backgroundImageUrl || null,
-        textColor: currentTextColor,
+        textColor: derivedColorTokens.text,
         primaryColor: currentPrimaryColor,
-        secondaryColor: watchedValues.secondaryColor ?? theme.secondaryColor,
+        secondaryColor: currentSecondaryColor,
         cardColor: currentCardColor,
         cardOpacity: currentCardOpacity,
         headingFont: watchedValues.headingFont ?? theme.headingFont,
@@ -860,17 +1019,17 @@ export function CustomizePageForm({
       currentBackgroundType,
       currentCardColor,
       currentCardOpacity,
+      currentSecondaryColor,
+      derivedColorTokens.text,
       currentGradientEnd,
       currentGradientStart,
       currentPreset,
       currentPrimaryColor,
-      currentTextColor,
       currentThemeMode,
       theme.bodyFont,
       theme.fontPairingPreset,
       theme.headingFont,
       theme.radiusStyle,
-      theme.secondaryColor,
       watchedValues.backgroundImageUrl,
       watchedValues.bodyFont,
       watchedValues.customCtaLabel,
@@ -881,14 +1040,20 @@ export function CustomizePageForm({
       watchedValues.fontPairingPreset,
       watchedValues.headingFont,
       watchedValues.radiusStyle,
-      watchedValues.secondaryColor,
     ],
   );
 
   function normalizeThemeValues(values: ThemeValues): ThemeValues {
+    const derived = deriveThemeColorTokens({
+      backgroundColor: values.backgroundColor,
+      cardColor: values.cardColor,
+      primaryColor: values.primaryColor,
+      secondaryColor: values.secondaryColor,
+    });
     const resolved = resolveArtistTheme({
       artistId: artist.profile.id,
       ...values,
+      textColor: derived.text,
       backgroundImageUrl: values.backgroundImageUrl || null,
       customWelcomeTitle: values.customWelcomeTitle || null,
       customIntroText: values.customIntroText || null,
@@ -1074,36 +1239,138 @@ export function CustomizePageForm({
         <p className="mt-4 text-[13px] leading-6 text-[var(--foreground-muted)]">{copy.presetHelp}</p>
       </SectionCard>
     ) : activeModule === "colors" ? (
-      <SectionCard title={copy.colorsModule} description={copy.accentDescription} icon={<Palette className="size-4" />}>
-        <CustomGroup title={copy.accentTitle} description={copy.accentDescription}>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
-            {accentOptions.map((option) => (
-              <VisualOptionCard
-                key={option.value}
-                active={currentPrimaryColor.toLowerCase() === option.value.toLowerCase()}
-                title={locale === "tr" ? option.labelTr : option.labelEn}
-                description={locale === "tr" ? option.descriptionTr : option.descriptionEn}
-                onClick={() => form.setValue("primaryColor", option.value, { shouldDirty: true, shouldValidate: true })}
-              >
+      <SectionCard title={copy.colorsTitle} description={copy.colorsDescription} icon={<Palette className="size-4" />}>
+        <div className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <ColorField
+              label={copy.primaryColorTitle}
+              description={copy.primaryColorDescription}
+              value={currentPrimaryColor}
+              suggestions={themeColorSuggestions.primary}
+              pickerId="theme-primary-color"
+              selectLabel={copy.selectColor}
+              onCommit={(next) => form.setValue("primaryColor", next, { shouldDirty: true, shouldValidate: true })}
+            />
+            <ColorField
+              label={copy.secondaryColorTitle}
+              description={copy.secondaryColorDescription}
+              value={currentSecondaryColor}
+              suggestions={themeColorSuggestions.secondary}
+              pickerId="theme-secondary-color"
+              selectLabel={copy.selectColor}
+              onCommit={(next) => {
+                form.setValue("secondaryColor", next, { shouldDirty: true, shouldValidate: true });
+                if (currentBackgroundType !== "image") {
+                  form.setValue("gradientEnd", mixHex(currentBackgroundColor, next, 0.68), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              }}
+            />
+            <ColorField
+              label={copy.backgroundColorTitle}
+              description={copy.backgroundColorDescription}
+              value={currentBackgroundColor}
+              suggestions={themeColorSuggestions.background}
+              pickerId="theme-background-color"
+              selectLabel={copy.selectColor}
+              onCommit={applyBackgroundTone}
+            />
+            <ColorField
+              label={copy.surfaceColorTitle}
+              description={copy.surfaceColorDescription}
+              value={currentCardColor}
+              suggestions={themeColorSuggestions.surface}
+              pickerId="theme-surface-color"
+              selectLabel={copy.selectColor}
+              onCommit={(next) => form.setValue("cardColor", next, { shouldDirty: true, shouldValidate: true })}
+            />
+          </div>
+
+          <CustomGroup title={copy.tokenPreviewTitle} description={copy.tokenPreviewDescription}>
+            <div
+              className="rounded-[20px] border p-4"
+              style={{
+                background: `linear-gradient(180deg, ${currentBackgroundColor} 0%, ${derivedColorTokens.overlay} 100%)`,
+                borderColor: derivedColorTokens.border,
+              }}
+            >
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
-                      {locale === "tr" ? "Vurgu" : "Accent"}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className="inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium"
+                      style={{ backgroundColor: derivedColorTokens.chipBackground, color: derivedColorTokens.chipText }}
+                    >
+                      {copy.badgeSample}
                     </span>
-                    <span className="size-4 rounded-full border border-white/10" style={{ backgroundColor: option.value }} />
+                    <div
+                      className="inline-flex h-10 items-center rounded-full px-4 text-[13px] font-medium shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
+                      style={{ backgroundColor: currentPrimaryColor, color: derivedColorTokens.buttonText }}
+                    >
+                      {copy.primaryButtonSample}
+                    </div>
+                    <div
+                      className="inline-flex h-10 items-center rounded-full border px-4 text-[13px] font-medium"
+                      style={{
+                        backgroundColor: toRgba(currentCardColor, 0.72),
+                        borderColor: derivedColorTokens.border,
+                        color: derivedColorTokens.text,
+                      }}
+                    >
+                      {copy.secondaryButtonSample}
+                    </div>
                   </div>
-                  <div className="h-10 rounded-[14px]" style={{ backgroundColor: toRgba(option.value, 0.2) }} />
-                  <div className="grid grid-cols-[1fr_auto] gap-2">
-                    <div className="h-8 rounded-[12px] border border-white/8 bg-white/[0.04]" />
-                    <div className="rounded-[12px] px-3 py-2 text-[11px] font-medium" style={{ backgroundColor: option.value, color: "#1A1714" }}>
-                      {locale === "tr" ? "Buton" : "Button"}
+
+                  <div
+                    className="rounded-[18px] border p-4"
+                    style={{ backgroundColor: toRgba(currentCardColor, 0.88), borderColor: derivedColorTokens.border }}
+                  >
+                    <p className="text-[1rem] font-semibold tracking-[-0.03em]" style={{ color: derivedColorTokens.text }}>
+                      {copy.cardSampleTitle}
+                    </p>
+                    <p className="mt-2 text-[13px] leading-6" style={{ color: derivedColorTokens.mutedText }}>
+                      {copy.cardSampleBody}
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className="rounded-[18px] border p-4"
+                  style={{ backgroundColor: toRgba(currentCardColor, 0.72), borderColor: derivedColorTokens.border }}
+                >
+                  <div className="space-y-2">
+                    <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: derivedColorTokens.mutedText }}>
+                      Tokens
+                    </p>
+                    <div className="space-y-2 text-[12px]">
+                      {[
+                        ["Text", derivedColorTokens.text],
+                        ["Muted", derivedColorTokens.mutedText],
+                        ["Border", derivedColorTokens.border],
+                        ["Soft Accent", derivedColorTokens.softAccent],
+                      ].map(([tokenLabel, tokenValue]) => (
+                        <div key={tokenLabel} className="flex items-center justify-between gap-3">
+                          <span style={{ color: derivedColorTokens.mutedText }}>{tokenLabel}</span>
+                          <span className="inline-flex items-center gap-2">
+                            <span
+                              className="inline-flex size-3 rounded-full border border-white/10"
+                              style={{ backgroundColor: String(tokenValue).startsWith("#") ? String(tokenValue) : currentPrimaryColor }}
+                            />
+                            <span className="font-mono text-[11px] uppercase" style={{ color: derivedColorTokens.text }}>
+                              {String(tokenValue)}
+                            </span>
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </VisualOptionCard>
-            ))}
-          </div>
-        </CustomGroup>
+              </div>
+            </div>
+          </CustomGroup>
+        </div>
       </SectionCard>
     ) : activeModule === "background" ? (
       <SectionCard title={copy.backgroundModule} description={copy.backgroundDescription} icon={<ImageIcon className="size-4" />}>

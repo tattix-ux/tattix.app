@@ -119,6 +119,161 @@ function enforceReadableForeground(
     : "#ffffff";
 }
 
+function rgbToHsl(r: number, g: number, b: number) {
+  const red = r / 255;
+  const green = g / 255;
+  const blue = b / 255;
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const lightness = (max + min) / 2;
+
+  if (max === min) {
+    return { h: 0, s: 0, l: lightness };
+  }
+
+  const delta = max - min;
+  const saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  let hue = 0;
+
+  switch (max) {
+    case red:
+      hue = (green - blue) / delta + (green < blue ? 6 : 0);
+      break;
+    case green:
+      hue = (blue - red) / delta + 2;
+      break;
+    default:
+      hue = (red - green) / delta + 4;
+  }
+
+  return { h: hue * 60, s: saturation, l: lightness };
+}
+
+function hueDistance(a: string, b: string) {
+  const firstRgb = hexToRgb(a);
+  const secondRgb = hexToRgb(b);
+  const first = rgbToHsl(firstRgb.r, firstRgb.g, firstRgb.b);
+  const second = rgbToHsl(secondRgb.r, secondRgb.g, secondRgb.b);
+  const diff = Math.abs(first.h - second.h);
+  return Math.min(diff, 360 - diff);
+}
+
+function clampChannel(value: number, min = 8, max = 18) {
+  return Math.max(min, Math.min(max, Math.round(value)));
+}
+
+function toRgba(hex: string, alpha: number) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+const safeTextTones = ["#F5F1EA", "#F3F2EE", "#F5F3FF", "#FAFAF9", "#EFF4FA"] as const;
+const darkButtonTextCandidates = ["#181411", "#111111", "#0F1720"] as const;
+const lightButtonTextCandidates = ["#F8F5FF", "#F5F1EA", "#F7F7F5"] as const;
+
+function pickReadableTextTone(background: string, surface: string) {
+  const scored = safeTextTones
+    .map((candidate) => {
+      const backgroundContrast = contrastRatio(candidate, background);
+      const surfaceContrast = contrastRatio(candidate, surface);
+      const minimumContrast = Math.min(backgroundContrast, surfaceContrast);
+      const hueAffinity = 360 - hueDistance(candidate, background);
+
+      return {
+        candidate,
+        minimumContrast,
+        score: minimumContrast * 100 + hueAffinity * 0.12,
+      };
+    })
+    .sort((left, right) => right.score - left.score);
+
+  return scored[0] && scored[0].minimumContrast >= 7 ? scored[0].candidate : "#F7F7F5";
+}
+
+function buildMutedTone(text: string, background: string, surface: string) {
+  const ratios = [0.7, 0.64, 0.6, 0.56, 0.52];
+
+  for (const ratio of ratios) {
+    const candidate = mixHex(text, background, ratio);
+    if (contrastRatio(candidate, background) >= 4.5 && contrastRatio(candidate, surface) >= 4.2) {
+      return candidate;
+    }
+  }
+
+  return mixHex(text, background, 0.76);
+}
+
+function pickButtonText(primary: string) {
+  const primaryLightness = relativeLuminance(primary);
+  const candidates = primaryLightness > 0.34 ? darkButtonTextCandidates : lightButtonTextCandidates;
+
+  return [...candidates]
+    .map((candidate) => ({
+      candidate,
+      contrast: contrastRatio(candidate, primary),
+    }))
+    .sort((left, right) => right.contrast - left.contrast)[0]?.candidate ?? "#111111";
+}
+
+function buildBorderColor(surface: string, background: string, text: string) {
+  const base = mixHex(surface, text, 0.82);
+  if (contrastRatio(base, surface) >= 1.28 && contrastRatio(base, background) >= 1.18) {
+    return base;
+  }
+
+  return mixHex(surface, text, 0.74);
+}
+
+function buildOverlay(background: string, surface: string) {
+  const backgroundRgb = hexToRgb(background);
+  const surfaceRgb = hexToRgb(surface);
+  const luminance = Math.max(relativeLuminance(background), relativeLuminance(surface));
+  const alpha = luminance > 0.1 ? 0.58 : luminance > 0.06 ? 0.54 : 0.5;
+
+  return `rgba(${clampChannel((backgroundRgb.r + surfaceRgb.r) / 2)}, ${clampChannel((backgroundRgb.g + surfaceRgb.g) / 2)}, ${clampChannel((backgroundRgb.b + surfaceRgb.b) / 2)}, ${alpha})`;
+}
+
+function buildSoftAccent(primary: string, surface: string) {
+  return mixHex(primary, surface, 0.42);
+}
+
+function buildChipColors(primary: string, secondary: string, surface: string) {
+  const chipBackgroundHex = mixHex(primary, surface, 0.26);
+  const candidateText = contrastRatio(primary, chipBackgroundHex) >= contrastRatio(secondary, chipBackgroundHex) ? primary : secondary;
+  const chipText = contrastRatio(candidateText, chipBackgroundHex) >= 4.5 ? candidateText : "#F5F1EA";
+
+  return {
+    chipBackground: toRgba(chipBackgroundHex, 0.42),
+    chipText,
+  };
+}
+
+export function deriveThemeColorTokens(input: {
+  backgroundColor: string;
+  cardColor: string;
+  primaryColor: string;
+  secondaryColor: string;
+}) {
+  const text = pickReadableTextTone(input.backgroundColor, input.cardColor);
+  const mutedText = buildMutedTone(text, input.backgroundColor, input.cardColor);
+  const buttonText = pickButtonText(input.primaryColor);
+  const border = buildBorderColor(input.cardColor, input.backgroundColor, text);
+  const overlay = buildOverlay(input.backgroundColor, input.cardColor);
+  const softAccent = buildSoftAccent(input.primaryColor, input.cardColor);
+  const { chipBackground, chipText } = buildChipColors(input.primaryColor, input.secondaryColor, input.cardColor);
+
+  return {
+    text,
+    mutedText,
+    buttonText,
+    border,
+    overlay,
+    softAccent,
+    chipBackground,
+    chipText,
+  };
+}
+
 export function buildDefaultArtistTheme(): ArtistPageTheme {
   const presetKey: ThemePresetKey = "bronze-studio";
   const preset = themePresets[presetKey];
@@ -478,22 +633,15 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
   const usesPresetPrimary = theme.primaryColor.toLowerCase() === preset.primaryColor.toLowerCase();
   const usesPresetBackground = theme.backgroundColor.toLowerCase() === preset.backgroundColor.toLowerCase();
   const usesPresetCard = theme.cardColor.toLowerCase() === preset.cardColor.toLowerCase();
-  const text = enforceReadableForeground(
-    theme.backgroundColor,
-    normalizeHex(theme.textColor, "#EEE7DD"),
-    "#EEE7DD",
-  );
-  const muted = usesPresetBackground
-    ? preset.mutedText
-    : enforceReadableForeground(
-        theme.backgroundColor,
-        mixHex(text, theme.backgroundColor, 0.58),
-        "#B8ADA0",
-        4.5,
-      );
-  const primaryForeground = usesPresetPrimary
-    ? preset.buttonText
-    : enforceReadableForeground(theme.primaryColor, "#111111", "#ffffff");
+  const derived = deriveThemeColorTokens({
+    backgroundColor: theme.backgroundColor,
+    cardColor: theme.cardColor,
+    primaryColor: theme.primaryColor,
+    secondaryColor: theme.secondaryColor,
+  });
+  const text = usesPresetBackground ? preset.textColor : derived.text;
+  const muted = usesPresetBackground ? preset.mutedText : derived.mutedText;
+  const primaryForeground = usesPresetPrimary ? preset.buttonText : derived.buttonText;
   const secondaryForeground = enforceReadableForeground(
     theme.secondaryColor,
     "#111111",
@@ -505,19 +653,12 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     "#F0E7DC",
     7,
   );
-  const cardMuted = usesPresetCard
-    ? preset.mutedText
-    : enforceReadableForeground(
-        theme.cardColor,
-        mixHex(cardText, theme.cardColor, 0.58),
-        "#B8ADA0",
-        4.5,
-      );
-  const borderColor = usesPresetCard ? preset.border : "rgba(255,255,255,0.09)";
+  const cardMuted = usesPresetCard ? preset.mutedText : derived.mutedText;
+  const borderColor = usesPresetCard ? preset.border : derived.border;
 
   const backgroundImage =
     theme.backgroundType === "image" && theme.backgroundImageUrl
-      ? `linear-gradient(180deg, rgba(12,13,15,0.42), rgba(12,13,15,0.76)), url(${theme.backgroundImageUrl})`
+      ? `linear-gradient(180deg, ${usesPresetBackground ? preset.overlay : derived.overlay}, ${usesPresetBackground ? preset.overlay : derived.overlay}), url(${theme.backgroundImageUrl})`
       : theme.backgroundType === "gradient"
         ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
         : theme.backgroundColor;
@@ -528,7 +669,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     color: text,
     fontFamily: bodyFontStacks[theme.bodyFont],
     "--accent": theme.primaryColor,
-    "--accent-soft": theme.themeMode === "light" ? theme.primaryColor : theme.primaryColor,
+    "--accent-soft": derived.softAccent,
     "--accent-foreground": primaryForeground,
     "--foreground-muted": muted,
     "--artist-background": theme.backgroundColor,
@@ -559,8 +700,8 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     "--artist-input-surface": recipe.inputSurface,
     "--artist-input-border": recipe.inputBorder,
     "--artist-input-focus-surface": recipe.inputFocusSurface,
-    "--artist-chip-surface": recipe.chipSurface,
-    "--artist-chip-text": recipe.chipText,
+    "--artist-chip-surface": usesPresetPrimary ? recipe.chipSurface : derived.chipBackground,
+    "--artist-chip-text": usesPresetPrimary ? recipe.chipText : derived.chipText,
     "--artist-divider": recipe.divider,
     "--artist-secondary-button-surface": recipe.secondaryButtonSurface,
     "--artist-secondary-button-border": recipe.secondaryButtonBorder,
