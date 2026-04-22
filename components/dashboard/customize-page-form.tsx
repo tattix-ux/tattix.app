@@ -1,13 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Check,
+  Crown,
   ImageIcon,
   ImagePlus,
   Laptop,
   Layers3,
   LoaderCircle,
+  LockKeyhole,
   Palette,
   Save,
   Smartphone,
@@ -247,11 +250,13 @@ function ModuleNavItem({
   active,
   label,
   icon,
+  locked = false,
   onClick,
 }: {
   active: boolean;
   label: string;
   icon: React.ReactNode;
+  locked?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -262,7 +267,9 @@ function ModuleNavItem({
         "flex h-11 w-full items-center gap-3 rounded-[16px] border px-3.5 text-left text-[13px] font-medium transition",
         active
           ? "border-[color:color-mix(in_srgb,var(--accent)_40%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-white shadow-[0_12px_24px_rgba(0,0,0,0.16)]"
-          : "border-white/8 bg-white/[0.025] text-[var(--text-secondary)] hover:border-white/14 hover:bg-white/[0.04] hover:text-white",
+          : locked
+            ? "border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.015))] text-[var(--text-secondary)] hover:border-white/12 hover:bg-white/[0.05] hover:text-white"
+            : "border-white/8 bg-white/[0.025] text-[var(--text-secondary)] hover:border-white/14 hover:bg-white/[0.04] hover:text-white",
       )}
     >
       <span
@@ -274,7 +281,81 @@ function ModuleNavItem({
         {icon}
       </span>
       <span className="truncate">{label}</span>
+      {locked ? <LockKeyhole className="ml-auto size-3.5 text-[var(--text-muted)]" /> : null}
     </button>
+  );
+}
+
+function UpgradeFeatureCard({
+  locale,
+  compact = false,
+}: {
+  locale: PublicLocale;
+  compact?: boolean;
+}) {
+  const copy =
+    locale === "tr"
+      ? {
+          badge: "PRO",
+          title: "Kendi görünümünü oluştur",
+          description:
+            "Hazır temaların ötesine geç. Kendi renklerini kullan, arka plan görselini yükle ve sayfanı markana göre düzenle.",
+          features: [
+            "Kendi renk paletini oluştur",
+            "Arka plan görseli yükle",
+            "Buton ve kart stilini değiştir",
+            "Canlı önizleme ile anında gör",
+          ],
+          cta: "PRO'ya geç",
+        }
+      : {
+          badge: "PRO",
+          title: "Create your own look",
+          description:
+            "Go beyond ready-made themes. Use your own colors, upload a background image, and shape the page around your brand.",
+          features: [
+            "Build your own color palette",
+            "Upload a background image",
+            "Change button and card style",
+            "See changes instantly in live preview",
+          ],
+          cta: "Upgrade to Pro",
+        };
+
+  return (
+    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]">
+      <CardContent className={cn("space-y-4", compact ? "p-4" : "p-5")}>
+        <div className="flex items-start gap-3">
+          <div className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--accent)_30%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] p-2.5 text-[var(--accent)]">
+            <Crown className="size-4" />
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--accent)_30%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {copy.badge}
+            </div>
+            <div>
+              <h3 className="text-[1.02rem] font-semibold tracking-[-0.03em] text-white">{copy.title}</h3>
+              <p className="mt-1 text-[13px] leading-6 text-[var(--foreground-muted)]">{copy.description}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {copy.features.map((item) => (
+            <div
+              key={item}
+              className="rounded-[16px] border border-white/8 bg-white/[0.025] px-3.5 py-3 text-[13px] leading-5 text-[var(--text-secondary)]"
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+
+        <Button asChild className="h-10 px-4">
+          <Link href="/dashboard/upgrade">{copy.cta}</Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -788,12 +869,14 @@ export function CustomizePageForm({
   savedThemes: _savedThemes,
   demoMode,
   locale = "en",
+  hasPro,
 }: {
   artist: CustomizePageArtist;
   theme: ArtistPageTheme;
   savedThemes: ArtistSavedTheme[];
   demoMode: boolean;
   locale?: PublicLocale;
+  hasPro: boolean;
 }) {
   const router = useRouter();
   const copy =
@@ -992,17 +1075,18 @@ export function CustomizePageForm({
   );
 
   const [activeModule, setActiveModule] = useState<CustomizeModule>("presets");
+  const [lockedModulePreview, setLockedModulePreview] = useState<Exclude<CustomizeModule, "presets"> | null>(null);
   const [previewViewport, setPreviewViewport] = useState<PreviewViewport>("mobile");
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   const moduleItems = useMemo(
     () => [
-      { key: "presets" as const, label: copy.presetModule, icon: <Sparkles className="size-3.5" /> },
-      { key: "colors" as const, label: copy.colorsModule, icon: <Palette className="size-3.5" /> },
-      { key: "background" as const, label: copy.backgroundModule, icon: <ImageIcon className="size-3.5" /> },
-      { key: "surfaces" as const, label: copy.surfacesModule, icon: <Layers3 className="size-3.5" /> },
+      { key: "presets" as const, label: copy.presetModule, icon: <Sparkles className="size-3.5" />, locked: false },
+      { key: "colors" as const, label: copy.colorsModule, icon: <Palette className="size-3.5" />, locked: !hasPro },
+      { key: "background" as const, label: copy.backgroundModule, icon: <ImageIcon className="size-3.5" />, locked: !hasPro },
+      { key: "surfaces" as const, label: copy.surfacesModule, icon: <Layers3 className="size-3.5" />, locked: !hasPro },
     ],
-    [copy.backgroundModule, copy.colorsModule, copy.presetModule, copy.surfacesModule],
+    [copy.backgroundModule, copy.colorsModule, copy.presetModule, copy.surfacesModule, hasPro],
   );
 
   useEffect(() => {
@@ -1195,7 +1279,14 @@ export function CustomizePageForm({
   }
 
   async function saveTheme(values: ThemeValues) {
-    const normalizedValues = normalizeThemeValues(values);
+    const normalizedValues = hasPro
+      ? normalizeThemeValues(values)
+      : buildFormValues(
+          resolveArtistTheme({
+            artistId: artist.profile.id,
+            presetTheme: values.presetTheme,
+          }),
+        );
 
     if (demoMode) {
       saveDemoTheme(
@@ -1235,8 +1326,15 @@ export function CustomizePageForm({
     await saveTheme(values);
   }
 
-  const modulePanel =
-    activeModule === "presets" ? (
+  const displayModule = !hasPro && lockedModulePreview ? lockedModulePreview : activeModule;
+  const activeModuleItem = moduleItems.find((item) => item.key === displayModule);
+  const activeModuleLocked = !hasPro && lockedModulePreview !== null;
+
+  const modulePanel = activeModuleLocked ? (
+    <SectionCard title={activeModuleItem?.label ?? copy.surfacesModule} icon={<LockKeyhole className="size-4" />}>
+      <UpgradeFeatureCard locale={locale} compact />
+    </SectionCard>
+  ) : displayModule === "presets" ? (
       <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
         <div className="grid gap-4 md:grid-cols-2">
           {themePresetOptions.map((presetKey) => {
@@ -1256,7 +1354,7 @@ export function CustomizePageForm({
         </div>
         <p className="mt-4 text-[13px] leading-6 text-[var(--foreground-muted)]">{copy.presetHelp}</p>
       </SectionCard>
-    ) : activeModule === "colors" ? (
+    ) : displayModule === "colors" ? (
       <SectionCard title={copy.colorsTitle} description={copy.colorsDescription} icon={<Palette className="size-4" />}>
         <div className="space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
@@ -1390,7 +1488,7 @@ export function CustomizePageForm({
           </CustomGroup>
         </div>
       </SectionCard>
-    ) : activeModule === "background" ? (
+    ) : displayModule === "background" ? (
       <SectionCard title={copy.backgroundModuleTitle} description={copy.backgroundModuleDescription} icon={<ImageIcon className="size-4" />}>
         <div className="space-y-4">
           <CustomGroup title={copy.backgroundKindTitle}>
@@ -1798,10 +1896,27 @@ export function CustomizePageForm({
             </div>
           </div>
 
+          {!hasPro ? <UpgradeFeatureCard locale={locale} /> : null}
+
           <div className="grid gap-4 xl:hidden">
             <div className="grid grid-cols-2 gap-2">
               {moduleItems.map((item) => (
-                <ModuleNavItem key={item.key} active={activeModule === item.key} label={item.label} icon={item.icon} onClick={() => setActiveModule(item.key)} />
+                <ModuleNavItem
+                  key={item.key}
+                  active={activeModule === item.key && (!item.locked || hasPro)}
+                  locked={item.locked}
+                  label={item.label}
+                  icon={item.icon}
+                  onClick={() => {
+                    if (item.locked && !hasPro) {
+                      setLockedModulePreview(item.key as Exclude<CustomizeModule, "presets">);
+                      return;
+                    }
+
+                    setLockedModulePreview(null);
+                    setActiveModule(item.key);
+                  }}
+                />
               ))}
             </div>
             {modulePanel}
@@ -1829,7 +1944,22 @@ export function CustomizePageForm({
               </CardHeader>
               <CardContent className="space-y-2 pt-0">
                 {moduleItems.map((item) => (
-                  <ModuleNavItem key={item.key} active={activeModule === item.key} label={item.label} icon={item.icon} onClick={() => setActiveModule(item.key)} />
+                  <ModuleNavItem
+                    key={item.key}
+                    active={activeModule === item.key && (!item.locked || hasPro)}
+                    locked={item.locked}
+                    label={item.label}
+                    icon={item.icon}
+                    onClick={() => {
+                      if (item.locked && !hasPro) {
+                        setLockedModulePreview(item.key as Exclude<CustomizeModule, "presets">);
+                        return;
+                      }
+
+                      setLockedModulePreview(null);
+                      setActiveModule(item.key);
+                    }}
+                  />
                 ))}
               </CardContent>
             </Card>

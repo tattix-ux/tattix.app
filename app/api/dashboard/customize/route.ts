@@ -6,6 +6,7 @@ import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { resolveArtistTheme } from "@/lib/theme";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -32,12 +33,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
   }
 
-  if (!hasProAccess(artist)) {
-    return NextResponse.json({ message: "Contact for Pro access." }, { status: 403 });
-  }
-
   const supabase = await createSupabaseServerClient();
-  const values = parsed.data;
+  const isPro = hasProAccess(artist);
+  const values = isPro
+    ? parsed.data
+    : (() => {
+        const presetTheme = resolveArtistTheme({
+          artistId: artist.id,
+          presetTheme: parsed.data.presetTheme,
+        });
+
+        return {
+          ...parsed.data,
+          presetTheme: presetTheme.presetTheme,
+          backgroundType: presetTheme.backgroundType,
+          backgroundColor: presetTheme.backgroundColor,
+          gradientStart: presetTheme.gradientStart,
+          gradientEnd: presetTheme.gradientEnd,
+          backgroundImageUrl: presetTheme.backgroundImageUrl ?? "",
+          backgroundOverlayStrength: presetTheme.backgroundOverlayStrength,
+          backgroundImageSoftness: presetTheme.backgroundImageSoftness,
+          backgroundImageFocus: presetTheme.backgroundImageFocus,
+          textColor: presetTheme.textColor,
+          primaryColor: presetTheme.primaryColor,
+          secondaryColor: presetTheme.secondaryColor,
+          cardColor: presetTheme.cardColor,
+          cardOpacity: presetTheme.cardOpacity,
+          cardFeel: presetTheme.cardFeel,
+          buttonStyle: presetTheme.buttonStyle,
+          badgeStyle: presetTheme.badgeStyle,
+          headingFont: presetTheme.headingFont,
+          bodyFont: presetTheme.bodyFont,
+          fontPairingPreset: presetTheme.fontPairingPreset,
+          radiusStyle: presetTheme.radiusStyle,
+          themeMode: presetTheme.themeMode,
+        };
+      })();
   const { error } = await supabase.from("artist_page_themes").upsert({
     artist_id: artist.id,
     preset_theme: values.presetTheme,
@@ -73,7 +104,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 
-  if (savePreset) {
+  if (savePreset && isPro) {
     const { count } = await supabase
       .from("artist_saved_themes")
       .select("*", { count: "exact", head: true })
