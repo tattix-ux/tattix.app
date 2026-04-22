@@ -8,7 +8,6 @@ import { RequestTypeSelectionStep } from "@/components/funnel/request-type-selec
 import { BodyPlacementSelector } from "@/components/funnel/body-placement-selector";
 import { SizeEstimationSelector } from "@/components/funnel/size-estimation-selector";
 import { AvatarTile } from "@/components/shared/avatar-tile";
-import { BrandMonogram, BrandPrimary } from "@/components/shared/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -574,7 +573,6 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     artist.profile.shortBio?.trim() ||
     "";
   const primaryActionLabel = artist.pageTheme.customCtaLabel || copy.heroCta;
-  const compactArtistHeader = step > 1 || Boolean(draft.pricingSource);
   const { tokens } = buildThemeStyles(artist.pageTheme);
   const flowSteps = useMemo(() => getFlowSteps(draft.pricingSource, draft.areaScope), [draft.areaScope, draft.pricingSource]);
   const lastInteractiveStep = flowSteps.length;
@@ -946,7 +944,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-clip space-y-2 sm:space-y-4">
       <Card
-        className={`${compactArtistHeader ? "sticky top-2 z-20 overflow-hidden" : "overflow-hidden"} w-full min-w-0 max-w-full overflow-x-clip`}
+        className="overflow-hidden w-full min-w-0 max-w-full overflow-x-clip"
         style={{
           borderColor: "var(--artist-border)",
           backgroundColor: "var(--artist-rail-surface)",
@@ -954,65 +952,39 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
           boxShadow: "var(--artist-card-shadow)",
         }}
       >
-        {compactArtistHeader ? (
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <AvatarTile
-                name={artist.profile.artistName}
-                imageUrl={artist.profile.profileImageUrl}
-                planType={artist.profile.planType}
-              />
-              <div className="min-w-0">
-                <p className="truncate text-base sm:text-lg" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}>
-                  {artist.profile.artistName}
-                </p>
-                <p className="truncate text-xs sm:text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                  {artist.profile.instagramHandle}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        ) : (
-          <>
-            <div
-              className="h-32 w-full border-b bg-grid sm:h-36"
-              style={
-                artist.profile.coverImageUrl
-                  ? {
-                      backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.88)), url(${artist.profile.coverImageUrl})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      borderColor: "var(--artist-border)",
-                    }
-                  : { borderColor: "var(--artist-border)" }
-              }
-            />
-            <CardContent className="-mt-10 min-w-0 space-y-3 p-4 sm:p-5">
-              <div className="relative overflow-hidden rounded-[28px] border p-4" style={{ borderColor: "var(--artist-border)", backgroundColor: "color-mix(in srgb, var(--artist-card) 18%, transparent)" }}>
-                <BrandMonogram className="left-auto right-0 top-0 h-full w-[52%]" opacity={0.06} />
-                <BrandPrimary className="mx-auto w-[160px] sm:w-[190px]" />
-              </div>
-              <AvatarTile
-                name={artist.profile.artistName}
-                imageUrl={artist.profile.profileImageUrl}
-                planType={artist.profile.planType}
-              />
-              <div className="space-y-3">
-                {artist.funnelSettings.introEyebrow?.trim() ? <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge> : null}
-                {introTitle ? (
-                  <h1 className="leading-tight sm:text-3xl" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)", fontSize: "clamp(1.58rem, calc(1.42rem * var(--artist-heading-scale)), 2.35rem)" }}>
-                    {introTitle}
-                  </h1>
-                ) : null}
-                {introText ? (
-                  <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-card-muted)" }}>
-                    {introText}
-                  </p>
-                ) : null}
-              </div>
-            </CardContent>
-          </>
-        )}
+        <div
+          className="h-32 w-full border-b bg-grid sm:h-36"
+          style={
+            artist.profile.coverImageUrl
+              ? {
+                  backgroundImage: `linear-gradient(180deg, rgba(9,9,11,0.15), rgba(9,9,11,0.88)), url(${artist.profile.coverImageUrl})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  borderColor: "var(--artist-border)",
+                }
+              : { borderColor: "var(--artist-border)" }
+          }
+        />
+        <CardContent className="-mt-10 min-w-0 space-y-3 p-4 sm:p-5">
+          <AvatarTile
+            name={artist.profile.artistName}
+            imageUrl={artist.profile.profileImageUrl}
+            planType={artist.profile.planType}
+          />
+          <div className="space-y-3">
+            {artist.funnelSettings.introEyebrow?.trim() ? <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge> : null}
+            {introTitle ? (
+              <h1 className="leading-tight sm:text-3xl" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)", fontSize: "clamp(1.58rem, calc(1.42rem * var(--artist-heading-scale)), 2.35rem)" }}>
+                {introTitle}
+              </h1>
+            ) : null}
+            {introText ? (
+              <p className="text-sm leading-6 sm:leading-7" style={{ color: "var(--artist-card-muted)" }}>
+                {introText}
+              </p>
+            ) : null}
+          </div>
+        </CardContent>
       </Card>
 
       <div ref={flowCardRef}>
