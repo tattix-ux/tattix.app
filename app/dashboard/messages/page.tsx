@@ -23,7 +23,7 @@ export default async function DashboardMessagesPage() {
   const messages = await getAdminSupportMessages();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SectionHeading
         eyebrow="Mesajlar"
         title="Destek mesajlarını burada yönet."

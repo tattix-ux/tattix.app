@@ -16,7 +16,7 @@ export default async function DashboardDesignsPage() {
   const isTurkish = data.locale === "tr";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SectionHeading
         eyebrow={isTurkish ? "Tasarımlar" : "Designs"}
         title={

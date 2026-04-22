@@ -36,7 +36,7 @@ export function Container({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("mx-auto w-full min-w-0 max-w-full overflow-x-clip px-3.5 sm:max-w-[1280px] sm:px-[18px] lg:px-5", className)}>{children}</div>;
+  return <div className={cn("mx-auto w-full min-w-0 max-w-full overflow-x-clip px-3.5 sm:max-w-[1400px] sm:px-[18px] lg:px-5", className)}>{children}</div>;
 }
 
 export function SectionHeading({

@@ -58,7 +58,7 @@ function SurfaceBlock({
   return (
     <div
       className={cn(
-        "rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+        "rounded-[22px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
         className,
       )}
     >
@@ -81,7 +81,7 @@ function StepHeaderButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-[18px] border px-4 py-3 text-left text-[13px] leading-5 transition",
+        "rounded-[16px] border px-3.5 py-2.5 text-left text-[12px] leading-5 transition",
         active
           ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.18),rgba(155,110,69,0.10))] text-[var(--text-primary)] shadow-[0_12px_28px_rgba(0,0,0,0.18)]"
           : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.02)] text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:bg-[rgba(255,255,255,0.035)] hover:text-[var(--text-primary)]",
@@ -102,11 +102,11 @@ function AnchorInputCard({
   children: React.ReactNode;
 }) {
   return (
-    <SurfaceBlock className="p-5">
-      <div className="space-y-4">
+    <SurfaceBlock className="p-4">
+      <div className="space-y-3">
         <div className="space-y-1.5">
-          <p className="text-[15px] font-semibold text-[var(--text-primary)]">{title}</p>
-          <p className="text-sm leading-6 text-[var(--text-secondary)]">{description}</p>
+          <p className="text-[14px] font-semibold text-[var(--text-primary)]">{title}</p>
+          <p className="text-[13px] leading-5 text-[var(--text-secondary)]">{description}</p>
         </div>
         {children}
       </div>
@@ -292,7 +292,7 @@ function CurrencyInput({
 
             onChange(String(roundToFriendlyPrice(toInputNumber(value), "nearest")));
           }}
-          className="h-13 rounded-[18px] border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] pr-16"
+          className="h-10 rounded-[16px] border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] pr-14"
         />
         <span className="pointer-events-none absolute right-4 top-1/2 inline-flex h-5 -translate-y-1/2 items-center text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
           {suffix}
@@ -978,20 +978,20 @@ export function PricingForm({
   return (
     <>
     <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_90%,black_8%)_100%)] shadow-[0_20px_52px_rgba(0,0,0,0.18)]">
-      <CardHeader className="space-y-5 pb-4">
-        <div className="space-y-3">
+      <CardHeader className="space-y-4 pb-3">
+        <div className="space-y-2">
           <div className="inline-flex items-center rounded-full border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-[var(--text-dim)]">
             {locale === "tr" ? `Adım ${phase} / 4` : `Step ${phase} / 4`}
           </div>
           <div>
-            <CardTitle className="text-[1.55rem] tracking-[-0.02em]">{currentPhaseCopy.title}</CardTitle>
-            <CardDescription className="mt-2 max-w-[62ch] text-[15px] leading-7 text-[var(--text-secondary)]">
+            <CardTitle className="text-[1.35rem] tracking-[-0.02em]">{currentPhaseCopy.title}</CardTitle>
+            <CardDescription className="mt-1.5 max-w-[62ch] text-[13px] leading-5 text-[var(--text-secondary)]">
               {currentPhaseCopy.description}
             </CardDescription>
           </div>
         </div>
 
-        <div className="grid gap-2.5 sm:grid-cols-4">
+        <div className="grid gap-2 sm:grid-cols-4">
           {copy.phases.map((phaseItem, index) => (
             <StepHeaderButton
               key={phaseItem.navLabel}
@@ -1002,11 +1002,11 @@ export function PricingForm({
           ))}
         </div>
       </CardHeader>
-      <CardContent className="space-y-6 pt-0">
+      <CardContent className="space-y-5 pt-0">
 
         {phase === 1 ? (
-          <div className="space-y-6">
-            <div className="grid gap-5 lg:grid-cols-2">
+          <div className="space-y-5">
+            <div className="grid gap-4 lg:grid-cols-2">
               <AnchorInputCard title={copy.minimumJobPrice} description={copy.minimumJobPriceDescription}>
                 <CurrencyInput
                   value={minimumJobPrice}
@@ -1025,28 +1025,28 @@ export function PricingForm({
                   normalizeOnBlur
                 />
               </AnchorInputCard>
-              <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)] lg:col-span-2">
+              <p className="text-[13px] text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)] lg:col-span-2">
                 {copy.phaseOneNote}
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <div className="space-y-1">
                 <p className="text-sm font-medium text-[var(--text-primary)]">{copy.sizeSeriesTitle}</p>
                 <p className="text-sm text-[var(--text-secondary)]">
                   {copy.sizeSeriesDescription}
                 </p>
               </div>
-              <SurfaceBlock className="p-4 sm:p-5">
-                <div className="grid gap-5 lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] lg:items-start xl:grid-cols-[380px_minmax(0,1fr)]">
-                  <div className="space-y-3">
+              <SurfaceBlock className="p-3.5 sm:p-4">
+                <div className="grid gap-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:items-start xl:grid-cols-[340px_minmax(0,1fr)]">
+                  <div className="space-y-2.5">
                     <div className="flex items-center justify-between gap-3">
                       <span className="inline-flex rounded-full border border-[var(--border-soft)] bg-[rgba(214,177,122,0.10)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--accent)]">
                         {highlightedSizeCase ? getSizeLabel(highlightedSizeCase.referenceSizeCm, locale) : copy.sizeSeriesTitle}
                       </span>
                     </div>
                     {sharedSizeSeriesImage ? (
-                      <div className="rounded-[26px] border border-[var(--border-soft)] bg-[radial-gradient(circle_at_top,rgba(214,177,122,0.08),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-3">
+                      <div className="rounded-[22px] border border-[var(--border-soft)] bg-[radial-gradient(circle_at_top,rgba(214,177,122,0.08),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-2.5">
                         <ImageSlotPreview
                           imageSlot={sharedSizeSeriesImage.imageSlot}
                           imagePresentation={sharedSizeSeriesImage.imagePresentation}
@@ -1067,7 +1067,7 @@ export function PricingForm({
                       </div>
                     ) : null}
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     {sizeSeriesCases.map((item) => {
                       const currentCase = onboardingCases.find((entry) => entry.id === item.id);
 
@@ -1082,28 +1082,28 @@ export function PricingForm({
                           onMouseEnter={() => setHighlightedSizeCaseId(item.id)}
                           onFocus={() => setHighlightedSizeCaseId(item.id)}
                           className={cn(
-                            "rounded-[22px] border p-4 transition",
+                            "rounded-[20px] border p-3.5 transition",
                             active
                               ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.10),rgba(255,255,255,0.02))] shadow-[0_12px_26px_rgba(0,0,0,0.16)]"
                               : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] hover:border-[var(--border-default)] hover:bg-[rgba(255,255,255,0.04)]",
                           )}
                         >
-                          <div className="space-y-3">
+                          <div className="space-y-2.5">
                             <div className="space-y-1.5">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-[15px] font-semibold leading-snug text-[var(--text-primary)]">{item.title[locale]}</p>
+                              <p className="text-[14px] font-semibold leading-snug text-[var(--text-primary)]">{item.title[locale]}</p>
                                 <span className="inline-flex rounded-full border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
                                   {getSizeLabel(item.referenceSizeCm, locale)}
                                 </span>
                               </div>
-                              <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                              <p className="text-[13px] leading-5 text-[var(--text-secondary)]">
                                 {item.metaLine[locale]}
                               </p>
                               <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent)]">
                                 {getSizeLabel(item.referenceSizeCm, locale)}
                               </p>
                             </div>
-                            <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="grid gap-2.5 sm:grid-cols-2">
                               <CurrencyInput
                                 value={currentCase.min}
                                 onChange={(value) => {
@@ -1496,7 +1496,7 @@ export function PricingForm({
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-4 border-t border-[var(--border-soft)] pt-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-3 border-t border-[var(--border-soft)] pt-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-1">
             <p
               className={cn(
@@ -1518,7 +1518,7 @@ export function PricingForm({
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             {phase > 1 ? (
-              <Button type="button" variant="ghost" onClick={() => setPhase((current) => Math.max(1, current - 1) as Phase)} className="h-11 px-5">
+              <Button type="button" variant="ghost" onClick={() => setPhase((current) => Math.max(1, current - 1) as Phase)} className="h-9 px-4">
                 {copy.back}
               </Button>
             ) : null}
@@ -1526,7 +1526,7 @@ export function PricingForm({
               <Button
                 type="button"
                 onClick={() => setPhase((current) => (current + 1) as Phase)}
-                className="h-12 min-w-[140px] px-6"
+                className="h-10 min-w-[128px] px-5"
                 disabled={
                   (phase === 1 && !phaseOneComplete) ||
                   (phase === 2 && !phaseTwoComplete) ||
@@ -1536,7 +1536,7 @@ export function PricingForm({
                 {copy.next}
               </Button>
             ) : (
-              <Button type="button" onClick={handleSave} disabled={isSaving || !phaseFourComplete} className="h-12 min-w-[220px] px-6">
+              <Button type="button" onClick={handleSave} disabled={isSaving || !phaseFourComplete} className="h-10 min-w-[200px] px-5">
                 {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : null}
                 {isSaving ? copy.saving : copy.save}
               </Button>

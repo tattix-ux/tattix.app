@@ -58,7 +58,7 @@ export default async function DashboardUpgradePage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SectionHeading
         eyebrow={isTurkish ? "Pro erişim" : "Pro access"}
         title={
@@ -89,15 +89,15 @@ export default async function DashboardUpgradePage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
+        <CardContent className="space-y-4">
+          <div className="rounded-[20px] border border-white/8 bg-black/20 p-3.5 text-[13px] text-[var(--foreground-muted)]">
             <p>• {isTurkish ? "Talepleri görüntüleme" : "Request inbox access"}</p>
             <p>• {isTurkish ? "Gelişmiş analizler" : "Advanced analytics"}</p>
             <p>• {isTurkish ? "Premium özelleştirme seçenekleri" : "Premium customization options"}</p>
             <p>• {isTurkish ? "Yeni Pro araçlarına erişim" : "Access to new Pro tools"}</p>
           </div>
 
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-4 text-sm text-[var(--foreground-muted)]">
+          <div className="rounded-[20px] border border-white/8 bg-black/20 p-3.5 text-[13px] text-[var(--foreground-muted)]">
             <p>{isTurkish ? "Hesap emaili" : "Account email"}: <span className="text-white">{session?.user.email ?? "-"}</span></p>
             <p className="mt-2">{isTurkish ? "Sanatçı adı" : "Artist name"}: <span className="text-white">{data.profile.artistName}</span></p>
             <p className="mt-2">{isTurkish ? "Sanatçı slug'ı" : "Artist slug"}: <span className="text-white">{data.profile.slug}</span></p>
@@ -105,7 +105,7 @@ export default async function DashboardUpgradePage() {
             <p className="mt-2">{isTurkish ? "Talep zamanı" : "Request time"}: <span className="text-white">{requestedAt}</span></p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <ProRequestActions
               locale={isTurkish ? "tr" : "en"}
               mailtoHref={mailto.href}

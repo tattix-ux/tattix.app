@@ -42,7 +42,7 @@ export default async function DashboardLayout({
 
   return (
     <AppShell>
-      <Container className="py-2 sm:py-2.5 lg:max-w-[1220px] 2xl:max-w-[1280px]">
+      <Container className="py-2 sm:py-2.5 lg:max-w-[1360px] 2xl:max-w-[1440px]">
         <div className="overflow-x-hidden pb-2">
           <div className="min-w-0">
             <div className="grid items-start gap-3.5 lg:grid-cols-[188px_minmax(0,1fr)] lg:gap-4">

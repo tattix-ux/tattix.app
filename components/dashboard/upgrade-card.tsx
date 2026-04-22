@@ -65,8 +65,8 @@ export function UpgradeCard({
     <div
       className={
         compact
-          ? "rounded-[24px] border border-white/8 bg-white/4 p-4"
-          : "rounded-[28px] border border-white/8 bg-white/4 p-5"
+          ? "rounded-[20px] border border-white/8 bg-white/4 p-3.5"
+          : "rounded-[24px] border border-white/8 bg-white/4 p-4"
       }
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -78,25 +78,25 @@ export function UpgradeCard({
         </Badge>
       </div>
 
-      <div className="mt-4 flex items-start gap-3">
+      <div className="mt-3.5 flex items-start gap-3">
         <div className="rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/12 p-2 text-[var(--accent)]">
           {hasActivePro ? <Sparkles className="size-4" /> : <Crown className="size-4" />}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-white">{labels.title}</h3>
-          <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">
+          <h3 className="text-[15px] font-semibold text-white">{labels.title}</h3>
+          <p className="mt-1 text-[13px] leading-5 text-[var(--foreground-muted)]">
             {hasActivePro ? labels.activeMessage : labels.description}
           </p>
         </div>
       </div>
 
       {!hasActivePro ? (
-        <div className="mt-4 space-y-3">
-          <div className="rounded-[20px] border border-white/8 bg-black/20 p-4">
+        <div className="mt-3.5 space-y-2.5">
+          <div className="rounded-[18px] border border-white/8 bg-black/20 p-3.5">
             <p className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)]">
               {labels.featuresTitle}
             </p>
-            <div className="mt-3 space-y-2 text-sm text-[var(--foreground-muted)]">
+            <div className="mt-2.5 space-y-1.5 text-[13px] text-[var(--foreground-muted)]">
               {labels.features.map((item) => (
                 <p key={item}>• {item}</p>
               ))}

@@ -76,11 +76,11 @@ function EditorSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-4 rounded-[24px] border border-white/8 bg-white/[0.025] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+    <section className="space-y-3 rounded-[20px] border border-white/8 bg-white/[0.025] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
       <div className="space-y-1.5">
-        <h3 className="text-base font-semibold tracking-[-0.02em] text-white">{title}</h3>
+        <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-white">{title}</h3>
         {description ? (
-          <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
+          <p className="text-[13px] leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
             {description}
           </p>
         ) : null}
@@ -698,7 +698,7 @@ export function FeaturedDesignsForm({
 
   return (
     <form
-      className="space-y-6"
+      className="space-y-5"
       onSubmit={form.handleSubmit(onSubmit)}
       onKeyDown={(event) => {
         const target = event.target as HTMLElement;
@@ -723,10 +723,10 @@ export function FeaturedDesignsForm({
         </div>
       ) : null}
       <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-        <CardContent className="relative overflow-hidden p-4 sm:p-5">
+        <CardContent className="relative overflow-hidden p-3.5 sm:p-4">
           <BrandMonogram className="left-auto right-[-4%] top-[-16%] h-[180px] w-[180px]" opacity={0.06} />
-          <div className="relative space-y-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="relative space-y-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-[34rem] space-y-2">
                 <p className="text-sm text-[var(--text-secondary)]">{labels.introHint}</p>
                 <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-dim)]">
@@ -741,9 +741,9 @@ export function FeaturedDesignsForm({
               ) : null}
             </div>
 
-            <div className="grid gap-3 xl:grid-cols-[170px_minmax(0,1.1fr)_minmax(0,0.9fr)_auto] xl:items-end">
+            <div className="grid gap-2.5 xl:grid-cols-[150px_minmax(0,1.05fr)_minmax(0,0.95fr)_auto] xl:items-end">
             <Field label={labels.image} className="min-w-[150px]">
-              <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-4 text-sm text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
+              <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3.5 text-[13px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
                 <Upload className="size-4" />
                 {quickAddImageName ? labels.replaceImage : labels.uploadImage}
                 <input
@@ -766,23 +766,23 @@ export function FeaturedDesignsForm({
               <Input
                 value={quickAddTitle}
                 onChange={(event) => setQuickAddTitle(event.target.value)}
-                className="h-12 rounded-[18px] bg-white/[0.03]"
+                className="h-10 rounded-[16px] bg-white/[0.03]"
                 placeholder={labels.titlePlaceholder}
               />
             </Field>
 
             <Field label={labels.priceLabel} description={labels.priceHelp}>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2.5 sm:grid-cols-2">
                 <Input
                   type="number"
-                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                  className="h-10 rounded-[16px] bg-white/[0.03]"
                   placeholder="6000"
                   value={quickAddPriceMin}
                   onChange={(event) => setQuickAddPriceMin(event.target.value)}
                 />
                 <Input
                   type="number"
-                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                  className="h-10 rounded-[16px] bg-white/[0.03]"
                   placeholder="8500"
                   value={quickAddPriceMax}
                   onChange={(event) => setQuickAddPriceMax(event.target.value)}
@@ -798,7 +798,7 @@ export function FeaturedDesignsForm({
               ) : null}
               <Button
                 type="button"
-                className="h-12 px-5"
+                className="h-10 px-4"
                 onClick={() => {
                   addDesign(
                     undefined,
@@ -844,7 +844,7 @@ export function FeaturedDesignsForm({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           {orderedDesignEntries.map(({ field, index, design }) => {
             const title = design?.title?.trim() || `${labels.newItem} ${index + 1}`;
             const category = getCategoryLabel(design?.category || "flash-designs");
@@ -866,7 +866,7 @@ export function FeaturedDesignsForm({
                     : "bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)]",
                 )}
               >
-                <CardContent className={cn("p-3.5 sm:p-4", isEditing ? "space-y-5" : "")}>
+                <CardContent className={cn("p-3 sm:p-3.5", isEditing ? "space-y-4" : "")}>
                   <div
                     role={isEditing ? undefined : "button"}
                     tabIndex={isEditing ? -1 : 0}
@@ -887,11 +887,11 @@ export function FeaturedDesignsForm({
                     }}
                     className={cn(
                       "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
-                      isEditing ? "rounded-[22px] border border-white/8 bg-white/[0.02] px-4 py-4" : "",
+                      isEditing ? "rounded-[20px] border border-white/8 bg-white/[0.02] px-3.5 py-3.5" : "",
                     )}
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <div className="relative size-14 shrink-0 overflow-hidden rounded-[16px] border border-white/8 bg-white/[0.03]">
+                      <div className="relative size-12 shrink-0 overflow-hidden rounded-[14px] border border-white/8 bg-white/[0.03]">
                         {design?.imageUrl ? (
                           <img
                             src={design.imageUrl}

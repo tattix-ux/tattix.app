@@ -19,7 +19,7 @@ export default async function DashboardProfilePage() {
     isAdminEmail(session?.user.email) && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   return (
-    <div className="mx-auto w-full max-w-[1080px] space-y-4 2xl:max-w-[1140px]">
+    <div className="mx-auto w-full max-w-[1160px] space-y-4 2xl:max-w-[1220px]">
       <div className="grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start xl:gap-4">
         <SectionHeading
           eyebrow={isTurkish ? "Profil" : "Profile"}

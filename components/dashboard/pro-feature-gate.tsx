@@ -28,14 +28,14 @@ export function ProFeatureGate({
 
   return (
     <Card className="surface-border">
-      <CardHeader className="space-y-4">
+      <CardHeader className="space-y-3">
         <div className="flex items-center gap-3">
           <div className="rounded-full border border-white/10 bg-white/6 p-2 text-white">
             <LockKeyhole className="size-4" />
           </div>
           <div>
             <CardTitle>{labels.title}</CardTitle>
-            <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">
+            <p className="mt-1 text-[13px] leading-5 text-[var(--foreground-muted)]">
               {labels.description}
             </p>
           </div>

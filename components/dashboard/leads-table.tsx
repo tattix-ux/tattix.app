@@ -974,23 +974,23 @@ export function LeadsTable({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <Card className="surface-border">
         <CardHeader>
           <CardTitle>{copy.title}</CardTitle>
           <CardDescription>{copy.description}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4">
           {hasPro ? (
             <>
               {statusMessage ? (
                 <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p>
               ) : null}
-              <div className="rounded-[22px] border border-white/8 bg-white/[0.025] px-4 py-3 text-sm text-[var(--text-muted)]">
+              <div className="rounded-[18px] border border-white/8 bg-white/[0.025] px-3.5 py-2.5 text-[13px] text-[var(--text-muted)]">
                 {copy.note}
               </div>
-              <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-3">
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-2.5">
+                <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-4">
                   <SummaryStat label={copy.summary.total} value={totalCount} tone="accent" />
                   <SummaryStat label={copy.statusLabels.new} value={waitingCount} />
                   <SummaryStat label={copy.summary.waiting} value={contactedCount} />
@@ -1011,9 +1011,9 @@ export function LeadsTable({
             {locale === "tr" ? "Filtrele, sırala ve detayları tek bakışta yönet." : "Filter, sort, and manage details at a glance."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3.5">
           <div className="flex items-center justify-end">
-            <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.025] px-3 py-2">
+            <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.025] px-3 py-1.5">
               <ArrowUpDown className="size-4 text-[var(--text-muted)]" />
               <span className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
                 {copy.filters.sort}
@@ -1021,7 +1021,7 @@ export function LeadsTable({
               <NativeSelect
                 value={sort}
                 onChange={(event) => setSort(event.target.value as LeadSort)}
-                className="h-9 min-w-[190px] rounded-full border-white/8 bg-[var(--surface-1)] py-0 text-sm"
+                className="h-8 min-w-[176px] rounded-full border-white/8 bg-[var(--surface-1)] py-0 text-[13px]"
               >
                 <option value="newest">{copy.filters.newest}</option>
                 <option value="oldest">{copy.filters.oldest}</option>
@@ -1035,7 +1035,7 @@ export function LeadsTable({
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {paginatedLeads.map((lead) => {
               const placementSummary = formatLeadPlacementSummary(lead, locale);
               const sizeLabel = getSizeLabel(lead, locale);
@@ -1061,31 +1061,31 @@ export function LeadsTable({
               return (
                 <div
                   key={lead.id}
-                  className="group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
+                  className="group rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-3.5 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
                 >
-                  <div className="grid gap-4 xl:grid-cols-[minmax(190px,0.82fr)_minmax(0,1.45fr)_minmax(220px,0.95fr)] xl:items-center">
-                    <div className="space-y-2">
+                  <div className="grid gap-3 xl:grid-cols-[minmax(170px,0.82fr)_minmax(0,1.45fr)_minmax(210px,0.95fr)] xl:items-center">
+                    <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-3 xl:block">
                         <div>
-                          <p className="text-[1.7rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency)}</p>
+                          <p className="text-[1.45rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency)}</p>
                           <p className="mt-1 text-xs text-[var(--text-muted)]">{formatLeadDate(lead.createdAt, locale)}</p>
                         </div>
                         <StatusBadge status={lead.status} locale={locale} />
                       </div>
                     </div>
 
-                    <div className="min-w-0 space-y-2.5">
+                    <div className="min-w-0 space-y-2">
                       <div className="min-w-0">
-                        <p className="truncate text-base font-semibold text-white">{requestLabel}</p>
-                        <p className="mt-1 text-sm text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
+                        <p className="truncate text-[15px] font-semibold text-white">{requestLabel}</p>
+                        <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
                       </div>
                       {lead.city ? (
                         <p className="text-sm text-[var(--text-muted)]">{lead.city}</p>
                       ) : null}
                       {notesLabel ? (
-                        <p className="line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">{notesLabel}</p>
+                        <p className="line-clamp-2 text-[13px] leading-5 text-[var(--text-muted)]">{notesLabel}</p>
                       ) : null}
-                      <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
+                      <div className="flex flex-wrap gap-1.5 text-[11px] text-[var(--text-muted)]">
                         {metadataTags.map((tag) => (
                           <span
                             key={tag}
@@ -1106,7 +1106,7 @@ export function LeadsTable({
                           onChange={(status) => void updateLeadStatus(lead.id, status)}
                         />
                       </div>
-                      <div className="flex w-full justify-end gap-3 xl:w-auto xl:items-center">
+                      <div className="flex w-full justify-end gap-2 xl:w-auto xl:items-center">
                         <Button
                           size="sm"
                           variant="outline"
@@ -1124,8 +1124,8 @@ export function LeadsTable({
             })}
           </div>
 
-          <div className="flex flex-col gap-3 rounded-[24px] border border-white/8 bg-white/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-[var(--text-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
+          <div className="flex flex-col gap-2.5 rounded-[20px] border border-white/8 bg-white/[0.025] p-3.5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[13px] text-[var(--text-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
             <div className="flex gap-2">
               <Button
                 type="button"
