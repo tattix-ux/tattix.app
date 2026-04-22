@@ -8,7 +8,7 @@ export const landingCopy = {
     heroEyebrow: "Dövme sanatçıları için talep ve fiyat akışı",
     heroTitle: "Instagram’dan gelen dövme taleplerini toparla, ciddi müşterileri ayır.",
     heroDescription:
-      "Müşteri sana yazmadan önce ne istediğini, nereye yaptıracağını, yaklaşık boyutu ve bütçe aralığını netleştirsin. Sen de her talebi dağınık DM’lerden toplamak yerine daha net gör.",
+      "Müşteri sana yazmadan önce ne istediğini, nereye yaptıracağını ve bütçe aralığını netleştirsin. Sen de her talebi daha net gör.",
     primaryCta: "Profil sayfanı oluştur",
     secondaryCta: "Demoyu incele",
     ctaNote: "Kurulum birkaç dakikada tamamlanır.",
@@ -33,7 +33,7 @@ export const landingCopy = {
     ],
     problemTitle: "DM’den gelen talepler çoğu zaman eksik başlar.",
     problemDescription:
-      "Biri sadece fiyat sorar, biri bölgeyi yazmaz, biri de ne istediğini anlatamaz. Sen de aynı soruları her seferinde yeniden sormak zorunda kalırsın.",
+      "Biri sadece fiyat sorar, biri bölgeyi yazmaz, biri de ne istediğini anlatamaz. Aynı soruları yeniden sormak zorunda kalırsın.",
     problemList: ["Bölge yok", "Boyut belirsiz", "Bütçe sonradan ortaya çıkıyor"],
     featuresTitle: "Tattix neyi kolaylaştırır?",
     features: [
@@ -45,17 +45,17 @@ export const landingCopy = {
       {
         title: "Fiyatı daha baştan çerçevelersin",
         description:
-          "Müşteri, senin belirlediğin ayarlara göre oluşan tahmini fiyat aralığını görür. Böylece bütçesi hiç uymayan talepler daha başta ayrışır.",
+          "Müşteri tahmini fiyat aralığını daha baştan görür. Bütçesi hiç uymayan talepler daha erken ayrışır.",
       },
       {
         title: "Daha net talepler alırsın",
         description:
-          "Sana ulaşan kişi ne istediğini daha iyi anlatmış olur. Görüşme daha kısa sürer, karar vermek kolaylaşır.",
+          "Sana ulaşan kişi ne istediğini daha iyi anlatmış olur. Görüşme kısalır, karar vermek kolaylaşır.",
       },
     ],
     positioningTitle: "Daha çok mesaj değil, daha doğru başlangıç.",
     positioningDescription:
-      "Amaç DM sayısını artırmak değil. Sana gelen talebin daha net, daha yönetilebilir ve daha gerçekçi olması.",
+      "Amaç DM sayısını artırmak değil. Sana gelen talebin daha net ve daha yönetilebilir olması.",
     positioningBullets: [
       "Aynı sorulara daha az zaman harcarsın",
       "Müşteri sana daha hazırlıklı gelir",
@@ -64,7 +64,7 @@ export const landingCopy = {
     pricingEyebrow: "Fiyat tahmini",
     pricingTitle: "Müşterinin gördüğü fiyat tahmini sana göre şekillenir.",
     pricingDescription:
-      "Sabit ve herkese aynı çalışan bir sistem değil. Kendi minimum ücretine, çalıştığın bölgelere, detay seviyene ve fiyat yapına göre ayarlarsın. Müşteri de sana ulaşmadan önce daha gerçekçi bir aralık görür.",
+      "Kendi minimum ücretine, çalıştığın bölgelere ve fiyat yapına göre ayarlarsın. Müşteri sana ulaşmadan önce daha gerçekçi bir aralık görür.",
     pricingBullets: [
       "Senin fiyat yapına göre",
       "Müşteriye tahmini aralık olarak gösterilir",
@@ -87,7 +87,7 @@ export const landingCopy = {
       },
     ],
     finalTitle: "Bugün daha düzenli dövme talepleri almaya başla",
-    finalDescription: "Profil sayfanı oluştur, talep formunu paylaş, müşteriyi daha net tanı.",
+    finalDescription: "Profil sayfanı oluştur, talep formunu paylaş ve müşteriyi daha net tanı.",
     finalCta: "Profil sayfanı oluştur",
   },
   en: {
@@ -97,7 +97,7 @@ export const landingCopy = {
     heroEyebrow: "Request and pricing flow for tattoo artists",
     heroTitle: "Organize tattoo requests from Instagram and separate serious clients early.",
     heroDescription:
-      "Before a client messages you, let them clarify what they want, where they want it, the approximate size, and the budget range. You see each request more clearly instead of collecting scattered DMs.",
+      "Before a client messages you, let them clarify what they want, where they want it, and the budget range. You see each request more clearly.",
     primaryCta: "Create your profile page",
     secondaryCta: "View demo",
     ctaNote: "Setup takes just a few minutes.",
@@ -122,7 +122,7 @@ export const landingCopy = {
     ],
     problemTitle: "Most DMs start with missing context.",
     problemDescription:
-      "One person only asks for price, another skips the placement, and another cannot explain what they want. You end up asking the same questions again every time.",
+      "One person only asks for price, another skips the placement, and another cannot explain what they want. You end up asking the same questions again.",
     problemList: ["No placement", "Size is unclear", "Budget appears later"],
     featuresTitle: "What does Tattix make easier?",
     features: [
@@ -134,17 +134,17 @@ export const landingCopy = {
       {
         title: "You frame pricing earlier",
         description:
-          "Clients see an estimated range based on the settings you define. Requests with completely mismatched budgets separate earlier.",
+          "Clients see an estimated range based on your settings. Requests with mismatched budgets separate earlier.",
       },
       {
         title: "You receive clearer requests",
         description:
-          "By the time someone reaches you, they can explain the request better. The conversation is shorter and decisions are easier.",
+          "By the time someone reaches you, they can explain the request better. The conversation is shorter.",
       },
     ],
     positioningTitle: "Not more messages. Better starting points.",
     positioningDescription:
-      "The goal is not to increase DM volume. It is to make each incoming request clearer, more manageable, and more realistic.",
+      "The goal is not to increase DM volume. It is to make each incoming request clearer and more manageable.",
     positioningBullets: [
       "You spend less time on repeated questions",
       "Clients come in more prepared",
@@ -153,7 +153,7 @@ export const landingCopy = {
     pricingEyebrow: "Price estimate",
     pricingTitle: "The estimate clients see is shaped around your pricing.",
     pricingDescription:
-      "This is not a fixed system that treats everyone the same. You adjust it around your minimum charge, working areas, detail level, and general pricing structure, so clients see a more realistic range before reaching out.",
+      "You adjust it around your minimum charge, working areas, and pricing structure so clients see a more realistic range before reaching out.",
     pricingBullets: [
       "Based on your pricing structure",
       "Shown to clients as an estimated range",
