@@ -576,7 +576,7 @@ export function ProfileRequestSettings({
     <div className="space-y-3">
       <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
         <CardHeader className="pb-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] xl:items-end">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(200px,240px)] xl:items-end">
             <div className="min-w-0">
               <CardTitle className="text-[1.02rem]">{copy.bookingTitle}</CardTitle>
               <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
@@ -588,7 +588,7 @@ export function ProfileRequestSettings({
                 value={pendingCity}
                 onChange={(event) => setPendingCity(event.target.value)}
                 placeholder={copy.cityPlaceholder}
-                className="h-12 min-w-[220px]"
+                className="h-12 min-w-[180px]"
               />
               <Button type="button" onClick={addBookingCity} className="h-12">
                 <Plus className="size-4" />

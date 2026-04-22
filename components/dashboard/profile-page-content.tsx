@@ -43,8 +43,8 @@ export function ProfilePageContent({
   }, [funnelSettings.introEyebrow, profile]);
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,580px)_minmax(300px,350px)] xl:items-start xl:justify-between xl:gap-6 2xl:grid-cols-[minmax(0,640px)_minmax(320px,380px)]">
-      <div className="min-w-0 max-w-[660px] space-y-4 2xl:max-w-[700px]">
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,520px)_minmax(280px,320px)] xl:items-start xl:justify-between xl:gap-5 2xl:grid-cols-[minmax(0,560px)_minmax(300px,340px)]">
+      <div className="min-w-0 max-w-[580px] space-y-4 2xl:max-w-[620px]">
         <ProfileForm
           profile={profile}
           upperLabel={funnelSettings.introEyebrow}
