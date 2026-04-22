@@ -110,6 +110,14 @@ function getCoverUpLabel(value: SubmissionRequest["coverUp"], locale: PublicLoca
   return value ? "Yes" : "No";
 }
 
+function getBooleanLabel(value: boolean | null | undefined, locale: PublicLocale) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return locale === "tr" ? (value ? "Evet" : "Hayır") : value ? "Yes" : "No";
+}
+
 export function buildSubmissionMessage(
   submission: SubmissionRequest,
   options: {
@@ -129,7 +137,7 @@ export function buildSubmissionMessage(
       : null;
   const areaScopeLine =
     pricingSource === "custom_request" && submission.areaScope
-      ? `${locale === "tr" ? "Alan büyüklüğü" : "Area size"}: ${getAreaScopeLabel(submission.areaScope, locale)}`
+      ? `${locale === "tr" ? "Alan" : "Area"}: ${getAreaScopeLabel(submission.areaScope, locale)}`
       : null;
   const requestTypeLine =
     pricingSource === "featured_design"
@@ -173,13 +181,13 @@ export function buildSubmissionMessage(
 
   if (pricingSource === "custom_request" && submission.workStyle) {
     lines.push(
-      `${locale === "tr" ? "İşin karakteri" : "Character of the piece"}: ${getWorkStyleLabel(submission.workStyle, locale, submission.realismLevel)}`,
+      `${locale === "tr" ? "Detay seviyesi" : "Detail level"}: ${getWorkStyleLabel(submission.workStyle, locale, submission.realismLevel)}`,
     );
   }
 
   if (pricingSource === "custom_request" && submission.layoutStyle) {
     lines.push(
-      `${locale === "tr" ? "Düzen" : "Layout"}: ${getLayoutStyleLabel(submission.layoutStyle, locale)}`,
+      `${locale === "tr" ? "Yerleşim tarzı" : "Placement style"}: ${getLayoutStyleLabel(submission.layoutStyle, locale)}`,
     );
   }
 
@@ -205,6 +213,16 @@ export function buildSubmissionMessage(
 
   if (submission.city?.trim()) {
     lines.push(`${labels.city}: ${submission.city.trim()}`);
+  }
+
+  const allergyLabel = getBooleanLabel(submission.hasAllergy, locale);
+  if (allergyLabel) {
+    lines.push(`${locale === "tr" ? "Alerji" : "Allergy"}: ${allergyLabel}`);
+  }
+
+  const chronicConditionLabel = getBooleanLabel(submission.hasChronicCondition, locale);
+  if (chronicConditionLabel) {
+    lines.push(`${locale === "tr" ? "Kronik rahatsızlık" : "Chronic condition"}: ${chronicConditionLabel}`);
   }
 
   const preferredTiming = formatPreferredTiming(

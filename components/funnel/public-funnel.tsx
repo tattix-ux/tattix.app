@@ -26,7 +26,6 @@ import {
   getAreaScopeLabel,
   getLayoutStyleLabel,
   getLargeAreaCoverageLabel,
-  getRequestTypeLabel,
   getWideAreaTargetLabel,
   getWorkStyleLabel,
 } from "@/lib/pricing/v2/output";
@@ -78,18 +77,18 @@ function getCopy(locale: PublicLocale) {
       startDescription: "İstersen fikrini anlat, istersen hazır tasarımlardan seç.",
       featuredFlowTitle: "Tasarımlardan birini seç, kalanını birlikte netleştirelim",
       featuredFlowDescription: "Seçtiğin tasarıma göre yaklaşık başlangıç fiyatını gösterelim.",
-      areaScopeTitle: "Yaklaşık ne kadar alan?",
+      areaScopeTitle: "Yaklaşık boyut ne kadar olsun?",
       areaScopeDescription: "Sana en yakın seçeneği seç.",
       areaScopes: {
         standard_piece: "Küçük / orta",
         large_single_area: "Tek bölgede büyük",
-        wide_area: "Çok geniş",
+        wide_area: "Büyük proje",
         unsure: "Emin değilim",
       },
       areaScopeDescriptions: {
-        standard_piece: "Yazı, sembol, tek parça",
-        large_single_area: "Ön kol, baldır, göğüs gibi",
-        wide_area: "Yarım kol, tüm kol, sırt gibi",
+        standard_piece: "Yazı, sembol, tarih gibi tek parça işler",
+        large_single_area: "Ön kol, baldır, göğüs gibi tek bölgede geniş yer kaplayan işler",
+        wide_area: "Yarım kol, tüm kol, sırt gibi daha geniş kompozisyonlar",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
       requestTypeTitle: "Ne yaptırmak istiyorsun?",
@@ -98,8 +97,9 @@ function getCopy(locale: PublicLocale) {
       placementDescription: "En yakın bölgeyi seç.",
       sizeTitle: "Yaklaşık boyut kaç cm olsun?",
       sizeDescription: "En geniş noktayı düşünerek yaklaşık seçim yapabilirsin.",
-      largeAreaCoverageTitle: "Bu alanın ne kadarını kaplayacak?",
-      largeAreaCoverageDescription: "En yakın seçeneği seç.",
+      largeAreaCoverageTitle: "Seçtiğin bölgenin ne kadarını kaplayacak?",
+      largeAreaCoverageDescription: "",
+      largeAreaCoverageHelp: "En yakın seçeneği seç.",
       largeAreaCoverageOptions: {
         partial: "Bir kısmını",
         mostly: "Büyük kısmını",
@@ -122,7 +122,7 @@ function getCopy(locale: PublicLocale) {
         3: "Yaklaşık boyut kaç cm olsun?",
         4: "Renk olacak mı?",
         5: "Referans görselin veya kısa notun var mı?",
-        6: "Tahmini başlangıç aralığın",
+        6: "Tahmini fiyat aralığı",
       },
       stepDescriptions: {
         1: "Seçtiklerine göre sana yaklaşık bir başlangıç fiyatı göstereceğiz.",
@@ -132,34 +132,34 @@ function getCopy(locale: PublicLocale) {
         5: "Varsa ekleyebilirsin. Yoksa bu adımı geçebilirsin.",
         6: "",
       },
-      colorTitleCustom: "Nasıl bir tarz?",
+      colorTitleCustom: "Nasıl bir görünüm istiyorsun?",
       colorTitleFeatured: "Renk aynı mı kalsın?",
       colorDescriptionCustom: "Renk ve detay seviyesini seç.",
-      colorDescriptionFeatured: "Tasarıma en yakın görünümü seç.",
-      intensityTitle: "Ne kadar detaylı olsun?",
-      intensityDescription: "Sana en yakın olanı seç.",
+      colorDescriptionFeatured: "Renk ve detay seviyesini seç.",
+      intensityTitle: "Detay seviyesi",
+      intensityDescription: "En yakın seçeneği seç.",
       intensityStyles: {
-        clean_line: "Basit / ince çizgili",
+        clean_line: "Daha sade",
         shaded_detailed: "Orta detaylı",
-        advanced: "Çok detaylı / gerçekçi",
+        advanced: "Çok detaylı",
         unsure: "Emin değilim",
       },
       intensityDescriptions: {
-        clean_line: "Az detay, daha minimal görünüm",
-        shaded_detailed: "Biraz gölge ve detay içerir",
-        advanced: "Yoğun detay, daha gerçekçi görünüm",
+        clean_line: "Az detay, basit ve ince çizgiler",
+        shaded_detailed: "Gölgelendirmeler ve daha detaylı görünümler",
+        advanced: "Yoğun detay, gölge ya da daha gerçekçi görünümler",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
-      layoutTitle: "Tasarım nasıl görünsün?",
-      layoutDescription: "Sana en yakın olanı seç.",
+      layoutTitle: "Yerleşim tarzı",
+      layoutDescription: "Tasarımın daha çok nasıl dursun?",
       layoutStyles: {
-        organic: "Akışkan tasarım",
-        precision: "Geometrik / düzenli",
+        organic: "Akışkan",
+        precision: "Düzenli/Simetrik",
         unsure: "Emin değilim",
       },
       layoutDescriptions: {
         organic: "Daha serbest yerleşim, yumuşak geçişler",
-        precision: "Düzenli, dengeli ve net çizgiler",
+        precision: "Daha net, dengeli ve simetrik görünüm",
         unsure: "Karar veremiyorsan bunu seçebilirsin",
       },
       colorModes: {
@@ -168,6 +168,8 @@ function getCopy(locale: PublicLocale) {
         "full-color": "Renkli",
         same: "Aynı kalsın",
       },
+      colorModeTitle: "Renk",
+      colorModeHelp: "En yakın seçeneği seç.",
       featuredColorModes: {
         same: "Aynı kalsın",
         "black-only": "Sadece siyah olsun",
@@ -178,15 +180,26 @@ function getCopy(locale: PublicLocale) {
       back: "Geri",
       submit: "Tahmini gör",
       uploading: "Yükleniyor",
-      referenceTitle: "Referans görselin veya kısa notun var mı?",
-      referenceDescription: "Varsa ekleyebilirsin. Yoksa bu adımı geçebilirsin.",
+      referenceTitle: "Birkaç bilgi daha ekleyelim",
+      referenceDescription: "İstersen aklındaki tasarımı yükleyebilir, kısa bir not bırakabilir ve randevu bilgilerini buradan seçebilirsin.",
       referenceUpload: "Referans görsel ekle",
       referenceNote: "Kısa not",
       referencePlaceholder: "Aklındaki fikir, önemli detaylar veya istediğin değişiklikler",
-      featuredNoteTitle: "Kısa bir not eklemek ister misin?",
-      featuredNoteDescription: "Varsa yazabilirsin. Yoksa geçebilirsin.",
+      featuredNoteTitle: "Birkaç bilgi daha ekleyelim",
+      featuredNoteDescription: "İstersen aklındaki tasarımı yükleyebilir, kısa bir not bırakabilir ve randevu bilgilerini buradan seçebilirsin.",
       featuredNotePlaceholder: "Randevu, yerleşim veya önemli bir not yazabilirsin",
-      cityTitle: "Hangi şehirde randevu düşünüyorsun?",
+      coverUpTitle: "Mevcut bir dövmenin üstüne mi yapılacak?",
+      coverUpDescription: "Bu bilgi fiyatı etkileyebilir.",
+      coverUpYes: "Evet, mevcut bir dövmenin üstüne",
+      coverUpNo: "Hayır, yeni bir alan",
+      referenceSectionTitle: "Referans görsel veya kısa notun var mı?",
+      referenceSectionDescription: "Varsa ekleyebilirsin. Yoksa bu adımı geçebilirsin.",
+      customerInfo: "Birkaç bilgi daha",
+      allergy: "Alerjin var mı?",
+      chronicCondition: "Kronik bir rahatsızlığın var mı?",
+      yes: "Evet",
+      no: "Hayır",
+      cityTitle: "Hangi şehirden randevu almak istersin?",
       cityDescription: "Dövmecinin uygun olduğu şehirlerden birini seç.",
       cityPlaceholder: "Şehir seç",
       timingTitle: "Ne zaman düşünüyorsun?",
@@ -198,11 +211,10 @@ function getCopy(locale: PublicLocale) {
       startDate: "Başlangıç tarihi",
       endDate: "Bitiş tarihi",
       noDates: "Bu şehir için seçilebilir tarih görünmüyor.",
-      customerInfo: "İstersen birkaç bilgi daha",
       gender: "Cinsiyet",
-      genderPlaceholder: "Seçmek istersen",
+      genderPlaceholder: "Belirtmek istemiyorum",
       ageRange: "Yaş aralığı",
-      ageRangePlaceholder: "Seçmek istersen",
+      ageRangePlaceholder: "Belirtmek istemiyorum",
       genders: {
         female: "Kadın",
         male: "Erkek",
@@ -217,29 +229,28 @@ function getCopy(locale: PublicLocale) {
       calculatingTitle: "Tahmin hazırlanıyor",
       calculatingBody: "Bu sadece birkaç saniye sürer.",
       resultTitles: {
-        range: "Tahmini başlangıç aralığı",
-        soft_range: "Tahmini başlangıç aralığı",
-        starting_from: "Tahmini başlangıç aralığı",
+        range: "Tahmini fiyat aralığı",
+        soft_range: "Tahmini fiyat aralığı",
+        starting_from: "Tahmini fiyat aralığı",
       },
       summaryTitle: "Seçim özeti",
+      pricingBreakdownNote: "Bu aralık, seçtiğin bölge, kaplayacağı alan, renk ve detay seviyesine göre hesaplandı.",
+      resultDisclaimerPrimary: "Bu aralık, seçilen alan, dövmenin kaplayacağı bölge ve içerik türüne göre genel bir ilk hesaplamadır.",
+      resultDisclaimerSecondary: "Bu sadece başlangıç için bir tahmindir. Kesin fiyat, sanatçı ile birlikte boyut ve tasarım detayları netleştirildiğinde büyük ölçüde değişiklik gösterebilir.",
       startingFromExtra: "Net fiyat, detaylar netleştikten sonra belirlenir.",
       wideAreaExtraInfo: "Bu tür işler çoğu zaman görüşme sonrası netleşir.",
-      estimateChangeNote: "Bu sadece tahmini bir fiyattır. Dövmeciyle görüşüp detaylar netleştikçe fiyat büyük ölçüde değişebilir.",
       summaryLabels: {
-        requestType: "İş tipi",
+        selectedDesign: "Seçilen tasarım",
         areaScope: "Alan",
         areaCoverage: "Kaplayacağı alan",
-        wideAreaTarget: "Yakın olduğu alan",
-        selectedDesign: "Tasarım",
+        wideAreaTarget: "Kaplayacağı alan",
         placement: "Bölge",
         size: "Boyut",
         color: "Renk",
-        workStyle: "İşin karakteri",
-        layoutStyle: "Düzen",
+        workStyle: "Detay seviyesi",
+        layoutStyle: "Yerleşim tarzı",
         coverUp: "Kapatma durumu",
       },
-      sizeNotSelected: "Belirtilmedi",
-      sizeFallbackNote: "Boyut seçilmediği için bu tahmin daha temkinli yorumlanmalıdır.",
       sendWhatsapp: "WhatsApp'tan gönder",
       copyMessage: "Mesajı kopyala",
       copied: "Mesaj kopyalandı",
@@ -279,7 +290,8 @@ function getCopy(locale: PublicLocale) {
     sizeTitle: "About how many cm should it be?",
     sizeDescription: "Think about the widest point and choose approximately.",
     largeAreaCoverageTitle: "How much of that area will it cover?",
-    largeAreaCoverageDescription: "Choose the option that feels closest.",
+    largeAreaCoverageDescription: "",
+    largeAreaCoverageHelp: "Choose the option that feels closest.",
     largeAreaCoverageOptions: {
       partial: "Part of it",
       mostly: "Most of it",
@@ -312,10 +324,10 @@ function getCopy(locale: PublicLocale) {
       5: "You can add it if you want. If not, you can skip this step.",
       6: "",
     },
-    colorTitleCustom: "What kind of style?",
+      colorTitleCustom: "What kind of look do you want?",
     colorTitleFeatured: "Will the color stay the same?",
     colorDescriptionCustom: "Choose the color and detail level.",
-    colorDescriptionFeatured: "Choose the look that feels closest to the design.",
+    colorDescriptionFeatured: "Choose the color and detail level.",
     intensityTitle: "How detailed should it be?",
     intensityDescription: "Choose the closest option.",
     intensityStyles: {
@@ -348,6 +360,8 @@ function getCopy(locale: PublicLocale) {
       "full-color": "Color",
       same: "Keep it the same",
     },
+    colorModeTitle: "Color",
+    colorModeHelp: "Choose the closest option.",
     featuredColorModes: {
       same: "Keep it the same",
       "black-only": "Make it black only",
@@ -366,6 +380,12 @@ function getCopy(locale: PublicLocale) {
     featuredNoteTitle: "Would you like to add a short note?",
     featuredNoteDescription: "You can write it if you want. If not, you can skip it.",
     featuredNotePlaceholder: "You can write a note about placement, timing, or anything important",
+    coverUpTitle: "Will it go over an existing tattoo?",
+    coverUpDescription: "This can affect the estimate.",
+    coverUpYes: "Yes, over an existing tattoo",
+    coverUpNo: "No, it will be on a new area",
+    referenceSectionTitle: "Do you have a reference image or a short note?",
+    referenceSectionDescription: "You can add it if you want. If not, you can skip this step.",
     cityTitle: "Which city are you thinking about for the appointment?",
     cityDescription: "Choose one of the cities where the artist is available.",
     cityPlaceholder: "Choose city",
@@ -379,6 +399,10 @@ function getCopy(locale: PublicLocale) {
     endDate: "End date",
     noDates: "There are no selectable dates for this city right now.",
     customerInfo: "A few extra details",
+    allergy: "Do you have any allergies?",
+    chronicCondition: "Do you have any chronic condition?",
+    yes: "Yes",
+    no: "No",
     gender: "Gender",
     genderPlaceholder: "If you want",
     ageRange: "Age range",
@@ -402,6 +426,9 @@ function getCopy(locale: PublicLocale) {
       starting_from: "Starting price",
     },
     summaryTitle: "Summary",
+    pricingBreakdownNote: "This range was calculated based on the area, coverage, color, and detail level you selected.",
+    resultDisclaimerPrimary: "This range is a first estimate based on the selected area, how much of it the tattoo will cover, and the type of content involved.",
+    resultDisclaimerSecondary: "This is only a starting estimate. The final price can change significantly once the size and design details are clarified with the artist.",
     startingFromExtra: "The final price is set after the details are clarified.",
     wideAreaExtraInfo: "Requests like this are often clarified after a conversation.",
     estimateChangeNote: "This is only an estimate. The final price may change significantly after you speak with the artist and clarify the details.",
@@ -689,13 +716,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   const resultSummaryItems = useMemo(() => {
     const items: Array<{ label: string; value: string }> = [];
 
-    if (draft.pricingSource === "featured_design" && selectedDesign) {
-      items.push({ label: copy.summaryLabels.selectedDesign, value: selectedDesign.title });
-    }
-
-    if (draft.pricingSource === "custom_request" && draft.requestType) {
-      items.push({ label: copy.summaryLabels.requestType, value: getRequestTypeLabel(draft.requestType, locale) });
-    } else if (draft.pricingSource === "custom_request" && draft.areaScope) {
+    if (draft.pricingSource === "custom_request" && draft.areaScope) {
       items.push({ label: copy.summaryLabels.areaScope, value: getAreaScopeLabel(draft.areaScope, locale) });
     }
 
@@ -720,16 +741,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       });
     }
 
-    if (
-      draft.pricingSource === "featured_design" ||
-      draft.areaScope === "standard_piece" ||
-      draft.areaScope === "unsure" ||
-      draft.selectedSizeCm ||
-      draft.inferredSizeCm
-    ) {
+    if (draft.selectedSizeCm) {
       items.push({
         label: copy.summaryLabels.size,
-        value: draft.selectedSizeCm ? `${draft.selectedSizeCm} cm` : copy.sizeNotSelected,
+        value: `${draft.selectedSizeCm} cm`,
       });
     }
 
@@ -763,7 +778,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
     }
 
     return items;
-  }, [copy.colorModes, copy.sizeNotSelected, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.coverUp, copy.summaryLabels.layoutStyle, copy.summaryLabels.placement, copy.summaryLabels.requestType, copy.summaryLabels.selectedDesign, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.coverUp, draft.inferredSizeCm, draft.largeAreaCoverage, draft.layoutStyle, draft.pricingSource, draft.realismLevel, draft.requestType, draft.selectedSizeCm, draft.wideAreaTarget, draft.workStyle, locale, selectedDesign]);
+  }, [copy.colorModes, copy.summaryLabels.areaCoverage, copy.summaryLabels.areaScope, copy.summaryLabels.color, copy.summaryLabels.coverUp, copy.summaryLabels.layoutStyle, copy.summaryLabels.placement, copy.summaryLabels.size, copy.summaryLabels.wideAreaTarget, copy.summaryLabels.workStyle, draft.areaScope, draft.bodyAreaDetail, draft.colorMode, draft.coverUp, draft.largeAreaCoverage, draft.layoutStyle, draft.pricingSource, draft.realismLevel, draft.selectedSizeCm, draft.wideAreaTarget, draft.workStyle, locale]);
 
   function resetCustomPathState(nextAreaScope?: AreaScopeValue | "") {
     setField("requestType", "");
@@ -875,6 +890,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       preferredEndDate: bookingMode === "range" ? draft.preferredEndDate || undefined : undefined,
       gender: draft.gender || undefined,
       ageRange: draft.ageRange || undefined,
+      hasAllergy: draft.hasAllergy,
+      hasChronicCondition: draft.hasChronicCondition,
       workStyle:
         draft.pricingSource === "custom_request"
           ? draft.workStyle || undefined
@@ -1173,12 +1190,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   borderColor: "var(--artist-border)",
                   backgroundColor: "var(--artist-section-surface-strong)",
                 }}
-              >
-                <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                  {copy.largeAreaCoverageTitle}
-                </p>
-                <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                  {copy.largeAreaCoverageDescription}
+                >
+                <p className="text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                  {copy.largeAreaCoverageHelp}
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {largeAreaCoverageChoices.map((option) => {
@@ -1286,11 +1300,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   }}
                   >
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {draft.pricingSource === "featured_design" ? copy.colorTitleFeatured : copy.colorTitleCustom}
+                      {copy.colorModeTitle}
                     </p>
                     <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                    {draft.pricingSource === "featured_design" ? copy.colorDescriptionFeatured : copy.colorDescriptionCustom}
-                  </p>
+                      {copy.colorModeHelp}
+                    </p>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                         {colorChoices.map((option) => {
                           const active = draft.colorMode === option.value;
@@ -1463,15 +1477,15 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     }}
                   >
                     <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                      {locale === "tr" ? "Var olan dövmenin üstüne mi yapılacak?" : "Will it go over an existing tattoo?"}
+                      {copy.coverUpTitle}
                     </p>
                     <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                      {locale === "tr" ? "Bu bilgi ilk değerlendirmeyi etkileyebilir." : "This can affect the first estimate."}
+                      {copy.coverUpDescription}
                     </p>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {[
-                        { value: true, label: locale === "tr" ? "Evet, var olan dövmenin üstüne" : "Yes, over an existing tattoo" },
-                        { value: false, label: locale === "tr" ? "Hayır, yeni bir alan" : "No, it will be in a new area" },
+                        { value: true, label: copy.coverUpYes },
+                        { value: false, label: copy.coverUpNo },
                       ].map((option) => {
                         const active = draft.coverUp === option.value;
                         return (
@@ -1507,10 +1521,10 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   }}
                 >
                   <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                    {draft.pricingSource === "featured_design" ? copy.featuredNoteTitle : copy.referenceTitle}
+                    {copy.referenceSectionTitle}
                   </p>
                   <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                    {draft.pricingSource === "featured_design" ? copy.featuredNoteDescription : copy.referenceDescription}
+                    {copy.referenceSectionDescription}
                   </p>
                   <div className="mt-4 space-y-4">
                     {draft.pricingSource === "custom_request" ? (
@@ -1601,6 +1615,54 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         <option value="25-34">{copy.ageRanges["25-34"]}</option>
                         <option value="35-44">{copy.ageRanges["35-44"]}</option>
                         <option value="45+">{copy.ageRanges["45+"]}</option>
+                      </NativeSelect>
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                        {copy.allergy}
+                      </span>
+                      <NativeSelect
+                        value={
+                          draft.hasAllergy === null ? "" : draft.hasAllergy ? "yes" : "no"
+                        }
+                        onChange={(event) =>
+                          setField(
+                            "hasAllergy",
+                            event.target.value === ""
+                              ? null
+                              : event.target.value === "yes",
+                          )
+                        }
+                      >
+                        <option value="">{copy.genderPlaceholder}</option>
+                        <option value="yes">{copy.yes}</option>
+                        <option value="no">{copy.no}</option>
+                      </NativeSelect>
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                        {copy.chronicCondition}
+                      </span>
+                      <NativeSelect
+                        value={
+                          draft.hasChronicCondition === null
+                            ? ""
+                            : draft.hasChronicCondition
+                              ? "yes"
+                              : "no"
+                        }
+                        onChange={(event) =>
+                          setField(
+                            "hasChronicCondition",
+                            event.target.value === ""
+                              ? null
+                              : event.target.value === "yes",
+                          )
+                        }
+                      >
+                        <option value="">{copy.genderPlaceholder}</option>
+                        <option value="yes">{copy.yes}</option>
+                        <option value="no">{copy.no}</option>
                       </NativeSelect>
                     </div>
                   </div>
@@ -1813,31 +1875,22 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   }}
                 >
                   <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                    {result.disclaimer}
+                    {copy.pricingBreakdownNote}
                   </p>
-                  {!draft.selectedSizeCm ? (
-                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.sizeFallbackNote}
-                    </p>
-                  ) : null}
+                </div>
+                <div
+                  className="rounded-[24px] border p-4"
+                  style={{
+                    borderColor: "var(--artist-border)",
+                    backgroundColor: "var(--artist-section-surface-strong)",
+                  }}
+                >
+                  <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                    {copy.resultDisclaimerPrimary}
+                  </p>
                   <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                    {copy.estimateChangeNote}
+                    {copy.resultDisclaimerSecondary}
                   </p>
-                  {result.estimateMode === "starting_from" ? (
-                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.startingFromExtra}
-                    </p>
-                  ) : null}
-                  {draft.pricingSource === "custom_request" && draft.areaScope === "wide_area" ? (
-                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.wideAreaExtraInfo}
-                    </p>
-                  ) : null}
-                  {draft.pricingSource === "featured_design" ? (
-                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                      {copy.featuredDisclaimer}
-                    </p>
-                  ) : null}
                 </div>
                 <div className="grid gap-2.5 sm:gap-3">
                   <Button asChild className="w-full">

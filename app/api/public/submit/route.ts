@@ -74,6 +74,16 @@ export async function POST(request: Request) {
   );
   const combinedNotes = [
     submission.notes?.trim(),
+    submission.hasAllergy === null || submission.hasAllergy === undefined
+      ? null
+      : locale === "tr"
+        ? `Alerji: ${submission.hasAllergy ? "Evet" : "Hayır"}`
+        : `Allergy: ${submission.hasAllergy ? "Yes" : "No"}`,
+    submission.hasChronicCondition === null || submission.hasChronicCondition === undefined
+      ? null
+      : locale === "tr"
+        ? `Kronik rahatsızlık: ${submission.hasChronicCondition ? "Evet" : "Hayır"}`
+        : `Chronic condition: ${submission.hasChronicCondition ? "Yes" : "No"}`,
   ]
     .filter(Boolean)
     .join(" | ");

@@ -42,7 +42,7 @@ export function IntentSelectionStep({
       ? {
           standard_piece: "Küçük / orta",
           large_single_area: "Tek bölgede büyük",
-          wide_area: "Çok geniş",
+          wide_area: "Büyük proje",
           unsure: "Emin değilim",
         }
       : {
@@ -54,9 +54,9 @@ export function IntentSelectionStep({
   const areaScopeDescriptions: Record<AreaScopeValue, string> =
     locale === "tr"
       ? {
-          standard_piece: "Yazı, sembol, tek parça işler gibi",
-          large_single_area: "Ön kol, baldır, göğüs gibi",
-          wide_area: "Yarım kol, tüm kol, sırt gibi",
+          standard_piece: "Yazı, sembol, tarih gibi tek parça işler",
+          large_single_area: "Ön kol, baldır, göğüs gibi tek bölgede geniş yer kaplayan işler",
+          wide_area: "Yarım kol, tüm kol, sırt gibi daha geniş kompozisyonlar",
           unsure: "Karar veremiyorsan bunu seçebilirsin",
         }
       : {
@@ -144,7 +144,7 @@ export function IntentSelectionStep({
         <div className="space-y-3">
           <div>
             <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
-              {locale === "tr" ? "Yaklaşık ne kadar alan?" : "About how much area?"}
+              {locale === "tr" ? "Yaklaşık boyut ne kadar olsun?" : "About how large should it be?"}
             </p>
             <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
               {locale === "tr" ? "Sana en yakın seçeneği seç." : "Choose the option that feels closest."}

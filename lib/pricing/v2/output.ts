@@ -93,16 +93,16 @@ export function getWorkStyleLabel(
 ) {
   if (locale === "tr") {
     if (workStyle === "shaded_detailed" && realismLevel === "advanced") {
-      return "Çok yoğun / gerçekçi";
+      return "Çok detaylı";
     }
 
     switch (workStyle) {
       case "clean_line":
-        return "Sade / çizgisel";
+        return "Daha sade";
       case "shaded_detailed":
-        return "Gölgeli / detaylı";
+        return "Orta detaylı";
       case "precision_symmetric":
-        return "Daha düzenli / simetrik";
+        return "Düzenli/Simetrik";
       case "unsure":
         return "Emin değilim";
     }
@@ -132,7 +132,7 @@ export function getAreaScopeLabel(areaScope: AreaScopeValue, locale: PublicLocal
       case "large_single_area":
         return "Tek bölgede büyük";
       case "wide_area":
-        return "Çok geniş";
+        return "Büyük proje";
       case "unsure":
         return "Emin değilim";
     }
@@ -154,9 +154,9 @@ export function getLayoutStyleLabel(value: LayoutStyleValue, locale: PublicLocal
   if (locale === "tr") {
     switch (value) {
       case "organic":
-        return "Serbest / doğal akış";
+        return "Akışkan";
       case "precision":
-        return "Daha düzenli / simetrik";
+        return "Düzenli/Simetrik";
       case "unsure":
         return "Emin değilim";
     }

@@ -35,6 +35,8 @@ const initialDraft: SubmissionDraft = {
   preferredEndDate: "",
   gender: "",
   ageRange: "",
+  hasAllergy: null,
+  hasChronicCondition: null,
   workStyle: "",
   realismLevel: "",
   layoutStyle: "",

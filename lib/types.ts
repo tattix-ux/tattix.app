@@ -518,6 +518,8 @@ export type SubmissionDraft = {
   preferredEndDate: string;
   gender: CustomerGenderValue | "";
   ageRange: CustomerAgeRangeValue | "";
+  hasAllergy: boolean | null;
+  hasChronicCondition: boolean | null;
   workStyle: WorkStyleValue | "";
   realismLevel: RealismLevelValue | "";
   layoutStyle: LayoutStyleValue | "";
@@ -602,6 +604,8 @@ export type SubmissionRequest = {
   preferredEndDate?: string | null;
   gender?: CustomerGenderValue | null;
   ageRange?: CustomerAgeRangeValue | null;
+  hasAllergy?: boolean | null;
+  hasChronicCondition?: boolean | null;
   workStyle?: WorkStyleValue | null;
   realismLevel?: RealismLevelValue | null;
   layoutStyle?: LayoutStyleValue | null;

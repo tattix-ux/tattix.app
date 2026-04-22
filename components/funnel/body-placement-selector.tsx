@@ -55,7 +55,28 @@ export function BodyPlacementSelector({
     return visibleCategories.find((category) => category.value === activeCategory) ?? null;
   }, [activeCategory, visibleCategories]);
 
-  function getCategoryDescription(details: readonly { value: BodyAreaDetailValue }[]) {
+  function getCategoryDescription(
+    categoryValue: PlacementCategoryValue,
+    details: readonly { value: BodyAreaDetailValue }[],
+  ) {
+    if (locale === "tr" && areaScope === "large_single_area") {
+      if (categoryValue === "arm") {
+        return "Üst kol veya alt kol";
+      }
+
+      if (categoryValue === "leg") {
+        return "Üst bacak veya alt bacak";
+      }
+
+      if (categoryValue === "torso") {
+        return "Göğüs, kaburga veya karın";
+      }
+
+      if (categoryValue === "not-sure") {
+        return "Emin değilim";
+      }
+    }
+
     const visibleLabels = details
       .map((detail) => getPlacementDetailLocaleLabel(detail.value, locale))
       .filter((label) =>
@@ -158,7 +179,7 @@ export function BodyPlacementSelector({
                     {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                   </div>
                   <p className="mt-1 text-xs leading-5" style={{ color: "var(--artist-card-muted)" }}>
-                    {getCategoryDescription(category.details)}
+                    {getCategoryDescription(category.value, category.details)}
                   </p>
                 </button>
               );

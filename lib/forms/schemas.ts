@@ -578,6 +578,8 @@ export const submissionSchema = z.object({
   preferredEndDate: z.string().max(20).optional(),
   gender: z.enum(["female", "male", "prefer_not_to_say"]).nullable().optional(),
   ageRange: z.enum(["18-24", "25-34", "35-44", "45+"]).nullable().optional(),
+  hasAllergy: z.boolean().nullable().optional(),
+  hasChronicCondition: z.boolean().nullable().optional(),
   workStyle: z.enum(workStyleValues as [string, ...string[]]).nullable().optional(),
   realismLevel: z.enum(realismLevelValues as [string, ...string[]]).nullable().optional(),
   layoutStyle: z.enum(layoutStyleValues as [string, ...string[]]).nullable().optional(),
