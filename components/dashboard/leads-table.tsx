@@ -270,7 +270,19 @@ function formatLeadDate(value: string, locale: PublicLocale) {
 }
 
 function getEstimateCenter(lead: ClientSubmission) {
-  return (lead.estimatedMin + lead.estimatedMax) / 2;
+  if (lead.estimatedMin !== null && lead.estimatedMax !== null) {
+    return (lead.estimatedMin + lead.estimatedMax) / 2;
+  }
+
+  if (lead.estimatedMin !== null) {
+    return lead.estimatedMin;
+  }
+
+  if (lead.estimatedMax !== null) {
+    return lead.estimatedMax;
+  }
+
+  return null;
 }
 
 function getDisplayedColor(lead: ClientSubmission, locale: PublicLocale) {
@@ -482,8 +494,20 @@ function getSizeLabel(lead: ClientSubmission, locale: PublicLocale) {
   );
 }
 
-function getDisplayedEstimate(lead: ClientSubmission, currency: string) {
-  return lead.displayEstimateLabel ?? formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency);
+function getDisplayedEstimate(lead: ClientSubmission, currency: string, locale: PublicLocale) {
+  if (lead.displayEstimateLabel) {
+    return lead.displayEstimateLabel;
+  }
+
+  if (lead.estimatedMin !== null && lead.estimatedMax !== null) {
+    return formatCompactCurrencyRange(lead.estimatedMin, lead.estimatedMax, currency);
+  }
+
+  if (lead.estimatedMin !== null) {
+    return formatCompactCurrencyRange(lead.estimatedMin, null, currency);
+  }
+
+  return locale === "tr" ? "Sanatçı değerlendirecek" : "Artist will review";
 }
 
 function getCoverageLabel(lead: ClientSubmission, locale: PublicLocale) {
@@ -628,11 +652,41 @@ function sortLeads(leads: ClientSubmission[], sort: LeadSort) {
     }
 
     if (sort === "highest-estimate") {
-      return getEstimateCenter(right) - getEstimateCenter(left);
+      const leftCenter = getEstimateCenter(left);
+      const rightCenter = getEstimateCenter(right);
+
+      if (leftCenter === null && rightCenter === null) {
+        return 0;
+      }
+
+      if (leftCenter === null) {
+        return 1;
+      }
+
+      if (rightCenter === null) {
+        return -1;
+      }
+
+      return rightCenter - leftCenter;
     }
 
     if (sort === "lowest-estimate") {
-      return getEstimateCenter(left) - getEstimateCenter(right);
+      const leftCenter = getEstimateCenter(left);
+      const rightCenter = getEstimateCenter(right);
+
+      if (leftCenter === null && rightCenter === null) {
+        return 0;
+      }
+
+      if (leftCenter === null) {
+        return 1;
+      }
+
+      if (rightCenter === null) {
+        return -1;
+      }
+
+      return leftCenter - rightCenter;
     }
 
     return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
@@ -677,7 +731,7 @@ function SummaryStat({
   return (
     <div
       className={cn(
-        "rounded-[20px] border px-4 py-3.5",
+        "rounded-[18px] border px-3.5 py-3",
         tone === "accent"
           ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.12),rgba(214,177,122,0.05))]"
           : "border-white/8 bg-white/[0.025]",
@@ -691,7 +745,7 @@ function SummaryStat({
       >
         {label}
       </p>
-      <p className={cn("mt-2 text-[1.8rem] font-semibold tracking-[-0.03em]", tone === "accent" ? "text-[var(--text-primary)]" : "text-white")}>
+      <p className={cn("mt-1.5 text-[1.58rem] font-semibold tracking-[-0.03em]", tone === "accent" ? "text-[var(--text-primary)]" : "text-white")}>
         {value}
       </p>
     </div>
@@ -878,15 +932,15 @@ export function LeadsTable({
         ? getCoverUpLabel(true, locale)
         : null;
     const referenceImageUrl = getReferenceImageUrl(lead);
-    const shownEstimate = getDisplayedEstimate(lead, currency);
+    const shownEstimate = getDisplayedEstimate(lead, currency, locale);
     const preferredTiming = getPreferredTimingLabel(lead, locale, copy.table.noTiming);
     const createdAt = formatLeadDate(lead.createdAt, locale);
     const updatedAt = formatLeadDate(lead.updatedAt ?? lead.createdAt, locale);
 
     return (
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
-        <div className="space-y-5">
-          <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-5">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <div className="space-y-4">
+          <div className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <DetailField label={copy.table.intent} value={getLeadTypeLabel(lead, locale)} />
               {areaLabel ? <DetailField label={copy.table.area} value={areaLabel} /> : null}
@@ -905,7 +959,7 @@ export function LeadsTable({
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-5">
+          <div className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <DetailField label={copy.table.city} value={lead.city || copy.table.noCity} />
               <DetailField label={copy.table.timing} value={preferredTiming} />
@@ -918,13 +972,13 @@ export function LeadsTable({
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-5">
+          <div className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4">
             <DetailField label={copy.table.notes} value={lead.notes || copy.table.noNotes} />
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-5">
+        <div className="space-y-3">
+          <div className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4">
             <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">{copy.table.status}</p>
             <div className="mt-3 space-y-3">
               <div className="flex items-center justify-between gap-3 rounded-[20px] border border-white/8 bg-white/[0.025] p-3">
@@ -941,7 +995,7 @@ export function LeadsTable({
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-5">
+          <div className="relative overflow-hidden rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-4">
             <BrandMonogram className="left-auto right-[-12%] top-[-12%] h-[180px] w-[180px]" opacity={0.055} />
             <div className="relative">
               <DetailField
@@ -954,7 +1008,7 @@ export function LeadsTable({
                   <img
                     src={referenceImageUrl}
                     alt="Reference"
-                    className="h-56 w-full rounded-[18px] object-cover"
+                    className="h-48 w-full rounded-[16px] object-cover"
                   />
                   <a
                     href={referenceImageUrl}
@@ -974,23 +1028,23 @@ export function LeadsTable({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <Card className="surface-border">
         <CardHeader>
           <CardTitle>{copy.title}</CardTitle>
           <CardDescription>{copy.description}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3.5">
           {hasPro ? (
             <>
               {statusMessage ? (
                 <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p>
               ) : null}
-              <div className="rounded-[18px] border border-white/8 bg-white/[0.025] px-3.5 py-2.5 text-[13px] text-[var(--text-muted)]">
+              <div className="rounded-[16px] border border-white/8 bg-white/[0.025] px-3 py-2 text-[12px] text-[var(--text-muted)]">
                 {copy.note}
               </div>
-              <div className="rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-2.5">
-                <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-2">
+                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
                   <SummaryStat label={copy.summary.total} value={totalCount} tone="accent" />
                   <SummaryStat label={copy.statusLabels.new} value={waitingCount} />
                   <SummaryStat label={copy.summary.waiting} value={contactedCount} />
@@ -1011,7 +1065,7 @@ export function LeadsTable({
             {locale === "tr" ? "Filtrele, sırala ve detayları tek bakışta yönet." : "Filter, sort, and manage details at a glance."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3.5">
+        <CardContent className="space-y-3">
           <div className="flex items-center justify-end">
             <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.025] px-3 py-1.5">
               <ArrowUpDown className="size-4 text-[var(--text-muted)]" />
@@ -1035,7 +1089,7 @@ export function LeadsTable({
             </div>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {paginatedLeads.map((lead) => {
               const placementSummary = formatLeadPlacementSummary(lead, locale);
               const sizeLabel = getSizeLabel(lead, locale);
@@ -1061,23 +1115,23 @@ export function LeadsTable({
               return (
                 <div
                   key={lead.id}
-                  className="group rounded-[22px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-3.5 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
+                  className="group rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-3 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
                 >
-                  <div className="grid gap-3 xl:grid-cols-[minmax(170px,0.82fr)_minmax(0,1.45fr)_minmax(210px,0.95fr)] xl:items-center">
-                    <div className="space-y-1.5">
+                  <div className="grid gap-2.5 xl:grid-cols-[minmax(156px,0.78fr)_minmax(0,1.52fr)_minmax(196px,0.92fr)] xl:items-center">
+                    <div className="space-y-1">
                       <div className="flex items-center justify-between gap-3 xl:block">
                         <div>
-                          <p className="text-[1.45rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency)}</p>
+                          <p className="text-[1.28rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency, locale)}</p>
                           <p className="mt-1 text-xs text-[var(--text-muted)]">{formatLeadDate(lead.createdAt, locale)}</p>
                         </div>
                         <StatusBadge status={lead.status} locale={locale} />
                       </div>
                     </div>
 
-                    <div className="min-w-0 space-y-2">
+                    <div className="min-w-0 space-y-1.5">
                       <div className="min-w-0">
-                        <p className="truncate text-[15px] font-semibold text-white">{requestLabel}</p>
-                        <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
+                        <p className="truncate text-[14px] font-semibold text-white">{requestLabel}</p>
+                        <p className="mt-0.5 text-[12.5px] text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
                       </div>
                       {lead.city ? (
                         <p className="text-sm text-[var(--text-muted)]">{lead.city}</p>
@@ -1085,7 +1139,7 @@ export function LeadsTable({
                       {notesLabel ? (
                         <p className="line-clamp-2 text-[13px] leading-5 text-[var(--text-muted)]">{notesLabel}</p>
                       ) : null}
-                      <div className="flex flex-wrap gap-1.5 text-[11px] text-[var(--text-muted)]">
+                      <div className="flex flex-wrap gap-1.5 text-[10.5px] text-[var(--text-muted)]">
                         {metadataTags.map((tag) => (
                           <span
                             key={tag}
@@ -1098,7 +1152,7 @@ export function LeadsTable({
                     </div>
 
                     <div className="flex flex-col gap-3 xl:items-end">
-                      <div className="w-full xl:max-w-[220px]">
+                      <div className="w-full xl:max-w-[208px]">
                         <StatusSelect
                           value={lead.status}
                           locale={locale}
@@ -1124,7 +1178,7 @@ export function LeadsTable({
             })}
           </div>
 
-          <div className="flex flex-col gap-2.5 rounded-[20px] border border-white/8 bg-white/[0.025] p-3.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 rounded-[18px] border border-white/8 bg-white/[0.025] p-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[13px] text-[var(--text-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
             <div className="flex gap-2">
               <Button

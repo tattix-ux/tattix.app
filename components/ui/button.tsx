@@ -5,7 +5,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[18px] text-[13px] font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[18px] text-[13px] font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] xl:rounded-[16px] xl:text-[12.5px]",
   {
     variants: {
       variant: {
@@ -19,10 +19,10 @@ const buttonVariants = cva(
         destructive: "border border-[rgba(184,106,99,0.28)] bg-[rgba(184,106,99,0.14)] text-white hover:bg-[rgba(184,106,99,0.2)]",
       },
       size: {
-        default: "h-9 px-3.5",
-        sm: "h-8 px-3 text-[12px]",
-        lg: "h-10 px-5 text-sm",
-        icon: "size-9 rounded-[15px]",
+        default: "h-9 px-3.5 xl:h-[34px] xl:px-3.5",
+        sm: "h-8 px-3 text-[12px] xl:h-[30px] xl:px-2.5",
+        lg: "h-10 px-5 text-sm xl:h-9 xl:px-4",
+        icon: "size-9 rounded-[15px] xl:size-8 xl:rounded-[13px]",
       },
     },
     defaultVariants: {

@@ -61,10 +61,10 @@ export function NotificationsTable({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {localNotifications.map((notification) => (
         <Card key={notification.id} className="surface-border">
-          <CardHeader className="space-y-2.5">
+          <CardHeader className="space-y-2">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle className="text-[1rem]">{notification.title}</CardTitle>
@@ -83,8 +83,8 @@ export function NotificationsTable({
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="rounded-[18px] border border-white/8 bg-black/20 p-3.5 text-[13px] text-[var(--foreground-muted)]">
+          <CardContent className="space-y-2.5">
+            <div className="rounded-[16px] border border-white/8 bg-black/20 p-3 text-[12.5px] text-[var(--foreground-muted)]">
               <div className="mb-2 flex items-center gap-2 text-white">
                 <Bell className="size-4" />
                 {notification.senderLabel}

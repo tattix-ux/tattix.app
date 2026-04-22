@@ -573,53 +573,53 @@ export function ProfileRequestSettings({
         : `${bookingCities.length} cities selected`;
 
   return (
-    <div className="space-y-3">
-      <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
-        <CardHeader className="pb-4">
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(180px,220px)] xl:items-end">
+    <div className="space-y-2.5">
+      <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_16px_34px_rgba(0,0,0,0.18)]">
+        <CardHeader className="pb-3">
+          <div className="grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_minmax(196px,236px)] xl:items-end">
             <div className="min-w-0">
               <CardTitle className="text-[1rem]">{copy.bookingTitle}</CardTitle>
               <p className="mt-1 text-[13px] leading-5 text-[var(--text-secondary)]">
                 {copy.bookingDescription}
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
               <Input
                 value={pendingCity}
                 onChange={(event) => setPendingCity(event.target.value)}
                 placeholder={copy.cityPlaceholder}
-                className="h-10 min-w-[160px]"
+                className="h-9 min-w-[160px]"
               />
-              <Button type="button" onClick={addBookingCity} className="h-10">
+              <Button type="button" onClick={addBookingCity} className="h-9">
                 <Plus className="size-4" />
                 {copy.addCity}
               </Button>
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-2">
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
               {bookingSummaryLabel}
             </span>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {bookingCities.length === 0 ? (
             <div className="rounded-[20px] border border-dashed border-[var(--border-soft)] bg-[rgba(255,255,255,0.02)] px-4 py-6 text-sm text-[var(--text-muted)]">
               {copy.noCities}
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {bookingCitiesFieldArray.fields.map((field, index) => {
                 const city = bookingCities[index];
                 const availableDates = city?.availableDates ?? [];
                 const isExpanded = expandedCities[field.id] ?? availableDates.length === 0;
 
                 return (
-                  <div key={field.id} className="rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-3.5 sm:p-4">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="min-w-0 flex-1 space-y-3">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div key={field.id} className="rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-3 sm:p-3.5">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0 flex-1 space-y-2.5">
+                          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
                             <Input
                               value={city?.cityName ?? ""}
                               onChange={(event) =>
@@ -629,14 +629,14 @@ export function ProfileRequestSettings({
                                 })
                               }
                               placeholder={copy.cityPlaceholder}
-                              className="h-10"
+                              className="h-9"
                             />
                             <Badge variant="accent" className="w-fit border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-[var(--text-primary)]">
                               {availableDates.length} {copy.selectedDays}
                             </Badge>
                           </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <Button
                             type="button"
                             variant="outline"
@@ -665,8 +665,8 @@ export function ProfileRequestSettings({
                       </div>
 
                       {isExpanded ? (
-                        <div className="mt-4 space-y-3 border-t border-[var(--border-soft)] pt-4">
-                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="mt-3 space-y-2.5 border-t border-[var(--border-soft)] pt-3">
+                          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
                             <div className="space-y-1">
                               <p className="text-sm font-medium text-white">{copy.dates}</p>
                               <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
@@ -709,7 +709,7 @@ export function ProfileRequestSettings({
         </CardContent>
       </Card>
 
-      <div className="flex min-h-6 items-center gap-2 px-1 text-sm text-[var(--foreground-muted)]">
+      <div className="flex min-h-5 items-center gap-1.5 px-1 text-[12px] text-[var(--foreground-muted)]">
         {saveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
         {saveState === "saved" ? <CheckCircle2 className="size-4 text-[var(--accent-soft)]" /> : null}
         {statusMessage}

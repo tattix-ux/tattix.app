@@ -14,10 +14,10 @@ export function Field({
   className?: string;
 }) {
   return (
-    <label className={cn("flex flex-col gap-2", className)}>
-      <span className="text-[13px] font-medium text-[var(--text-primary)]">{label}</span>
+    <label className={cn("flex flex-col gap-1.5", className)}>
+      <span className="text-[12.5px] font-medium text-[var(--text-primary)]">{label}</span>
       {description ? (
-        <span className="text-[11px] leading-[1.35rem] text-[var(--text-muted)]">{description}</span>
+        <span className="text-[11px] leading-4 text-[var(--text-muted)]">{description}</span>
       ) : null}
       {children}
       {error ? <span className="text-[11px] text-red-300">{error}</span> : null}

@@ -118,14 +118,14 @@ function SectionBlock({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
-      <CardHeader className="pb-4">
+    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_16px_34px_rgba(0,0,0,0.18)]">
+      <CardHeader className="pb-3">
         <CardTitle className="text-[1.02rem]">{title}</CardTitle>
         {description ? (
-          <p className="text-sm leading-6 text-[var(--text-secondary)]">{description}</p>
+          <p className="text-[12.5px] leading-5 text-[var(--text-secondary)]">{description}</p>
         ) : null}
       </CardHeader>
-      <CardContent className="space-y-5">{children}</CardContent>
+      <CardContent className="space-y-4">{children}</CardContent>
     </Card>
   );
 }
@@ -149,8 +149,8 @@ function MediaUploadField({
 }) {
   return (
     <Field label={label} className="gap-3">
-      <div className="space-y-3">
-        <div className="relative flex h-36 items-center justify-center overflow-hidden rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] sm:h-40 xl:h-36 2xl:h-40">
+      <div className="space-y-2.5">
+        <div className="relative flex h-32 items-center justify-center overflow-hidden rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] sm:h-36 xl:h-32 2xl:h-36">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt={label} className="h-full w-full object-cover" />
@@ -161,8 +161,8 @@ function MediaUploadField({
             </div>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3.5 py-2.5 text-xs text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)] sm:text-sm">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)] sm:text-[12.5px]">
             <Upload className="size-4" />
             {uploadLabel}
             <input
@@ -382,13 +382,13 @@ export function ProfileForm({
   }
 
   return (
-    <div className="space-y-2.5">
-      <div className="space-y-4">
+    <div className="space-y-2">
+      <div className="space-y-3">
         <SectionBlock
           title={locale === "tr" ? "Temel profil" : "Core profile"}
           description={copy.coreSectionDescription}
         >
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-2.5 lg:grid-cols-2">
             <MediaUploadField
               label={copy.profileImage}
               imageUrl={form.watch("profileImageUrl") || ""}
@@ -409,16 +409,16 @@ export function ProfileForm({
             />
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-2.5 lg:grid-cols-2">
             <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
-              <Input {...form.register("artistName")} className="h-10" />
+            <Input {...form.register("artistName")} className="h-9" />
             </Field>
             <Field
               label={copy.upperLabel}
               description={copy.upperLabelDescription}
               error={form.formState.errors.upperLabel?.message}
             >
-              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-10" />
+              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-9" />
             </Field>
           </div>
 
@@ -427,7 +427,7 @@ export function ProfileForm({
             description={copy.welcomeHeadlineDescription}
             error={form.formState.errors.welcomeHeadline?.message}
           >
-            <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} className="h-10" />
+            <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} className="h-9" />
           </Field>
 
           <Field
@@ -438,7 +438,7 @@ export function ProfileForm({
             <Textarea
               {...form.register("shortBio")}
               placeholder={copy.shortBioPlaceholder}
-              className="min-h-[116px]"
+              className="min-h-[96px] lg:min-h-[86px]"
             />
           </Field>
 
@@ -448,37 +448,37 @@ export function ProfileForm({
           title={locale === "tr" ? "Link ve iletişim" : "Link and contact"}
           description={copy.contactSectionDescription}
         >
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_120px] lg:items-end">
+          <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_108px] lg:items-end">
             <Field label={copy.linkSection}>
               <div className="flex min-w-0 overflow-hidden rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)]">
-                <div className="flex items-center border-r border-[var(--border-soft)] px-4 text-sm text-[var(--text-muted)]">
+                <div className="flex items-center border-r border-[var(--border-soft)] px-3 text-[12px] text-[var(--text-muted)]">
                   {getAppOrigin()}/
                 </div>
                 <Input
                   {...form.register("slug")}
-                  className="h-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="h-9 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
             </Field>
-            <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-10">
+            <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-9">
               <Copy className="size-4" />
               {copied ? copy.copied : copy.copyLink}
             </Button>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-2.5 lg:grid-cols-2">
             <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
-              <Input {...form.register("whatsappNumber")} className="h-10" />
+              <Input {...form.register("whatsappNumber")} className="h-9" />
             </Field>
             <Field label={copy.instagram} error={form.formState.errors.instagramHandle?.message}>
-              <Input {...form.register("instagramHandle")} className="h-10" />
+              <Input {...form.register("instagramHandle")} className="h-9" />
             </Field>
           </div>
           <input type="hidden" {...form.register("active")} />
         </SectionBlock>
       </div>
 
-      <div className="flex min-h-5 items-center gap-2 px-1 text-[12px] text-[var(--foreground-muted)]">
+      <div className="flex min-h-4 items-center gap-1.5 px-1 text-[11px] text-[var(--foreground-muted)]">
         {autosaveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
         {autosaveState === "saved" ? <CheckCircle2 className="size-4 text-[var(--accent-soft)]" /> : null}
         {form.formState.errors.root?.message ?? statusMessage}
@@ -502,13 +502,13 @@ export function ProfilePreviewCard({
   const { wrapperStyle, backgroundMedia } = buildThemeStyles(pageTheme);
 
   return (
-    <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-2)_0%,var(--bg-section)_100%)] shadow-[0_24px_54px_rgba(0,0,0,0.28)] xl:sticky xl:top-4 xl:self-start">
-      <CardHeader className="pb-4">
+    <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-2)_0%,var(--bg-section)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.24)] xl:sticky xl:top-3 xl:self-start">
+      <CardHeader className="pb-3">
         <CardTitle className="text-[1rem]">{copy.previewTitle}</CardTitle>
-        <p className="text-[13px] leading-5 text-[var(--text-secondary)]">{copy.previewDescription}</p>
+        <p className="text-[12px] leading-5 text-[var(--text-secondary)]">{copy.previewDescription}</p>
       </CardHeader>
       <CardContent>
-        <div className="mx-auto max-w-[340px] 2xl:max-w-[360px]">
+        <div className="mx-auto max-w-[300px] 2xl:max-w-[320px]">
           <div
             className="relative overflow-hidden rounded-[42px] border shadow-[0_30px_70px_rgba(0,0,0,0.34)]"
             style={{
@@ -534,7 +534,7 @@ export function ProfilePreviewCard({
               </>
             ) : null}
             <div
-              className="relative h-52 border-b bg-grid sm:h-56"
+              className="relative h-44 border-b bg-grid sm:h-48"
               style={
                 profile.coverImageUrl
                   ? {
@@ -547,7 +547,7 @@ export function ProfilePreviewCard({
               }
             >
             </div>
-            <div className="-mt-12 space-y-5 p-6 sm:p-7">
+            <div className="-mt-10 space-y-4 p-5 sm:p-6">
               <AvatarTile
                 name={profile.artistName}
                 imageUrl={profile.profileImageUrl}
@@ -568,20 +568,20 @@ export function ProfilePreviewCard({
                 ) : null}
                 {profile.welcomeHeadline.trim() ? (
                   <h3
-                    className="text-[2rem] leading-tight"
+                    className="text-[1.72rem] leading-tight"
                     style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}
                   >
                     {profile.welcomeHeadline}
                   </h3>
                 ) : null}
                 {profile.shortBio.trim() ? (
-                  <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                  <p className="text-[13px] leading-5" style={{ color: "var(--artist-card-muted)" }}>
                     {profile.shortBio}
                   </p>
                 ) : null}
                 <div className="pt-1">
                   <div
-                    className="inline-flex h-11 items-center rounded-[var(--artist-button-radius)] border px-5 text-sm font-medium"
+                    className="inline-flex h-10 items-center rounded-[var(--artist-button-radius)] border px-4 text-[13px] font-medium"
                     style={{
                       backgroundColor: "var(--artist-primary-button-surface)",
                       borderColor: "var(--artist-primary-button-border)",

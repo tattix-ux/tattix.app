@@ -76,11 +76,11 @@ function EditorSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3 rounded-[20px] border border-white/8 bg-white/[0.025] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
-      <div className="space-y-1.5">
+    <section className="space-y-2.5 rounded-[18px] border border-white/8 bg-white/[0.025] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+      <div className="space-y-1">
         <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-white">{title}</h3>
         {description ? (
-          <p className="text-[13px] leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
+          <p className="text-[12px] leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
             {description}
           </p>
         ) : null}
@@ -126,10 +126,11 @@ const copy = {
     detailsDescription: "",
     titleLabel: "Design name",
     titlePlaceholder: "e.g. Fine line rose",
-    sizeLabel: "Approximate size you want to tattoo this design at",
+    sizeLabel: "What size (cm) do you want to tattoo this design at?",
+    sizeHelp: "Set the price range for this size.",
     sizePlaceholder: "10",
     priceLabel: "Price shown to clients",
-    priceHelp: "An approximate range is shown.",
+    priceHelp: "Set the price range for this size.",
     priceMin: "Lower price",
     priceMax: "Upper price",
     optionalTitle: "Category and short note",
@@ -202,10 +203,11 @@ const copy = {
     detailsDescription: "",
     titleLabel: "Tasarım adı",
     titlePlaceholder: "Örn: Minimal gül",
-    sizeLabel: "Bu tasarımı çalışmak istediğin yaklaşık boyut",
+    sizeLabel: "Bu tasarım için çalışmak istediğin boyut (cm)",
+    sizeHelp: "Bu boyut için fiyat aralıklarını belirle",
     sizePlaceholder: "10",
     priceLabel: "Müşteriye gösterilecek fiyat",
-    priceHelp: "Yaklaşık fiyat aralığı gösterilir.",
+    priceHelp: "Bu boyut için fiyat aralıklarını belirle",
     priceMin: "Alt fiyat",
     priceMax: "Üst fiyat",
     optionalTitle: "Kategori ve kısa not",
@@ -258,10 +260,10 @@ function createEmptyDesign(sortOrder: number): DesignDraft {
     imageUrl: "",
     imagePath: "",
     priceNote: "",
-    referenceDetailLevel: null,
+    referenceDetailLevel: "standard",
     referencePriceMin: null,
     referencePriceMax: null,
-    referenceSizeCm: 10,
+    referenceSizeCm: null,
     referenceColorMode: DEFAULT_COLOR_MODE,
     pricingMode: DEFAULT_PRICING_MODE,
     colorImpactPreference: DEFAULT_COLOR_IMPACT,
@@ -279,10 +281,10 @@ function normalizeDesign(design: PartialDesignDraft, sortOrder: number): DesignD
     imageUrl: design.imageUrl ?? "",
     imagePath: design.imagePath ?? "",
     priceNote: design.priceNote ?? "",
-    referenceDetailLevel: design.referenceDetailLevel ?? null,
+    referenceDetailLevel: design.referenceDetailLevel ?? "standard",
     referencePriceMin: design.referencePriceMin ?? null,
     referencePriceMax: design.referencePriceMax ?? null,
-    referenceSizeCm: design.referenceSizeCm ?? 10,
+    referenceSizeCm: design.referenceSizeCm ?? null,
     referenceColorMode: design.referenceColorMode ?? DEFAULT_COLOR_MODE,
     pricingMode: design.pricingMode ?? DEFAULT_PRICING_MODE,
     colorImpactPreference: design.colorImpactPreference ?? DEFAULT_COLOR_IMPACT,
@@ -340,7 +342,7 @@ export function FeaturedDesignsForm({
         imageUrl: design.imageUrl ?? "",
         imagePath: design.imagePath ?? "",
         priceNote: design.priceNote ?? "",
-        referenceDetailLevel: design.referenceDetailLevel ?? null,
+        referenceDetailLevel: design.referenceDetailLevel ?? "standard",
         referencePriceMin: design.referencePriceMin,
         referencePriceMax: design.referencePriceMax,
         referenceSizeCm: design.referenceSizeCm,
@@ -725,10 +727,10 @@ export function FeaturedDesignsForm({
       <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
         <CardContent className="relative overflow-hidden p-3.5 sm:p-4">
           <BrandMonogram className="left-auto right-[-4%] top-[-16%] h-[180px] w-[180px]" opacity={0.06} />
-          <div className="relative space-y-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-[34rem] space-y-2">
-                <p className="text-sm text-[var(--text-secondary)]">{labels.introHint}</p>
+          <div className="relative space-y-3">
+            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-[34rem] space-y-1.5">
+                <p className="text-[13px] text-[var(--text-secondary)]">{labels.introHint}</p>
                 <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-dim)]">
                   {labels.introSteps.join(" • ")}
                 </p>
@@ -741,9 +743,9 @@ export function FeaturedDesignsForm({
               ) : null}
             </div>
 
-            <div className="grid gap-2.5 xl:grid-cols-[150px_minmax(0,1.05fr)_minmax(0,0.95fr)_auto] xl:items-end">
+            <div className="grid gap-2 xl:grid-cols-[138px_minmax(0,1fr)_minmax(0,0.92fr)_auto] xl:items-end">
             <Field label={labels.image} className="min-w-[150px]">
-              <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3.5 text-[13px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
+              <label className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-[15px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 text-[12.5px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
                 <Upload className="size-4" />
                 {quickAddImageName ? labels.replaceImage : labels.uploadImage}
                 <input
@@ -766,7 +768,7 @@ export function FeaturedDesignsForm({
               <Input
                 value={quickAddTitle}
                 onChange={(event) => setQuickAddTitle(event.target.value)}
-                className="h-10 rounded-[16px] bg-white/[0.03]"
+                className="h-9 rounded-[15px] bg-white/[0.03]"
                 placeholder={labels.titlePlaceholder}
               />
             </Field>
@@ -775,14 +777,14 @@ export function FeaturedDesignsForm({
               <div className="grid gap-2.5 sm:grid-cols-2">
                 <Input
                   type="number"
-                  className="h-10 rounded-[16px] bg-white/[0.03]"
+                  className="h-9 rounded-[15px] bg-white/[0.03]"
                   placeholder="6000"
                   value={quickAddPriceMin}
                   onChange={(event) => setQuickAddPriceMin(event.target.value)}
                 />
                 <Input
                   type="number"
-                  className="h-10 rounded-[16px] bg-white/[0.03]"
+                  className="h-9 rounded-[15px] bg-white/[0.03]"
                   placeholder="8500"
                   value={quickAddPriceMax}
                   onChange={(event) => setQuickAddPriceMax(event.target.value)}
@@ -798,7 +800,7 @@ export function FeaturedDesignsForm({
               ) : null}
               <Button
                 type="button"
-                className="h-10 px-4"
+                className="h-9 px-4"
                 onClick={() => {
                   addDesign(
                     undefined,
@@ -844,7 +846,7 @@ export function FeaturedDesignsForm({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           {orderedDesignEntries.map(({ field, index, design }) => {
             const title = design?.title?.trim() || `${labels.newItem} ${index + 1}`;
             const category = getCategoryLabel(design?.category || "flash-designs");
@@ -866,7 +868,7 @@ export function FeaturedDesignsForm({
                     : "bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)]",
                 )}
               >
-                <CardContent className={cn("p-3 sm:p-3.5", isEditing ? "space-y-4" : "")}>
+                <CardContent className={cn("p-3", isEditing ? "space-y-3.5" : "")}>
                   <div
                     role={isEditing ? undefined : "button"}
                     tabIndex={isEditing ? -1 : 0}
@@ -953,8 +955,8 @@ export function FeaturedDesignsForm({
                     </div>
 
                     {isEditing ? (
-                      <div className="sticky top-3 z-10 flex flex-wrap items-center justify-end gap-2 self-start sm:ml-4 sm:min-w-[350px]">
-                        <div className="flex items-center gap-3 rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3.5 py-2.5">
+                      <div className="sticky top-3 z-10 flex flex-wrap items-center justify-end gap-2 self-start sm:ml-3 sm:min-w-[320px]">
+                        <div className="flex items-center gap-3 rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 py-2">
                           <div className="space-y-0.5">
                             <p className="text-sm font-medium text-[var(--text-primary)]">{labels.statusLabel}</p>
                             <p className="text-[11px] leading-5 text-[var(--text-muted)]">
@@ -973,13 +975,13 @@ export function FeaturedDesignsForm({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                          <Button type="button" variant="secondary" onClick={cancelEditing} className="h-11">
+                          <Button type="button" variant="secondary" onClick={cancelEditing} className="h-9">
                             {labels.cancel}
                           </Button>
                           <Button
                             type="submit"
                             disabled={form.formState.isSubmitting || !form.formState.isDirty}
-                            className="h-11"
+                            className="h-9"
                           >
                             {form.formState.isSubmitting ? (
                               <>
@@ -1031,6 +1033,7 @@ export function FeaturedDesignsForm({
                     <>
                       <input type="hidden" {...form.register(`designs.${editingIndex}.id`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.category`)} />
+                      <input type="hidden" {...form.register(`designs.${editingIndex}.referenceDetailLevel`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.pricingMode`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.referenceColorMode`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.colorImpactPreference`)} />
@@ -1039,10 +1042,10 @@ export function FeaturedDesignsForm({
 
                       {statusMessage ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
 
-                      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start">
+                      <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)] xl:items-start">
                         <EditorSection title={labels.image}>
-                          <div className="space-y-4">
-                            <div className="relative flex h-[300px] items-center justify-center overflow-hidden rounded-[26px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))]">
+                          <div className="space-y-3">
+                            <div className="relative flex h-[248px] items-center justify-center overflow-hidden rounded-[22px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))]">
                               {editingDesign?.imageUrl ? (
                                 <img
                                   src={editingDesign.imageUrl}
@@ -1059,7 +1062,7 @@ export function FeaturedDesignsForm({
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              <label className="inline-flex cursor-pointer items-center gap-2 rounded-[18px] border border-[var(--border-soft)] bg-white/[0.03] px-4 py-2.5 text-sm text-[var(--text-primary)] transition hover:bg-white/[0.06]">
+                              <label className="inline-flex cursor-pointer items-center gap-2 rounded-[16px] border border-[var(--border-soft)] bg-white/[0.03] px-3.5 py-2 text-[12.5px] text-[var(--text-primary)] transition hover:bg-white/[0.06]">
                                 <Upload className="size-4" />
                                 {editingDesign?.imageUrl ? labels.replaceImage : labels.uploadImage}
                                 <input
@@ -1091,9 +1094,9 @@ export function FeaturedDesignsForm({
                           </div>
                         </EditorSection>
 
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                           <EditorSection title={labels.detailsTitle} description={labels.detailsDescription}>
-                            <div className="grid gap-4 xl:grid-cols-2">
+                            <div className="grid gap-3 xl:grid-cols-2">
                               <Field
                                 label={labels.titleLabel}
                                 error={form.formState.errors.designs?.[editingIndex]?.title?.message}
@@ -1108,7 +1111,7 @@ export function FeaturedDesignsForm({
                                         titleRegistration.ref(node);
                                         titleInputRef.current = node;
                                       }}
-                                      className="h-12 rounded-[18px] bg-white/[0.03]"
+                                      className="h-9 rounded-[16px] bg-white/[0.03]"
                                       placeholder={labels.titlePlaceholder}
                                       name={titleRegistration.name}
                                       onBlur={titleRegistration.onBlur}
@@ -1120,12 +1123,13 @@ export function FeaturedDesignsForm({
 
                               <Field
                                 label={labels.sizeLabel}
+                                description={labels.sizeHelp}
                                 error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
                               >
                                 <div className="relative">
                                   <Input
                                     type="number"
-                                    className="h-12 rounded-[18px] bg-white/[0.03] pr-12"
+                                    className="h-9 rounded-[16px] bg-white/[0.03] pr-12"
                                     placeholder={labels.sizePlaceholder}
                                     {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
                                   />
@@ -1136,7 +1140,7 @@ export function FeaturedDesignsForm({
                               </Field>
 
                               <Field label={labels.priceLabel} description={labels.priceHelp} className="xl:col-span-2">
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="grid gap-2.5 sm:grid-cols-2">
                                   <Field
                                     label={labels.priceMin}
                                     className="gap-2"
@@ -1144,7 +1148,7 @@ export function FeaturedDesignsForm({
                                   >
                                     <Input
                                       type="number"
-                                      className="h-12 rounded-[18px] bg-white/[0.03]"
+                                      className="h-9 rounded-[16px] bg-white/[0.03]"
                                       placeholder="6000"
                                       {...form.register(`designs.${editingIndex}.referencePriceMin`)}
                                     />
@@ -1156,7 +1160,7 @@ export function FeaturedDesignsForm({
                                   >
                                     <Input
                                       type="number"
-                                      className="h-12 rounded-[18px] bg-white/[0.03]"
+                                      className="h-9 rounded-[16px] bg-white/[0.03]"
                                       placeholder="8500"
                                       {...form.register(`designs.${editingIndex}.referencePriceMax`)}
                                     />
@@ -1167,10 +1171,10 @@ export function FeaturedDesignsForm({
                           </EditorSection>
 
                           <EditorSection title={labels.optionalTitle} description={labels.optionalDescription}>
-                            <div className="grid gap-4 xl:grid-cols-2">
+                            <div className="grid gap-3 xl:grid-cols-2">
                               <Field label={labels.category}>
                                 <NativeSelect
-                                  className="h-12 rounded-[18px] bg-white/[0.03]"
+                                  className="h-9 rounded-[16px] bg-white/[0.03]"
                                   value={getCategorySelectValue(editingDesign?.category || "")}
                                   onChange={(event) =>
                                     form.setValue(
@@ -1189,7 +1193,7 @@ export function FeaturedDesignsForm({
                               {getCategorySelectValue(editingDesign?.category || "") === "__custom__" ? (
                                 <Field label={labels.customCategory}>
                                   <Input
-                                    className="h-12 rounded-[18px] bg-white/[0.03]"
+                                    className="h-9 rounded-[16px] bg-white/[0.03]"
                                     placeholder={labels.customCategoryPlaceholder}
                                     value={editingDesign?.category || ""}
                                     onChange={(event) =>

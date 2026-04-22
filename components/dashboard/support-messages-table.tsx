@@ -67,10 +67,10 @@ export function SupportMessagesTable({ messages }: { messages: SupportMessage[] 
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {localMessages.map((message) => (
           <Card key={message.id} className="surface-border">
-          <CardHeader className="space-y-2.5">
+          <CardHeader className="space-y-2">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <CardTitle className="text-[1rem]">{message.artistName || message.accountEmail}</CardTitle>
@@ -84,8 +84,8 @@ export function SupportMessagesTable({ messages }: { messages: SupportMessage[] 
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="rounded-[18px] border border-white/8 bg-black/20 p-3.5 text-[13px] text-[var(--foreground-muted)]">
+            <CardContent className="space-y-2.5">
+              <div className="rounded-[16px] border border-white/8 bg-black/20 p-3 text-[12.5px] text-[var(--foreground-muted)]">
                 <div className="mb-2 flex items-center gap-2 text-white">
                   <MessageSquareText className="size-4" />
                   Mesaj
@@ -93,7 +93,7 @@ export function SupportMessagesTable({ messages }: { messages: SupportMessage[] 
                 <p className="whitespace-pre-wrap">{message.message}</p>
               </div>
               {message.adminReply ? (
-                <div className="rounded-[18px] border border-[var(--accent)]/20 bg-[var(--accent)]/8 p-3.5 text-[13px] text-[var(--foreground-muted)]">
+                <div className="rounded-[16px] border border-[var(--accent)]/20 bg-[var(--accent)]/8 p-3 text-[12.5px] text-[var(--foreground-muted)]">
                   <div className="mb-2 flex items-center gap-2 text-white">
                     <Send className="size-4" />
                     Admin yanıtı
@@ -102,7 +102,7 @@ export function SupportMessagesTable({ messages }: { messages: SupportMessage[] 
                 </div>
               ) : null}
               {!message.repliedAt ? (
-                <div className="space-y-2.5 rounded-[18px] border border-white/8 bg-black/20 p-3.5">
+                <div className="space-y-2 rounded-[16px] border border-white/8 bg-black/20 p-3">
                   <label className="text-[13px] font-medium text-white">Admin olarak yanıtla</label>
                   <textarea
                     value={replyDrafts[message.id] ?? ""}
@@ -112,8 +112,8 @@ export function SupportMessagesTable({ messages }: { messages: SupportMessage[] 
                         [message.id]: event.target.value,
                       }))
                     }
-                    rows={4}
-                    className="w-full rounded-[18px] border border-white/8 bg-[#0f0f11] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[var(--foreground-muted)] focus:border-[var(--accent)]/40"
+                    rows={3}
+                    className="w-full rounded-[16px] border border-white/8 bg-[#0f0f11] px-3.5 py-2.5 text-[13px] text-white outline-none transition placeholder:text-[var(--foreground-muted)] focus:border-[var(--accent)]/40"
                     placeholder="Kısa bir yanıt yaz…"
                   />
                 </div>
