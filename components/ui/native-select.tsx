@@ -12,14 +12,14 @@ export function NativeSelect({
     <div className="relative">
       <select
         className={cn(
-          "h-11 w-full appearance-none rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[#14161A] px-4 pr-10 text-base text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition hover:border-[rgba(255,255,255,0.12)] focus:border-[var(--ring)] focus:bg-[var(--surface-1)] focus:ring-2 focus:ring-[rgba(214,177,122,0.12)] sm:text-sm lg:h-9 lg:rounded-[16px] lg:px-3.5 lg:pr-9 lg:text-[12.5px]",
+          "h-11 w-full appearance-none rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[#14161A] px-4 pr-10 text-base text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none transition hover:border-[rgba(255,255,255,0.12)] focus:border-[var(--ring)] focus:bg-[var(--surface-1)] focus:ring-2 focus:ring-[rgba(214,177,122,0.12)] sm:text-sm xl:h-[36px] xl:rounded-[14px] xl:px-3 xl:pr-8 xl:text-[13px]",
           className,
         )}
         {...props}
       >
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-[var(--text-muted)]" />
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-3.5 -translate-y-1/2 text-[var(--text-muted)]" />
     </div>
   );
 }

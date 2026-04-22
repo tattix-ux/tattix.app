@@ -573,13 +573,13 @@ export function ProfileRequestSettings({
         : `${bookingCities.length} cities selected`;
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2 xl:space-y-1.5">
       <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_16px_34px_rgba(0,0,0,0.18)]">
-        <CardHeader className="pb-3">
-          <div className="grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_minmax(196px,236px)] xl:items-end">
+        <CardHeader className="pb-2.5 xl:pb-2">
+          <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(176px,214px)] xl:items-end">
             <div className="min-w-0">
-              <CardTitle className="text-[1rem]">{copy.bookingTitle}</CardTitle>
-              <p className="mt-1 text-[13px] leading-5 text-[var(--text-secondary)]">
+              <CardTitle className="text-[0.98rem]">{copy.bookingTitle}</CardTitle>
+              <p className="mt-1 text-[11.5px] leading-[1.4] text-[var(--text-secondary)]">
                 {copy.bookingDescription}
               </p>
             </div>
@@ -588,38 +588,38 @@ export function ProfileRequestSettings({
                 value={pendingCity}
                 onChange={(event) => setPendingCity(event.target.value)}
                 placeholder={copy.cityPlaceholder}
-                className="h-9 min-w-[160px]"
+                className="h-9 min-w-[150px] xl:h-[36px]"
               />
-              <Button type="button" onClick={addBookingCity} className="h-9">
-                <Plus className="size-4" />
+              <Button type="button" onClick={addBookingCity} className="h-9 xl:h-[36px]">
+                <Plus className="size-3.5" />
                 {copy.addCity}
               </Button>
             </div>
           </div>
           <div className="mt-2">
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
               {bookingSummaryLabel}
             </span>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2.5">
           {bookingCities.length === 0 ? (
-            <div className="rounded-[20px] border border-dashed border-[var(--border-soft)] bg-[rgba(255,255,255,0.02)] px-4 py-6 text-sm text-[var(--text-muted)]">
+            <div className="rounded-[16px] border border-dashed border-[var(--border-soft)] bg-[rgba(255,255,255,0.02)] px-4 py-4 text-[12px] text-[var(--text-muted)]">
               {copy.noCities}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {bookingCitiesFieldArray.fields.map((field, index) => {
                 const city = bookingCities[index];
                 const availableDates = city?.availableDates ?? [];
                 const isExpanded = expandedCities[field.id] ?? availableDates.length === 0;
 
                 return (
-                  <div key={field.id} className="rounded-[18px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-3 sm:p-3.5">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="min-w-0 flex-1 space-y-2.5">
-                          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                  <div key={field.id} className="rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-2.5 xl:p-3">
+                    <div className="flex flex-col gap-2.5">
+                      <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                             <Input
                               value={city?.cityName ?? ""}
                               onChange={(event) =>
@@ -629,9 +629,9 @@ export function ProfileRequestSettings({
                                 })
                               }
                               placeholder={copy.cityPlaceholder}
-                              className="h-9"
+                              className="h-9 xl:h-[36px]"
                             />
-                            <Badge variant="accent" className="w-fit border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-[var(--text-primary)]">
+                            <Badge variant="accent" className="w-fit border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] px-2 py-0.5 text-[10px] text-[var(--text-primary)]">
                               {availableDates.length} {copy.selectedDays}
                             </Badge>
                           </div>
@@ -649,7 +649,7 @@ export function ProfileRequestSettings({
                               }))
                             }
                           >
-                            <ChevronDown className={cn("size-4 transition", isExpanded && "rotate-180")} />
+                            <ChevronDown className={cn("size-3.5 transition", isExpanded && "rotate-180")} />
                             {isExpanded ? copy.closeDays : copy.openDays}
                           </Button>
                           <Button
@@ -658,18 +658,18 @@ export function ProfileRequestSettings({
                             size="sm"
                             onClick={() => bookingCitiesFieldArray.remove(index)}
                           >
-                            <Trash2 className="size-4" />
+                            <Trash2 className="size-3.5" />
                             {copy.remove}
                           </Button>
                         </div>
                       </div>
 
                       {isExpanded ? (
-                        <div className="mt-3 space-y-2.5 border-t border-[var(--border-soft)] pt-3">
-                          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium text-white">{copy.dates}</p>
-                              <p className="text-sm text-[var(--foreground-muted)]">{copy.datesDescription}</p>
+                        <div className="mt-2 space-y-2 border-t border-[var(--border-soft)] pt-2.5">
+                          <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between">
+                            <div className="space-y-0.5">
+                              <p className="text-[12px] font-medium text-white">{copy.dates}</p>
+                              <p className="text-[11px] leading-[1.35] text-[var(--foreground-muted)]">{copy.datesDescription}</p>
                             </div>
                             <DateCalendarPopover
                               locale={locale}
@@ -682,7 +682,7 @@ export function ProfileRequestSettings({
                           </div>
 
                           {availableDates.length === 0 ? (
-                            <p className="text-sm text-[var(--foreground-muted)]">{copy.noDates}</p>
+                            <p className="text-[11.5px] text-[var(--foreground-muted)]">{copy.noDates}</p>
                           ) : (
                             <div className="flex flex-wrap gap-2">
                               {availableDates.map((date) => (
@@ -690,7 +690,7 @@ export function ProfileRequestSettings({
                                   key={date}
                                   type="button"
                                   onClick={() => removeBookingDate(index, date)}
-                                  className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/[0.04] px-3 py-1.5 text-xs text-white"
+                                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-white/[0.04] px-2.5 py-1 text-[10.5px] text-white"
                                 >
                                   {date}
                                   <X className="size-3" />
@@ -709,7 +709,7 @@ export function ProfileRequestSettings({
         </CardContent>
       </Card>
 
-      <div className="flex min-h-5 items-center gap-1.5 px-1 text-[12px] text-[var(--foreground-muted)]">
+      <div className="flex min-h-5 items-center gap-1.5 px-1 text-[10.5px] text-[var(--foreground-muted)]">
         {saveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
         {saveState === "saved" ? <CheckCircle2 className="size-4 text-[var(--accent-soft)]" /> : null}
         {statusMessage}

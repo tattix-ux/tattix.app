@@ -81,7 +81,7 @@ export function DashboardNav({
   }, [adminUnreadCount, locale, showAdminMessages]);
 
   return (
-    <nav className="space-y-2 pb-0.5">
+    <nav className="space-y-1.5 pb-0.5">
       {(["primary", "secondary"] as const).map((group, groupIndex) => {
         const groupItems = items.filter((item) => item.group === group);
 
@@ -90,9 +90,9 @@ export function DashboardNav({
         }
 
         return (
-          <div key={group} className="space-y-1.5">
+          <div key={group} className="space-y-1">
             {groupIndex > 0 ? <div className="h-px rounded-full bg-[var(--border-soft)]" /> : null}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5">
               {groupItems.map((item) => {
         const active = pathname === item.href;
         const Icon = item.icon;
@@ -102,22 +102,22 @@ export function DashboardNav({
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex min-w-0 items-center justify-start gap-2 rounded-[13px] border px-2.5 py-1.5 text-[12px] transition xl:min-h-[38px]",
+              "inline-flex min-w-0 items-center justify-start gap-2 rounded-[12px] border px-2.5 py-1.5 text-[11.5px] transition xl:min-h-[34px] xl:px-2 xl:py-1",
               active
                 ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(214,177,122,0.07)_100%)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
                 : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-soft)] hover:bg-[rgba(255,255,255,0.024)] hover:text-[var(--text-primary)]",
             )}
           >
-            <Icon className="size-[13px]" />
+            <Icon className="size-3" />
             <span className="min-w-0 flex-1 break-words">{item.label}</span>
             {item.pro && !hideProBadges ? (
-              <Badge variant="muted" className="ml-auto gap-1">
+              <Badge variant="muted" className="ml-auto gap-1 px-1.5 py-0.5 text-[8.5px]">
                 <Crown className="size-3" />
                 Pro
               </Badge>
             ) : null}
             {item.unreadCount ? (
-              <Badge variant="accent" className="ml-auto">
+              <Badge variant="accent" className="ml-auto px-1.5 py-0.5 text-[8.5px]">
                 {item.unreadCount}
               </Badge>
             ) : null}

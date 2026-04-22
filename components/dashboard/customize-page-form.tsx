@@ -199,16 +199,16 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_36px_rgba(0,0,0,0.22)]">
-      <CardHeader className="pb-4">
+    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_14px_28px_rgba(0,0,0,0.18)]">
+      <CardHeader className="pb-2.5">
         <div className="flex items-start gap-3">
           {icon ? (
-            <div className="mt-0.5 inline-flex size-10 items-center justify-center rounded-[18px] border border-[var(--border-soft)] bg-white/[0.03] text-[var(--accent)]">
+            <div className="mt-0.5 inline-flex size-8 items-center justify-center rounded-[14px] border border-[var(--border-soft)] bg-white/[0.03] text-[var(--accent)]">
               {icon}
             </div>
           ) : null}
           <div className="min-w-0">
-            <CardTitle className="text-[1.02rem] tracking-[-0.02em]">{title}</CardTitle>
+            <CardTitle className="text-[0.98rem] tracking-[-0.02em]">{title}</CardTitle>
             {description ? <CardDescription className="mt-1">{description}</CardDescription> : null}
           </div>
         </div>
@@ -234,7 +234,7 @@ function SelectionPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-4 py-2.5 text-sm font-medium transition",
+        "rounded-full border px-3 py-2 text-[12px] font-medium transition xl:px-2.5 xl:py-1.5",
         active
           ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.14)] text-[var(--text-primary)] shadow-[0_0_0_1px_rgba(214,177,122,0.08),0_8px_24px_rgba(0,0,0,0.2)]"
           : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] hover:border-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]",
@@ -264,7 +264,7 @@ function ModuleNavItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-10 w-full items-center gap-3 rounded-[15px] border px-3 text-left text-[12.5px] font-medium transition",
+        "flex h-9 w-full items-center gap-2.5 rounded-[13px] border px-2.5 text-left text-[12px] font-medium transition xl:h-[34px] xl:px-2",
         active
           ? "border-[color:color-mix(in_srgb,var(--accent)_40%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-white shadow-[0_12px_24px_rgba(0,0,0,0.16)]"
           : locked
@@ -274,7 +274,7 @@ function ModuleNavItem({
     >
       <span
         className={cn(
-          "inline-flex size-7 items-center justify-center rounded-[12px] border transition",
+          "inline-flex size-6 items-center justify-center rounded-[10px] border transition",
           active ? "border-white/10 bg-black/15 text-[var(--accent)]" : "border-white/8 bg-white/[0.03] text-[var(--text-muted)]",
         )}
       >
@@ -324,9 +324,9 @@ function UpgradeFeatureCard({
 
   return (
     <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]">
-      <CardContent className={cn("space-y-3.5", compact ? "p-3.5" : "p-4")}>
+      <CardContent className={cn("space-y-3", compact ? "p-3" : "p-3.5")}>
         <div className="flex items-start gap-3">
-          <div className="rounded-[16px] border border-[color:color-mix(in_srgb,var(--accent)_30%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] p-2.5 text-[var(--accent)]">
+          <div className="rounded-[14px] border border-[color:color-mix(in_srgb,var(--accent)_30%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] p-2 text-[var(--accent)]">
             <Crown className="size-4" />
           </div>
           <div className="min-w-0 flex-1 space-y-2">
@@ -334,8 +334,8 @@ function UpgradeFeatureCard({
               {copy.badge}
             </div>
             <div>
-              <h3 className="text-[1.02rem] font-semibold tracking-[-0.03em] text-white">{copy.title}</h3>
-              <p className="mt-1 text-[12.5px] leading-5 text-[var(--foreground-muted)]">{copy.description}</p>
+              <h3 className="text-[0.98rem] font-semibold tracking-[-0.03em] text-white">{copy.title}</h3>
+              <p className="mt-1 text-[11.5px] leading-[1.4] text-[var(--foreground-muted)]">{copy.description}</p>
             </div>
           </div>
         </div>
@@ -344,14 +344,14 @@ function UpgradeFeatureCard({
           {copy.features.map((item) => (
             <div
               key={item}
-              className="rounded-[16px] border border-white/8 bg-white/[0.025] px-3 py-2.5 text-[12.5px] leading-5 text-[var(--text-secondary)]"
+              className="rounded-[14px] border border-white/8 bg-white/[0.025] px-3 py-2 text-[11.5px] leading-[1.4] text-[var(--text-secondary)]"
             >
               {item}
             </div>
           ))}
         </div>
 
-        <Button asChild className="h-9 px-4">
+        <Button asChild className="h-[36px] px-4">
           <Link href="/dashboard/upgrade">{copy.cta}</Link>
         </Button>
       </CardContent>
@@ -369,10 +369,10 @@ function CustomGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[20px] border border-white/8 bg-white/[0.02] p-3 sm:p-3.5">
-      <div className="mb-2.5 space-y-1">
-        <p className="text-[13px] font-medium text-white">{title}</p>
-        {description ? <p className="text-[13px] leading-5 text-[var(--foreground-muted)]">{description}</p> : null}
+    <div className="rounded-[16px] border border-white/8 bg-white/[0.02] p-3">
+      <div className="mb-2 space-y-0.5">
+        <p className="text-[12px] font-medium text-white">{title}</p>
+        {description ? <p className="text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{description}</p> : null}
       </div>
       {children}
     </div>
@@ -397,7 +397,7 @@ function VisualOptionCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-[22px] border p-4 text-left transition",
+        "relative overflow-hidden rounded-[18px] border p-3 text-left transition",
         active
           ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_16px_32px_rgba(0,0,0,0.16)]"
           : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
@@ -411,13 +411,13 @@ function VisualOptionCard({
           <Check className="size-3.5 text-[var(--accent)]" />
         </span>
       ) : null}
-      <div className="space-y-4">
-        <div className="overflow-hidden rounded-[18px] border border-white/8 p-3.5">
+      <div className="space-y-3">
+        <div className="overflow-hidden rounded-[14px] border border-white/8 p-2.5">
           {children}
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">{title}</p>
-          <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">{description}</p>
+          <p className="text-[13px] font-semibold text-white">{title}</p>
+          <p className="mt-1 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{description}</p>
         </div>
       </div>
     </button>
@@ -495,13 +495,13 @@ function ThemePresetCard({
     <button
       type="button"
       onClick={onSelect}
-      style={{
-        backgroundColor: theme.surface,
-        borderColor: active ? theme.primary : theme.border,
-        boxShadow: active ? `0 0 0 1px ${toRgba(theme.primary, 0.12)}, 0 18px 36px rgba(0,0,0,0.18)` : undefined,
-      }}
+        style={{
+          backgroundColor: theme.surface,
+          borderColor: active ? theme.primary : theme.border,
+          boxShadow: active ? `0 0 0 1px ${toRgba(theme.primary, 0.12)}, 0 14px 26px rgba(0,0,0,0.16)` : undefined,
+        }}
       className={cn(
-        "relative min-h-[148px] overflow-hidden rounded-[24px] border p-4 text-left transition",
+        "relative min-h-[132px] overflow-hidden rounded-[18px] border p-3 text-left transition",
         active ? "" : "hover:-translate-y-0.5 hover:brightness-[1.04]",
       )}
     >
@@ -513,7 +513,7 @@ function ThemePresetCard({
       />
       {active ? (
         <div
-          className="absolute right-4 top-4 inline-flex size-6 items-center justify-center rounded-full border"
+          className="absolute right-3 top-3 inline-flex size-5 items-center justify-center rounded-full border"
           style={{ borderColor: toRgba(theme.primary, 0.5), backgroundColor: toRgba(theme.primary, 0.16), color: theme.primary }}
         >
           <Check className="size-3.5" />
@@ -521,37 +521,37 @@ function ThemePresetCard({
       ) : null}
       <div className="relative flex h-full flex-col justify-between">
         <div
-          className="rounded-[18px] border p-3"
+          className="rounded-[14px] border p-2.5"
           style={{
             background: `linear-gradient(180deg, ${theme.background} 0%, ${theme.overlay} 100%)`,
             borderColor: toRgba(theme.textColor, 0.08),
           }}
         >
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-12 rounded-full" style={{ backgroundColor: theme.primary }} />
-              <div className="h-2.5 w-8 rounded-full" style={{ backgroundColor: toRgba(theme.secondary, 0.9) }} />
-            </div>
-            <div className="rounded-[14px] border p-2.5" style={{ backgroundColor: toRgba(theme.surface, 0.92), borderColor: toRgba(theme.textColor, 0.08) }}>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1.5">
-                  <div className="h-2.5 w-16 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.88) }} />
-                  <div className="h-2 w-10 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.9) }} />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-10 rounded-full" style={{ backgroundColor: theme.primary }} />
+                <div className="h-2 w-7 rounded-full" style={{ backgroundColor: toRgba(theme.secondary, 0.9) }} />
+              </div>
+              <div className="rounded-[12px] border p-2" style={{ backgroundColor: toRgba(theme.surface, 0.92), borderColor: toRgba(theme.textColor, 0.08) }}>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1.5">
+                    <div className="h-2 w-14 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.88) }} />
+                    <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.9) }} />
+                  </div>
+                  <div className="h-5 w-12 rounded-full" style={{ backgroundColor: theme.primary }} />
                 </div>
-                <div className="h-6 w-14 rounded-full" style={{ backgroundColor: theme.primary }} />
+              </div>
+              <div className="flex items-center justify-between rounded-[12px] border px-2 py-1.5" style={{ backgroundColor: toRgba(theme.surface, 0.76), borderColor: toRgba(theme.textColor, 0.08) }}>
+                <div className="h-1.5 w-12 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.78) }} />
+                <div className="h-1.5 w-7 rounded-full" style={{ backgroundColor: toRgba(theme.primary, 0.72) }} />
               </div>
             </div>
-            <div className="flex items-center justify-between rounded-[14px] border px-2.5 py-2" style={{ backgroundColor: toRgba(theme.surface, 0.76), borderColor: toRgba(theme.textColor, 0.08) }}>
-              <div className="h-2 w-14 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.78) }} />
-              <div className="h-2 w-8 rounded-full" style={{ backgroundColor: toRgba(theme.primary, 0.72) }} />
-            </div>
           </div>
-        </div>
-        <div className="pt-3">
-          <p className="text-[1rem] font-semibold tracking-[-0.03em]" style={{ color: theme.textColor }}>
+        <div className="pt-2.5">
+          <p className="text-[0.92rem] font-semibold tracking-[-0.03em]" style={{ color: theme.textColor }}>
             {title}
           </p>
-          <p className="mt-1 line-clamp-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+          <p className="mt-1 line-clamp-1 text-[11px] leading-[1.35]" style={{ color: theme.mutedText }}>
             {description}
           </p>
         </div>
@@ -595,15 +595,15 @@ function ColorField({
   }
 
   return (
-    <div className="rounded-[20px] border border-white/8 bg-white/[0.025] p-3.5">
+    <div className="rounded-[16px] border border-white/8 bg-white/[0.025] p-3">
       <div className="space-y-1">
-        <p className="text-[13px] font-medium text-white">{label}</p>
-        <p className="text-[12px] leading-5 text-[var(--foreground-muted)]">{description}</p>
+        <p className="text-[12px] font-medium text-white">{label}</p>
+        <p className="text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{description}</p>
       </div>
 
-      <div className="mt-3 flex items-center gap-2.5">
+      <div className="mt-2.5 flex items-center gap-2">
         <span
-          className="inline-flex size-9 shrink-0 rounded-[14px] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+          className="inline-flex size-8 shrink-0 rounded-[12px] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
           style={{ backgroundColor: value }}
         />
         <Input
@@ -1822,7 +1822,7 @@ export function CustomizePageForm({
     );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5 xl:space-y-2">
       {flashMessage ? (
         <div className="fixed right-4 top-4 z-30 rounded-full border border-white/10 bg-[rgba(12,12,14,0.94)] px-4 py-2 text-sm text-white shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
           {flashMessage}
@@ -1830,7 +1830,7 @@ export function CustomizePageForm({
       ) : null}
 
       <form
-        className="space-y-4"
+        className="space-y-3 xl:space-y-2.5"
         onSubmit={form.handleSubmit(onSubmit)}
         onKeyDown={(event) => {
           if (event.key === "Enter" && event.target instanceof HTMLInputElement) event.preventDefault();
@@ -1840,21 +1840,21 @@ export function CustomizePageForm({
           }
         }}
       >
-        <div className="space-y-3">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-1.5">
+        <div className="space-y-2.5">
+          <div className="flex flex-col gap-2.5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[var(--accent)]">{copy.eyebrow}</p>
-              <div className="space-y-1">
-                <h1 className="text-[1.82rem] font-semibold tracking-[-0.04em] text-[var(--text-primary)]">{copy.title}</h1>
-                <p className="max-w-[640px] text-[12.5px] leading-5 text-[var(--foreground-muted)]">{copy.description}</p>
+              <div className="space-y-0.5">
+                <h1 className="text-[1.62rem] font-semibold tracking-[-0.04em] text-[var(--text-primary)] xl:text-[1.48rem]">{copy.title}</h1>
+                <p className="max-w-[620px] text-[11.5px] leading-[1.4] text-[var(--foreground-muted)]">{copy.description}</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-              <div className="inline-grid grid-cols-2 gap-1 rounded-[16px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="flex flex-wrap items-center gap-1.5 xl:justify-end">
+              <div className="inline-grid grid-cols-2 gap-1 rounded-[14px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                 <SelectionPill
                   active={previewViewport === "desktop"}
                   onClick={() => setPreviewViewport("desktop")}
-                  className="rounded-[12px] border-0 px-3.5 py-2"
+                  className="rounded-[10px] border-0 px-3 py-1.5"
                 >
                   <span className="flex items-center gap-2">
                     <Laptop className="size-3.5" />
@@ -1864,7 +1864,7 @@ export function CustomizePageForm({
                 <SelectionPill
                   active={previewViewport === "mobile"}
                   onClick={() => setPreviewViewport("mobile")}
-                  className="rounded-[12px] border-0 px-3.5 py-2"
+                  className="rounded-[10px] border-0 px-3 py-1.5"
                 >
                   <span className="flex items-center gap-2">
                     <Smartphone className="size-3.5" />
@@ -1872,10 +1872,10 @@ export function CustomizePageForm({
                   </span>
                 </SelectionPill>
               </div>
-              <Button type="button" variant="ghost" className="h-9 px-4" onClick={resetThemeToDefault}>
+              <Button type="button" variant="ghost" className="h-[36px] px-3.5" onClick={resetThemeToDefault}>
                 {copy.resetDefaults}
               </Button>
-              <Button type="submit" className="h-9 px-4" disabled={form.formState.isSubmitting || !form.formState.isDirty}>
+              <Button type="submit" className="h-[36px] px-3.5" disabled={form.formState.isSubmitting || !form.formState.isDirty}>
                 {form.formState.isSubmitting ? (
                   <>
                     <LoaderCircle className="size-4 animate-spin" />
@@ -1936,9 +1936,9 @@ export function CustomizePageForm({
             </Card>
           </div>
 
-          <div className="hidden xl:grid xl:grid-cols-[208px_minmax(420px,1fr)_420px] xl:items-start xl:gap-4 2xl:grid-cols-[208px_minmax(440px,1fr)_468px]">
+          <div className="hidden xl:grid xl:grid-cols-[180px_minmax(360px,1fr)_360px] xl:items-start xl:gap-3 2xl:grid-cols-[184px_minmax(380px,1fr)_388px]">
             <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-[1rem] tracking-[-0.02em]">{copy.moduleMenuTitle}</CardTitle>
                 <CardDescription>{copy.moduleMenuDescription}</CardDescription>
               </CardHeader>
@@ -1964,7 +1964,7 @@ export function CustomizePageForm({
               </CardContent>
             </Card>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {modulePanel}
               {form.formState.errors.root?.message ? (
                 <div className="rounded-[22px] border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
@@ -1973,8 +1973,8 @@ export function CustomizePageForm({
               ) : null}
             </div>
 
-            <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)] xl:sticky xl:top-3">
-              <CardHeader className="pb-3">
+            <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)] xl:sticky xl:top-2">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-[1.02rem] tracking-[-0.02em]">{copy.livePreviewTitle}</CardTitle>
                 <CardDescription>{copy.livePreviewDescription}</CardDescription>
               </CardHeader>

@@ -17,7 +17,7 @@ export default async function DashboardLeadsPage() {
   const hasPro = hasProAccess(data.profile);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5 xl:space-y-2">
       <SectionHeading
         eyebrow={isTurkish ? "Talep yönetimi" : "Lead management"}
         title={isTurkish ? "Talepler" : "Requests"}

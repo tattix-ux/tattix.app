@@ -58,7 +58,7 @@ export default async function DashboardUpgradePage() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5 xl:space-y-2">
       <SectionHeading
         eyebrow={isTurkish ? "Pro erişim" : "Pro access"}
         title={

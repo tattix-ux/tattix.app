@@ -39,7 +39,7 @@ export function Container({
   return (
     <div
       className={cn(
-        "mx-auto w-full min-w-0 max-w-full overflow-x-clip px-3 sm:max-w-[1460px] sm:px-4 lg:max-w-[1540px] lg:px-5 2xl:max-w-[1640px] 2xl:px-6",
+        "mx-auto w-full min-w-0 max-w-full overflow-x-clip px-3 sm:max-w-[1460px] sm:px-4 lg:max-w-[1580px] lg:px-4 xl:max-w-[1660px] xl:px-5 2xl:max-w-[1720px] 2xl:px-6",
         className,
       )}
     >
@@ -60,17 +60,17 @@ export function SectionHeading({
   align?: "left" | "center";
 }) {
   return (
-    <div className={cn("space-y-1.5 xl:space-y-1", align === "center" && "text-center")}>
+    <div className={cn("space-y-1 xl:space-y-0.5", align === "center" && "text-center")}>
       {eyebrow ? (
-        <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-[var(--accent-soft)]/95 xl:text-[9px]">
+        <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-[var(--accent-soft)]/95 xl:text-[9px]">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="font-display text-[1.72rem] font-semibold leading-tight tracking-[-0.04em] text-[var(--text-primary)] sm:text-[2.05rem] xl:text-[1.92rem]">
+      <h2 className="font-display text-[1.64rem] font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)] sm:text-[1.92rem] xl:text-[1.78rem]">
         {title}
       </h2>
       {description ? (
-        <p className="max-w-3xl text-[12px] leading-5 text-[var(--text-secondary)] xl:text-[12.5px]">
+        <p className="max-w-3xl text-[12px] leading-[1.4] text-[var(--text-secondary)] xl:text-[11.5px]">
           {description}
         </p>
       ) : null}
