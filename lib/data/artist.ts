@@ -407,6 +407,9 @@ export function mapPageTheme(row: Record<string, unknown>, artistId: string): Ar
     secondaryColor: String(row.secondary_color ?? defaults.secondaryColor),
     cardColor: String(row.card_color ?? defaults.cardColor),
     cardOpacity: Number(row.card_opacity ?? defaults.cardOpacity),
+    cardFeel: String(row.card_feel ?? defaults.cardFeel) as ArtistPageTheme["cardFeel"],
+    buttonStyle: String(row.button_style ?? defaults.buttonStyle) as ArtistPageTheme["buttonStyle"],
+    badgeStyle: String(row.badge_style ?? defaults.badgeStyle) as ArtistPageTheme["badgeStyle"],
     headingFont: String(row.heading_font ?? defaults.headingFont) as ArtistPageTheme["headingFont"],
     bodyFont: String(row.body_font ?? defaults.bodyFont) as ArtistPageTheme["bodyFont"],
     fontPairingPreset: String(

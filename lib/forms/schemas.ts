@@ -14,7 +14,10 @@ import {
   workStyleOptions,
 } from "@/lib/constants/options";
 import {
+  badgeStyleOptions,
   backgroundTypeOptions,
+  buttonStyleOptions,
+  cardFeelOptions,
   backgroundImageFocusOptions,
   backgroundImageSoftnessOptions,
   backgroundOverlayStrengthOptions,
@@ -619,6 +622,9 @@ export const pageThemeSchema = z.object({
   secondaryColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   cardColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i),
   cardOpacity: z.coerce.number().min(0.45).max(0.98),
+  cardFeel: z.enum(cardFeelOptions),
+  buttonStyle: z.enum(buttonStyleOptions),
+  badgeStyle: z.enum(badgeStyleOptions),
   headingFont: z.enum(
     headingFontOptions.map((item) => item.value) as [
       (typeof headingFontOptions)[number]["value"],

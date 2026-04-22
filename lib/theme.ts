@@ -1,12 +1,15 @@
 import type { CSSProperties } from "react";
 
 import {
+  type BadgeStyle,
   themePresets,
   type BackgroundType,
   type BackgroundImageFocus,
   type BackgroundImageSoftness,
   type BackgroundOverlayStrength,
+  type ButtonStyle,
   type BodyFontKey,
+  type CardFeel,
   type FontPairingPreset,
   type HeadingFontKey,
   type RadiusStyle,
@@ -37,9 +40,9 @@ const fontPairings: Record<
 };
 
 const radiusMap: Record<RadiusStyle, string> = {
-  small: "18px",
-  medium: "24px",
-  large: "32px",
+  small: "12px",
+  medium: "18px",
+  large: "26px",
 };
 
 function normalizeHex(color: string | null | undefined, fallback: string) {
@@ -251,6 +254,89 @@ function buildChipColors(primary: string, secondary: string, surface: string) {
   };
 }
 
+function buildSubtleChipColors(text: string, mutedText: string, surface: string) {
+  const chipSurfaceHex = mixHex(surface, text, 0.9);
+  return {
+    chipBackground: toRgba(chipSurfaceHex, 0.34),
+    chipText: contrastRatio(mutedText, chipSurfaceHex) >= 4.2 ? mutedText : text,
+  };
+}
+
+function buildButtonTokens(input: {
+  primary: string;
+  primaryForeground: string;
+  text: string;
+  card: string;
+  border: string;
+  softAccent: string;
+  buttonStyle: ButtonStyle;
+}) {
+  if (input.buttonStyle === "soft") {
+    return {
+      primaryBackground: toRgba(input.primary, 0.2),
+      primaryBorder: toRgba(input.primary, 0.28),
+      primaryText: input.text,
+      secondaryBackground: toRgba(input.card, 0.76),
+      secondaryBorder: input.border,
+      secondaryText: input.text,
+    };
+  }
+
+  if (input.buttonStyle === "outline") {
+    return {
+      primaryBackground: toRgba(input.primary, 0.05),
+      primaryBorder: toRgba(input.primary, 0.48),
+      primaryText: input.text,
+      secondaryBackground: "transparent",
+      secondaryBorder: input.border,
+      secondaryText: input.text,
+    };
+  }
+
+  return {
+    primaryBackground: input.primary,
+    primaryBorder: toRgba(input.primary, 0.26),
+    primaryText: input.primaryForeground,
+    secondaryBackground: toRgba(input.card, 0.78),
+    secondaryBorder: input.border,
+    secondaryText: input.text,
+  };
+}
+
+function buildCardFeelTokens(input: {
+  cardFeel: CardFeel;
+  backgroundColor: string;
+  cardColor: string;
+  text: string;
+  border: string;
+  primary: string;
+}) {
+  if (input.cardFeel === "subtle") {
+    return {
+      borderColor: mixHex(input.border, input.cardColor, 0.28),
+      cardShadow: "0 12px 24px rgba(0,0,0,0.14)",
+      selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.1)}, ${toRgba(input.primary, 0.06)})`,
+      selectedBorder: toRgba(input.primary, 0.24),
+    };
+  }
+
+  if (input.cardFeel === "defined") {
+    return {
+      borderColor: mixHex(input.border, input.text, 0.74),
+      cardShadow: "0 24px 54px rgba(0,0,0,0.28)",
+      selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.18)}, ${toRgba(input.primary, 0.11)})`,
+      selectedBorder: toRgba(input.primary, 0.38),
+    };
+  }
+
+  return {
+    borderColor: input.border,
+    cardShadow: "0 18px 38px rgba(0,0,0,0.2)",
+    selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.14)}, ${toRgba(input.primary, 0.09)})`,
+    selectedBorder: toRgba(input.primary, 0.3),
+  };
+}
+
 export function deriveThemeColorTokens(input: {
   backgroundColor: string;
   cardColor: string;
@@ -297,6 +383,9 @@ export function buildDefaultArtistTheme(): ArtistPageTheme {
     secondaryColor: preset.secondaryColor,
     cardColor: preset.cardColor,
     cardOpacity: preset.cardOpacity,
+    cardFeel: "balanced",
+    buttonStyle: "filled",
+    badgeStyle: "colored",
     headingFont: preset.headingFont,
     bodyFont: preset.bodyFont,
     fontPairingPreset: preset.fontPairingPreset,
@@ -623,6 +712,9 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
       typeof theme?.cardOpacity === "number"
         ? Math.min(Math.max(theme.cardOpacity, 0.45), 0.98)
         : preset.cardOpacity,
+    cardFeel: (theme?.cardFeel as CardFeel | undefined) ?? base.cardFeel,
+    buttonStyle: (theme?.buttonStyle as ButtonStyle | undefined) ?? base.buttonStyle,
+    badgeStyle: (theme?.badgeStyle as BadgeStyle | undefined) ?? base.badgeStyle,
     headingFont: resolvedHeading,
     bodyFont: resolvedBody,
     fontPairingPreset: resolvedPairingKey,
@@ -666,7 +758,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     7,
   );
   const cardMuted = usesPresetCard ? preset.mutedText : derived.mutedText;
-  const borderColor = usesPresetCard ? preset.border : derived.border;
+  const baseBorderColor = usesPresetCard ? preset.border : derived.border;
 
   const overlayAlphaMap: Record<BackgroundOverlayStrength, number> = {
     light: 0.34,
@@ -694,6 +786,30 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
       : theme.backgroundColor;
   const backgroundImage = backgroundBase;
   const recipe = themeRecipes[theme.presetTheme as ThemePresetKey] ?? themeRecipes["bronze-studio"];
+  const cardFeelTokens = buildCardFeelTokens({
+    cardFeel: theme.cardFeel,
+    backgroundColor: theme.backgroundColor,
+    cardColor: theme.cardColor,
+    text: cardText,
+    border: baseBorderColor,
+    primary: theme.primaryColor,
+  });
+  const buttonTokens = buildButtonTokens({
+    primary: theme.primaryColor,
+    primaryForeground,
+    text: cardText,
+    card: theme.cardColor,
+    border: cardFeelTokens.borderColor,
+    softAccent: derived.softAccent,
+    buttonStyle: theme.buttonStyle,
+  });
+  const chipTokens =
+    theme.badgeStyle === "subtle"
+      ? buildSubtleChipColors(cardText, cardMuted, theme.cardColor)
+      : {
+          chipBackground: usesPresetPrimary ? recipe.chipSurface : derived.chipBackground,
+          chipText: usesPresetPrimary ? recipe.chipText : derived.chipText,
+        };
 
   const wrapperStyle = {
     background: backgroundImage,
@@ -715,32 +831,36 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     "--artist-secondary-foreground": secondaryForeground,
     "--artist-card": theme.cardColor,
     "--artist-card-alpha": String(theme.cardOpacity),
-    "--artist-border": borderColor,
+    "--artist-border": cardFeelTokens.borderColor,
     "--artist-radius": radiusMap[theme.radiusStyle],
     "--artist-heading-font": headingFontStacks[theme.headingFont],
     "--artist-body-font": bodyFontStacks[theme.bodyFont],
     "--artist-shell-glow": recipe.shellGlow,
     "--artist-shell-veil": recipe.shellVeil,
     "--artist-page-texture": recipe.pageTexture,
-    "--artist-card-shadow": recipe.cardShadow,
+    "--artist-card-shadow": cardFeelTokens.cardShadow,
     "--artist-rail-surface": recipe.railSurface,
     "--artist-flow-surface": recipe.flowSurface,
     "--artist-section-surface": recipe.sectionSurface,
     "--artist-section-surface-strong": recipe.sectionSurfaceStrong,
-    "--artist-selected-surface": recipe.selectedSurface,
-    "--artist-selected-border": recipe.selectedBorder,
+    "--artist-selected-surface": cardFeelTokens.selectedSurface,
+    "--artist-selected-border": cardFeelTokens.selectedBorder,
     "--artist-input-surface": recipe.inputSurface,
     "--artist-input-border": recipe.inputBorder,
     "--artist-input-focus-surface": recipe.inputFocusSurface,
-    "--artist-chip-surface": usesPresetPrimary ? recipe.chipSurface : derived.chipBackground,
-    "--artist-chip-text": usesPresetPrimary ? recipe.chipText : derived.chipText,
+    "--artist-chip-surface": chipTokens.chipBackground,
+    "--artist-chip-text": chipTokens.chipText,
     "--artist-divider": recipe.divider,
-    "--artist-secondary-button-surface": recipe.secondaryButtonSurface,
-    "--artist-secondary-button-border": recipe.secondaryButtonBorder,
-    "--artist-button-shadow": recipe.buttonShadow,
-    "--artist-button-radius": recipe.buttonRadius,
-    "--artist-field-radius": recipe.fieldRadius,
-    "--artist-card-radius": recipe.cardRadius,
+    "--artist-button-shadow": cardFeelTokens.cardShadow,
+    "--artist-button-radius": radiusMap[theme.radiusStyle],
+    "--artist-field-radius": radiusMap[theme.radiusStyle],
+    "--artist-card-radius": radiusMap[theme.radiusStyle],
+    "--artist-primary-button-surface": buttonTokens.primaryBackground,
+    "--artist-primary-button-border": buttonTokens.primaryBorder,
+    "--artist-primary-button-text": buttonTokens.primaryText,
+    "--artist-secondary-button-surface": buttonTokens.secondaryBackground,
+    "--artist-secondary-button-border": buttonTokens.secondaryBorder,
+    "--artist-secondary-button-text": buttonTokens.secondaryText,
     "--artist-density-gap": recipe.densityGap,
     "--artist-heading-scale": recipe.headingScale,
   } as CSSProperties;
@@ -763,7 +883,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
       secondaryForeground,
       cardText,
       cardMuted,
-      borderColor,
+      borderColor: cardFeelTokens.borderColor,
       radiusClass:
         theme.radiusStyle === "small"
           ? "rounded-[20px]"

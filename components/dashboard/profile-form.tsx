@@ -559,8 +559,8 @@ export function ProfilePreviewCard({
                     className="inline-flex rounded-full border px-3 py-1 text-[11px] font-medium"
                     style={{
                       borderColor: "var(--artist-border)",
-                      backgroundColor: "color-mix(in srgb, var(--artist-primary) 12%, transparent)",
-                      color: "var(--artist-primary)",
+                      backgroundColor: "var(--artist-chip-surface)",
+                      color: "var(--artist-chip-text)",
                     }}
                   >
                     {upperLabel}
@@ -581,10 +581,12 @@ export function ProfilePreviewCard({
                 ) : null}
                 <div className="pt-1">
                   <div
-                    className="inline-flex h-11 items-center rounded-full px-5 text-sm font-medium"
+                    className="inline-flex h-11 items-center rounded-[var(--artist-button-radius)] border px-5 text-sm font-medium"
                     style={{
-                      backgroundColor: "var(--artist-primary)",
-                      color: "var(--artist-primary-foreground)",
+                      backgroundColor: "var(--artist-primary-button-surface)",
+                      borderColor: "var(--artist-primary-button-border)",
+                      color: "var(--artist-primary-button-text)",
+                      boxShadow: "var(--artist-button-shadow)",
                     }}
                   >
                     {pageTheme.customCtaLabel || (locale === "tr" ? "Fiyat tahmini al" : "Get an estimate")}

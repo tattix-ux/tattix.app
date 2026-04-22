@@ -23,10 +23,13 @@ import type { SizeMode } from "@/lib/constants/size-estimation";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type {
   BackgroundType,
+  BadgeStyle,
   BackgroundImageFocus,
   BackgroundImageSoftness,
   BackgroundOverlayStrength,
+  ButtonStyle,
   BodyFontKey,
+  CardFeel,
   FontPairingPreset,
   HeadingFontKey,
   RadiusStyle,
@@ -438,6 +441,9 @@ export type ArtistPageTheme = {
   secondaryColor: string;
   cardColor: string;
   cardOpacity: number;
+  cardFeel: CardFeel;
+  buttonStyle: ButtonStyle;
+  badgeStyle: BadgeStyle;
   headingFont: HeadingFontKey;
   bodyFont: BodyFontKey;
   fontPairingPreset: FontPairingPreset;

@@ -1899,9 +1899,12 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       target="_blank"
                       rel="noreferrer"
                       style={{
-                        backgroundColor: "var(--artist-primary)",
-                        color: "var(--artist-primary-foreground)",
+                        backgroundColor: "var(--artist-primary-button-surface)",
+                        borderColor: "var(--artist-primary-button-border)",
+                        color: "var(--artist-primary-button-text)",
+                        boxShadow: "var(--artist-button-shadow)",
                       }}
+                      className="rounded-[var(--artist-button-radius)] border"
                     >
                       <MessageCircle className="size-4" />
                       {copy.sendWhatsapp}

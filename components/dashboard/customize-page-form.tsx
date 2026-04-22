@@ -43,12 +43,6 @@ type CustomizePageArtist = {
   funnelSettings: ArtistFunnelSettings;
 };
 
-const fontOptions = [
-  { value: "inter", label: "Inter", helperTr: "Temiz ve dengeli", helperEn: "Clean and balanced" },
-  { value: "manrope", label: "Manrope", helperTr: "Yumuşak ve çağdaş", helperEn: "Soft and contemporary" },
-  { value: "outfit", label: "Outfit", helperTr: "Net ve daha karakterli", helperEn: "Crisp and more distinctive" },
-] as const;
-
 const themeColorSuggestions = {
   primary: ["#C89B5D", "#D6C6A5", "#8B5CF6", "#B68A56", "#7BA7D9", "#E7E5E4"],
   secondary: ["#8E6B43", "#8A7F73", "#C084FC", "#6F7B5C", "#4E6FAE", "#A8A29E"],
@@ -76,34 +70,27 @@ const backgroundFocusOptions = [
   { value: "right", labelTr: "Sağ odaklı", labelEn: "Right focus", position: "right center" },
 ] as const;
 
-const cardSurfaceOptions = [
-  {
-    key: "matte",
-    color: "#211F1B",
-    opacity: 0.9,
-    labelTr: "Matte",
-    labelEn: "Matte",
-    descriptionTr: "Daha sıcak ve yekpare kart yüzeyi.",
-    descriptionEn: "A warmer, more unified card surface.",
-  },
-  {
-    key: "softer",
-    color: "#2B2F35",
-    opacity: 0.92,
-    labelTr: "Softer",
-    labelEn: "Softer",
-    descriptionTr: "Daha yumuşak, nötr ve hafif metalik.",
-    descriptionEn: "Softer, neutral, and lightly metallic.",
-  },
-  {
-    key: "contrast",
-    color: "#171C25",
-    opacity: 0.95,
-    labelTr: "Contrast",
-    labelEn: "Contrast",
-    descriptionTr: "Daha derin ve daha belirgin kontrast.",
-    descriptionEn: "Deeper with a clearer contrast edge.",
-  },
+const cornerStyleOptions = [
+  { value: "small", labelTr: "Daha düz", labelEn: "Flatter", radius: "12px" },
+  { value: "medium", labelTr: "Dengeli", labelEn: "Balanced", radius: "18px" },
+  { value: "large", labelTr: "Daha yuvarlak", labelEn: "Rounder", radius: "26px" },
+] as const;
+
+const cardFeelOptions = [
+  { value: "subtle", labelTr: "Sade", labelEn: "Subtle" },
+  { value: "balanced", labelTr: "Dengeli", labelEn: "Balanced" },
+  { value: "defined", labelTr: "Belirgin", labelEn: "Defined" },
+] as const;
+
+const buttonStyleOptions = [
+  { value: "filled", labelTr: "Dolu", labelEn: "Filled" },
+  { value: "soft", labelTr: "Yumuşak", labelEn: "Soft" },
+  { value: "outline", labelTr: "Çerçeveli", labelEn: "Outlined" },
+] as const;
+
+const badgeStyleOptions = [
+  { value: "subtle", labelTr: "Sade", labelEn: "Subtle" },
+  { value: "colored", labelTr: "Renkli", labelEn: "Colored" },
 ] as const;
 
 const headingPreviewFonts = {
@@ -181,6 +168,9 @@ function buildFormValues(source: ArtistPageTheme): ThemeValues {
     secondaryColor: source.secondaryColor,
     cardColor: source.cardColor,
     cardOpacity: source.cardOpacity,
+    cardFeel: source.cardFeel,
+    buttonStyle: source.buttonStyle,
+    badgeStyle: source.badgeStyle,
     headingFont: source.headingFont,
     bodyFont: source.bodyFont,
     fontPairingPreset: source.fontPairingPreset,
@@ -192,12 +182,6 @@ function buildFormValues(source: ArtistPageTheme): ThemeValues {
     featuredSectionLabel1: source.featuredSectionLabel1 ?? "",
     featuredSectionLabel2: source.featuredSectionLabel2 ?? "",
   };
-}
-
-function inferFontStyle(headingFont: string) {
-  if (headingFont === "manrope") return "manrope";
-  if (headingFont === "outfit" || headingFont === "dm-sans" || headingFont === "general-sans") return "outfit";
-  return "inter";
 }
 
 function SectionCard({
@@ -623,7 +607,6 @@ function AppearancePreview({
   const shellBackground = String(wrapperStyle.background ?? theme.backgroundColor);
   const cardBackground = toRgba(theme.cardColor, theme.cardOpacity);
   const cardBorder = tokens.borderColor;
-  const accentForeground = tokens.primaryForeground;
   const title = artist.profile.welcomeHeadline?.trim() || (locale === "tr" ? "Aklında ne var?" : "What do you have in mind?");
   const intro =
     artist.profile.shortBio?.trim() ||
@@ -698,7 +681,7 @@ function AppearancePreview({
                       <div className="min-w-0">
                         <div
                           className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em]"
-                          style={{ backgroundColor: toRgba(theme.primaryColor, 0.18), color: headingColor }}
+                          style={{ backgroundColor: "var(--artist-chip-surface)", color: "var(--artist-chip-text)" }}
                         >
                           {upperLabel}
                         </div>
@@ -715,8 +698,13 @@ function AppearancePreview({
                     </div>
                     <div className={cn("flex items-end", desktopShell ? "justify-end" : "justify-start")}>
                       <div
-                        className="inline-flex rounded-full px-4 py-2.5 text-sm font-medium shadow-[0_10px_24px_rgba(0,0,0,0.18)]"
-                        style={{ backgroundColor: theme.primaryColor, color: accentForeground }}
+                        className="inline-flex rounded-[var(--artist-button-radius)] border px-4 py-2.5 text-sm font-medium"
+                        style={{
+                          backgroundColor: "var(--artist-primary-button-surface)",
+                          borderColor: "var(--artist-primary-button-border)",
+                          color: "var(--artist-primary-button-text)",
+                          boxShadow: "var(--artist-button-shadow)",
+                        }}
                       >
                         {locale === "tr" ? "Fiyat tahmini al" : "Start estimate"}
                       </div>
@@ -861,12 +849,19 @@ export function CustomizePageForm({
           softnessTitle: "Görsel netliği",
           focusTitle: "Odak konumu",
           backgroundUploadEmpty: "Arka plan görseli ekleyebilirsin.",
-          cardTitle: "Kart ve buton yüzeyi",
-          cardDescription: "Kart yüzeyi ve genel yüzey kontrastını seç.",
-          typeTitle: "Yazı stili",
-          typeDescription: "Başlık ve gövde yazısının birlikte nasıl hissedileceğini seç.",
-          fontTitle: "Yazı stili",
-          fontDescription: "Başlık ve açıklama dili birlikte değişir.",
+          surfacesTitle: "Butonlar ve Kartlar",
+          surfacesDescription: "Sayfanın genel hissini birkaç net seçimle belirle.",
+          cornerStyleTitle: "Köşe yapısı",
+          cardFeelTitle: "Kart hissi",
+          buttonStyleTitle: "Buton stili",
+          badgeStyleTitle: "Küçük etiket stili",
+          modulePreviewTitle: "Örnek görünüm",
+          modulePreviewDescription: "Seçimlerin kartları, butonları ve küçük etiketleri nasıl etkilediğini burada görebilirsin.",
+          primaryActionLabel: "Ana buton",
+          secondaryActionLabel: "İkincil buton",
+          infoRowLabel: "Bilgi satırı",
+          infoRowValue: "Kart ve buton dengesi",
+          badgePreviewLabel: "Müsait",
           resetDefaults: "Varsayılana dön",
           save: "Kaydet",
           resetCurrent: "Değişiklikleri geri al",
@@ -931,12 +926,19 @@ export function CustomizePageForm({
           softnessTitle: "Image softness",
           focusTitle: "Focus position",
           backgroundUploadEmpty: "You can add a background image.",
-          cardTitle: "Card and button surface",
-          cardDescription: "Choose the overall surface contrast for cards and actions.",
-          typeTitle: "Type style",
-          typeDescription: "Choose how headings and body copy feel together.",
-          fontTitle: "Type style",
-          fontDescription: "Headings and supporting copy shift together.",
+          surfacesTitle: "Buttons & Cards",
+          surfacesDescription: "Set the overall feel of the page with a few clear choices.",
+          cornerStyleTitle: "Corner style",
+          cardFeelTitle: "Card feel",
+          buttonStyleTitle: "Button style",
+          badgeStyleTitle: "Small badge style",
+          modulePreviewTitle: "Sample preview",
+          modulePreviewDescription: "See how cards, buttons, and badges react before checking the full page preview.",
+          primaryActionLabel: "Primary button",
+          secondaryActionLabel: "Secondary button",
+          infoRowLabel: "Info row",
+          infoRowValue: "Card and action balance",
+          badgePreviewLabel: "Available",
           resetDefaults: "Reset to default",
           save: "Save",
           resetCurrent: "Revert changes",
@@ -974,8 +976,10 @@ export function CustomizePageForm({
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
   const currentCardOpacity =
     typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
+  const currentCardFeel = watchedValues.cardFeel ?? theme.cardFeel;
+  const currentButtonStyle = watchedValues.buttonStyle ?? theme.buttonStyle;
+  const currentBadgeStyle = watchedValues.badgeStyle ?? theme.badgeStyle;
   const currentThemeMode = watchedValues.themeMode ?? theme.themeMode;
-  const currentFontStyle = inferFontStyle(watchedValues.headingFont ?? theme.headingFont);
   const derivedColorTokens = useMemo(
     () =>
       deriveThemeColorTokens({
@@ -1043,6 +1047,9 @@ export function CustomizePageForm({
         secondaryColor: currentSecondaryColor,
         cardColor: currentCardColor,
         cardOpacity: currentCardOpacity,
+        cardFeel: currentCardFeel,
+        buttonStyle: currentButtonStyle,
+        badgeStyle: currentBadgeStyle,
         headingFont: watchedValues.headingFont ?? theme.headingFont,
         bodyFont: watchedValues.bodyFont ?? theme.bodyFont,
         fontPairingPreset: watchedValues.fontPairingPreset ?? theme.fontPairingPreset,
@@ -1063,8 +1070,11 @@ export function CustomizePageForm({
       currentBackgroundOverlayStrength,
       currentBackgroundType,
       currentCardColor,
+      currentCardFeel,
       currentCardOpacity,
       currentSecondaryColor,
+      currentButtonStyle,
+      currentBadgeStyle,
       derivedColorTokens.text,
       currentGradientEnd,
       currentGradientStart,
@@ -1086,6 +1096,7 @@ export function CustomizePageForm({
       watchedValues.radiusStyle,
     ],
   );
+  const surfacePreviewPresentation = useMemo(() => buildThemeStyles(previewTheme), [previewTheme]);
 
   function normalizeThemeValues(values: ThemeValues): ThemeValues {
     const derived = deriveThemeColorTokens({
@@ -1124,6 +1135,9 @@ export function CustomizePageForm({
     form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("cardColor", preset.cardColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("cardOpacity", preset.cardOpacity, { shouldDirty: true, shouldValidate: true });
+    form.setValue("cardFeel", "balanced", { shouldDirty: true, shouldValidate: true });
+    form.setValue("buttonStyle", "filled", { shouldDirty: true, shouldValidate: true });
+    form.setValue("badgeStyle", "colored", { shouldDirty: true, shouldValidate: true });
     form.setValue("headingFont", preset.headingFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("bodyFont", preset.bodyFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("fontPairingPreset", preset.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
@@ -1140,19 +1154,6 @@ export function CustomizePageForm({
     const defaultTheme = resolveArtistTheme({ presetTheme: "bronze-studio", artistId: artist.profile.id });
     form.reset(buildFormValues(defaultTheme));
     form.clearErrors("root");
-  }
-
-  function setFontStyle(next: (typeof fontOptions)[number]["value"]) {
-    const mapped =
-      next === "manrope"
-        ? ({ headingFont: "manrope", bodyFont: "manrope", fontPairingPreset: "manrope-refined" } as const)
-        : next === "outfit"
-          ? ({ headingFont: "outfit", bodyFont: "inter", fontPairingPreset: "outfit-modern" } as const)
-          : ({ headingFont: "inter", bodyFont: "inter", fontPairingPreset: "inter-neutral" } as const);
-
-    form.setValue("headingFont", mapped.headingFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("bodyFont", mapped.bodyFont, { shouldDirty: true, shouldValidate: true });
-    form.setValue("fontPairingPreset", mapped.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
   }
 
   async function handleBackgroundUpload(file: File) {
@@ -1492,26 +1493,23 @@ export function CustomizePageForm({
         </div>
       </SectionCard>
     ) : (
-      <SectionCard title={copy.surfacesModule} description={copy.cardDescription} icon={<Layers3 className="size-4" />}>
+      <SectionCard title={copy.surfacesTitle} description={copy.surfacesDescription} icon={<Layers3 className="size-4" />}>
         <div className="space-y-4">
-          <CustomGroup title={copy.cardTitle} description={copy.cardDescription}>
+          <CustomGroup title={copy.cornerStyleTitle}>
             <div className="grid gap-3 md:grid-cols-3">
-              {cardSurfaceOptions.map((option) => (
+              {cornerStyleOptions.map((option) => (
                 <VisualOptionCard
-                  key={option.key}
-                  active={currentCardColor.toLowerCase() === option.color.toLowerCase()}
+                  key={option.value}
+                  active={previewTheme.radiusStyle === option.value}
                   title={locale === "tr" ? option.labelTr : option.labelEn}
-                  description={locale === "tr" ? option.descriptionTr : option.descriptionEn}
-                  onClick={() => {
-                    form.setValue("cardColor", option.color, { shouldDirty: true, shouldValidate: true });
-                    form.setValue("cardOpacity", option.opacity, { shouldDirty: true, shouldValidate: true });
-                  }}
+                  description={`${option.radius}`}
+                  onClick={() => form.setValue("radiusStyle", option.value, { shouldDirty: true, shouldValidate: true })}
                 >
-                  <div className="space-y-3 rounded-[16px] bg-[#111215] p-2.5">
-                    <div className="h-12 rounded-[14px]" style={{ backgroundColor: toRgba(option.color, option.opacity) }} />
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="h-8 rounded-[12px]" style={{ backgroundColor: toRgba(option.color, Math.max(option.opacity - 0.08, 0.72)) }} />
-                      <div className="h-8 rounded-[12px] border border-white/8" style={{ backgroundColor: toRgba(option.color, Math.min(option.opacity + 0.04, 1)) }} />
+                  <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
+                    <div className="h-11 border border-white/10" style={{ borderRadius: option.radius, backgroundColor: toRgba(currentCardColor, 0.82) }} />
+                    <div className="flex gap-2">
+                      <div className="h-8 flex-1 border border-white/10" style={{ borderRadius: option.radius, backgroundColor: toRgba(currentPrimaryColor, 0.22) }} />
+                      <div className="h-8 w-16 border border-white/10" style={{ borderRadius: option.radius, backgroundColor: toRgba(currentCardColor, 0.72) }} />
                     </div>
                   </div>
                 </VisualOptionCard>
@@ -1519,32 +1517,206 @@ export function CustomizePageForm({
             </div>
           </CustomGroup>
 
-          <CustomGroup title={copy.typeTitle} description={copy.typeDescription}>
+          <CustomGroup title={copy.cardFeelTitle}>
             <div className="grid gap-3 md:grid-cols-3">
-              {fontOptions.map((option) => {
-                const active = currentFontStyle === option.value;
+              {cardFeelOptions.map((option) => {
+                const active = currentCardFeel === option.value;
+                const sampleBorder =
+                  option.value === "subtle"
+                    ? toRgba(currentCardColor, 0.22)
+                    : option.value === "defined"
+                      ? toRgba(derivedColorTokens.text, 0.16)
+                      : toRgba(derivedColorTokens.border, 0.68);
+                const sampleShadow =
+                  option.value === "subtle"
+                    ? "0 10px 18px rgba(0,0,0,0.12)"
+                    : option.value === "defined"
+                      ? "0 22px 34px rgba(0,0,0,0.22)"
+                      : "0 14px 24px rgba(0,0,0,0.16)";
+
                 return (
                   <VisualOptionCard
                     key={option.value}
                     active={active}
-                    title={option.label}
-                    description={locale === "tr" ? option.helperTr : option.helperEn}
-                    onClick={() => setFontStyle(option.value)}
+                    title={locale === "tr" ? option.labelTr : option.labelEn}
+                    description={locale === "tr" ? "Kart sınırı ve gölgesi" : "Card edge and shadow"}
+                    onClick={() => form.setValue("cardFeel", option.value, { shouldDirty: true, shouldValidate: true })}
                   >
-                    <div className="space-y-2">
-                      <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
-                        {locale === "tr" ? "Yazı önizlemesi" : "Type preview"}
-                      </p>
-                      <p className="text-[1.05rem] font-semibold tracking-[-0.03em] text-white" style={{ fontFamily: headingPreviewFonts[option.value] }}>
-                        {locale === "tr" ? "Müşteri ekranına git" : "Open client page"}
-                      </p>
-                      <p className="text-sm leading-6 text-[var(--text-muted)]" style={{ fontFamily: bodyPreviewFonts[option.value] }}>
-                        {locale === "tr" ? "Başlık, açıklama ve kart yazıları birlikte görünür." : "Headings, descriptions, and card copy shift together."}
-                      </p>
+                    <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
+                      <div
+                        className="rounded-[18px] border p-3"
+                        style={{
+                          borderColor: sampleBorder,
+                          backgroundColor: toRgba(currentCardColor, 0.86),
+                          boxShadow: sampleShadow,
+                        }}
+                      >
+                        <div className="h-2.5 w-20 rounded-full" style={{ backgroundColor: toRgba(derivedColorTokens.text, 0.82) }} />
+                        <div className="mt-2 h-2 w-full rounded-full" style={{ backgroundColor: toRgba(derivedColorTokens.mutedText, 0.56) }} />
+                        <div className="mt-1.5 h-2 w-3/4 rounded-full" style={{ backgroundColor: toRgba(derivedColorTokens.mutedText, 0.42) }} />
+                      </div>
                     </div>
                   </VisualOptionCard>
                 );
               })}
+            </div>
+          </CustomGroup>
+
+          <CustomGroup title={copy.buttonStyleTitle}>
+            <div className="grid gap-3 md:grid-cols-3">
+              {buttonStyleOptions.map((option) => {
+                const active = currentButtonStyle === option.value;
+                const sampleStyle =
+                  option.value === "soft"
+                    ? {
+                        backgroundColor: toRgba(currentPrimaryColor, 0.2),
+                        borderColor: toRgba(currentPrimaryColor, 0.26),
+                        color: derivedColorTokens.text,
+                      }
+                    : option.value === "outline"
+                      ? {
+                          backgroundColor: toRgba(currentPrimaryColor, 0.05),
+                          borderColor: toRgba(currentPrimaryColor, 0.46),
+                          color: derivedColorTokens.text,
+                        }
+                      : {
+                          backgroundColor: currentPrimaryColor,
+                          borderColor: toRgba(currentPrimaryColor, 0.26),
+                          color: derivedColorTokens.buttonText,
+                        };
+
+                return (
+                  <VisualOptionCard
+                    key={option.value}
+                    active={active}
+                    title={locale === "tr" ? option.labelTr : option.labelEn}
+                    description={locale === "tr" ? "Ana çağrı butonu" : "Main action button"}
+                    onClick={() => form.setValue("buttonStyle", option.value, { shouldDirty: true, shouldValidate: true })}
+                  >
+                    <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
+                      <div className="inline-flex h-10 items-center justify-center rounded-[18px] border px-4 text-sm font-medium" style={sampleStyle}>
+                        {copy.primaryActionLabel}
+                      </div>
+                      <div
+                        className="inline-flex h-10 items-center justify-center rounded-[18px] border px-4 text-sm font-medium"
+                        style={{
+                          backgroundColor: toRgba(currentCardColor, 0.72),
+                          borderColor: derivedColorTokens.border,
+                          color: derivedColorTokens.text,
+                        }}
+                      >
+                        {copy.secondaryActionLabel}
+                      </div>
+                    </div>
+                  </VisualOptionCard>
+                );
+              })}
+            </div>
+          </CustomGroup>
+
+          <CustomGroup title={copy.badgeStyleTitle}>
+            <div className="grid gap-3 md:grid-cols-2">
+              {badgeStyleOptions.map((option) => {
+                const active = currentBadgeStyle === option.value;
+                const badgeStyle =
+                  option.value === "colored"
+                    ? {
+                        backgroundColor: derivedColorTokens.chipBackground,
+                        borderColor: toRgba(currentPrimaryColor, 0.18),
+                        color: derivedColorTokens.chipText,
+                      }
+                    : {
+                        backgroundColor: toRgba(currentCardColor, 0.7),
+                        borderColor: toRgba(currentCardColor, 0.22),
+                        color: derivedColorTokens.text,
+                      };
+
+                return (
+                  <VisualOptionCard
+                    key={option.value}
+                    active={active}
+                    title={locale === "tr" ? option.labelTr : option.labelEn}
+                    description={locale === "tr" ? "Şehir ve uygunluk etiketleri" : "City and availability badges"}
+                    onClick={() => form.setValue("badgeStyle", option.value, { shouldDirty: true, shouldValidate: true })}
+                  >
+                    <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
+                      <div className="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium" style={badgeStyle}>
+                        {copy.badgePreviewLabel}
+                      </div>
+                    </div>
+                  </VisualOptionCard>
+                );
+              })}
+            </div>
+          </CustomGroup>
+
+          <CustomGroup title={copy.modulePreviewTitle} description={copy.modulePreviewDescription}>
+            <div
+              className="rounded-[22px] border p-4"
+              style={{
+                ...surfacePreviewPresentation.wrapperStyle,
+                borderColor: surfacePreviewPresentation.tokens.borderColor,
+                background: "var(--artist-background-base)",
+              }}
+            >
+              <div
+                className="rounded-[var(--artist-card-radius)] border p-4"
+                style={{
+                  borderColor: "var(--artist-border)",
+                  backgroundColor: "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
+                  boxShadow: "var(--artist-card-shadow)",
+                }}
+              >
+                <p className="text-sm font-semibold" style={{ color: "var(--artist-card-text)", fontFamily: "var(--artist-heading-font)" }}>
+                  {copy.cardSampleTitle}
+                </p>
+                <p className="mt-1 text-[13px] leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                  {copy.cardSampleBody}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                  <div
+                    className="inline-flex h-10 items-center rounded-[var(--artist-button-radius)] border px-4 text-sm font-medium"
+                    style={{
+                      backgroundColor: "var(--artist-primary-button-surface)",
+                      borderColor: "var(--artist-primary-button-border)",
+                      color: "var(--artist-primary-button-text)",
+                      boxShadow: "var(--artist-button-shadow)",
+                    }}
+                  >
+                    {copy.primaryActionLabel}
+                  </div>
+                  <div
+                    className="inline-flex h-10 items-center rounded-[var(--artist-button-radius)] border px-4 text-sm font-medium"
+                    style={{
+                      backgroundColor: "var(--artist-secondary-button-surface)",
+                      borderColor: "var(--artist-secondary-button-border)",
+                      color: "var(--artist-secondary-button-text)",
+                    }}
+                  >
+                    {copy.secondaryActionLabel}
+                  </div>
+                  <div
+                    className="inline-flex rounded-full border px-3 py-1.5 text-xs font-medium"
+                    style={{
+                      backgroundColor: "var(--artist-chip-surface)",
+                      borderColor: "var(--artist-border)",
+                      color: "var(--artist-chip-text)",
+                    }}
+                  >
+                    {copy.badgePreviewLabel}
+                  </div>
+                </div>
+                <div
+                  className="mt-4 flex items-center justify-between rounded-[calc(var(--artist-card-radius)-4px)] border px-3.5 py-2.5 text-[13px]"
+                  style={{
+                    borderColor: "var(--artist-border)",
+                    backgroundColor: "color-mix(in srgb, var(--artist-card) 82%, transparent)",
+                  }}
+                >
+                  <span style={{ color: "var(--artist-card-muted)" }}>{copy.infoRowLabel}</span>
+                  <span style={{ color: "var(--artist-card-text)" }}>{copy.infoRowValue}</span>
+                </div>
+              </div>
             </div>
           </CustomGroup>
         </div>

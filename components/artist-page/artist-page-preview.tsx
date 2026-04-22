@@ -83,10 +83,12 @@ export function ArtistPagePreview({
                 ) : null}
                 <button
                   type="button"
-                  className="inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] font-medium sm:h-10 sm:px-4 sm:text-xs"
+                  className="inline-flex h-8 items-center justify-center rounded-[var(--artist-button-radius)] border px-3 text-[11px] font-medium sm:h-10 sm:px-4 sm:text-xs"
                   style={{
-                    backgroundColor: "var(--artist-primary)",
-                    color: "var(--artist-primary-foreground)",
+                    backgroundColor: "var(--artist-primary-button-surface)",
+                    borderColor: "var(--artist-primary-button-border)",
+                    color: "var(--artist-primary-button-text)",
+                    boxShadow: "var(--artist-button-shadow)",
                   }}
                 >
                   {ctaLabel}
