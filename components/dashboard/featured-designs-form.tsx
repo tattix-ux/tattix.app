@@ -52,7 +52,6 @@ type PartialDesignDraft = {
   active?: boolean | null;
   sortOrder?: unknown;
 };
-type ColorModeValue = NonNullable<DesignDraft["referenceColorMode"]>;
 type PendingRemoval = { designId: string; title: string } | null;
 type PendingOpenState = {
   designId: string;
@@ -133,6 +132,17 @@ const copy = {
     priceHelp: "Set the price range for this size.",
     priceMin: "Lower price",
     priceMax: "Upper price",
+    pricingSettingsTitle: "Pricing behavior",
+    pricingSettingsDescription: "Choose how this design should behave in the estimate engine.",
+    detailLevelLabel: "Reference detail level",
+    detailLevelHelp: "The price range above is entered for this detail level.",
+    colorModeLabel: "Reference color mode",
+    colorModeHelp: "The price range above is entered for this color setup.",
+    pricingModeLabel: "How should the price react?",
+    pricingModeHelp: "Use fixed range for the same band, or allow size and placement to move it.",
+    colorImpactLabel: "How much does color affect this design?",
+    colorImpactHelp: "This controls how strongly color complexity influences scaling.",
+    chooseOption: "Select",
     optionalTitle: "Category and short note",
     optionalDescription: "Keep your flash collection organized and add a short client-facing note if you want.",
     category: "Category",
@@ -166,6 +176,11 @@ const copy = {
       low: "No change",
       medium: "Increase a bit",
       high: "Increase clearly",
+    },
+    detailLevels: {
+      simple: "Simple",
+      standard: "Standard",
+      detailed: "Detailed",
     },
   },
   tr: {
@@ -210,6 +225,17 @@ const copy = {
     priceHelp: "Bu boyut için fiyat aralıklarını belirle",
     priceMin: "Alt fiyat",
     priceMax: "Üst fiyat",
+    pricingSettingsTitle: "Fiyat davranışı",
+    pricingSettingsDescription: "Bu tasarımın estimate motorunda nasıl davranacağını seç.",
+    detailLevelLabel: "Referans detay seviyesi",
+    detailLevelHelp: "Yukarıdaki fiyat aralığı bu detay seviyesi için girilir.",
+    colorModeLabel: "Referans renk yapısı",
+    colorModeHelp: "Yukarıdaki fiyat aralığı bu renk yapısı için girilir.",
+    pricingModeLabel: "Fiyat nasıl davransın?",
+    pricingModeHelp: "Sabit kalsın ya da boyut ve bölgeye göre değişsin.",
+    colorImpactLabel: "Renk bu tasarımı ne kadar etkilese iyi olur?",
+    colorImpactHelp: "Renk karmaşıklığının ölçeklemeyi ne kadar etkileyeceğini belirler.",
+    chooseOption: "Seç",
     optionalTitle: "Kategori ve kısa not",
     optionalDescription: "Tasarımı kategorize et ve müşteriye göstermek istersen kısa bir not ekle.",
     category: "Kategori",
@@ -244,12 +270,13 @@ const copy = {
       medium: "Biraz artsın",
       high: "Belirgin artsın",
     },
+    detailLevels: {
+      simple: "Sade",
+      standard: "Standart",
+      detailed: "Detaylı",
+    },
   },
 } as const;
-
-const DEFAULT_PRICING_MODE: NonNullable<DesignDraft["pricingMode"]> = "size_adjusted";
-const DEFAULT_COLOR_MODE: ColorModeValue = "black-only";
-const DEFAULT_COLOR_IMPACT: NonNullable<DesignDraft["colorImpactPreference"]> = "medium";
 
 function createEmptyDesign(sortOrder: number): DesignDraft {
   return {
@@ -260,13 +287,13 @@ function createEmptyDesign(sortOrder: number): DesignDraft {
     imageUrl: "",
     imagePath: "",
     priceNote: "",
-    referenceDetailLevel: "standard",
+    referenceDetailLevel: null,
     referencePriceMin: null,
     referencePriceMax: null,
     referenceSizeCm: null,
-    referenceColorMode: DEFAULT_COLOR_MODE,
-    pricingMode: DEFAULT_PRICING_MODE,
-    colorImpactPreference: DEFAULT_COLOR_IMPACT,
+    referenceColorMode: null,
+    pricingMode: null,
+    colorImpactPreference: null,
     active: false,
     sortOrder,
   };
@@ -281,13 +308,13 @@ function normalizeDesign(design: PartialDesignDraft, sortOrder: number): DesignD
     imageUrl: design.imageUrl ?? "",
     imagePath: design.imagePath ?? "",
     priceNote: design.priceNote ?? "",
-    referenceDetailLevel: design.referenceDetailLevel ?? "standard",
+    referenceDetailLevel: design.referenceDetailLevel ?? null,
     referencePriceMin: design.referencePriceMin ?? null,
     referencePriceMax: design.referencePriceMax ?? null,
     referenceSizeCm: design.referenceSizeCm ?? null,
-    referenceColorMode: design.referenceColorMode ?? DEFAULT_COLOR_MODE,
-    pricingMode: design.pricingMode ?? DEFAULT_PRICING_MODE,
-    colorImpactPreference: design.colorImpactPreference ?? DEFAULT_COLOR_IMPACT,
+    referenceColorMode: design.referenceColorMode ?? null,
+    pricingMode: design.pricingMode ?? null,
+    colorImpactPreference: design.colorImpactPreference ?? null,
     active: design.active ?? false,
     sortOrder,
   };
@@ -342,13 +369,13 @@ export function FeaturedDesignsForm({
         imageUrl: design.imageUrl ?? "",
         imagePath: design.imagePath ?? "",
         priceNote: design.priceNote ?? "",
-        referenceDetailLevel: design.referenceDetailLevel ?? "standard",
+        referenceDetailLevel: design.referenceDetailLevel ?? null,
         referencePriceMin: design.referencePriceMin,
         referencePriceMax: design.referencePriceMax,
         referenceSizeCm: design.referenceSizeCm,
-        referenceColorMode: design.referenceColorMode ?? DEFAULT_COLOR_MODE,
-        pricingMode: design.pricingMode ?? DEFAULT_PRICING_MODE,
-        colorImpactPreference: design.colorImpactPreference ?? DEFAULT_COLOR_IMPACT,
+        referenceColorMode: design.referenceColorMode ?? null,
+        pricingMode: design.pricingMode ?? null,
+        colorImpactPreference: design.colorImpactPreference ?? null,
         active: design.active,
         sortOrder: design.sortOrder,
       })),
@@ -1033,10 +1060,6 @@ export function FeaturedDesignsForm({
                     <>
                       <input type="hidden" {...form.register(`designs.${editingIndex}.id`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.category`)} />
-                      <input type="hidden" {...form.register(`designs.${editingIndex}.referenceDetailLevel`)} />
-                      <input type="hidden" {...form.register(`designs.${editingIndex}.pricingMode`)} />
-                      <input type="hidden" {...form.register(`designs.${editingIndex}.referenceColorMode`)} />
-                      <input type="hidden" {...form.register(`designs.${editingIndex}.colorImpactPreference`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.imagePath`)} />
                       <input type="hidden" {...form.register(`designs.${editingIndex}.imageUrl`)} />
 
@@ -1166,6 +1189,103 @@ export function FeaturedDesignsForm({
                                     />
                                   </Field>
                                 </div>
+                              </Field>
+                            </div>
+                          </EditorSection>
+
+                          <EditorSection title={labels.pricingSettingsTitle} description={labels.pricingSettingsDescription}>
+                            <div className="grid gap-3 xl:grid-cols-2">
+                              <Field
+                                label={labels.detailLevelLabel}
+                                description={labels.detailLevelHelp}
+                                error={form.formState.errors.designs?.[editingIndex]?.referenceDetailLevel?.message}
+                              >
+                                <NativeSelect
+                                  className="h-9 rounded-[16px] bg-white/[0.03]"
+                                  value={editingDesign?.referenceDetailLevel ?? ""}
+                                  onChange={(event) =>
+                                    form.setValue(
+                                      `designs.${editingIndex}.referenceDetailLevel`,
+                                      event.target.value ? (event.target.value as DesignDraft["referenceDetailLevel"]) : null,
+                                      { shouldDirty: true, shouldValidate: true },
+                                    )
+                                  }
+                                >
+                                  <option value="">{labels.chooseOption}</option>
+                                  <option value="simple">{labels.detailLevels.simple}</option>
+                                  <option value="standard">{labels.detailLevels.standard}</option>
+                                  <option value="detailed">{labels.detailLevels.detailed}</option>
+                                </NativeSelect>
+                              </Field>
+
+                              <Field
+                                label={labels.colorModeLabel}
+                                description={labels.colorModeHelp}
+                                error={form.formState.errors.designs?.[editingIndex]?.referenceColorMode?.message}
+                              >
+                                <NativeSelect
+                                  className="h-9 rounded-[16px] bg-white/[0.03]"
+                                  value={editingDesign?.referenceColorMode ?? ""}
+                                  onChange={(event) =>
+                                    form.setValue(
+                                      `designs.${editingIndex}.referenceColorMode`,
+                                      event.target.value ? (event.target.value as DesignDraft["referenceColorMode"]) : null,
+                                      { shouldDirty: true, shouldValidate: true },
+                                    )
+                                  }
+                                >
+                                  <option value="">{labels.chooseOption}</option>
+                                  <option value="black-only">{labels.referenceColorModes["black-only"]}</option>
+                                  <option value="black-grey">{labels.referenceColorModes["black-grey"]}</option>
+                                  <option value="full-color">{labels.referenceColorModes["full-color"]}</option>
+                                </NativeSelect>
+                              </Field>
+
+                              <Field
+                                label={labels.pricingModeLabel}
+                                description={labels.pricingModeHelp}
+                                error={form.formState.errors.designs?.[editingIndex]?.pricingMode?.message}
+                              >
+                                <NativeSelect
+                                  className="h-9 rounded-[16px] bg-white/[0.03]"
+                                  value={editingDesign?.pricingMode ?? ""}
+                                  onChange={(event) =>
+                                    form.setValue(
+                                      `designs.${editingIndex}.pricingMode`,
+                                      event.target.value ? (event.target.value as DesignDraft["pricingMode"]) : null,
+                                      { shouldDirty: true, shouldValidate: true },
+                                    )
+                                  }
+                                >
+                                  <option value="">{labels.chooseOption}</option>
+                                  <option value="fixed_range">{labels.pricingModes.fixed_range}</option>
+                                  <option value="size_adjusted">{labels.pricingModes.size_adjusted}</option>
+                                  <option value="size_and_placement_adjusted">{labels.pricingModes.size_and_placement_adjusted}</option>
+                                  <option value="starting_from">{labels.pricingModes.starting_from}</option>
+                                </NativeSelect>
+                              </Field>
+
+                              <Field
+                                label={labels.colorImpactLabel}
+                                description={labels.colorImpactHelp}
+                                error={form.formState.errors.designs?.[editingIndex]?.colorImpactPreference?.message}
+                              >
+                                <NativeSelect
+                                  className="h-9 rounded-[16px] bg-white/[0.03]"
+                                  value={editingDesign?.colorImpactPreference ?? ""}
+                                  onChange={(event) =>
+                                    form.setValue(
+                                      `designs.${editingIndex}.colorImpactPreference`,
+                                      event.target.value ? (event.target.value as DesignDraft["colorImpactPreference"]) : null,
+                                      { shouldDirty: true, shouldValidate: true },
+                                    )
+                                  }
+                                >
+                                  <option value="">{labels.chooseOption}</option>
+                                  <option value="low">{labels.colorImpactOptions.low}</option>
+                                  <option value="medium">{labels.colorImpactOptions.medium}</option>
+                                  <option value="high">{labels.colorImpactOptions.high}</option>
+                                </NativeSelect>
                               </Field>
                             </div>
                           </EditorSection>
