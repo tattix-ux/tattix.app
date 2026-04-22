@@ -33,8 +33,8 @@ export function LandingPageContent() {
 
   return (
     <AppShell>
-      <Container className="overflow-x-clip py-5 sm:py-8">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <Container className="overflow-x-clip py-4 sm:py-6 lg:px-6 xl:max-w-[1360px] xl:px-6 2xl:max-w-[1400px]">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 xl:gap-3">
           <Logo />
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
             <div className="inline-flex w-full items-center justify-between gap-2 rounded-full border border-white/10 bg-white/6 p-1 sm:w-auto sm:justify-start">
@@ -69,28 +69,28 @@ export function LandingPageContent() {
           </div>
         </header>
 
-        <section className="relative grid gap-6 py-10 sm:py-16 lg:grid-cols-[1.06fr_0.94fr] lg:items-center lg:gap-8">
-          <BrandMonogram className="hidden lg:block lg:left-[8%] lg:top-6 lg:h-[360px] lg:w-[360px]" opacity={0.06} />
-          <div className="space-y-5 sm:space-y-6">
-            <div className="max-w-[240px] sm:max-w-[280px]">
+        <section className="relative grid gap-5 py-8 sm:py-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:gap-7 xl:gap-8 xl:py-14">
+          <BrandMonogram className="hidden lg:block lg:left-[9%] lg:top-6 lg:h-[300px] lg:w-[300px] xl:h-[320px] xl:w-[320px]" opacity={0.045} />
+          <div className="space-y-4 sm:space-y-5 xl:space-y-4">
+            <div className="max-w-[180px] sm:max-w-[210px] xl:max-w-[220px]">
               <BrandPrimary priority />
-              <BrandWordmark className="mt-4 text-center" />
+              <BrandWordmark className="mt-3 text-center text-[1.1rem] tracking-[0.44em] sm:text-[1.18rem]" />
             </div>
             <Badge
               variant="accent"
-              className="max-w-full whitespace-normal rounded-full px-4 py-1.5 text-center text-[12px] font-medium tracking-[0.04em] sm:text-left"
+              className="max-w-full whitespace-normal rounded-full px-3 py-1 text-center text-[11px] font-medium tracking-[0.04em] sm:text-left"
             >
               {copy.heroEyebrow}
             </Badge>
-            <div className="space-y-4 sm:space-y-5">
-              <h1 className="max-w-3xl text-[2.45rem] font-semibold leading-[0.96] tracking-[-0.04em] text-white sm:text-[4.25rem]">
+            <div className="space-y-3 sm:space-y-4 xl:space-y-3">
+              <h1 className="max-w-[12ch] text-[2.2rem] font-semibold leading-[0.95] tracking-[-0.045em] text-white sm:text-[3.4rem] lg:text-[3rem] xl:text-[3.2rem] 2xl:text-[3.35rem]">
                 {copy.heroTitle}
               </h1>
-              <p className="max-w-2xl text-[15px] leading-7 text-[var(--foreground-muted)] sm:text-lg sm:leading-8">
+              <p className="max-w-[580px] text-[14px] leading-6 text-[var(--foreground-muted)] sm:text-[15px] sm:leading-7">
                 {copy.heroDescription}
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/signup">
                   {copy.primaryCta}
@@ -101,41 +101,41 @@ export function LandingPageContent() {
                 <Link href={`/${siteConfig.demoSlug}`}>{copy.secondaryCta}</Link>
               </Button>
             </div>
-            <p className="text-sm text-[var(--foreground-muted)]">{copy.ctaNote}</p>
+            <p className="text-[12px] leading-5 text-[var(--foreground-muted)] sm:text-[13px]">{copy.ctaNote}</p>
           </div>
 
           <Card className="surface-border overflow-hidden">
-            <CardContent className="space-y-4 p-4 sm:p-6">
-              <Badge variant="muted" className="rounded-full px-4 py-1.5 text-[12px] font-medium tracking-[0.04em]">
+            <CardContent className="space-y-3 p-4 sm:p-5 xl:space-y-3 xl:p-5">
+              <Badge variant="muted" className="rounded-full px-3 py-1 text-[11px] font-medium tracking-[0.04em]">
                 {copy.heroFormBadge}
               </Badge>
-              <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-4 sm:p-5">
-                <div className="space-y-3">
-                  <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
-                    <p className="text-[12px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.requestLabel}</p>
-                    <p className="mt-1.5 text-base font-medium text-white">{copy.heroPreview.requestValue}</p>
+              <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3.5 sm:p-4">
+                <div className="space-y-2.5">
+                  <div className="rounded-[20px] border border-white/8 bg-black/20 p-3.5">
+                    <p className="text-[11px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.requestLabel}</p>
+                    <p className="mt-1 text-[15px] font-medium text-white">{copy.heroPreview.requestValue}</p>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
-                      <p className="text-[12px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.budgetLabel}</p>
-                      <p className="mt-1.5 text-base font-medium text-white">{copy.heroPreview.budgetValue}</p>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-3.5">
+                      <p className="text-[11px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.budgetLabel}</p>
+                      <p className="mt-1 text-[14px] font-medium text-white">{copy.heroPreview.budgetValue}</p>
                     </div>
-                    <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
-                      <p className="text-[12px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.placementLabel}</p>
-                      <p className="mt-1.5 text-base font-medium text-white">{copy.heroPreview.placementValue}</p>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
-                      <p className="text-[12px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.sizeLabel}</p>
-                      <p className="mt-1.5 text-base font-medium text-white">{copy.heroPreview.sizeValue}</p>
-                    </div>
-                    <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
-                      <p className="text-[12px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.designLabel}</p>
-                      <p className="mt-1.5 text-base font-medium text-white">{copy.heroPreview.designValue}</p>
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-3.5">
+                      <p className="text-[11px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.placementLabel}</p>
+                      <p className="mt-1 text-[14px] font-medium text-white">{copy.heroPreview.placementValue}</p>
                     </div>
                   </div>
-                  <div className="rounded-[20px] border border-[var(--accent)]/15 bg-[var(--accent)]/7 px-4 py-3 text-sm text-white/82">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-3.5">
+                      <p className="text-[11px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.sizeLabel}</p>
+                      <p className="mt-1 text-[14px] font-medium text-white">{copy.heroPreview.sizeValue}</p>
+                    </div>
+                    <div className="rounded-[20px] border border-white/8 bg-black/20 p-3.5">
+                      <p className="text-[11px] font-medium text-[var(--foreground-muted)]">{copy.heroPreview.designLabel}</p>
+                      <p className="mt-1 text-[14px] font-medium text-white">{copy.heroPreview.designValue}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-[18px] border border-[var(--accent)]/15 bg-[var(--accent)]/7 px-3.5 py-2.5 text-[12.5px] leading-5 text-white/82">
                     {copy.heroPreview.note}
                   </div>
                 </div>
@@ -144,47 +144,47 @@ export function LandingPageContent() {
           </Card>
         </section>
 
-        <section className="grid gap-3 pb-10 sm:grid-cols-3 sm:pb-14">
+        <section className="grid gap-3 pb-8 sm:grid-cols-3 sm:pb-10 xl:pb-12">
           {copy.trustItems.map((item) => (
             <div
               key={item}
-              className="flex items-center gap-3 rounded-[20px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/86"
+              className="flex min-h-[58px] items-center gap-2.5 rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-[13px] text-white/86"
             >
-              <CheckCircle2 className="size-4 shrink-0 text-[var(--accent-soft)]" />
+              <CheckCircle2 className="size-[15px] shrink-0 text-[var(--accent-soft)]" />
               <span>{item}</span>
             </div>
           ))}
         </section>
 
-        <section className="grid gap-6 py-10 sm:py-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
-          <div className="space-y-4">
-            <h2 className="max-w-3xl text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-5xl">
+        <section className="grid gap-5 py-8 sm:py-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-7 xl:gap-8 xl:py-12">
+          <div className="space-y-3">
+            <h2 className="max-w-3xl text-[1.95rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[2.4rem] xl:text-[2.1rem]">
               {copy.problemTitle}
             </h2>
-            <p className="max-w-2xl text-sm leading-7 text-[var(--foreground-muted)] sm:text-base">
+            <p className="max-w-[560px] text-[14px] leading-6 text-[var(--foreground-muted)] sm:text-[15px] sm:leading-7">
               {copy.problemDescription}
             </p>
           </div>
-          <div className="space-y-3">
+          <div className="grid gap-3">
             {copy.problemList.map((item, index) => {
               const Icon = issueIcons[index];
 
               return (
                 <div
                   key={item}
-                  className="flex items-center gap-3 rounded-[22px] border border-white/8 bg-white/[0.03] px-4 py-4 text-white"
+                  className="flex items-center gap-3 rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3.5 text-white"
                 >
                   <Icon className="size-4 shrink-0 text-[var(--accent-soft)]" />
-                  <span className="text-sm font-medium">{item}</span>
+                  <span className="text-[13.5px] font-medium">{item}</span>
                 </div>
               );
             })}
           </div>
         </section>
 
-        <section className="space-y-6 py-10 sm:space-y-8 sm:py-14">
+        <section className="space-y-5 py-8 sm:space-y-6 sm:py-10 xl:py-12">
           <div className="space-y-2">
-            <p className="text-sm font-medium tracking-[0.02em] text-[var(--accent-soft)]">{copy.featuresTitle}</p>
+            <p className="text-[13px] font-medium tracking-[0.02em] text-[var(--accent-soft)]">{copy.featuresTitle}</p>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
             {copy.features.map((feature, index) => {
@@ -192,10 +192,10 @@ export function LandingPageContent() {
 
               return (
                 <Card key={feature.title} className="surface-border">
-                  <CardContent className="p-6">
-                    <Icon className="size-6 text-[var(--accent-soft)]" />
-                    <h3 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-white">{feature.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-[var(--foreground-muted)]">
+                  <CardContent className="p-5 xl:p-5">
+                    <Icon className="size-5 text-[var(--accent-soft)]" />
+                    <h3 className="mt-4 text-[19px] font-semibold tracking-[-0.02em] text-white">{feature.title}</h3>
+                    <p className="mt-2.5 text-[13.5px] leading-6 text-[var(--foreground-muted)]">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -205,17 +205,17 @@ export function LandingPageContent() {
           </div>
         </section>
 
-        <section className="py-10 sm:py-14">
-          <div className="grid gap-6 rounded-[30px] border border-[var(--accent)]/14 bg-[linear-gradient(180deg,rgba(247,177,93,0.08),rgba(255,255,255,0.02))] p-6 sm:p-8 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="space-y-4">
-              <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-5xl">
+        <section className="py-8 sm:py-10 xl:py-12">
+          <div className="grid gap-5 rounded-[26px] border border-[var(--accent)]/14 bg-[linear-gradient(180deg,rgba(247,177,93,0.08),rgba(255,255,255,0.02))] p-5 sm:p-6 lg:grid-cols-[1.02fr_0.98fr]">
+            <div className="space-y-3">
+              <h2 className="text-[1.95rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[2.35rem] xl:text-[2.1rem]">
                 {copy.positioningTitle}
               </h2>
-              <p className="text-base leading-7 text-white/85 sm:text-lg">{copy.positioningDescription}</p>
+              <p className="max-w-[540px] text-[14px] leading-6 text-white/85 sm:text-[15px] sm:leading-7">{copy.positioningDescription}</p>
             </div>
-            <div className="space-y-3">
+            <div className="grid gap-3">
               {copy.positioningBullets.map((item) => (
-                <div key={item} className="flex items-start gap-3 rounded-[20px] border border-white/8 bg-black/20 p-4 text-sm text-white/88">
+                <div key={item} className="flex items-start gap-3 rounded-[18px] border border-white/8 bg-black/20 p-3.5 text-[13.5px] text-white/88">
                   <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--accent-soft)]" />
                   <span>{item}</span>
                 </div>
@@ -224,21 +224,21 @@ export function LandingPageContent() {
           </div>
         </section>
 
-        <section className="grid gap-6 py-10 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
-          <div className="space-y-4">
-            <p className="text-sm font-medium tracking-[0.02em] text-[var(--accent-soft)]">{copy.pricingEyebrow}</p>
-            <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-5xl">
+        <section className="grid gap-5 py-8 sm:py-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-7 xl:gap-8 xl:py-12">
+          <div className="space-y-3">
+            <p className="text-[13px] font-medium tracking-[0.02em] text-[var(--accent-soft)]">{copy.pricingEyebrow}</p>
+            <h2 className="text-[1.95rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[2.4rem] xl:text-[2.1rem]">
               {copy.pricingTitle}
             </h2>
-            <p className="max-w-2xl text-sm leading-7 text-[var(--foreground-muted)] sm:text-base">
+            <p className="max-w-[560px] text-[14px] leading-6 text-[var(--foreground-muted)] sm:text-[15px] sm:leading-7">
               {copy.pricingDescription}
             </p>
           </div>
-          <div className="space-y-3">
+          <div className="grid gap-3">
             {copy.pricingBullets.map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-3 rounded-[20px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/88"
+                className="flex items-center gap-3 rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-[13.5px] text-white/88"
               >
                 <Dot className="size-5 shrink-0 text-[var(--accent-soft)]" />
                 <span>{item}</span>
@@ -247,36 +247,36 @@ export function LandingPageContent() {
           </div>
         </section>
 
-        <section className="space-y-6 py-10 sm:space-y-8 sm:py-14">
+        <section className="space-y-5 py-8 sm:space-y-6 sm:py-10 xl:py-12">
           <div className="space-y-2">
-            <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-5xl">
+            <h2 className="text-[1.95rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[2.35rem] xl:text-[2.1rem]">
               {copy.stepsTitle}
             </h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {copy.steps.map((step, index) => (
               <Card key={step.title} className="surface-border">
-                <CardContent className="p-6">
-                  <div className="inline-flex size-10 items-center justify-center rounded-full border border-[var(--accent)]/18 bg-[var(--accent)]/12 text-sm font-semibold text-[var(--accent-soft)]">
+                <CardContent className="p-5">
+                  <div className="inline-flex size-9 items-center justify-center rounded-full border border-[var(--accent)]/18 bg-[var(--accent)]/12 text-[13px] font-semibold text-[var(--accent-soft)]">
                     {index + 1}
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-white">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-[var(--foreground-muted)]">{step.description}</p>
+                  <h3 className="mt-4 text-[18px] font-semibold tracking-[-0.02em] text-white">{step.title}</h3>
+                  <p className="mt-2 text-[13.5px] leading-6 text-[var(--foreground-muted)]">{step.description}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         </section>
 
-        <section className="py-10 sm:py-14">
-          <div className="rounded-[30px] border border-white/8 bg-white/[0.03] p-6 text-center sm:p-10">
-            <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-5xl">
+        <section className="py-8 sm:py-10 xl:py-12">
+          <div className="rounded-[26px] border border-white/8 bg-white/[0.03] p-5 text-center sm:p-7 xl:p-8">
+            <h2 className="text-[1.95rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[2.35rem] xl:text-[2.05rem]">
               {copy.finalTitle}
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[var(--foreground-muted)] sm:text-base">
+            <p className="mx-auto mt-3 max-w-[560px] text-[14px] leading-6 text-[var(--foreground-muted)] sm:text-[15px] sm:leading-7">
               {copy.finalDescription}
             </p>
-            <div className="mt-6">
+            <div className="mt-5">
               <Button asChild size="lg">
                 <Link href="/signup">
                   {copy.finalCta}
