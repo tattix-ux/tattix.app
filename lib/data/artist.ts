@@ -393,6 +393,15 @@ export function mapPageTheme(row: Record<string, unknown>, artistId: string): Ar
     gradientStart: String(row.gradient_start ?? defaults.gradientStart),
     gradientEnd: String(row.gradient_end ?? defaults.gradientEnd),
     backgroundImageUrl: row.background_image_url ? String(row.background_image_url) : null,
+    backgroundOverlayStrength: String(
+      row.background_overlay_strength ?? defaults.backgroundOverlayStrength,
+    ) as ArtistPageTheme["backgroundOverlayStrength"],
+    backgroundImageSoftness: String(
+      row.background_image_softness ?? defaults.backgroundImageSoftness,
+    ) as ArtistPageTheme["backgroundImageSoftness"],
+    backgroundImageFocus: String(
+      row.background_image_focus ?? defaults.backgroundImageFocus,
+    ) as ArtistPageTheme["backgroundImageFocus"],
     textColor: String(row.text_color ?? defaults.textColor),
     primaryColor: String(row.primary_color ?? defaults.primaryColor),
     secondaryColor: String(row.secondary_color ?? defaults.secondaryColor),

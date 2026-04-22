@@ -8,6 +8,9 @@ export const themePresetOptions = [
 ] as const;
 
 export const backgroundTypeOptions = ["solid", "gradient", "image"] as const;
+export const backgroundOverlayStrengthOptions = ["light", "balanced", "strong", "extra-strong"] as const;
+export const backgroundImageSoftnessOptions = ["sharp", "soft", "softer"] as const;
+export const backgroundImageFocusOptions = ["center", "top", "left", "right"] as const;
 export const radiusStyleOptions = ["small", "medium", "large"] as const;
 export const themeModeOptions = ["dark", "light"] as const;
 export const fontPairingPresetOptions = [
@@ -195,6 +198,9 @@ export const themePresets = {
 
 export type ThemePresetKey = (typeof themePresetOptions)[number];
 export type BackgroundType = (typeof backgroundTypeOptions)[number];
+export type BackgroundOverlayStrength = (typeof backgroundOverlayStrengthOptions)[number];
+export type BackgroundImageSoftness = (typeof backgroundImageSoftnessOptions)[number];
+export type BackgroundImageFocus = (typeof backgroundImageFocusOptions)[number];
 export type RadiusStyle = (typeof radiusStyleOptions)[number];
 export type ThemeMode = (typeof themeModeOptions)[number];
 export type FontPairingPreset = (typeof fontPairingPresetOptions)[number];

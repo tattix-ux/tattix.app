@@ -499,7 +499,7 @@ export function ProfilePreviewCard({
   locale: PublicLocale;
 }) {
   const copy = profileCopy[locale];
-  const { wrapperStyle } = buildThemeStyles(pageTheme);
+  const { wrapperStyle, backgroundMedia } = buildThemeStyles(pageTheme);
 
   return (
     <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-2)_0%,var(--bg-section)_100%)] shadow-[0_24px_54px_rgba(0,0,0,0.28)] xl:sticky xl:top-4 xl:self-start">
@@ -510,7 +510,7 @@ export function ProfilePreviewCard({
       <CardContent>
         <div className="mx-auto max-w-[340px] 2xl:max-w-[360px]">
           <div
-            className="overflow-hidden rounded-[42px] border shadow-[0_30px_70px_rgba(0,0,0,0.34)]"
+            className="relative overflow-hidden rounded-[42px] border shadow-[0_30px_70px_rgba(0,0,0,0.34)]"
             style={{
               ...wrapperStyle,
               borderColor: "var(--artist-border)",
@@ -518,6 +518,21 @@ export function ProfilePreviewCard({
                 "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
             }}
           >
+            {backgroundMedia.imageUrl ? (
+              <>
+                <div
+                  className="absolute inset-0 scale-[1.04]"
+                  style={{
+                    backgroundImage: `url(${backgroundMedia.imageUrl})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: backgroundMedia.position,
+                    filter: `blur(${backgroundMedia.blurPx}px)`,
+                  }}
+                />
+                <div className="absolute inset-0" style={{ background: backgroundMedia.overlayGradient }} />
+                <div className="absolute inset-0" style={{ backgroundColor: backgroundMedia.overlayColor }} />
+              </>
+            ) : null}
             <div
               className="relative h-52 border-b bg-grid sm:h-56"
               style={

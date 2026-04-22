@@ -3,6 +3,9 @@ import type { CSSProperties } from "react";
 import {
   themePresets,
   type BackgroundType,
+  type BackgroundImageFocus,
+  type BackgroundImageSoftness,
+  type BackgroundOverlayStrength,
   type BodyFontKey,
   type FontPairingPreset,
   type HeadingFontKey,
@@ -286,6 +289,9 @@ export function buildDefaultArtistTheme(): ArtistPageTheme {
     gradientStart: preset.gradientStart,
     gradientEnd: preset.gradientEnd,
     backgroundImageUrl: null,
+    backgroundOverlayStrength: "balanced",
+    backgroundImageSoftness: "soft",
+    backgroundImageFocus: "center",
     textColor: preset.textColor,
     primaryColor: preset.primaryColor,
     secondaryColor: preset.secondaryColor,
@@ -607,6 +613,12 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
     primaryColor: normalizeHex(theme?.primaryColor, preset.primaryColor),
     secondaryColor: normalizeHex(theme?.secondaryColor, preset.secondaryColor),
     cardColor: normalizeHex(theme?.cardColor, preset.cardColor),
+    backgroundOverlayStrength:
+      (theme?.backgroundOverlayStrength as BackgroundOverlayStrength | undefined) ?? base.backgroundOverlayStrength,
+    backgroundImageSoftness:
+      (theme?.backgroundImageSoftness as BackgroundImageSoftness | undefined) ?? base.backgroundImageSoftness,
+    backgroundImageFocus:
+      (theme?.backgroundImageFocus as BackgroundImageFocus | undefined) ?? base.backgroundImageFocus,
     cardOpacity:
       typeof theme?.cardOpacity === "number"
         ? Math.min(Math.max(theme.cardOpacity, 0.45), 0.98)
@@ -656,12 +668,31 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
   const cardMuted = usesPresetCard ? preset.mutedText : derived.mutedText;
   const borderColor = usesPresetCard ? preset.border : derived.border;
 
-  const backgroundImage =
-    theme.backgroundType === "image" && theme.backgroundImageUrl
-      ? `linear-gradient(180deg, ${usesPresetBackground ? preset.overlay : derived.overlay}, ${usesPresetBackground ? preset.overlay : derived.overlay}), url(${theme.backgroundImageUrl})`
-      : theme.backgroundType === "gradient"
-        ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
-        : theme.backgroundColor;
+  const overlayAlphaMap: Record<BackgroundOverlayStrength, number> = {
+    light: 0.34,
+    balanced: 0.48,
+    strong: 0.58,
+    "extra-strong": 0.68,
+  };
+  const blurMap: Record<BackgroundImageSoftness, number> = {
+    sharp: 0,
+    soft: 6,
+    softer: 12,
+  };
+  const positionMap: Record<BackgroundImageFocus, string> = {
+    center: "center center",
+    top: "center top",
+    left: "left center",
+    right: "right center",
+  };
+  const selectedOverlayAlpha = overlayAlphaMap[theme.backgroundOverlayStrength];
+  const overlayColor = `rgba(10, 10, 12, ${selectedOverlayAlpha})`;
+  const overlayEndAlpha = Math.min(selectedOverlayAlpha + 0.16, 0.82);
+  const backgroundBase =
+    theme.backgroundType === "gradient"
+      ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
+      : theme.backgroundColor;
+  const backgroundImage = backgroundBase;
   const recipe = themeRecipes[theme.presetTheme as ThemePresetKey] ?? themeRecipes["bronze-studio"];
 
   const wrapperStyle = {
@@ -673,6 +704,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     "--accent-foreground": primaryForeground,
     "--foreground-muted": muted,
     "--artist-background": theme.backgroundColor,
+    "--artist-background-base": backgroundBase,
     "--artist-foreground": text,
     "--artist-muted": muted,
     "--artist-card-text": cardText,
@@ -716,6 +748,14 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
   return {
     theme,
     wrapperStyle,
+    backgroundMedia: {
+      imageUrl: theme.backgroundType === "image" ? theme.backgroundImageUrl : null,
+      overlayColor,
+      overlayGradient: `linear-gradient(180deg, rgba(10, 10, 12, 0.08) 0%, rgba(10, 10, 12, ${overlayEndAlpha}) 72%, rgba(10, 10, 12, ${Math.min(overlayEndAlpha + 0.08, 0.9)}) 100%)`,
+      blurPx: blurMap[theme.backgroundImageSoftness],
+      position: positionMap[theme.backgroundImageFocus],
+      baseBackground: backgroundBase,
+    },
     tokens: {
       text,
       muted,

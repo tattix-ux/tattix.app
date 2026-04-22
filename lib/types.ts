@@ -23,6 +23,9 @@ import type { SizeMode } from "@/lib/constants/size-estimation";
 import type { PublicLocale } from "@/lib/i18n/public";
 import type {
   BackgroundType,
+  BackgroundImageFocus,
+  BackgroundImageSoftness,
+  BackgroundOverlayStrength,
   BodyFontKey,
   FontPairingPreset,
   HeadingFontKey,
@@ -427,6 +430,9 @@ export type ArtistPageTheme = {
   gradientStart: string;
   gradientEnd: string;
   backgroundImageUrl: string | null;
+  backgroundOverlayStrength: BackgroundOverlayStrength;
+  backgroundImageSoftness: BackgroundImageSoftness;
+  backgroundImageFocus: BackgroundImageFocus;
   textColor: string;
   primaryColor: string;
   secondaryColor: string;

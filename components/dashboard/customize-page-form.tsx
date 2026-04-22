@@ -35,7 +35,6 @@ import { cn } from "@/lib/utils";
 
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
-type BackgroundStyleChoice = "solid" | "soft-gradient" | "deep-gradient" | "image";
 type CustomizeModule = "presets" | "colors" | "background" | "surfaces";
 type PreviewViewport = "desktop" | "mobile";
 
@@ -43,13 +42,6 @@ type CustomizePageArtist = {
   profile: ArtistProfile;
   funnelSettings: ArtistFunnelSettings;
 };
-
-const backgroundPalettePresets = [
-  { key: "graphite", labelTr: "Düz graphite", labelEn: "Solid graphite", mode: "dark" as const, start: "#121315", end: "#121315" },
-  { key: "soft-gradient", labelTr: "Soft gradient", labelEn: "Soft gradient", mode: "dark" as const, start: "#1E1E22", end: "#141518" },
-  { key: "deep-gradient", labelTr: "Deep gradient", labelEn: "Deep gradient", mode: "dark" as const, start: "#1A1C22", end: "#0F1012" },
-  { key: "ink-blue", labelTr: "Ink blue haze", labelEn: "Ink blue haze", mode: "dark" as const, start: "#1A2230", end: "#11161E" },
-] as const;
 
 const fontOptions = [
   { value: "inter", label: "Inter", helperTr: "Temiz ve dengeli", helperEn: "Clean and balanced" },
@@ -63,6 +55,26 @@ const themeColorSuggestions = {
   background: ["#121212", "#141518", "#100F16", "#111111", "#131512", "#10141B"],
   surface: ["#1A1A1C", "#1C1E22", "#181622", "#181818", "#1B1E1A", "#171D26"],
 } as const;
+
+const backgroundOverlayOptions = [
+  { value: "light", labelTr: "Hafif", labelEn: "Light", overlay: "rgba(10, 10, 12, 0.34)" },
+  { value: "balanced", labelTr: "Dengeli", labelEn: "Balanced", overlay: "rgba(10, 10, 12, 0.48)" },
+  { value: "strong", labelTr: "Güçlü", labelEn: "Strong", overlay: "rgba(10, 10, 12, 0.58)" },
+  { value: "extra-strong", labelTr: "Çok güçlü", labelEn: "Very strong", overlay: "rgba(10, 10, 12, 0.68)" },
+] as const;
+
+const backgroundSoftnessOptions = [
+  { value: "sharp", labelTr: "Net", labelEn: "Sharp", blur: "blur(0px)" },
+  { value: "soft", labelTr: "Yumuşak", labelEn: "Soft", blur: "blur(6px)" },
+  { value: "softer", labelTr: "Daha yumuşak", labelEn: "Softer", blur: "blur(12px)" },
+] as const;
+
+const backgroundFocusOptions = [
+  { value: "center", labelTr: "Ortala", labelEn: "Center", position: "center center" },
+  { value: "top", labelTr: "Üst odaklı", labelEn: "Top focus", position: "center top" },
+  { value: "left", labelTr: "Sol odaklı", labelEn: "Left focus", position: "left center" },
+  { value: "right", labelTr: "Sağ odaklı", labelEn: "Right focus", position: "right center" },
+] as const;
 
 const cardSurfaceOptions = [
   {
@@ -161,6 +173,9 @@ function buildFormValues(source: ArtistPageTheme): ThemeValues {
     gradientStart: source.gradientStart,
     gradientEnd: source.gradientEnd,
     backgroundImageUrl: source.backgroundImageUrl ?? "",
+    backgroundOverlayStrength: source.backgroundOverlayStrength,
+    backgroundImageSoftness: source.backgroundImageSoftness,
+    backgroundImageFocus: source.backgroundImageFocus,
     textColor: source.textColor,
     primaryColor: source.primaryColor,
     secondaryColor: source.secondaryColor,
@@ -183,12 +198,6 @@ function inferFontStyle(headingFont: string) {
   if (headingFont === "manrope") return "manrope";
   if (headingFont === "outfit" || headingFont === "dm-sans" || headingFont === "general-sans") return "outfit";
   return "inter";
-}
-
-function inferBackgroundStyle(backgroundType: string, themeMode: string): BackgroundStyleChoice {
-  if (backgroundType === "image") return "image";
-  if (backgroundType === "solid") return "solid";
-  return themeMode === "light" ? "soft-gradient" : "deep-gradient";
 }
 
 function SectionCard({
@@ -606,7 +615,7 @@ function AppearancePreview({
   locale: PublicLocale;
   viewport: PreviewViewport;
 }) {
-  const { wrapperStyle, tokens } = buildThemeStyles(theme);
+  const { wrapperStyle, tokens, backgroundMedia } = buildThemeStyles(theme);
   const headingColor = tokens.text;
   const mutedColor = tokens.muted;
   const cardText = tokens.cardText;
@@ -638,7 +647,22 @@ function AppearancePreview({
             desktopShell ? "max-w-none" : "",
           )}
         >
-          <div className="overflow-hidden rounded-[28px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
+          <div className="relative overflow-hidden rounded-[28px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
+            {backgroundMedia.imageUrl ? (
+              <>
+                <div
+                  className="absolute inset-0 scale-[1.04]"
+                  style={{
+                    backgroundImage: `url(${backgroundMedia.imageUrl})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: backgroundMedia.position,
+                    filter: `blur(${backgroundMedia.blurPx}px)`,
+                  }}
+                />
+                <div className="absolute inset-0" style={{ background: backgroundMedia.overlayGradient }} />
+                <div className="absolute inset-0" style={{ backgroundColor: backgroundMedia.overlayColor }} />
+              </>
+            ) : null}
             <div className={cn(desktopShell ? "p-4" : "p-4")}>
               <div
                 className={cn("relative overflow-hidden rounded-[26px] border", desktopShell ? "h-[220px]" : "h-[250px]")}
@@ -823,15 +847,20 @@ export function CustomizePageForm({
           cardSampleTitle: "Kart örneği",
           cardSampleBody: "Başlık, açıklama ve etiketler otomatik dengelenmiş tonlarla görünür.",
           badgeSample: "Küçük rozet",
-          backgroundTitle: "Arka plan stili",
-          backgroundDescription: "Profil sayfasının genel atmosferini ve derinliğini belirler.",
-          backgroundSolid: "Düz",
-          backgroundSoft: "Yumuşak degrade",
-          backgroundDeep: "Derin degrade",
-          backgroundImage: "Görsel",
-          backgroundUploadEmpty: "Arka plan görseli ekleyebilirsin.",
+          backgroundModuleTitle: "Arka Plan",
+          backgroundModuleDescription: "Kendi görselini yükle veya sade bir zemin kullan. Sistem yazıların okunmasını otomatik korur.",
+          backgroundKindTitle: "Arka plan türü",
+          backgroundKindSolid: "Sade zemin",
+          backgroundKindImage: "Görsel kullan",
+          backgroundImageTitle: "Arka plan görseli",
+          backgroundImageDescription: "Geniş kadraj, koyu veya dengeli görseller daha iyi sonuç verir.",
           backgroundUpload: "Görsel yükle",
-          backgroundRemove: "Kaldır",
+          backgroundRemove: "Görseli kaldır",
+          backgroundAutoNote: "Arka plan görseli otomatik olarak karartılır; böylece yazılar ve butonlar okunaklı kalır.",
+          overlayTitle: "Karartma seviyesi",
+          softnessTitle: "Görsel netliği",
+          focusTitle: "Odak konumu",
+          backgroundUploadEmpty: "Arka plan görseli ekleyebilirsin.",
           cardTitle: "Kart ve buton yüzeyi",
           cardDescription: "Kart yüzeyi ve genel yüzey kontrastını seç.",
           typeTitle: "Yazı stili",
@@ -888,15 +917,20 @@ export function CustomizePageForm({
           cardSampleTitle: "Card sample",
           cardSampleBody: "Heading, description, and small labels stay automatically balanced.",
           badgeSample: "Badge",
-          backgroundTitle: "Background style",
-          backgroundDescription: "Sets the overall atmosphere and depth of the profile page.",
-          backgroundSolid: "Solid",
-          backgroundSoft: "Soft gradient",
-          backgroundDeep: "Deep gradient",
-          backgroundImage: "Image",
-          backgroundUploadEmpty: "You can add a background image.",
+          backgroundModuleTitle: "Background",
+          backgroundModuleDescription: "Upload your own image or stay with a quiet surface. The system keeps text readable automatically.",
+          backgroundKindTitle: "Background type",
+          backgroundKindSolid: "Solid surface",
+          backgroundKindImage: "Use image",
+          backgroundImageTitle: "Background image",
+          backgroundImageDescription: "Wide, darker, or balanced images usually work best.",
           backgroundUpload: "Upload image",
-          backgroundRemove: "Remove",
+          backgroundRemove: "Remove image",
+          backgroundAutoNote: "The background image is automatically darkened so text and buttons stay readable.",
+          overlayTitle: "Darkening level",
+          softnessTitle: "Image softness",
+          focusTitle: "Focus position",
+          backgroundUploadEmpty: "You can add a background image.",
           cardTitle: "Card and button surface",
           cardDescription: "Choose the overall surface contrast for cards and actions.",
           typeTitle: "Type style",
@@ -928,6 +962,13 @@ export function CustomizePageForm({
   const currentBackgroundColor = watchedValues.backgroundColor ?? theme.backgroundColor;
   const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
   const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
+  const currentBackgroundImageUrl = watchedValues.backgroundImageUrl ?? theme.backgroundImageUrl ?? "";
+  const currentBackgroundOverlayStrength =
+    watchedValues.backgroundOverlayStrength ?? theme.backgroundOverlayStrength;
+  const currentBackgroundImageSoftness =
+    watchedValues.backgroundImageSoftness ?? theme.backgroundImageSoftness;
+  const currentBackgroundImageFocus =
+    watchedValues.backgroundImageFocus ?? theme.backgroundImageFocus;
   const currentPrimaryColor = watchedValues.primaryColor ?? theme.primaryColor;
   const currentSecondaryColor = watchedValues.secondaryColor ?? theme.secondaryColor;
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
@@ -935,7 +976,6 @@ export function CustomizePageForm({
     typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
   const currentThemeMode = watchedValues.themeMode ?? theme.themeMode;
   const currentFontStyle = inferFontStyle(watchedValues.headingFont ?? theme.headingFont);
-  const currentBackgroundStyle = inferBackgroundStyle(currentBackgroundType, currentThemeMode);
   const derivedColorTokens = useMemo(
     () =>
       deriveThemeColorTokens({
@@ -975,16 +1015,14 @@ export function CustomizePageForm({
 
   function applyBackgroundTone(nextColor: string) {
     form.setValue("backgroundColor", nextColor, { shouldDirty: true, shouldValidate: true });
-    if (currentBackgroundType !== "image") {
-      form.setValue("gradientStart", mixHex(nextColor, currentCardColor, 0.82), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      form.setValue("gradientEnd", mixHex(nextColor, currentSecondaryColor, 0.68), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    }
+    form.setValue("gradientStart", mixHex(nextColor, currentCardColor, 0.82), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    form.setValue("gradientEnd", mixHex(nextColor, currentSecondaryColor, 0.68), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   }
 
   const previewTheme = useMemo(
@@ -996,7 +1034,10 @@ export function CustomizePageForm({
         backgroundColor: currentBackgroundColor,
         gradientStart: currentGradientStart,
         gradientEnd: currentGradientEnd,
-        backgroundImageUrl: watchedValues.backgroundImageUrl || null,
+        backgroundImageUrl: currentBackgroundImageUrl || null,
+        backgroundOverlayStrength: currentBackgroundOverlayStrength,
+        backgroundImageSoftness: currentBackgroundImageSoftness,
+        backgroundImageFocus: currentBackgroundImageFocus,
         textColor: derivedColorTokens.text,
         primaryColor: currentPrimaryColor,
         secondaryColor: currentSecondaryColor,
@@ -1016,6 +1057,10 @@ export function CustomizePageForm({
     [
       artist.profile.id,
       currentBackgroundColor,
+      currentBackgroundImageFocus,
+      currentBackgroundImageSoftness,
+      currentBackgroundImageUrl,
+      currentBackgroundOverlayStrength,
       currentBackgroundType,
       currentCardColor,
       currentCardOpacity,
@@ -1030,7 +1075,6 @@ export function CustomizePageForm({
       theme.fontPairingPreset,
       theme.headingFont,
       theme.radiusStyle,
-      watchedValues.backgroundImageUrl,
       watchedValues.bodyFont,
       watchedValues.customCtaLabel,
       watchedValues.customIntroText,
@@ -1071,6 +1115,10 @@ export function CustomizePageForm({
     form.setValue("backgroundColor", preset.backgroundColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientStart", preset.gradientStart, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientEnd", preset.gradientEnd, { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundOverlayStrength", "balanced", { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundImageSoftness", "soft", { shouldDirty: true, shouldValidate: true });
+    form.setValue("backgroundImageFocus", "center", { shouldDirty: true, shouldValidate: true });
     form.setValue("textColor", preset.textColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("primaryColor", preset.primaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true, shouldValidate: true });
@@ -1105,26 +1153,6 @@ export function CustomizePageForm({
     form.setValue("headingFont", mapped.headingFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("bodyFont", mapped.bodyFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("fontPairingPreset", mapped.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
-  }
-
-  function setBackgroundStyle(next: BackgroundStyleChoice) {
-    if (next === "image") {
-      form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true });
-      return;
-    }
-
-    if (next === "solid") {
-      form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
-      form.setValue("themeMode", "dark", { shouldDirty: true, shouldValidate: true });
-      form.setValue("backgroundColor", "#121315", {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      return;
-    }
-
-    const preset = next === "soft-gradient" ? backgroundPalettePresets[1] : backgroundPalettePresets[2];
-    applyBackgroundPalette(preset.key);
   }
 
   async function handleBackgroundUpload(file: File) {
@@ -1163,17 +1191,6 @@ export function CustomizePageForm({
     if (currentBackgroundType === "image") {
       form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
     }
-  }
-
-  function applyBackgroundPalette(paletteKey: (typeof backgroundPalettePresets)[number]["key"]) {
-    const palette = backgroundPalettePresets.find((item) => item.key === paletteKey);
-    if (!palette) return;
-
-    form.setValue("backgroundType", "gradient", { shouldDirty: true, shouldValidate: true });
-    form.setValue("themeMode", "dark", { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundColor", palette.start, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientStart", palette.start, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientEnd", palette.end, { shouldDirty: true, shouldValidate: true });
   }
 
   async function saveTheme(values: ThemeValues) {
@@ -1373,83 +1390,105 @@ export function CustomizePageForm({
         </div>
       </SectionCard>
     ) : activeModule === "background" ? (
-      <SectionCard title={copy.backgroundModule} description={copy.backgroundDescription} icon={<ImageIcon className="size-4" />}>
+      <SectionCard title={copy.backgroundModuleTitle} description={copy.backgroundModuleDescription} icon={<ImageIcon className="size-4" />}>
         <div className="space-y-4">
-          <CustomGroup title={copy.backgroundTitle} description={copy.backgroundDescription}>
-            <div className="grid gap-3 md:grid-cols-2">
-              <VisualOptionCard
-                title={locale === "tr" ? backgroundPalettePresets[0].labelTr : backgroundPalettePresets[0].labelEn}
-                description={locale === "tr" ? "Temiz ve sakin graphite zemin." : "A calm, clean graphite base."}
-                active={currentBackgroundStyle === "solid"}
-                onClick={() => setBackgroundStyle("solid")}
+          <CustomGroup title={copy.backgroundKindTitle}>
+            <div className="inline-grid grid-cols-2 gap-2 rounded-[16px] border border-white/8 bg-white/[0.03] p-1">
+              <SelectionPill
+                active={currentBackgroundType !== "image"}
+                onClick={() => form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true })}
+                className="rounded-[12px] border-0 px-3.5 py-2"
               >
-                <div className="space-y-2">
-                  <div className="h-14 rounded-[14px] bg-[#121315]" />
-                  <div className="h-9 rounded-[14px] border border-white/8 bg-[#1B1D21]" />
-                </div>
-              </VisualOptionCard>
-              <VisualOptionCard
-                title={locale === "tr" ? backgroundPalettePresets[1].labelTr : backgroundPalettePresets[1].labelEn}
-                description={locale === "tr" ? "Daha yumuşak bir geçiş ve hafif sıcaklık." : "A softer transition with a touch of warmth."}
-                active={
-                  currentBackgroundStyle === "soft-gradient" ||
-                  (currentGradientStart.toLowerCase() === backgroundPalettePresets[1].start.toLowerCase() &&
-                    currentGradientEnd.toLowerCase() === backgroundPalettePresets[1].end.toLowerCase())
-                }
-                onClick={() => setBackgroundStyle("soft-gradient")}
+                {copy.backgroundKindSolid}
+              </SelectionPill>
+              <SelectionPill
+                active={currentBackgroundType === "image"}
+                onClick={() => form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true })}
+                className="rounded-[12px] border-0 px-3.5 py-2"
               >
-                <div className="space-y-2">
-                  <div className="h-14 rounded-[14px]" style={{ background: `linear-gradient(145deg, ${backgroundPalettePresets[1].start}, ${backgroundPalettePresets[1].end})` }} />
-                  <div className="h-9 rounded-[14px] border border-white/8 bg-[#211F22]" />
-                </div>
-              </VisualOptionCard>
-              <VisualOptionCard
-                title={locale === "tr" ? backgroundPalettePresets[2].labelTr : backgroundPalettePresets[2].labelEn}
-                description={locale === "tr" ? "Daha derin koyuluk ve belirgin katman." : "Deeper darkness with a stronger layered feel."}
-                active={
-                  currentBackgroundStyle === "deep-gradient" &&
-                  currentGradientStart.toLowerCase() === backgroundPalettePresets[2].start.toLowerCase() &&
-                  currentGradientEnd.toLowerCase() === backgroundPalettePresets[2].end.toLowerCase()
-                }
-                onClick={() => setBackgroundStyle("deep-gradient")}
-              >
-                <div className="space-y-2">
-                  <div className="h-14 rounded-[14px]" style={{ background: `linear-gradient(160deg, ${backgroundPalettePresets[2].start}, ${backgroundPalettePresets[2].end})` }} />
-                  <div className="h-9 rounded-[14px] border border-white/8 bg-[#17191E]" />
-                </div>
-              </VisualOptionCard>
-              <VisualOptionCard
-                title={locale === "tr" ? backgroundPalettePresets[3].labelTr : backgroundPalettePresets[3].labelEn}
-                description={locale === "tr" ? "Hafif ink-blue derinlik, hâlâ koyu ve premium." : "A slight ink-blue depth while staying dark and premium."}
-                active={
-                  currentGradientStart.toLowerCase() === backgroundPalettePresets[3].start.toLowerCase() &&
-                  currentGradientEnd.toLowerCase() === backgroundPalettePresets[3].end.toLowerCase()
-                }
-                onClick={() => applyBackgroundPalette("ink-blue")}
-              >
-                <div className="space-y-2">
-                  <div
-                    className="h-14 rounded-[14px]"
-                    style={{
-                      background: `radial-gradient(circle at 24% 22%, rgba(76,108,160,0.18), transparent 42%), linear-gradient(160deg, ${backgroundPalettePresets[3].start}, ${backgroundPalettePresets[3].end})`,
-                    }}
-                  />
-                  <div className="h-9 rounded-[14px] border border-white/8 bg-[#1B2130]" />
-                </div>
-              </VisualOptionCard>
+                {copy.backgroundKindImage}
+              </SelectionPill>
             </div>
           </CustomGroup>
 
-          <CustomGroup title={copy.backgroundImage}>
-            <MediaUploadField
-              imageUrl={watchedValues.backgroundImageUrl || ""}
-              emptyLabel={copy.backgroundUploadEmpty}
-              uploadLabel={copy.backgroundUpload}
-              removeLabel={copy.backgroundRemove}
-              onUpload={handleBackgroundUpload}
-              onRemove={clearBackgroundImage}
-            />
-          </CustomGroup>
+          {currentBackgroundType === "image" ? (
+            <>
+              <CustomGroup title={copy.backgroundImageTitle} description={copy.backgroundImageDescription}>
+                <MediaUploadField
+                  imageUrl={currentBackgroundImageUrl}
+                  emptyLabel={copy.backgroundUploadEmpty}
+                  uploadLabel={copy.backgroundUpload}
+                  removeLabel={copy.backgroundRemove}
+                  onUpload={handleBackgroundUpload}
+                  onRemove={clearBackgroundImage}
+                />
+                <p className="mt-3 text-[12px] leading-5 text-[var(--foreground-muted)]">{copy.backgroundAutoNote}</p>
+              </CustomGroup>
+
+              <CustomGroup title={copy.overlayTitle}>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {backgroundOverlayOptions.map((option) => (
+                    <SelectionPill
+                      key={option.value}
+                      active={currentBackgroundOverlayStrength === option.value}
+                      onClick={() =>
+                        form.setValue("backgroundOverlayStrength", option.value, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      className="justify-start rounded-[16px] px-4 py-3"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="inline-flex h-5 w-7 rounded-full border border-white/10" style={{ backgroundColor: option.overlay }} />
+                        {locale === "tr" ? option.labelTr : option.labelEn}
+                      </span>
+                    </SelectionPill>
+                  ))}
+                </div>
+              </CustomGroup>
+
+              <CustomGroup title={copy.softnessTitle}>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {backgroundSoftnessOptions.map((option) => (
+                    <SelectionPill
+                      key={option.value}
+                      active={currentBackgroundImageSoftness === option.value}
+                      onClick={() =>
+                        form.setValue("backgroundImageSoftness", option.value, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      className="justify-center rounded-[16px] px-4 py-3"
+                    >
+                      {locale === "tr" ? option.labelTr : option.labelEn}
+                    </SelectionPill>
+                  ))}
+                </div>
+              </CustomGroup>
+
+              <CustomGroup title={copy.focusTitle}>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {backgroundFocusOptions.map((option) => (
+                    <SelectionPill
+                      key={option.value}
+                      active={currentBackgroundImageFocus === option.value}
+                      onClick={() =>
+                        form.setValue("backgroundImageFocus", option.value, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      className="justify-center rounded-[16px] px-4 py-3"
+                    >
+                      {locale === "tr" ? option.labelTr : option.labelEn}
+                    </SelectionPill>
+                  ))}
+                </div>
+              </CustomGroup>
+            </>
+          ) : null}
         </div>
       </SectionCard>
     ) : (

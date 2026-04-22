@@ -11,7 +11,7 @@ export function ArtistPageShell({
   children: React.ReactNode;
   className?: string;
 }) {
-  const { wrapperStyle } = buildThemeStyles(theme);
+  const { wrapperStyle, backgroundMedia } = buildThemeStyles(theme);
 
   return (
     <div
@@ -21,6 +21,21 @@ export function ArtistPageShell({
       )}
       style={wrapperStyle}
     >
+      {backgroundMedia.imageUrl ? (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className="absolute inset-0 scale-[1.04]"
+            style={{
+              backgroundImage: `url(${backgroundMedia.imageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: backgroundMedia.position,
+              filter: `blur(${backgroundMedia.blurPx}px)`,
+            }}
+          />
+          <div className="absolute inset-0" style={{ background: backgroundMedia.overlayGradient }} />
+          <div className="absolute inset-0" style={{ backgroundColor: backgroundMedia.overlayColor }} />
+        </div>
+      ) : null}
       <div className="pointer-events-none absolute inset-0" style={{ background: "var(--artist-shell-glow)" }} />
       <div className="pointer-events-none absolute inset-0" style={{ background: "var(--artist-shell-veil)" }} />
       <div className="pointer-events-none absolute inset-0" style={{ boxShadow: `inset 0 0 0 1px ${"var(--artist-page-texture)"}` }} />
