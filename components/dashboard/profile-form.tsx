@@ -382,13 +382,13 @@ export function ProfileForm({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-5">
+    <div className="space-y-2.5">
+      <div className="space-y-4">
         <SectionBlock
           title={locale === "tr" ? "Temel profil" : "Core profile"}
           description={copy.coreSectionDescription}
         >
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-3 lg:grid-cols-2">
             <MediaUploadField
               label={copy.profileImage}
               imageUrl={form.watch("profileImageUrl") || ""}
@@ -409,16 +409,16 @@ export function ProfileForm({
             />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-3 lg:grid-cols-2">
             <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
-              <Input {...form.register("artistName")} className="h-12" />
+              <Input {...form.register("artistName")} className="h-10" />
             </Field>
             <Field
               label={copy.upperLabel}
               description={copy.upperLabelDescription}
               error={form.formState.errors.upperLabel?.message}
             >
-              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-12" />
+              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-10" />
             </Field>
           </div>
 
@@ -427,7 +427,7 @@ export function ProfileForm({
             description={copy.welcomeHeadlineDescription}
             error={form.formState.errors.welcomeHeadline?.message}
           >
-            <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} className="h-12" />
+            <Input {...form.register("welcomeHeadline")} placeholder={copy.welcomeHeadlinePlaceholder} className="h-10" />
           </Field>
 
           <Field
@@ -438,7 +438,7 @@ export function ProfileForm({
             <Textarea
               {...form.register("shortBio")}
               placeholder={copy.shortBioPlaceholder}
-              className="min-h-[144px]"
+              className="min-h-[116px]"
             />
           </Field>
 
@@ -448,7 +448,7 @@ export function ProfileForm({
           title={locale === "tr" ? "Link ve iletişim" : "Link and contact"}
           description={copy.contactSectionDescription}
         >
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_132px] lg:items-end">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_120px] lg:items-end">
             <Field label={copy.linkSection}>
               <div className="flex min-w-0 overflow-hidden rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)]">
                 <div className="flex items-center border-r border-[var(--border-soft)] px-4 text-sm text-[var(--text-muted)]">
@@ -456,29 +456,29 @@ export function ProfileForm({
                 </div>
                 <Input
                   {...form.register("slug")}
-                  className="h-12 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="h-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
             </Field>
-            <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-12">
+            <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-10">
               <Copy className="size-4" />
               {copied ? copy.copied : copy.copyLink}
             </Button>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-3 lg:grid-cols-2">
             <Field label={copy.whatsapp} error={form.formState.errors.whatsappNumber?.message}>
-              <Input {...form.register("whatsappNumber")} className="h-12" />
+              <Input {...form.register("whatsappNumber")} className="h-10" />
             </Field>
             <Field label={copy.instagram} error={form.formState.errors.instagramHandle?.message}>
-              <Input {...form.register("instagramHandle")} className="h-12" />
+              <Input {...form.register("instagramHandle")} className="h-10" />
             </Field>
           </div>
           <input type="hidden" {...form.register("active")} />
         </SectionBlock>
       </div>
 
-      <div className="flex min-h-6 items-center gap-2 px-1 text-sm text-[var(--foreground-muted)]">
+      <div className="flex min-h-5 items-center gap-2 px-1 text-[12px] text-[var(--foreground-muted)]">
         {autosaveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
         {autosaveState === "saved" ? <CheckCircle2 className="size-4 text-[var(--accent-soft)]" /> : null}
         {form.formState.errors.root?.message ?? statusMessage}
@@ -502,13 +502,13 @@ export function ProfilePreviewCard({
   const { wrapperStyle } = buildThemeStyles(pageTheme);
 
   return (
-    <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-2)_0%,var(--bg-section)_100%)] shadow-[0_24px_54px_rgba(0,0,0,0.28)] xl:sticky xl:top-6 xl:self-start">
+    <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-2)_0%,var(--bg-section)_100%)] shadow-[0_24px_54px_rgba(0,0,0,0.28)] xl:sticky xl:top-4 xl:self-start">
       <CardHeader className="pb-4">
-        <CardTitle>{copy.previewTitle}</CardTitle>
-        <p className="text-sm leading-6 text-[var(--text-secondary)]">{copy.previewDescription}</p>
+        <CardTitle className="text-[1rem]">{copy.previewTitle}</CardTitle>
+        <p className="text-[13px] leading-5 text-[var(--text-secondary)]">{copy.previewDescription}</p>
       </CardHeader>
       <CardContent>
-        <div className="mx-auto max-w-[400px] 2xl:max-w-[430px]">
+        <div className="mx-auto max-w-[340px] 2xl:max-w-[360px]">
           <div
             className="overflow-hidden rounded-[42px] border shadow-[0_30px_70px_rgba(0,0,0,0.34)]"
             style={{

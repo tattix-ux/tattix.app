@@ -15,12 +15,12 @@ export function Field({
 }) {
   return (
     <label className={cn("flex flex-col gap-2", className)}>
-      <span className="text-sm font-medium text-[var(--text-primary)]">{label}</span>
+      <span className="text-[13px] font-medium text-[var(--text-primary)]">{label}</span>
       {description ? (
-        <span className="text-xs leading-5 text-[var(--text-muted)]">{description}</span>
+        <span className="text-[11px] leading-[1.35rem] text-[var(--text-muted)]">{description}</span>
       ) : null}
       {children}
-      {error ? <span className="text-xs text-red-300">{error}</span> : null}
+      {error ? <span className="text-[11px] text-red-300">{error}</span> : null}
     </label>
   );
 }

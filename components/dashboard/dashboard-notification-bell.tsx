@@ -17,7 +17,7 @@ export function DashboardNotificationBell({
     <Link
       href="/dashboard/notifications"
       className={cn(
-        "relative inline-flex size-10 items-center justify-center rounded-full border border-white/8 bg-white/4 text-[var(--foreground-muted)] transition hover:border-white/14 hover:bg-white/8 hover:text-white",
+        "relative inline-flex size-9 items-center justify-center rounded-full border border-white/8 bg-white/4 text-[var(--foreground-muted)] transition hover:border-white/14 hover:bg-white/8 hover:text-white",
         className,
       )}
       aria-label={locale === "tr" ? "Bildirimler" : "Notifications"}

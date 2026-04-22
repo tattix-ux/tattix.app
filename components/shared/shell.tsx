@@ -36,7 +36,7 @@ export function Container({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("mx-auto w-full min-w-0 max-w-full overflow-x-clip px-4 sm:max-w-[1380px] sm:px-5 lg:px-6", className)}>{children}</div>;
+  return <div className={cn("mx-auto w-full min-w-0 max-w-full overflow-x-clip px-3.5 sm:max-w-[1280px] sm:px-[18px] lg:px-5", className)}>{children}</div>;
 }
 
 export function SectionHeading({
@@ -51,15 +51,15 @@ export function SectionHeading({
   align?: "left" | "center";
 }) {
   return (
-    <div className={cn("space-y-2.5", align === "center" && "text-center")}>
+    <div className={cn("space-y-2", align === "center" && "text-center")}>
       {eyebrow ? (
-        <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-[var(--accent-soft)]/95">
+        <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-[var(--accent-soft)]/95">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="font-display text-[2.15rem] font-semibold leading-tight tracking-[-0.04em] text-[var(--text-primary)] sm:text-[2.6rem]">{title}</h2>
+      <h2 className="font-display text-[1.9rem] font-semibold leading-tight tracking-[-0.04em] text-[var(--text-primary)] sm:text-[2.25rem]">{title}</h2>
       {description ? (
-        <p className="max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+        <p className="max-w-2xl text-[13px] leading-5 text-[var(--text-secondary)]">
           {description}
         </p>
       ) : null}

@@ -576,10 +576,10 @@ export function ProfileRequestSettings({
     <div className="space-y-3">
       <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
         <CardHeader className="pb-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(200px,240px)] xl:items-end">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(180px,220px)] xl:items-end">
             <div className="min-w-0">
-              <CardTitle className="text-[1.02rem]">{copy.bookingTitle}</CardTitle>
-              <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
+              <CardTitle className="text-[1rem]">{copy.bookingTitle}</CardTitle>
+              <p className="mt-1 text-[13px] leading-5 text-[var(--text-secondary)]">
                 {copy.bookingDescription}
               </p>
             </div>
@@ -588,9 +588,9 @@ export function ProfileRequestSettings({
                 value={pendingCity}
                 onChange={(event) => setPendingCity(event.target.value)}
                 placeholder={copy.cityPlaceholder}
-                className="h-12 min-w-[180px]"
+                className="h-10 min-w-[160px]"
               />
-              <Button type="button" onClick={addBookingCity} className="h-12">
+              <Button type="button" onClick={addBookingCity} className="h-10">
                 <Plus className="size-4" />
                 {copy.addCity}
               </Button>
@@ -615,7 +615,7 @@ export function ProfileRequestSettings({
                 const isExpanded = expandedCities[field.id] ?? availableDates.length === 0;
 
                 return (
-                  <div key={field.id} className="rounded-[22px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-4 sm:p-5">
+                  <div key={field.id} className="rounded-[20px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-3.5 sm:p-4">
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="min-w-0 flex-1 space-y-3">
@@ -629,7 +629,7 @@ export function ProfileRequestSettings({
                                 })
                               }
                               placeholder={copy.cityPlaceholder}
-                              className="h-12"
+                              className="h-10"
                             />
                             <Badge variant="accent" className="w-fit border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-[var(--text-primary)]">
                               {availableDates.length} {copy.selectedDays}
