@@ -413,56 +413,80 @@ function MediaUploadField({
 function ThemePresetCard({
   active,
   title,
+  description,
   onSelect,
-  selectedLabel,
   theme,
 }: {
   active: boolean;
   title: string;
+  description: string;
   onSelect: () => void;
-  selectedLabel: string;
-  theme: ArtistPageTheme;
+  theme: (typeof themePresets)[ThemePresetKey];
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
       style={{
-        background:
-          theme.backgroundType === "gradient"
-            ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
-            : theme.backgroundColor,
-        borderColor: active ? toRgba(theme.primaryColor, 0.48) : toRgba(theme.textColor, 0.08),
+        backgroundColor: theme.surface,
+        borderColor: active ? theme.primary : theme.border,
+        boxShadow: active ? `0 0 0 1px ${toRgba(theme.primary, 0.12)}, 0 18px 36px rgba(0,0,0,0.18)` : undefined,
       }}
       className={cn(
-        "relative min-h-[104px] rounded-[26px] border px-5 py-4 text-left transition",
-        active
-          ? "shadow-[0_20px_40px_rgba(0,0,0,0.18)]"
-          : "hover:brightness-[1.05]",
+        "relative min-h-[148px] overflow-hidden rounded-[24px] border p-4 text-left transition",
+        active ? "" : "hover:-translate-y-0.5 hover:brightness-[1.04]",
       )}
     >
       <div
         className="absolute inset-0 rounded-[inherit]"
         style={{
-          background: `radial-gradient(circle at top left, ${toRgba(theme.primaryColor, active ? 0.16 : 0.1)}, transparent 42%)`,
+          background: `radial-gradient(circle at top left, ${toRgba(theme.primary, active ? 0.18 : 0.11)}, transparent 44%)`,
         }}
       />
       {active ? (
-        <span
-          className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur-sm"
+        <div
+          className="absolute right-4 top-4 inline-flex size-6 items-center justify-center rounded-full border"
+          style={{ borderColor: toRgba(theme.primary, 0.5), backgroundColor: toRgba(theme.primary, 0.16), color: theme.primary }}
+        >
+          <Check className="size-3.5" />
+        </div>
+      ) : null}
+      <div className="relative flex h-full flex-col justify-between">
+        <div
+          className="rounded-[18px] border p-3"
           style={{
-            border: `1px solid ${toRgba(theme.textColor, 0.18)}`,
-            backgroundColor: "rgba(0,0,0,0.22)",
-            color: theme.textColor,
+            background: `linear-gradient(180deg, ${theme.background} 0%, ${theme.overlay} 100%)`,
+            borderColor: toRgba(theme.textColor, 0.08),
           }}
         >
-          {selectedLabel}
-        </span>
-      ) : null}
-      <div className="relative flex h-full items-end">
-        <p className="text-[1.03rem] font-semibold tracking-[-0.03em]" style={{ color: theme.textColor }}>
-          {title}
-        </p>
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-12 rounded-full" style={{ backgroundColor: theme.primary }} />
+              <div className="h-2.5 w-8 rounded-full" style={{ backgroundColor: toRgba(theme.secondary, 0.9) }} />
+            </div>
+            <div className="rounded-[14px] border p-2.5" style={{ backgroundColor: toRgba(theme.surface, 0.92), borderColor: toRgba(theme.textColor, 0.08) }}>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <div className="h-2.5 w-16 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.88) }} />
+                  <div className="h-2 w-10 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.9) }} />
+                </div>
+                <div className="h-6 w-14 rounded-full" style={{ backgroundColor: theme.primary }} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between rounded-[14px] border px-2.5 py-2" style={{ backgroundColor: toRgba(theme.surface, 0.76), borderColor: toRgba(theme.textColor, 0.08) }}>
+              <div className="h-2 w-14 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.78) }} />
+              <div className="h-2 w-8 rounded-full" style={{ backgroundColor: toRgba(theme.primary, 0.72) }} />
+            </div>
+          </div>
+        </div>
+        <div className="pt-3">
+          <p className="text-[1rem] font-semibold tracking-[-0.03em]" style={{ color: theme.textColor }}>
+            {title}
+          </p>
+          <p className="mt-1 line-clamp-1 text-[13px] leading-5" style={{ color: theme.mutedText }}>
+            {description}
+          </p>
+        </div>
       </div>
     </button>
   );
@@ -672,7 +696,8 @@ export function CustomizePageForm({
           moduleMenuTitle: "Modüller",
           moduleMenuDescription: "Bir modül seç ve sadece o ayarı düzenle.",
           presetSectionTitle: "Hazır Temalar",
-          presetSectionDescription: "Başlangıç görünümünü seç. Sağdaki canlı önizleme hemen güncellenir.",
+          presetSectionDescription: "Bir temel görünüm seç, sonra istersen kendi renklerinle düzenle.",
+          presetHelp: "Hazır temalar iyi bir başlangıç noktasıdır. İstersen sonraki adımlarda renkleri ve arka planı değiştirebilirsin.",
           presetModule: "Hazır Temalar",
           colorsModule: "Renkler",
           backgroundModule: "Arka Plan",
@@ -720,7 +745,8 @@ export function CustomizePageForm({
           moduleMenuTitle: "Modules",
           moduleMenuDescription: "Choose one module and adjust only that section.",
           presetSectionTitle: "Ready-made themes",
-          presetSectionDescription: "Choose a starting point. The live preview updates on the right immediately.",
+          presetSectionDescription: "Choose a base look first, then refine it with your own colors if you want.",
+          presetHelp: "Ready-made themes are a strong starting point. You can refine colors and background in the next steps.",
           presetModule: "Ready-made themes",
           colorsModule: "Colors",
           backgroundModule: "Background",
@@ -898,7 +924,7 @@ export function CustomizePageForm({
   }
 
   function resetThemeToDefault() {
-    const defaultTheme = resolveArtistTheme({ presetTheme: "dark-alloy", artistId: artist.profile.id });
+    const defaultTheme = resolveArtistTheme({ presetTheme: "bronze-studio", artistId: artist.profile.id });
     form.reset(buildFormValues(defaultTheme));
     form.clearErrors("root");
   }
@@ -1032,36 +1058,20 @@ export function CustomizePageForm({
         <div className="grid gap-4 md:grid-cols-2">
           {themePresetOptions.map((presetKey) => {
             const preset = themePresets[presetKey];
-            const resolvedTheme = resolveArtistTheme({
-              artistId: artist.profile.id,
-              presetTheme: presetKey,
-              backgroundType: preset.backgroundType,
-              backgroundColor: preset.backgroundColor,
-              gradientStart: preset.gradientStart,
-              gradientEnd: preset.gradientEnd,
-              primaryColor: preset.primaryColor,
-              secondaryColor: preset.secondaryColor,
-              cardColor: preset.cardColor,
-              cardOpacity: preset.cardOpacity,
-              headingFont: preset.headingFont,
-              bodyFont: preset.bodyFont,
-              fontPairingPreset: preset.fontPairingPreset,
-              radiusStyle: preset.radiusStyle,
-              themeMode: preset.themeMode,
-            });
 
             return (
               <ThemePresetCard
                 key={presetKey}
                 active={currentPreset === presetKey}
-                title={themePresets[presetKey].label}
+                title={preset.label}
+                description={preset.description}
                 onSelect={() => applyPreset(presetKey)}
-                selectedLabel={copy.selected}
-                theme={resolvedTheme}
+                theme={preset}
               />
             );
           })}
         </div>
+        <p className="mt-4 text-[13px] leading-6 text-[var(--foreground-muted)]">{copy.presetHelp}</p>
       </SectionCard>
     ) : activeModule === "colors" ? (
       <SectionCard title={copy.colorsModule} description={copy.accentDescription} icon={<Palette className="size-4" />}>

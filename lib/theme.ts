@@ -120,7 +120,7 @@ function enforceReadableForeground(
 }
 
 export function buildDefaultArtistTheme(): ArtistPageTheme {
-  const presetKey: ThemePresetKey = "dark-alloy";
+  const presetKey: ThemePresetKey = "bronze-studio";
   const preset = themePresets[presetKey];
 
   return {
@@ -296,25 +296,25 @@ const themeRecipes: Record<
   },
   "dark-alloy": {
     shellGlow:
-      "radial-gradient(circle_at_top_left, rgba(224,185,130,0.1), transparent 28%), radial-gradient(circle_at_80%_20%, rgba(141,91,52,0.07), transparent 24%), radial-gradient(circle_at_bottom_right, rgba(42,45,52,0.28), transparent 36%)",
-    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.03), transparent 18%, transparent 82%, rgba(0,0,0,0.18))",
-    pageTexture: "rgba(255,255,255,0.028)",
+      "radial-gradient(circle_at_top_left, rgba(139,92,246,0.16), transparent 28%), radial-gradient(circle_at_80%_20%, rgba(192,132,252,0.1), transparent 24%), radial-gradient(circle_at_bottom_right, rgba(42,36,59,0.28), transparent 36%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.024), transparent 18%, transparent 82%, rgba(139,92,246,0.08))",
+    pageTexture: "rgba(255,255,255,0.024)",
     cardShadow: "0 24px 54px rgba(0,0,0,0.28)",
-    railSurface: "rgba(29,31,36,0.9)",
-    flowSurface: "rgba(18,19,21,0.97)",
-    sectionSurface: "rgba(29,31,36,0.92)",
-    sectionSurfaceStrong: "rgba(35,38,44,0.98)",
-    selectedSurface: "linear-gradient(180deg, rgba(224,185,130,0.18), rgba(182,124,73,0.1))",
-    selectedBorder: "rgba(224,185,130,0.32)",
-    inputSurface: "rgba(22,24,28,0.98)",
+    railSurface: "rgba(24,22,34,0.9)",
+    flowSurface: "rgba(16,15,22,0.97)",
+    sectionSurface: "rgba(24,22,34,0.92)",
+    sectionSurfaceStrong: "rgba(30,27,43,0.98)",
+    selectedSurface: "linear-gradient(180deg, rgba(139,92,246,0.2), rgba(192,132,252,0.12))",
+    selectedBorder: "rgba(139,92,246,0.36)",
+    inputSurface: "rgba(20,18,28,0.98)",
     inputBorder: "rgba(255,255,255,0.08)",
-    inputFocusSurface: "rgba(29,31,36,0.98)",
-    chipSurface: "rgba(214,165,116,0.14)",
-    chipText: "#e4c08d",
+    inputFocusSurface: "rgba(28,25,39,0.98)",
+    chipSurface: "rgba(139,92,246,0.16)",
+    chipText: "#e6d9ff",
     divider: "rgba(255,255,255,0.09)",
-    secondaryButtonSurface: "#1D1F24",
+    secondaryButtonSurface: "#181622",
     secondaryButtonBorder: "rgba(255,255,255,0.09)",
-    buttonShadow: "0 8px 24px rgba(214,165,116,0.18)",
+    buttonShadow: "0 8px 24px rgba(139,92,246,0.18)",
     buttonRadius: "999px",
     fieldRadius: "18px",
     cardRadius: "26px",
@@ -323,25 +323,25 @@ const themeRecipes: Record<
   },
   "velvet-sable": {
     shellGlow:
-      "radial-gradient(circle_at_top_left, rgba(199,154,104,0.1), transparent 26%), radial-gradient(circle_at_82%_18%, rgba(92,50,67,0.08), transparent 24%)",
-    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.026), transparent 20%, transparent 84%, rgba(199,154,104,0.02))",
-    pageTexture: "rgba(255,255,255,0.022)",
+      "radial-gradient(circle_at_top_left, rgba(231,229,228,0.08), transparent 24%), radial-gradient(circle_at_82%_18%, rgba(168,162,158,0.06), transparent 22%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.02), transparent 20%, transparent 84%, rgba(231,229,228,0.02))",
+    pageTexture: "rgba(255,255,255,0.018)",
     cardShadow: "0 22px 48px rgba(0,0,0,0.24)",
-    railSurface: "rgba(29,25,29,0.9)",
-    flowSurface: "rgba(23,20,23,0.96)",
-    sectionSurface: "rgba(35,27,31,0.92)",
-    sectionSurfaceStrong: "rgba(42,31,36,0.96)",
-    selectedSurface: "linear-gradient(180deg, rgba(199,154,104,0.16), rgba(128,82,57,0.1))",
-    selectedBorder: "rgba(199,154,104,0.28)",
-    inputSurface: "rgba(25,20,24,0.98)",
+    railSurface: "rgba(24,24,24,0.9)",
+    flowSurface: "rgba(17,17,17,0.96)",
+    sectionSurface: "rgba(24,24,24,0.92)",
+    sectionSurfaceStrong: "rgba(32,32,32,0.96)",
+    selectedSurface: "linear-gradient(180deg, rgba(231,229,228,0.12), rgba(168,162,158,0.08))",
+    selectedBorder: "rgba(231,229,228,0.24)",
+    inputSurface: "rgba(20,20,20,0.98)",
     inputBorder: "rgba(255,255,255,0.08)",
-    inputFocusSurface: "rgba(34,26,31,0.98)",
-    chipSurface: "rgba(199,154,104,0.12)",
-    chipText: "#f1d0ac",
+    inputFocusSurface: "rgba(28,28,28,0.98)",
+    chipSurface: "rgba(231,229,228,0.12)",
+    chipText: "#fafaf9",
     divider: "rgba(255,255,255,0.07)",
-    secondaryButtonSurface: "#221b20",
+    secondaryButtonSurface: "#181818",
     secondaryButtonBorder: "rgba(255,255,255,0.09)",
-    buttonShadow: "0 8px 24px rgba(199,154,104,0.16)",
+    buttonShadow: "0 8px 24px rgba(231,229,228,0.1)",
     buttonRadius: "999px",
     fieldRadius: "18px",
     cardRadius: "26px",
@@ -350,25 +350,25 @@ const themeRecipes: Record<
   },
   "cathedral-ash": {
     shellGlow:
-      "radial-gradient(circle_at_top_left, rgba(198,178,154,0.08), transparent 24%), radial-gradient(circle_at_78%_18%, rgba(74,77,96,0.07), transparent 22%)",
-    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.022), transparent 18%, transparent 84%, rgba(198,178,154,0.018))",
+      "radial-gradient(circle_at_top_left, rgba(182,138,86,0.1), transparent 24%), radial-gradient(circle_at_78%_18%, rgba(111,123,92,0.1), transparent 24%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.022), transparent 18%, transparent 84%, rgba(111,123,92,0.03))",
     pageTexture: "rgba(255,255,255,0.02)",
     cardShadow: "0 24px 52px rgba(0,0,0,0.26)",
-    railSurface: "rgba(24,22,28,0.9)",
-    flowSurface: "rgba(20,19,23,0.96)",
-    sectionSurface: "rgba(29,26,32,0.92)",
-    sectionSurfaceStrong: "rgba(35,32,40,0.96)",
-    selectedSurface: "linear-gradient(180deg, rgba(198,178,154,0.14), rgba(121,99,82,0.09))",
-    selectedBorder: "rgba(198,178,154,0.26)",
-    inputSurface: "rgba(21,20,25,0.98)",
+    railSurface: "rgba(27,30,26,0.9)",
+    flowSurface: "rgba(19,21,18,0.96)",
+    sectionSurface: "rgba(27,30,26,0.92)",
+    sectionSurfaceStrong: "rgba(34,38,31,0.96)",
+    selectedSurface: "linear-gradient(180deg, rgba(182,138,86,0.16), rgba(111,123,92,0.1))",
+    selectedBorder: "rgba(182,138,86,0.28)",
+    inputSurface: "rgba(22,25,21,0.98)",
     inputBorder: "rgba(255,255,255,0.08)",
-    inputFocusSurface: "rgba(29,27,34,0.98)",
-    chipSurface: "rgba(198,178,154,0.1)",
-    chipText: "#e8dbcd",
+    inputFocusSurface: "rgba(28,32,27,0.98)",
+    chipSurface: "rgba(182,138,86,0.12)",
+    chipText: "#f0d1a5",
     divider: "rgba(255,255,255,0.07)",
-    secondaryButtonSurface: "#1d1a20",
+    secondaryButtonSurface: "#1b1e1a",
     secondaryButtonBorder: "rgba(255,255,255,0.09)",
-    buttonShadow: "0 8px 24px rgba(198,178,154,0.14)",
+    buttonShadow: "0 8px 24px rgba(182,138,86,0.14)",
     buttonRadius: "999px",
     fieldRadius: "18px",
     cardRadius: "26px",
@@ -377,25 +377,25 @@ const themeRecipes: Record<
   },
   "astral-forge": {
     shellGlow:
-      "radial-gradient(circle_at_top_left, rgba(184,131,82,0.08), transparent 24%), radial-gradient(circle_at_84%_20%, rgba(52,69,111,0.1), transparent 28%)",
-    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.024), transparent 18%, transparent 84%, rgba(184,131,82,0.018))",
+      "radial-gradient(circle_at_top_left, rgba(123,167,217,0.12), transparent 26%), radial-gradient(circle_at_84%_20%, rgba(78,111,174,0.12), transparent 28%)",
+    shellVeil: "linear-gradient(180deg, rgba(255,255,255,0.024), transparent 18%, transparent 84%, rgba(78,111,174,0.03))",
     pageTexture: "rgba(255,255,255,0.02)",
     cardShadow: "0 24px 52px rgba(0,0,0,0.28)",
     railSurface: "rgba(24,27,34,0.9)",
     flowSurface: "rgba(18,20,26,0.96)",
     sectionSurface: "rgba(23,28,38,0.92)",
     sectionSurfaceStrong: "rgba(28,35,47,0.96)",
-    selectedSurface: "linear-gradient(180deg, rgba(184,131,82,0.16), rgba(88,114,176,0.08))",
-    selectedBorder: "rgba(184,131,82,0.28)",
+    selectedSurface: "linear-gradient(180deg, rgba(123,167,217,0.18), rgba(78,111,174,0.12))",
+    selectedBorder: "rgba(123,167,217,0.3)",
     inputSurface: "rgba(18,21,28,0.98)",
     inputBorder: "rgba(255,255,255,0.08)",
     inputFocusSurface: "rgba(24,29,39,0.98)",
-    chipSurface: "rgba(184,131,82,0.12)",
-    chipText: "#e9c39d",
+    chipSurface: "rgba(123,167,217,0.14)",
+    chipText: "#d9e9f8",
     divider: "rgba(255,255,255,0.07)",
     secondaryButtonSurface: "#191e28",
     secondaryButtonBorder: "rgba(255,255,255,0.09)",
-    buttonShadow: "0 8px 24px rgba(184,131,82,0.16)",
+    buttonShadow: "0 8px 24px rgba(123,167,217,0.16)",
     buttonRadius: "999px",
     fieldRadius: "18px",
     cardRadius: "26px",
@@ -413,7 +413,7 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
       ? (rawPreset as ThemePresetKey)
       : (legacyPresetMap[rawPreset] ?? base.presetTheme);
   }
-  const preset = themePresets[presetKey] ?? themePresets["dark-alloy"];
+  const preset = themePresets[presetKey] ?? themePresets["bronze-studio"];
   const rawPairing = typeof theme?.fontPairingPreset === "string" ? theme.fontPairingPreset : undefined;
   let resolvedPairingKey: FontPairingPreset = preset.fontPairingPreset;
   if (rawPairing) {
@@ -474,18 +474,26 @@ export function resolveArtistTheme(theme?: Partial<ArtistPageTheme> | null): Art
 
 export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
   const theme = resolveArtistTheme(themeInput);
+  const preset = themePresets[theme.presetTheme as ThemePresetKey] ?? themePresets["bronze-studio"];
+  const usesPresetPrimary = theme.primaryColor.toLowerCase() === preset.primaryColor.toLowerCase();
+  const usesPresetBackground = theme.backgroundColor.toLowerCase() === preset.backgroundColor.toLowerCase();
+  const usesPresetCard = theme.cardColor.toLowerCase() === preset.cardColor.toLowerCase();
   const text = enforceReadableForeground(
     theme.backgroundColor,
     normalizeHex(theme.textColor, "#EEE7DD"),
     "#EEE7DD",
   );
-  const muted = enforceReadableForeground(
-    theme.backgroundColor,
-    mixHex(text, theme.backgroundColor, 0.58),
-    "#B8ADA0",
-    4.5,
-  );
-  const primaryForeground = enforceReadableForeground(theme.primaryColor, "#111111", "#ffffff");
+  const muted = usesPresetBackground
+    ? preset.mutedText
+    : enforceReadableForeground(
+        theme.backgroundColor,
+        mixHex(text, theme.backgroundColor, 0.58),
+        "#B8ADA0",
+        4.5,
+      );
+  const primaryForeground = usesPresetPrimary
+    ? preset.buttonText
+    : enforceReadableForeground(theme.primaryColor, "#111111", "#ffffff");
   const secondaryForeground = enforceReadableForeground(
     theme.secondaryColor,
     "#111111",
@@ -497,13 +505,15 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
     "#F0E7DC",
     7,
   );
-  const cardMuted = enforceReadableForeground(
-    theme.cardColor,
-    mixHex(cardText, theme.cardColor, 0.58),
-    "#B8ADA0",
-    4.5,
-  );
-  const borderColor = "rgba(255,255,255,0.09)";
+  const cardMuted = usesPresetCard
+    ? preset.mutedText
+    : enforceReadableForeground(
+        theme.cardColor,
+        mixHex(cardText, theme.cardColor, 0.58),
+        "#B8ADA0",
+        4.5,
+      );
+  const borderColor = usesPresetCard ? preset.border : "rgba(255,255,255,0.09)";
 
   const backgroundImage =
     theme.backgroundType === "image" && theme.backgroundImageUrl
@@ -511,7 +521,7 @@ export function buildThemeStyles(themeInput?: Partial<ArtistPageTheme> | null) {
       : theme.backgroundType === "gradient"
         ? `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`
         : theme.backgroundColor;
-  const recipe = themeRecipes[theme.presetTheme as ThemePresetKey] ?? themeRecipes["dark-alloy"];
+  const recipe = themeRecipes[theme.presetTheme as ThemePresetKey] ?? themeRecipes["bronze-studio"];
 
   const wrapperStyle = {
     background: backgroundImage,
