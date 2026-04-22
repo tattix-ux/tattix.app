@@ -48,7 +48,6 @@ export type CustomRequestPricingInput = {
 export type FeaturedDesignPricingInput = {
   placement: BodyAreaDetailValue;
   sizeCm: number;
-  colorMode: ColorModeValue;
 };
 
 export type PricingV2Context = {

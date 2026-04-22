@@ -125,7 +125,7 @@ export function buildSubmissionMessage(
     pricingSource: PricingSourceValue;
     requestTypeLabel?: string | null;
     selectedDesignTitle?: string | null;
-    displayEstimateLabel: string;
+    displayEstimateLabel?: string | null;
   },
 ) {
   const { locale, pricingSource, requestTypeLabel, selectedDesignTitle, displayEstimateLabel } = options;
@@ -174,7 +174,8 @@ export function buildSubmissionMessage(
     );
   }
 
-  const colorLabel = getColorLabel(submission.colorMode, locale);
+  const colorLabel =
+    pricingSource === "custom_request" ? getColorLabel(submission.colorMode, locale) : null;
   if (colorLabel) {
     lines.push(`${labels.color}: ${colorLabel}`);
   }
@@ -245,7 +246,9 @@ export function buildSubmissionMessage(
     lines.push(`${labels.ageRange}: ${submission.ageRange}`);
   }
 
-  lines.push("", `${labels.estimatedPriceShown}: ${displayEstimateLabel}`);
+  if (displayEstimateLabel) {
+    lines.push("", `${labels.estimatedPriceShown}: ${displayEstimateLabel}`);
+  }
 
   return lines.filter(Boolean).join("\n");
 }

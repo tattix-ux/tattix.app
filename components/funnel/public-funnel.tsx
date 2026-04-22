@@ -45,10 +45,11 @@ import type {
 import { useFunnelStore } from "@/store/funnel-store";
 
 type SubmissionResponse = {
-  estimatedMin: number;
-  estimatedMax: number;
-  estimateMode: "range" | "soft_range" | "starting_from";
-  displayLabel: string;
+  estimateAvailable: boolean;
+  estimatedMin: number | null;
+  estimatedMax: number | null;
+  estimateMode: "range" | "soft_range" | "starting_from" | null;
+  displayLabel: string | null;
   summary: string;
   disclaimer: string;
   whatsappLink: string;
@@ -233,6 +234,8 @@ function getCopy(locale: PublicLocale) {
         soft_range: "Tahmini fiyat aralığı",
         starting_from: "Tahmini fiyat aralığı",
       },
+      noEstimateTitle: "Talebini sanatçıya ilet",
+      noEstimateBody: "Talebin doğrudan sanatçıya iletilir. Sanatçı, detaylara göre sana net bir dönüş yapar.",
       summaryTitle: "Seçim özeti",
       pricingBreakdownNote: "Bu aralık, seçtiğin bölge, kaplayacağı alan, renk ve detay seviyesine göre hesaplandı.",
       resultDisclaimerPrimary: "Bu aralık, seçilen alan, dövmenin kaplayacağı bölge ve içerik türüne göre genel bir ilk hesaplamadır.",
@@ -425,6 +428,8 @@ function getCopy(locale: PublicLocale) {
       soft_range: "Typical range",
       starting_from: "Starting price",
     },
+    noEstimateTitle: "Send your request to the artist",
+    noEstimateBody: "Your request goes straight to the artist. The artist will send you a clear reply after reviewing the details.",
     summaryTitle: "Summary",
     pricingBreakdownNote: "This range was calculated based on the area, coverage, color, and detail level you selected.",
     resultDisclaimerPrimary: "This range is a first estimate based on the selected area, how much of it the tattoo will cover, and the type of content involved.",
@@ -881,7 +886,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       sizeCategory: draft.sizeCategory,
       widthCm: null,
       heightCm: null,
-      colorMode: draft.colorMode || undefined,
+      colorMode: draft.pricingSource === "custom_request" ? draft.colorMode || undefined : undefined,
       referenceImage: draft.referenceImage || null,
       referenceImagePath: draft.referenceImagePath || null,
       referenceDescription: draft.referenceDescription || undefined,
@@ -932,6 +937,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       }
 
       setResult({
+        estimateAvailable: responsePayload.estimateAvailable,
         estimatedMin: responsePayload.estimatedMin,
         estimatedMax: responsePayload.estimatedMax,
         estimateMode: responsePayload.estimateMode,
@@ -1101,13 +1107,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("pricingSource", "featured_design");
                   setField("selectedDesignCategory", value);
                   setField("selectedDesignId", "");
-                  setField("colorMode", "black-only");
+                  setField("colorMode", "");
                 }}
                 onDesignSelect={(designId) => {
                   if (!designId) {
                     setField("pricingSource", "featured_design");
                     setField("selectedDesignId", "");
-                    setField("colorMode", "black-only");
+                    setField("colorMode", "");
                     return;
                   }
                   const design = activeDesigns.find((item) => item.id === designId) ?? null;
@@ -1125,7 +1131,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   setField("isSizeExplicit", false);
                   setField("approximateSizeCm", null);
                   setField("sizeCategory", "");
-                  setField("colorMode", "black-only");
+                  setField("colorMode", "");
                   setField("workStyle", "");
                   setField("realismLevel", "");
                   setField("layoutStyle", "");
@@ -1838,11 +1844,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     <Sparkles className="mt-1 size-5" style={{ color: "var(--artist-primary)" }} />
                     <div className="min-w-0">
                       <p className="text-xs uppercase tracking-[0.18em] sm:text-sm sm:tracking-[0.2em]" style={{ color: "var(--artist-primary)" }}>
-                        {copy.resultTitles[result.estimateMode]}
+                        {result.estimateAvailable && result.estimateMode
+                          ? copy.resultTitles[result.estimateMode]
+                          : copy.noEstimateTitle}
                       </p>
-                      <p className="mt-2 break-words text-[1.75rem] leading-tight sm:text-4xl" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}>
-                        {result.displayLabel}
-                      </p>
+                      {result.estimateAvailable && result.displayLabel ? (
+                        <p className="mt-2 break-words text-[1.75rem] leading-tight sm:text-4xl" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)" }}>
+                          {result.displayLabel}
+                        </p>
+                      ) : (
+                        <p className="mt-2 max-w-[42ch] text-sm leading-6 sm:text-base" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.noEstimateBody}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1867,6 +1881,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                     ))}
                   </div>
                 </div>
+                {result.estimateAvailable ? (
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "var(--artist-section-surface-strong)",
+                    }}
+                  >
+                    <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.pricingBreakdownNote}
+                    </p>
+                  </div>
+                ) : null}
                 <div
                   className="rounded-[24px] border p-4"
                   style={{
@@ -1875,22 +1902,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   }}
                 >
                   <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                    {copy.pricingBreakdownNote}
+                    {result.estimateAvailable ? copy.resultDisclaimerPrimary : result.disclaimer}
                   </p>
-                </div>
-                <div
-                  className="rounded-[24px] border p-4"
-                  style={{
-                    borderColor: "var(--artist-border)",
-                    backgroundColor: "var(--artist-section-surface-strong)",
-                  }}
-                >
-                  <p className="text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                    {copy.resultDisclaimerPrimary}
-                  </p>
-                  <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                    {copy.resultDisclaimerSecondary}
-                  </p>
+                  {result.estimateAvailable ? (
+                    <p className="mt-2 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.resultDisclaimerSecondary}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="grid gap-2.5 sm:gap-3">
                   <Button asChild className="w-full">

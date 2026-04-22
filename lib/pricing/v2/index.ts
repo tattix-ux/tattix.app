@@ -1,6 +1,6 @@
 import type { SubmissionRequest } from "@/lib/types";
 import { estimateCustomRequestPrice } from "./custom-request";
-import { estimateFeaturedDesignPrice } from "./featured-design";
+import { estimateFeaturedDesignPrice, hasFeaturedDesignPricingMetadata } from "./featured-design";
 import { getArtistPricingV2Profile } from "./profile";
 import { resolveRepresentativeSizeCm } from "./size";
 import type { SubmissionPricingV2Context, SubmissionPricingV2Result } from "./types";
@@ -75,13 +75,16 @@ export function estimateSubmissionPriceV2(
   if (pricingSource === "featured_design" && submission.selectedDesignId) {
     const design = context.featuredDesigns?.find((item) => item.id === submission.selectedDesignId);
 
-    if (design?.referencePriceMin && design.referencePriceMax) {
+    if (design && !hasFeaturedDesignPricingMetadata(design)) {
+      throw new Error("Featured design pricing metadata is incomplete.");
+    }
+
+    if (design && hasFeaturedDesignPricingMetadata(design)) {
       const quote = estimateFeaturedDesignPrice(
         design,
         {
           placement: submission.bodyAreaDetail,
           sizeCm,
-          colorMode,
         },
         {
           locale: context.locale,
@@ -95,7 +98,7 @@ export function estimateSubmissionPriceV2(
         ...quote,
         pricingSource,
         requestType: null,
-        featuredDesignPricingMode: "size_and_placement_adjusted",
+        featuredDesignPricingMode: design.pricingMode ?? null,
         submission,
       };
     }

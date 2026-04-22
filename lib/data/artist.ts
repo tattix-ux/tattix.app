@@ -91,9 +91,9 @@ export function mapStyleOption(row: Record<string, unknown>): ArtistStyleOption 
 
 export function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedDesign {
   const rawCategory = String(row.category);
-  const legacyReferenceSize =
+  const referenceSizeCm =
     row.reference_size_cm === null || row.reference_size_cm === undefined
-      ? Number.parseFloat(String(row.price_note ?? "").replace(",", "."))
+      ? null
       : Number(row.reference_size_cm);
 
   return {
@@ -111,7 +111,8 @@ export function mapFeaturedDesign(row: Record<string, unknown>): ArtistFeaturedD
       row.reference_price_min === null ? null : Number(row.reference_price_min),
     referencePriceMax:
       row.reference_price_max === null ? null : Number(row.reference_price_max),
-    referenceSizeCm: Number.isFinite(legacyReferenceSize) ? legacyReferenceSize : null,
+    referenceSizeCm:
+      Number.isFinite(referenceSizeCm) && Number(referenceSizeCm) > 0 ? Number(referenceSizeCm) : null,
     referenceColorMode:
       row.reference_color_mode ? String(row.reference_color_mode) as ColorModeValue : null,
     pricingMode:

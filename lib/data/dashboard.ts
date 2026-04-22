@@ -5,7 +5,6 @@ import { demoArtistPageData, demoLeads } from "@/lib/demo-data";
 import { styleOptions as baseStyleOptions } from "@/lib/constants/options";
 import type { ArtistPageData, ArtistProfile, ClientSubmission, DashboardData, LeadStatus } from "@/lib/types";
 import { CALIBRATION_SLOT_LABELS } from "@/lib/pricing/calibration-flow";
-import { buildPricingV2Profile } from "@/lib/pricing/v2/profile";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -93,8 +92,8 @@ function mapLead(row: Record<string, unknown>): ClientSubmission {
           : Boolean(row.cover_up),
     style: String(row.style) as ClientSubmission["style"],
     notes: row.notes ? String(row.notes) : null,
-    estimatedMin: Number(row.estimated_min),
-    estimatedMax: Number(row.estimated_max),
+    estimatedMin: row.estimated_min === null || row.estimated_min === undefined ? null : Number(row.estimated_min),
+    estimatedMax: row.estimated_max === null || row.estimated_max === undefined ? null : Number(row.estimated_max),
     contactMessage: String(row.contact_message ?? ""),
     contacted: status === "contacted" || status === "sold",
     convertedToSale: status === "sold",
@@ -493,20 +492,7 @@ export async function ensureArtistForUser(user: User) {
         detailCalibration: null,
         pricingRawInputs: null,
         pricingProfile: null,
-        pricingV2Profile: buildPricingV2Profile({
-          minimumJobPrice: 1500,
-          textStartingPrice: 1500,
-          onboardingCases: [
-            { id: "object-6cm-forearm", min: 1800, max: 2200 },
-            { id: "object-10cm-forearm", min: 2200, max: 3000 },
-            { id: "object-16cm-forearm", min: 3200, max: 4200 },
-            { id: "single-figure-12cm-upper-arm", min: 3000, max: 4200 },
-            { id: "ornamental-small-hard", min: 2700, max: 3800 },
-            { id: "medium-color-piece", min: 3400, max: 4700 },
-            { id: "small-cover-up", min: 3000, max: 4200 },
-          ],
-          reviewCases: [],
-        }),
+        pricingV2Profile: null,
       },
       calibration_reference_slots: CALIBRATION_SLOT_LABELS.map((slot) => ({ ...slot })),
       size_modifiers: {

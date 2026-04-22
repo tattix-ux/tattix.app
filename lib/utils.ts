@@ -15,7 +15,7 @@ export function formatCurrency(value: number, currency: string) {
 
 export function formatCompactCurrencyRange(
   minimum: number,
-  maximum: number,
+  maximum: number | null,
   currency: string,
 ) {
   const formatter = new Intl.NumberFormat("tr-TR", {
@@ -23,6 +23,10 @@ export function formatCompactCurrencyRange(
     currency,
     maximumFractionDigits: 0,
   });
+
+  if (maximum === null) {
+    return `${formatter.format(minimum)}+`;
+  }
 
   return `${formatter.format(minimum)} - ${formatter.format(maximum)}`;
 }

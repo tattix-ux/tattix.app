@@ -5,10 +5,34 @@ import { submissionSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { buildSubmissionMessage, buildWhatsAppLink } from "@/lib/messages";
 import { estimateSubmissionPriceV2 } from "@/lib/pricing/v2";
+import { hasFeaturedDesignPricingMetadata } from "@/lib/pricing/v2/featured-design";
 import { getAreaScopeLabel, getRequestTypeLabel, getWideAreaTargetLabel } from "@/lib/pricing/v2/output";
+import { hasUsablePricingV2Profile } from "@/lib/pricing/v2/profile";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SubmissionRequest } from "@/lib/types";
+
+function resolveRequestedPricingSource(submission: SubmissionRequest) {
+  if (submission.pricingSource) {
+    return submission.pricingSource;
+  }
+
+  return submission.selectedDesignId ? "featured_design" : "custom_request";
+}
+
+function getUnavailableEstimateCopy(locale: PublicLocale) {
+  if (locale === "tr") {
+    return {
+      title: "Talebini sanatçıya ilet",
+      body: "Talebin doğrudan sanatçıya iletilir. Sanatçı, detaylara göre sana net bir dönüş yapar.",
+    };
+  }
+
+  return {
+    title: "Send your request to the artist",
+    body: "Your request goes straight to the artist. They will reply with a clear quote after reviewing the details.",
+  };
+}
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -47,14 +71,20 @@ export async function POST(request: Request) {
   const selectedDesign = submission.selectedDesignId
     ? artist.featuredDesigns.find((design) => design.id === submission.selectedDesignId) ?? null
     : null;
-  const estimate = estimateSubmissionPriceV2(submission, {
-    locale,
-    currency: artist.profile.currency,
-    pricingRules: artist.pricingRules,
-    featuredDesigns: artist.featuredDesigns,
-  });
-  const requestTypeLabel = estimate.requestType
-    ? getRequestTypeLabel(estimate.requestType, locale)
+  const pricingSource = resolveRequestedPricingSource(submission);
+  const estimateAvailable =
+    hasUsablePricingV2Profile(artist.pricingRules) &&
+    (pricingSource !== "featured_design" || hasFeaturedDesignPricingMetadata(selectedDesign));
+  const estimate = estimateAvailable
+    ? estimateSubmissionPriceV2(submission, {
+        locale,
+        currency: artist.profile.currency,
+        pricingRules: artist.pricingRules,
+        featuredDesigns: artist.featuredDesigns,
+      })
+    : null;
+  const requestTypeLabel = estimate?.requestType ?? submission.requestType
+    ? getRequestTypeLabel((estimate?.requestType ?? submission.requestType)!, locale)
     : null;
   const areaScopeLabel =
     submission.areaScope === "wide_area" && submission.wideAreaTarget
@@ -62,14 +92,15 @@ export async function POST(request: Request) {
       : submission.areaScope
         ? getAreaScopeLabel(submission.areaScope, locale)
         : null;
+  const unavailableEstimateCopy = getUnavailableEstimateCopy(locale);
   const message = buildSubmissionMessage(
     submission,
     {
       locale,
-      pricingSource: estimate.pricingSource,
+      pricingSource: estimate?.pricingSource ?? pricingSource,
       requestTypeLabel,
       selectedDesignTitle: selectedDesign?.title ?? null,
-      displayEstimateLabel: estimate.displayLabel,
+      displayEstimateLabel: estimate?.displayLabel ?? null,
     },
   );
   const combinedNotes = [
@@ -119,14 +150,16 @@ export async function POST(request: Request) {
       cover_up: submission.coverUp ?? null,
       style: "custom",
       notes: combinedNotes || null,
-      estimated_min: estimate.min,
-      estimated_max: estimate.max ?? estimate.min,
+      estimated_min: estimate?.min ?? null,
+      estimated_max: estimate?.max ?? null,
       pricing_version: "v2",
-      pricing_source: estimate.pricingSource,
-      request_type: estimate.requestType,
-      estimate_mode: estimate.mode,
-      featured_design_pricing_mode: estimate.featuredDesignPricingMode,
-      display_estimate_label: estimate.displayLabel,
+      pricing_source: estimate?.pricingSource ?? pricingSource,
+      request_type: estimate?.requestType ?? submission.requestType ?? null,
+      estimate_mode: estimate?.mode ?? null,
+      featured_design_pricing_mode:
+        estimate?.featuredDesignPricingMode ??
+        (pricingSource === "featured_design" ? selectedDesign?.pricingMode ?? null : null),
+      display_estimate_label: estimate?.displayLabel ?? null,
       contact_message: message,
       status: "new",
     };
@@ -176,15 +209,16 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({
-    estimatedMin: estimate.min,
-    estimatedMax: estimate.max ?? estimate.min,
-    estimateMode: estimate.mode,
-    displayLabel: estimate.displayLabel,
+    estimateAvailable,
+    estimatedMin: estimate?.min ?? null,
+    estimatedMax: estimate?.max ?? null,
+    estimateMode: estimate?.mode ?? null,
+    displayLabel: estimate?.displayLabel ?? null,
     summary:
-      estimate.pricingSource === "featured_design" && selectedDesign
+      (estimate?.pricingSource ?? pricingSource) === "featured_design" && selectedDesign
         ? selectedDesign.title
         : requestTypeLabel ?? areaScopeLabel ?? "",
-    disclaimer: estimate.summaryText,
+    disclaimer: estimate?.summaryText ?? unavailableEstimateCopy.body,
     whatsappLink: buildWhatsAppLink(artist.profile.whatsappNumber, message),
     message,
   });

@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       short_description: design.shortDescription,
       image_url: design.imageUrl || null,
       image_path: design.imagePath || null,
-      price_note: design.referenceSizeCm ? `${design.referenceSizeCm}` : design.priceNote || null,
+      price_note: design.priceNote || null,
       reference_detail_level: design.referenceDetailLevel || null,
       reference_price_min: design.referencePriceMin ?? null,
       reference_price_max: design.referencePriceMax ?? null,
@@ -83,35 +83,7 @@ export async function POST(request: Request) {
     })),
   );
 
-  if (
-    insertError &&
-    (insertError.message.toLowerCase().includes("reference_size_cm") ||
-      insertError.message.toLowerCase().includes("pricing_mode") ||
-      insertError.message.toLowerCase().includes("reference_color_mode") ||
-      insertError.message.toLowerCase().includes("color_impact_preference"))
-  ) {
-    const { error: legacyInsertError } = await supabase.from("artist_featured_designs").insert(
-      parsed.data.designs.map((design, index) => ({
-        id: design.id ?? randomUUID(),
-        artist_id: artist.id,
-        category: design.category,
-        title: design.title,
-        short_description: design.shortDescription,
-        image_url: design.imageUrl || null,
-        image_path: design.imagePath || null,
-        price_note: design.referenceSizeCm ? `${design.referenceSizeCm}` : design.priceNote || null,
-        reference_detail_level: design.referenceDetailLevel || null,
-        reference_price_min: design.referencePriceMin ?? null,
-        reference_price_max: design.referencePriceMax ?? null,
-        active: design.active ?? true,
-        sort_order: index,
-      })),
-    );
-
-    if (legacyInsertError) {
-      return NextResponse.json({ message: legacyInsertError.message }, { status: 400 });
-    }
-  } else if (insertError) {
+  if (insertError) {
     return NextResponse.json({ message: insertError.message }, { status: 400 });
   }
 

@@ -48,6 +48,7 @@ export type LeadPreferenceValue = "lead_friendly" | "balanced" | "filtered";
 export type ColorImpactPreferenceValue = "low" | "medium" | "high";
 export type CoverUpImpactPreferenceValue = "low" | "medium" | "high";
 export type WorkStyleSensitivityValue = "low" | "medium" | "high";
+export type PricingV2ProfileSourceValue = "onboarding" | "fallback";
 export type FeaturedDesignPricingMode =
   | "fixed_range"
   | "size_adjusted"
@@ -248,6 +249,7 @@ export type PricingV2WorkStyleSensitivity = {
 };
 export type ArtistPricingV2Profile = {
   version: 2;
+  profileSource?: PricingV2ProfileSourceValue;
   leadPreference: LeadPreferenceValue;
   minimumJobPrice: number;
   textStartingPrice: number;
@@ -501,8 +503,8 @@ export type ClientSubmission = {
   coverUp: boolean | null;
   style: string;
   notes: string | null;
-  estimatedMin: number;
-  estimatedMax: number;
+  estimatedMin: number | null;
+  estimatedMax: number | null;
   contactMessage: string;
   contacted: boolean;
   convertedToSale: boolean;
@@ -552,10 +554,11 @@ export type SubmissionDraft = {
 };
 
 export type EstimateResult = {
-  estimatedMin: number;
-  estimatedMax: number;
-  estimateMode: EstimateMode;
-  displayLabel: string;
+  estimateAvailable: boolean;
+  estimatedMin: number | null;
+  estimatedMax: number | null;
+  estimateMode: EstimateMode | null;
+  displayLabel: string | null;
   summary: string;
   disclaimer: string;
   whatsappLink: string;

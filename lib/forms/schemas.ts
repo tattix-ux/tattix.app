@@ -486,6 +486,18 @@ export const featuredDesignSchema = z
     sortOrder: z.coerce.number().int().min(0),
   })
   .superRefine((values, ctx) => {
+    if (
+      values.referenceSizeCm !== null &&
+      values.referenceSizeCm !== undefined &&
+      values.referenceSizeCm <= 0
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referenceSizeCm"],
+        message: "Referans boyut sıfırdan büyük olmalı.",
+      });
+    }
+
     if (values.referenceSizeCm === null || values.referenceSizeCm === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -500,6 +512,12 @@ export const featuredDesignSchema = z
         path: ["referencePriceMin"],
         message: "Min fiyat gir.",
       });
+    } else if (values.referencePriceMin <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referencePriceMin"],
+        message: "Min fiyat sıfırdan büyük olmalı.",
+      });
     }
 
     if (values.referencePriceMax === null || values.referencePriceMax === undefined) {
@@ -507,6 +525,24 @@ export const featuredDesignSchema = z
         code: z.ZodIssueCode.custom,
         path: ["referencePriceMax"],
         message: "Maks fiyat gir.",
+      });
+    } else if (values.referencePriceMax <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referencePriceMax"],
+        message: "Maks fiyat sıfırdan büyük olmalı.",
+      });
+    }
+
+    if (
+      (values.referenceDetailLevel === null || values.referenceDetailLevel === undefined) &&
+      values.referencePriceMin !== null &&
+      values.referencePriceMin !== undefined
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["referenceDetailLevel"],
+        message: "Referans detay seviyesini seç.",
       });
     }
 

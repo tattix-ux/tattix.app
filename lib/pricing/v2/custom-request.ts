@@ -12,6 +12,14 @@ type PriceRangeLike = {
   max: number;
 };
 
+type UnsureAdjustmentConfig = {
+  anchorBlend: number;
+  centerBoost: number;
+  spreadDelta: number;
+  largeAreaExtraCaution: number;
+  wideAreaExtraCaution: number;
+};
+
 function getPlacementFactor(
   bucket: ReturnType<typeof resolvePlacementBucket>,
   intensity = 1,
@@ -25,6 +33,40 @@ function getPlacementFactor(
   }
 
   return 1;
+}
+
+function getUnsureAdjustmentConfig(
+  input: Pick<CustomRequestPricingInput, "sizeCm" | "placement" | "coverUp" | "requestType">,
+): UnsureAdjustmentConfig {
+  const isBroadPlacement = input.sizeCm >= 18 || isTorsoOrBackPlacement(input.placement);
+
+  if (input.coverUp || input.requestType === "cover_up") {
+    return {
+      anchorBlend: 0.24,
+      centerBoost: 1.03,
+      spreadDelta: 0.014,
+      largeAreaExtraCaution: 1.02,
+      wideAreaExtraCaution: 1.03,
+    };
+  }
+
+  if (isBroadPlacement) {
+    return {
+      anchorBlend: 0.34,
+      centerBoost: 1.018,
+      spreadDelta: 0.014,
+      largeAreaExtraCaution: 1.015,
+      wideAreaExtraCaution: 1.02,
+    };
+  }
+
+  return {
+    anchorBlend: input.sizeCm >= 12 ? 0.3 : 0.24,
+    centerBoost: input.sizeCm >= 12 ? 1.015 : 1.01,
+    spreadDelta: input.sizeCm >= 12 ? 0.012 : 0.01,
+    largeAreaExtraCaution: 1.012,
+    wideAreaExtraCaution: 1.016,
+  };
 }
 
 function getConcreteColorFactor(
@@ -254,7 +296,7 @@ function getStandardPieceSpread(
   input: CustomRequestPricingInput,
   bucket: ReturnType<typeof resolvePlacementBucket>,
   mode: EstimateMode,
-  isCautious: boolean,
+  cautionSpreadDelta: number,
 ) {
   let spread =
     requestType === "text"
@@ -267,7 +309,7 @@ function getStandardPieceSpread(
             ? 0.22
             : requestType === "cover_up"
               ? 0.14
-              : 0.18;
+              : 0.15;
 
   if (!input.hasReferenceImage && !input.hasReferenceNote) {
     spread += 0.02;
@@ -285,8 +327,8 @@ function getStandardPieceSpread(
     spread += 0.02;
   }
 
-  if (isCautious) {
-    spread += 0.03;
+  if (cautionSpreadDelta > 0) {
+    spread += cautionSpreadDelta;
   }
 
   return clamp(spread, 0.09, 0.3);
@@ -448,7 +490,7 @@ function getWideAreaTargetFactor(target: NonNullable<CustomRequestPricingInput["
     case "mostly_leg":
       return 1.08;
     case "unsure":
-      return 1.06;
+      return 1.03;
     default:
       return 1;
   }
@@ -515,10 +557,11 @@ function estimateStandardPiecePrice(
   options?: {
     cautious?: boolean;
     reasoningPrefix?: string;
+    unsureAdjustment?: UnsureAdjustmentConfig;
   },
 ): PricingV2Output {
   const requestType = resolveStandardRequestType(input);
-  const categoryAnchor =
+  const defaultCategoryAnchor =
     requestType === "text"
       ? profile.categoryAnchors.text
       : requestType === "mini_simple"
@@ -530,6 +573,11 @@ function estimateStandardPiecePrice(
             : requestType === "cover_up"
               ? profile.categoryAnchors.coverUp
               : profile.categoryAnchors.unsure;
+  const categoryAnchor =
+    requestType === "unsure" && options?.unsureAdjustment
+      ? profile.categoryAnchors.singleObject * (1 - options.unsureAdjustment.anchorBlend) +
+        profile.categoryAnchors.unsure * options.unsureAdjustment.anchorBlend
+      : defaultCategoryAnchor;
   const sizeFactorResult = buildCustomRequestSizeFactor(requestType, input.sizeCm, profile);
   const placementBucket = resolvePlacementBucket(input.placement);
   const placementFactor = getPlacementFactor(placementBucket) * profile.reviewAdjustments.placementBias;
@@ -555,7 +603,10 @@ function estimateStandardPiecePrice(
     profile,
   );
   const reviewCalibrationFactor = getReviewCalibrationFactor(requestType, input.sizeCm, profile);
-  const center = minimumTension.adjustedCenter * reviewCalibrationFactor * (options?.cautious ? 1.03 : 1);
+  const center =
+    minimumTension.adjustedCenter *
+    reviewCalibrationFactor *
+    (options?.cautious ? options.unsureAdjustment?.centerBoost ?? 1.02 : 1);
   const hasReferenceSignal = input.hasReferenceImage || input.hasReferenceNote;
   const mode = getStandardPieceMode(requestType, hasReferenceSignal, options?.cautious ?? false);
   const spread = getStandardPieceSpread(
@@ -563,7 +614,7 @@ function estimateStandardPiecePrice(
     input,
     placementBucket,
     mode,
-    options?.cautious ?? false,
+    options?.cautious ? options?.unsureAdjustment?.spreadDelta ?? 0.012 : 0,
   );
   const internalReasoning = [
     options?.reasoningPrefix ?? `areaScope:${input.areaScope}`,
@@ -583,6 +634,14 @@ function estimateStandardPiecePrice(
     `reviewCalibration:${reviewCalibrationFactor.toFixed(3)}`,
     `minimumTension:${minimumTension.tensionStrength.toFixed(3)}`,
   ];
+
+  if (options?.unsureAdjustment) {
+    internalReasoning.push(
+      `unsureAnchorBlend:${options.unsureAdjustment.anchorBlend.toFixed(3)}`,
+      `unsureCenterBoost:${options.unsureAdjustment.centerBoost.toFixed(3)}`,
+      `unsureSpreadDelta:${options.unsureAdjustment.spreadDelta.toFixed(3)}`,
+    );
+  }
 
   if (mode === "starting_from") {
     return buildStartingFromOutput(
@@ -752,9 +811,15 @@ function estimateUnsurePrice(
       { ...input, requestType: "cover_up" },
       context,
       profile,
-      { cautious: true, reasoningPrefix: "areaScope:unsure->cover_up" },
+      {
+        cautious: true,
+        reasoningPrefix: "areaScope:unsure->cover_up",
+        unsureAdjustment: getUnsureAdjustmentConfig(input),
+      },
     );
   }
+
+  const unsureAdjustment = getUnsureAdjustmentConfig(input);
 
   if (input.sizeCm >= 24) {
     return estimateWideAreaPrice(
@@ -766,7 +831,7 @@ function estimateUnsurePrice(
       },
       context,
       profile,
-      { reasoningPrefix: "areaScope:unsure->wide_area", extraCaution: 1.04 },
+      { reasoningPrefix: "areaScope:unsure->wide_area", extraCaution: unsureAdjustment.wideAreaExtraCaution },
     );
   }
 
@@ -780,7 +845,10 @@ function estimateUnsurePrice(
       },
       context,
       profile,
-      { reasoningPrefix: "areaScope:unsure->large_single_area", extraCaution: 1.03 },
+      {
+        reasoningPrefix: "areaScope:unsure->large_single_area",
+        extraCaution: unsureAdjustment.largeAreaExtraCaution,
+      },
     );
   }
 
@@ -791,7 +859,11 @@ function estimateUnsurePrice(
     },
     context,
     profile,
-    { cautious: true, reasoningPrefix: "areaScope:unsure->standard_piece" },
+    {
+      cautious: true,
+      reasoningPrefix: "areaScope:unsure->standard_piece",
+      unsureAdjustment,
+    },
   );
 }
 

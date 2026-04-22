@@ -29,6 +29,7 @@ type BuildPricingV2ProfileInput = {
   minimumJobPrice: number;
   textStartingPrice: number;
   onboardingCases: Array<{ id: string; min: number; max: number }>;
+  profileSource?: ArtistPricingV2Profile["profileSource"];
   onboardingLargeAreasEnabled?: boolean;
   largeAreaCases?: Array<{ id: string; min: number; max: number }>;
   wideAreaCases?: Array<{ id: string; startingFrom: number }>;
@@ -51,6 +52,42 @@ function getDefaultWorkStyleSensitivity(): PricingV2WorkStyleSensitivity {
 
 function getDefaultLeadPreference(): LeadPreferenceValue {
   return "balanced";
+}
+
+const CORE_ONBOARDING_CASE_IDS = [
+  ...PRICING_V2_SIZE_SERIES_CASE_IDS,
+  ...PRICING_V2_SPECIAL_CASE_IDS,
+] as const;
+
+function isMeaningfulPositiveNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function hasValidRangeEntry(entry: { id: string; min: number; max: number } | undefined) {
+  return Boolean(
+    entry &&
+      entry.id &&
+      isMeaningfulPositiveNumber(entry.min) &&
+      isMeaningfulPositiveNumber(entry.max) &&
+      entry.max >= entry.min,
+  );
+}
+
+function areCaseSetsIdentical(
+  left: Array<{ id: string; min: number; max: number }>,
+  right: Array<{ id: string; min: number; max: number }>,
+) {
+  return CORE_ONBOARDING_CASE_IDS.every((id) => {
+    const leftCase = left.find((item) => item.id === id);
+    const rightCase = right.find((item) => item.id === id);
+
+    return (
+      leftCase &&
+      rightCase &&
+      leftCase.min === rightCase.min &&
+      leftCase.max === rightCase.max
+    );
+  });
 }
 
 function getCaseCenter(
@@ -366,6 +403,7 @@ export function buildPricingV2Profile(
 
   return {
     version: 2,
+    profileSource: input.profileSource ?? "onboarding",
     leadPreference: getDefaultLeadPreference(),
     minimumJobPrice,
     textStartingPrice: roundToFriendlyPrice(input.textStartingPrice, "up"),
@@ -393,6 +431,59 @@ export function buildPricingV2Profile(
     workStyleSensitivity: getDefaultWorkStyleSensitivity(),
     onboardingCompleted: true,
   };
+}
+
+export function getStoredPricingV2Profile(rules: ArtistPricingRules) {
+  const storedProfile = rules.calibrationExamples.pricingV2Profile;
+  return storedProfile?.version === 2 ? storedProfile : null;
+}
+
+export function hasUsablePricingV2Profile(rules: ArtistPricingRules) {
+  const storedProfile = getStoredPricingV2Profile(rules);
+
+  if (!storedProfile) {
+    return false;
+  }
+
+  if (storedProfile.profileSource !== "onboarding") {
+    return false;
+  }
+
+  if (!isMeaningfulPositiveNumber(storedProfile.minimumJobPrice)) {
+    return false;
+  }
+
+  if (!isMeaningfulPositiveNumber(storedProfile.textStartingPrice)) {
+    return false;
+  }
+
+  const hasRequiredOnboardingData = CORE_ONBOARDING_CASE_IDS.every((id) =>
+    hasValidRangeEntry(storedProfile.onboardingCases.find((item) => item.id === id)),
+  );
+
+  if (!hasRequiredOnboardingData) {
+    return false;
+  }
+
+  const suggestedCoreCases = buildSuggestedOnboardingCases({
+    minimumJobPrice: storedProfile.minimumJobPrice,
+    textStartingPrice: storedProfile.textStartingPrice,
+  });
+
+  if (areCaseSetsIdentical(storedProfile.onboardingCases, suggestedCoreCases)) {
+    return false;
+  }
+
+  const resolvedProfile = getArtistPricingV2Profile(rules);
+
+  return Boolean(
+    isMeaningfulPositiveNumber(resolvedProfile.minimumJobPrice) &&
+      isMeaningfulPositiveNumber(resolvedProfile.textStartingPrice) &&
+      Object.values(resolvedProfile.categoryAnchors).every((value) => isMeaningfulPositiveNumber(value)) &&
+      Object.values(resolvedProfile.sizeSeries).every((value) => isMeaningfulPositiveNumber(value)) &&
+      isMeaningfulPositiveNumber(resolvedProfile.inferredSizeProfile.anchorSizeCm) &&
+      isMeaningfulPositiveNumber(resolvedProfile.inferredSizeProfile.anchorPrice),
+  );
 }
 
 export function getArtistPricingV2Profile(rules: ArtistPricingRules): ArtistPricingV2Profile {
@@ -423,6 +514,7 @@ export function getArtistPricingV2Profile(rules: ArtistPricingRules): ArtistPric
     return buildPricingV2Profile({
       minimumJobPrice: storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
       textStartingPrice: storedProfile.textStartingPrice ?? storedProfile.minimumJobPrice ?? rules.minimumCharge ?? 1500,
+      profileSource: storedProfile.profileSource ?? "fallback",
       onboardingCases: mergedCases,
       onboardingLargeAreasEnabled: storedProfile.onboardingLargeAreasEnabled ?? false,
       largeAreaCases: mergedLargeAreaCases,
@@ -446,6 +538,7 @@ export function getArtistPricingV2Profile(rules: ArtistPricingRules): ArtistPric
   return buildPricingV2Profile({
     minimumJobPrice,
     textStartingPrice,
+    profileSource: "fallback",
     onboardingCases: fallbackCases,
     onboardingLargeAreasEnabled: false,
     largeAreaCases: fallbackLargeAreaCases,
