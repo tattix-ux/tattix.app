@@ -19,18 +19,21 @@ export function ProfilePageContent({
   locale: PublicLocale;
 }) {
   return (
-    <div className="min-w-0 space-y-2">
+    <div className="min-w-0">
       <ProfileForm
         profile={profile}
         upperLabel={funnelSettings.introEyebrow}
         demoMode={demoMode}
         locale={locale}
-      />
-      <ProfileRequestSettings
-        settings={funnelSettings}
-        styles={styleOptions}
-        demoMode={demoMode}
-        locale={locale}
+        layout="split"
+        secondaryPanel={
+          <ProfileRequestSettings
+            settings={funnelSettings}
+            styles={styleOptions}
+            demoMode={demoMode}
+            locale={locale}
+          />
+        }
       />
     </div>
   );

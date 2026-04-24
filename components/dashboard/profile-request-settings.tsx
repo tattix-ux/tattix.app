@@ -238,12 +238,12 @@ export function ProfileRequestSettings({
     name: "bookingCities",
   });
 
-  const [pendingCity, setPendingCity] = useState("");
   const [newStyleLabel, setNewStyleLabel] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [uploadingStyleKey, setUploadingStyleKey] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [expandedCities, setExpandedCities] = useState<Record<string, boolean>>({});
+  const [pendingFocusCityKey, setPendingFocusCityKey] = useState<"__last__" | null>(null);
   const initialSyncRef = useRef(true);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -357,17 +357,38 @@ export function ProfileRequestSettings({
     };
   }, [copy.saving, form.formState.isDirty, normalizedWatchedValues]);
 
-  function addBookingCity() {
-    const nextCity = pendingCity.trim();
-    if (!nextCity) {
+  useEffect(() => {
+    if (!pendingFocusCityKey) {
       return;
     }
 
+    const frame = window.requestAnimationFrame(() => {
+      const inputs = Array.from(
+        document.querySelectorAll<HTMLInputElement>("[data-city-input-key]"),
+      );
+      const target = inputs.at(-1) ?? null;
+      target?.focus();
+      target?.select();
+      setPendingFocusCityKey(null);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [pendingFocusCityKey, bookingCitiesFieldArray.fields.length]);
+
+  function addBookingCity() {
     bookingCitiesFieldArray.append({
-      cityName: nextCity,
+      cityName: "",
       availableDates: [],
     });
-    setPendingCity("");
+    setPendingFocusCityKey("__last__");
+  }
+
+  function setBookingDates(index: number, dates: string[]) {
+    form.setValue(
+      `bookingCities.${index}.availableDates`,
+      Array.from(new Set(dates)).sort(),
+      { shouldDirty: true, shouldValidate: true },
+    );
   }
 
   function toggleBookingDate(index: number, date: string) {
@@ -376,11 +397,7 @@ export function ProfileRequestSettings({
       ? currentDates.filter((item) => item !== date)
       : [...currentDates, date];
 
-    form.setValue(
-      `bookingCities.${index}.availableDates`,
-      Array.from(new Set(nextDates)).sort(),
-      { shouldDirty: true, shouldValidate: true },
-    );
+    setBookingDates(index, nextDates);
   }
 
   function toggleBuiltInStyle(styleKey: string) {
@@ -571,38 +588,31 @@ export function ProfileRequestSettings({
     });
 
   const activeBuiltInStyleCards = builtInStyleCards.filter((style) => selectedStyles.includes(style.styleKey));
+  const nonEmptyBookingCities = bookingCities.filter((city) => city.cityName.trim());
   const bookingSummaryLabel =
     locale === "tr"
-      ? bookingCities.length === 0
+      ? nonEmptyBookingCities.length === 0
         ? "Henüz seçilmedi"
-        : `${bookingCities.length} şehir seçili`
-      : bookingCities.length === 0
+        : `${nonEmptyBookingCities.length} şehir seçili`
+      : nonEmptyBookingCities.length === 0
         ? "Not set yet"
-        : `${bookingCities.length} cities selected`;
+        : `${nonEmptyBookingCities.length} cities selected`;
 
   return (
     <div className="space-y-2 xl:space-y-1.5">
       <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_16px_34px_rgba(0,0,0,0.18)]">
         <CardHeader className="pb-2.5 xl:pb-2">
-          <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(176px,214px)] xl:items-end">
+          <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
             <div className="min-w-0">
               <CardTitle className="text-[0.98rem]">{copy.bookingTitle}</CardTitle>
               <p className="mt-1 text-[11.5px] leading-[1.4] text-[var(--text-secondary)]">
                 {copy.bookingDescription}
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <Input
-                value={pendingCity}
-                onChange={(event) => setPendingCity(event.target.value)}
-                placeholder={copy.cityPlaceholder}
-                className="h-8 min-w-[150px] text-[13px]"
-              />
-              <Button type="button" onClick={addBookingCity} className="h-8 text-[13px]">
-                <Plus className="size-3.5" />
-                {copy.addCity}
-              </Button>
-            </div>
+            <Button type="button" onClick={addBookingCity} className="h-8 text-[13px]">
+              <Plus className="size-3.5" />
+              {copy.addCity}
+            </Button>
           </div>
           <div className="mt-2">
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--foreground-muted)]">
@@ -620,7 +630,7 @@ export function ProfileRequestSettings({
               {bookingCitiesFieldArray.fields.map((field, index) => {
                 const city = bookingCities[index];
                 const availableDates = city?.availableDates ?? [];
-                const isExpanded = expandedCities[field.id] ?? availableDates.length === 0;
+                const isExpanded = expandedCities[field.id] ?? true;
 
                 return (
                   <div key={field.id} className="rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-2.5 xl:p-3">
@@ -629,6 +639,7 @@ export function ProfileRequestSettings({
                         <div className="min-w-0 flex-1 space-y-2">
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                             <Input
+                              data-city-input-key={field.id}
                               value={city?.cityName ?? ""}
                               onChange={(event) =>
                                 form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
@@ -685,6 +696,7 @@ export function ProfileRequestSettings({
                               triggerLabel={copy.dates}
                               emptyLabel={copy.addDate}
                               selectedDates={availableDates}
+                              onChangeDates={(dates) => setBookingDates(index, dates)}
                               onToggleDate={(date) => toggleBookingDate(index, date)}
                             />
                           </div>

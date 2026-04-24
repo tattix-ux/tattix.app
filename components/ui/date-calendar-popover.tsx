@@ -65,6 +65,27 @@ function buildMonthGrid(month: Date) {
   });
 }
 
+function buildDateRange(startKey: string, endKey: string) {
+  const startDate = parseDateKey(startKey);
+  const endDate = parseDateKey(endKey);
+
+  if (!startDate || !endDate) {
+    return [];
+  }
+
+  const start = startDate <= endDate ? startDate : endDate;
+  const end = startDate <= endDate ? endDate : startDate;
+  const dates: string[] = [];
+  const cursor = new Date(start);
+
+  while (cursor <= end) {
+    dates.push(formatDateKey(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return dates;
+}
+
 const VIEWPORT_GUTTER = 16;
 const POPOVER_OFFSET = 12;
 
@@ -79,6 +100,7 @@ export function DateCalendarPopover({
   disabled = false,
   onSelectDate,
   onToggleDate,
+  onChangeDates,
 }: {
   locale?: Locale;
   mode: "single" | "multiple";
@@ -90,10 +112,12 @@ export function DateCalendarPopover({
   disabled?: boolean;
   onSelectDate?: (date: string) => void;
   onToggleDate?: (date: string) => void;
+  onChangeDates?: (dates: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const rangeAnchorRef = useRef<string | null>(null);
   const todayKey = getTodayKey();
   const availableSet = useMemo(() => new Set(availableDates ?? []), [availableDates]);
   const selectedSet = useMemo(() => new Set(selectedDates), [selectedDates]);
@@ -243,7 +267,37 @@ export function DateCalendarPopover({
                           return;
                         }
 
-                        onToggleDate?.(key);
+                        if (selectedSet.has(key)) {
+                          rangeAnchorRef.current = key;
+                          const nextDates = selectedDates.filter((item) => item !== key);
+                          if (onChangeDates) {
+                            onChangeDates(nextDates);
+                          } else {
+                            onToggleDate?.(key);
+                          }
+                          return;
+                        }
+
+                        const anchor = rangeAnchorRef.current;
+                        if (anchor && anchor !== key) {
+                          const start = anchor < key ? anchor : key;
+                          const end = anchor < key ? key : anchor;
+                          const daysInRange = buildDateRange(start, end).filter((item) => item >= todayKey);
+
+                          if (daysInRange.length > 1) {
+                            const nextDates = Array.from(new Set([...selectedDates, ...daysInRange])).sort();
+                            onChangeDates?.(nextDates);
+                            rangeAnchorRef.current = key;
+                            return;
+                          }
+                        }
+
+                        rangeAnchorRef.current = key;
+                        if (onChangeDates) {
+                          onChangeDates(Array.from(new Set([...selectedDates, key])).sort());
+                        } else {
+                          onToggleDate?.(key);
+                        }
                       }}
                       className={cn(
                         "inline-flex h-9 items-center justify-center rounded-xl text-sm transition",

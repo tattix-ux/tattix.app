@@ -16,6 +16,7 @@ import { profileSchema } from "@/lib/forms/schemas";
 import type { PublicLocale } from "@/lib/i18n/public";
 import { removeArtistAsset, uploadArtistAsset } from "@/lib/supabase/storage";
 import type { ArtistProfile } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type ProfileValues = z.infer<typeof profileSchema>;
 
@@ -175,11 +176,15 @@ export function ProfileForm({
   upperLabel,
   demoMode,
   locale,
+  layout = "stacked",
+  secondaryPanel,
 }: {
   profile: ArtistProfile;
   upperLabel: string;
   demoMode: boolean;
   locale: PublicLocale;
+  layout?: "stacked" | "split";
+  secondaryPanel?: React.ReactNode;
 }) {
   const copy = profileCopy[locale];
   const [copied, setCopied] = useState(false);
@@ -335,8 +340,8 @@ export function ProfileForm({
   }
 
   return (
-    <div className="space-y-2 xl:space-y-1.5">
-      <div className="space-y-2.5 xl:space-y-2">
+    <>
+      <div className={cn(layout === "split" && "space-y-2")}>
         <SectionBlock title={copy.sectionTitle} description={copy.coreSectionDescription || undefined}>
           <div className="grid gap-2 xl:grid-cols-[120px_120px_minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
             <MediaUploadField
@@ -391,7 +396,15 @@ export function ProfileForm({
             </div>
           </div>
         </SectionBlock>
+      </div>
 
+      <div
+        className={cn(
+          "space-y-2",
+          layout === "split" && secondaryPanel && "grid min-w-0 gap-2 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start lg:space-y-0",
+        )}
+      >
+        <div>
         <SectionBlock title={locale === "tr" ? "Link ve iletişim" : "Link and contact"} description={copy.contactSectionDescription}>
           <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_100px] xl:items-end">
             <Field label={copy.linkSection}>
@@ -422,13 +435,14 @@ export function ProfileForm({
           <input type="hidden" {...form.register("welcomeHeadline")} />
           <input type="hidden" {...form.register("active")} />
         </SectionBlock>
+        </div>
+        {secondaryPanel ? <div>{secondaryPanel}</div> : null}
       </div>
-
-      <div className="flex min-h-4 items-center gap-1.5 px-1 text-[10.5px] text-[var(--foreground-muted)]">
+      <div className={cn("flex min-h-4 items-center gap-1.5 px-1 text-[10.5px] text-[var(--foreground-muted)]", layout === "split" && "lg:col-span-2")}>
         {autosaveState === "saving" ? <LoaderCircle className="size-4 animate-spin" /> : null}
         {autosaveState === "saved" ? <CheckCircle2 className="size-4 text-[var(--accent-soft)]" /> : null}
         {form.formState.errors.root?.message ?? statusMessage}
       </div>
-    </div>
+    </>
   );
 }
