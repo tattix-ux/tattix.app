@@ -39,7 +39,6 @@ export default async function DashboardProfilePage() {
       </div>
       <ProfilePageContent
         profile={data.profile}
-        pageTheme={data.pageTheme}
         funnelSettings={data.funnelSettings}
         styleOptions={data.styleOptions}
         demoMode={data.demoMode}

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { CheckCircle2, ChevronDown, ImagePlus, LoaderCircle, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, ImagePlus, LoaderCircle, Plus, RotateCcw, Trash2, Upload } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -383,15 +383,6 @@ export function ProfileRequestSettings({
     );
   }
 
-  function removeBookingDate(index: number, date: string) {
-    const currentDates = form.getValues(`bookingCities.${index}.availableDates`) ?? [];
-    form.setValue(
-      `bookingCities.${index}.availableDates`,
-      currentDates.filter((item) => item !== date),
-      { shouldDirty: true, shouldValidate: true },
-    );
-  }
-
   function toggleBuiltInStyle(styleKey: string) {
     const active = selectedStyles.includes(styleKey);
     const nextStyles = active
@@ -605,9 +596,9 @@ export function ProfileRequestSettings({
                 value={pendingCity}
                 onChange={(event) => setPendingCity(event.target.value)}
                 placeholder={copy.cityPlaceholder}
-                className="h-9 min-w-[150px] xl:h-[36px]"
+                className="h-8 min-w-[150px] text-[13px]"
               />
-              <Button type="button" onClick={addBookingCity} className="h-9 xl:h-[36px]">
+              <Button type="button" onClick={addBookingCity} className="h-8 text-[13px]">
                 <Plus className="size-3.5" />
                 {copy.addCity}
               </Button>
@@ -646,7 +637,7 @@ export function ProfileRequestSettings({
                                 })
                               }
                               placeholder={copy.cityPlaceholder}
-                              className="h-9 xl:h-[36px]"
+                              className="h-8 text-[13px]"
                             />
                             <Badge variant="accent" className="w-fit border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] px-2 py-0.5 text-[10px] text-[var(--text-primary)]">
                               {availableDates.length} {copy.selectedDays}
@@ -700,21 +691,7 @@ export function ProfileRequestSettings({
 
                           {availableDates.length === 0 ? (
                             <p className="text-[11.5px] text-[var(--foreground-muted)]">{copy.noDates}</p>
-                          ) : (
-                            <div className="flex flex-wrap gap-2">
-                              {availableDates.map((date) => (
-                                <button
-                                  key={date}
-                                  type="button"
-                                  onClick={() => removeBookingDate(index, date)}
-                                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-white/[0.04] px-2.5 py-1 text-[10.5px] text-white"
-                                >
-                                  {date}
-                                  <X className="size-3" />
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                          ) : null}
                         </div>
                     ) : null}
                     </div>
