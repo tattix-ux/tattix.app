@@ -15,7 +15,7 @@ export default async function DashboardCustomizePage() {
   const hasPro = hasProAccess(data.profile);
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-3 xl:space-y-2.5">
       <CustomizePageForm
         artist={{
           profile: data.profile,

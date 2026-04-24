@@ -17,7 +17,7 @@ export default async function DashboardLeadsPage() {
   const hasPro = hasProAccess(data.profile);
 
   return (
-    <div className="space-y-2.5 xl:space-y-2">
+    <div className="space-y-3.5 xl:space-y-3">
       <SectionHeading
         title={isTurkish ? "Talepler" : "Requests"}
         description={

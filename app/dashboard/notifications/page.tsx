@@ -17,7 +17,7 @@ export default async function DashboardNotificationsPage() {
   const notifications = artist ? await getArtistNotifications(artist.id) : [];
 
   return (
-    <div className="space-y-2.5 xl:space-y-2">
+    <div className="space-y-3.5 xl:space-y-3">
       <SectionHeading
         eyebrow={locale === "tr" ? "Bildirimler" : "Notifications"}
         title={locale === "tr" ? "Yanıtları ve güncellemeleri burada gör." : "See replies and updates here."}

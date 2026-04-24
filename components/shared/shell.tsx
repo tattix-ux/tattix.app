@@ -60,7 +60,7 @@ export function SectionHeading({
   align?: "left" | "center";
 }) {
   return (
-    <div className={cn("space-y-1 xl:space-y-0.5", align === "center" && "text-center")}>
+    <div className={cn("space-y-1.5 xl:space-y-1.5", align === "center" && "text-center")}>
       {eyebrow ? (
         <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-[var(--accent-soft)]/95 xl:text-[9px]">
           {eyebrow}
@@ -70,7 +70,7 @@ export function SectionHeading({
         {title}
       </h2>
       {description ? (
-        <p className="max-w-3xl text-[12px] leading-[1.4] text-[var(--text-secondary)] xl:text-[11.5px]">
+        <p className="max-w-3xl text-[12px] leading-[1.5] text-[var(--text-secondary)] xl:text-[11.5px]">
           {description}
         </p>
       ) : null}
