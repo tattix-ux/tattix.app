@@ -111,7 +111,7 @@ const leadCopy = {
       waiting: "İletişim beklenen",
       total: "Toplam talep",
       waitingContacts: "İletişime geçilen",
-      sold: "Satış yapıldı",
+      sold: "Satış yapılan",
       rate: "Satış oranı",
     },
     filters: {
@@ -1045,7 +1045,7 @@ export function LeadsTable({
                 ))}
               </div>
               <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-4">
-                <SummaryStat label={copy.summary.total} value={totalCount} tone="accent" />
+                <SummaryStat label={copy.summary.total} value={totalCount} />
                 <SummaryStat label={copy.summary.waiting} value={waitingCount} />
                 <SummaryStat label={copy.summary.waitingContacts} value={contactedCount} />
                 <SummaryStat label={copy.summary.sold} value={`${soldCount} · ${formatConversionRate(contactedCount, soldCount)}`} />
