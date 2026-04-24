@@ -628,10 +628,10 @@ export function CustomizePageForm({
           surfaceColorDescription: "Kartlar ve içerik yüzeylerinde kullanılır.",
           selectColor: "Seç",
           backgroundImageTitle: "Arka plan görseli",
-          backgroundImageDescription: "Geniş kadraj, koyu veya dengeli görseller daha iyi sonuç verir.",
+          backgroundImageDescription: "Arka planında görünmesi için tarzını yansıtan bir görsel ekle",
           backgroundUpload: "Görsel yükle",
           backgroundRemove: "Görseli kaldır",
-          backgroundAutoNote: "Arka plan görseli otomatik olarak karartılır; böylece yazılar ve butonlar okunaklı kalır.",
+          backgroundAutoNote: "",
           resetDefaults: "Varsayılana dön",
           save: "Kaydet",
           saving: "Kaydediliyor",
@@ -665,10 +665,10 @@ export function CustomizePageForm({
           surfaceColorDescription: "Used across cards and content surfaces.",
           selectColor: "Pick",
           backgroundImageTitle: "Background image",
-          backgroundImageDescription: "Wide, darker, or balanced images usually work best.",
+          backgroundImageDescription: "Add an image that reflects your style so it appears behind the page.",
           backgroundUpload: "Upload image",
           backgroundRemove: "Remove image",
-          backgroundAutoNote: "The background image is automatically darkened so text and buttons stay readable.",
+          backgroundAutoNote: "",
           resetDefaults: "Reset to default",
           save: "Save",
           saving: "Saving",
@@ -885,6 +885,7 @@ export function CustomizePageForm({
         artistId: artist.profile.id,
         prefix: "background",
       });
+      form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true });
       form.setValue("backgroundImageUrl", uploaded.publicUrl, { shouldDirty: true, shouldValidate: true });
       setFlashMessage(copy.uploadQueued);
     } catch {
@@ -893,6 +894,7 @@ export function CustomizePageForm({
   }
 
   function clearBackgroundImage() {
+    form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
     form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
   }
 
@@ -1025,7 +1027,6 @@ export function CustomizePageForm({
                   </Button>
                 ) : null}
               </div>
-              <p className="mt-2 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundAutoNote}</p>
             </div>
           </div>
         </div>
@@ -1048,6 +1049,34 @@ export function CustomizePageForm({
           if (event.key === "Enter" && event.target instanceof HTMLInputElement) event.preventDefault();
         }}
       >
+        <input type="hidden" {...form.register("presetTheme")} value={currentPreset} readOnly />
+        <input type="hidden" {...form.register("backgroundType")} value={currentBackgroundType} readOnly />
+        <input type="hidden" {...form.register("backgroundColor")} value={currentBackgroundColor} readOnly />
+        <input type="hidden" {...form.register("gradientStart")} value={currentGradientStart} readOnly />
+        <input type="hidden" {...form.register("gradientEnd")} value={currentGradientEnd} readOnly />
+        <input type="hidden" {...form.register("backgroundImageUrl")} value={currentBackgroundImageUrl} readOnly />
+        <input type="hidden" {...form.register("backgroundOverlayStrength")} value={theme.backgroundOverlayStrength} readOnly />
+        <input type="hidden" {...form.register("backgroundImageSoftness")} value={theme.backgroundImageSoftness} readOnly />
+        <input type="hidden" {...form.register("backgroundImageFocus")} value={theme.backgroundImageFocus} readOnly />
+        <input type="hidden" {...form.register("textColor")} value={derivedColorTokens.text} readOnly />
+        <input type="hidden" {...form.register("primaryColor")} value={currentPrimaryColor} readOnly />
+        <input type="hidden" {...form.register("secondaryColor")} value={currentSecondaryColor} readOnly />
+        <input type="hidden" {...form.register("cardColor")} value={currentCardColor} readOnly />
+        <input type="hidden" {...form.register("cardOpacity", { valueAsNumber: true })} value={currentCardOpacity} readOnly />
+        <input type="hidden" {...form.register("cardFeel")} value={theme.cardFeel} readOnly />
+        <input type="hidden" {...form.register("buttonStyle")} value={theme.buttonStyle} readOnly />
+        <input type="hidden" {...form.register("badgeStyle")} value={theme.badgeStyle} readOnly />
+        <input type="hidden" {...form.register("headingFont")} value={watchedValues.headingFont ?? theme.headingFont} readOnly />
+        <input type="hidden" {...form.register("bodyFont")} value={watchedValues.bodyFont ?? theme.bodyFont} readOnly />
+        <input type="hidden" {...form.register("fontPairingPreset")} value={watchedValues.fontPairingPreset ?? theme.fontPairingPreset} readOnly />
+        <input type="hidden" {...form.register("radiusStyle")} value={watchedValues.radiusStyle ?? theme.radiusStyle} readOnly />
+        <input type="hidden" {...form.register("themeMode")} value={currentThemeMode} readOnly />
+        <input type="hidden" {...form.register("customWelcomeTitle")} value={watchedValues.customWelcomeTitle ?? ""} readOnly />
+        <input type="hidden" {...form.register("customIntroText")} value={watchedValues.customIntroText ?? ""} readOnly />
+        <input type="hidden" {...form.register("customCtaLabel")} value={watchedValues.customCtaLabel ?? ""} readOnly />
+        <input type="hidden" {...form.register("featuredSectionLabel1")} value={watchedValues.featuredSectionLabel1 ?? ""} readOnly />
+        <input type="hidden" {...form.register("featuredSectionLabel2")} value={watchedValues.featuredSectionLabel2 ?? ""} readOnly />
+
         <div className="flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-0.5">
             <h1 className="text-[1.55rem] font-semibold tracking-[-0.04em] text-[var(--text-primary)] xl:text-[1.45rem]">
