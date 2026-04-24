@@ -337,10 +337,7 @@ export function ProfileForm({
   return (
     <div className="space-y-2 xl:space-y-1.5">
       <div className="space-y-2.5 xl:space-y-2">
-        <SectionBlock
-          title={copy.sectionTitle}
-          description={copy.coreSectionDescription || undefined}
-        >
+        <SectionBlock title={copy.sectionTitle} description={copy.coreSectionDescription || undefined}>
           <div className="grid gap-2 xl:grid-cols-[120px_120px_minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
             <MediaUploadField
               label={copy.profileImage}
@@ -366,8 +363,14 @@ export function ProfileForm({
                   <Input {...form.register("artistName")} className="h-8 text-[13px]" />
                 </Field>
                 <Field
-                  label={copy.upperLabel}
-                  description={copy.upperLabelDescription}
+                  label={
+                    <span className="inline-flex flex-wrap items-center gap-1.5">
+                      <span>{copy.upperLabel}</span>
+                      <span className="text-[10.5px] font-normal text-[var(--text-muted)] xl:text-[10px]">
+                        {copy.upperLabelDescription}
+                      </span>
+                    </span>
+                  }
                   error={form.formState.errors.upperLabel?.message}
                 >
                   <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-8 text-[13px]" />
@@ -389,10 +392,7 @@ export function ProfileForm({
           </div>
         </SectionBlock>
 
-        <SectionBlock
-          title={locale === "tr" ? "Link ve iletişim" : "Link and contact"}
-          description={copy.contactSectionDescription}
-        >
+        <SectionBlock title={locale === "tr" ? "Link ve iletişim" : "Link and contact"} description={copy.contactSectionDescription}>
           <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_100px] xl:items-end">
             <Field label={copy.linkSection}>
               <div className="flex min-w-0 overflow-hidden rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)]">

@@ -16,18 +16,23 @@ export default async function DashboardPricingPage() {
   return (
     <div className="space-y-2.5 xl:space-y-2">
       <SectionHeading
-        eyebrow={isTurkish ? "Fiyatlama" : "Pricing"}
+        eyebrow={undefined}
         title={
           isTurkish
-            ? "Başlangıç fiyatlarını belirleyelim."
-            : "Let’s shape the starting prices together."
+            ? "Fiyat ayarları"
+            : "Pricing settings"
         }
         description={
           isTurkish
-            ? "Müşteriye gösterilecek fiyat tahmini, burada girdiğin değerlere göre oluşur."
-            : "The system adapts its starting estimates to the way you usually price your work."
+            ? "Başlangıç fiyatlarını belirleyelim. Müşteriye gösterilecek fiyat tahmini, burada girdiğin değerlere göre oluşur."
+            : "Set the starting price levels that shape the estimate shown to clients."
         }
       />
+      {isTurkish ? (
+        <p className="max-w-3xl text-[11.5px] leading-[1.4] text-[var(--text-muted)]">
+          Bu bölüm doldurulmadığında müşteriler fiyat tahmini göremez.
+        </p>
+      ) : null}
       <PricingForm
         pricingRules={data.pricingRules}
         locale={isTurkish ? "tr" : "en"}

@@ -19,7 +19,7 @@ export function ProfilePageContent({
   locale: PublicLocale;
 }) {
   return (
-    <div className="min-w-0 space-y-2 xl:space-y-1.5">
+    <div className="min-w-0 space-y-2">
       <ProfileForm
         profile={profile}
         upperLabel={funnelSettings.introEyebrow}

@@ -27,7 +27,7 @@ type DashboardNavItem = {
 function getItems(locale: "en" | "tr"): DashboardNavItem[] {
   return [
     { href: "/dashboard/profile", label: locale === "tr" ? "Profil" : "Profile", icon: UserRound, group: "primary" },
-    { href: "/dashboard/pricing", label: locale === "tr" ? "Fiyatlama" : "Pricing", icon: CircleDollarSign, group: "primary" },
+    { href: "/dashboard/pricing", label: locale === "tr" ? "Fiyat ayarları" : "Pricing", icon: CircleDollarSign, group: "primary" },
     {
       href: "/dashboard/designs",
       label: locale === "tr" ? "Tasarımlar" : "Designs",
