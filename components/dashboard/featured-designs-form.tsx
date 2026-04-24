@@ -125,10 +125,10 @@ const copy = {
     detailsDescription: "",
     titleLabel: "Design name",
     titlePlaceholder: "e.g. Fine line rose",
-    sizeLabel: "What size (cm) would you like to work this design at?",
+    sizeLabel: "Enter a sample size and a sample price for this design.",
     sizeHelp: "",
     sizePlaceholder: "10",
-    priceLabel: "What should the price range be for this size?",
+    priceLabel: "",
     priceHelp: "",
     priceMin: "Lower price",
     priceMax: "Upper price",
@@ -211,10 +211,10 @@ const copy = {
     detailsDescription: "",
     titleLabel: "Tasarım adı",
     titlePlaceholder: "Örn: Minimal gül",
-    sizeLabel: "Bu tasarım için çalışmak istediğin boyut (cm)",
+    sizeLabel: "Bu tasarım için örnek bir boyut ve bu boyut için örnek fiyat gir.",
     sizeHelp: "",
     sizePlaceholder: "10",
-    priceLabel: "Bu boyut için fiyat aralığı ne kadar olsun?",
+    priceLabel: "",
     priceHelp: "",
     priceMin: "Alt fiyat",
     priceMax: "Üst fiyat",
@@ -1143,23 +1143,22 @@ export function FeaturedDesignsForm({
                               <Field
                                 label={labels.sizeLabel}
                                 description={labels.sizeHelp}
-                                error={form.formState.errors.designs?.[editingIndex]?.referenceSizeCm?.message}
+                                className="xl:col-span-2"
                               >
-                                <div className="relative">
-                                  <Input
-                                    type="number"
-                                    className="h-8 rounded-[13px] bg-white/[0.03] pr-10 text-[12.5px]"
-                                    placeholder={labels.sizePlaceholder}
-                                    {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
-                                  />
-                                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[var(--text-muted)]">
-                                    cm
-                                  </span>
-                                </div>
-                              </Field>
+                                <div className="grid gap-2.5 xl:grid-cols-[minmax(0,180px)_minmax(0,1fr)] xl:items-start">
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      className="h-8 rounded-[13px] bg-white/[0.03] pr-10 text-[12.5px]"
+                                      placeholder={labels.sizePlaceholder}
+                                      {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
+                                    />
+                                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[var(--text-muted)]">
+                                      cm
+                                    </span>
+                                  </div>
 
-                              <Field label={labels.priceLabel} description={labels.priceHelp} className="xl:col-span-2">
-                                <div className="grid gap-2.5 sm:grid-cols-2">
+                                  <div className="grid gap-2.5 sm:grid-cols-2">
                                   <Field
                                     label={labels.priceMin}
                                     className="gap-1.5"
@@ -1184,6 +1183,7 @@ export function FeaturedDesignsForm({
                                       {...form.register(`designs.${editingIndex}.referencePriceMax`)}
                                     />
                                   </Field>
+                                  </div>
                                 </div>
                               </Field>
                             </div>
