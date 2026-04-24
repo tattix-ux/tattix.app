@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Check,
   Crown,
-  ImageIcon,
   LoaderCircle,
   LockKeyhole,
   Palette,
@@ -45,49 +44,6 @@ const themeColorSuggestions = {
   background: ["#0E0E0F", "#18181B", "#0A0A23", "#F8F7F4", "#F5EFE6", "#0B1411"],
   surface: ["#171719", "#232326", "#16163A", "#FFFFFF", "#2A1812", "#141A19"],
 } as const;
-
-const backgroundOverlayOptions = [
-  { value: "light", labelTr: "Hafif", labelEn: "Light", overlay: "rgba(10, 10, 12, 0.34)" },
-  { value: "balanced", labelTr: "Dengeli", labelEn: "Balanced", overlay: "rgba(10, 10, 12, 0.48)" },
-  { value: "strong", labelTr: "Güçlü", labelEn: "Strong", overlay: "rgba(10, 10, 12, 0.58)" },
-  { value: "extra-strong", labelTr: "Çok güçlü", labelEn: "Very strong", overlay: "rgba(10, 10, 12, 0.68)" },
-] as const;
-
-const backgroundSoftnessOptions = [
-  { value: "sharp", labelTr: "Net", labelEn: "Sharp" },
-  { value: "soft", labelTr: "Yumuşak", labelEn: "Soft" },
-  { value: "softer", labelTr: "Daha yumuşak", labelEn: "Softer" },
-] as const;
-
-const backgroundFocusOptions = [
-  { value: "center", labelTr: "Ortala", labelEn: "Center" },
-  { value: "top", labelTr: "Üst odaklı", labelEn: "Top focus" },
-  { value: "left", labelTr: "Sol odaklı", labelEn: "Left focus" },
-  { value: "right", labelTr: "Sağ odaklı", labelEn: "Right focus" },
-] as const;
-
-const cornerStyleOptions = [
-  { value: "small", labelTr: "Daha düz", labelEn: "Flatter" },
-  { value: "medium", labelTr: "Dengeli", labelEn: "Balanced" },
-  { value: "large", labelTr: "Daha yuvarlak", labelEn: "Rounder" },
-] as const;
-
-const cardFeelOptions = [
-  { value: "subtle", labelTr: "Sade", labelEn: "Subtle" },
-  { value: "balanced", labelTr: "Dengeli", labelEn: "Balanced" },
-  { value: "defined", labelTr: "Belirgin", labelEn: "Defined" },
-] as const;
-
-const buttonStyleOptions = [
-  { value: "filled", labelTr: "Dolu", labelEn: "Filled" },
-  { value: "soft", labelTr: "Yumuşak", labelEn: "Soft" },
-  { value: "outline", labelTr: "Çerçeveli", labelEn: "Outlined" },
-] as const;
-
-const badgeStyleOptions = [
-  { value: "subtle", labelTr: "Sade", labelEn: "Subtle" },
-  { value: "colored", labelTr: "Renkli", labelEn: "Colored" },
-] as const;
 
 function hexToRgb(hex: string) {
   const raw = hex.replace("#", "");
@@ -273,31 +229,6 @@ function ThemeNameCard({
           </span>
         ) : null}
       </div>
-    </button>
-  );
-}
-
-function CompactChoice({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "inline-flex h-9 items-center justify-center rounded-[12px] border px-3 text-[12px] font-medium transition",
-        active
-          ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-white"
-          : "border-white/8 bg-white/[0.025] text-[var(--text-secondary)] hover:border-white/12 hover:bg-white/[0.05] hover:text-white",
-      )}
-    >
-      {label}
     </button>
   );
 }
@@ -523,37 +454,53 @@ function AppearancePreview({
   const surfaceBackground = toRgba(theme.cardColor, theme.cardOpacity);
   const badgeBackground =
     theme.badgeStyle === "colored" ? "var(--artist-chip-surface)" : toRgba(theme.cardColor, 0.76);
+  const heroImage = profile.coverImageUrl;
 
   return (
     <div className="overflow-hidden rounded-[20px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1B1D21_0%,#15171B_100%)] p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.22)] xl:p-2">
-      <div className="mx-auto max-w-[374px]">
-        <div className="rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-[rgba(16,17,20,0.72)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.24)]">
+      <div className="mx-auto max-w-[332px]">
+        <div className="rounded-[22px] border border-[rgba(255,255,255,0.08)] bg-[rgba(16,17,20,0.72)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.24)]">
           <div className="overflow-hidden rounded-[24px] border" style={{ borderColor: tokens.borderColor, background: String(wrapperStyle.background ?? theme.backgroundColor) }}>
-            <div className="relative h-[154px] overflow-hidden">
-              {backgroundMedia.imageUrl || profile.coverImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={backgroundMedia.imageUrl || profile.coverImageUrl || ""}
-                  alt=""
-                  className="absolute inset-0 h-full w-full scale-[1.04] object-cover"
-                  style={{ objectPosition: backgroundMedia.position }}
-                />
+            <div className="relative overflow-hidden">
+              {backgroundMedia.imageUrl ? (
+                <>
+                  <div
+                    className="absolute inset-0 scale-[1.04]"
+                    style={{
+                      backgroundImage: `url(${backgroundMedia.imageUrl})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: backgroundMedia.position,
+                      filter: `blur(${backgroundMedia.blurPx}px)`,
+                    }}
+                  />
+                  <div className="absolute inset-0" style={{ background: backgroundMedia.overlayGradient }} />
+                  <div className="absolute inset-0" style={{ backgroundColor: backgroundMedia.overlayColor }} />
+                </>
               ) : null}
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    backgroundMedia.imageUrl || profile.coverImageUrl
-                      ? backgroundMedia.overlayGradient
+
+              <div className="relative h-[132px] overflow-hidden">
+                {heroImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={heroImage}
+                    alt=""
+                    className="absolute inset-0 h-full w-full scale-[1.04] object-cover"
+                  />
+                ) : null}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: heroImage
+                      ? "linear-gradient(180deg, rgba(10, 10, 12, 0.06) 0%, rgba(10, 10, 12, 0.54) 100%)"
                       : `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`,
-                }}
-              />
-              <div className="absolute inset-0" style={{ backgroundColor: backgroundMedia.overlayColor }} />
+                  }}
+                />
+              </div>
             </div>
 
-            <div className="relative px-3.5 pb-3.5 pt-0">
-              <div className="-mt-6 flex items-end gap-2.5">
-                <div className="size-12 overflow-hidden rounded-[16px] border border-white/12 bg-white/10 shadow-[0_12px_24px_rgba(0,0,0,0.22)]">
+            <div className="relative px-3 pb-3 pt-0">
+              <div className="-mt-5 flex items-end gap-2.5">
+                <div className="size-11 overflow-hidden rounded-[14px] border border-white/12 bg-white/10 shadow-[0_12px_24px_rgba(0,0,0,0.22)]">
                   {profile.profileImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={profile.profileImageUrl} alt="" className="h-full w-full object-cover" />
@@ -569,9 +516,9 @@ function AppearancePreview({
                 </div>
               </div>
 
-              <div className="mt-2.5 space-y-1">
+              <div className="mt-2 space-y-1">
                 <h3
-                  className="text-[20px] font-semibold tracking-[-0.03em]"
+                  className="text-[18px] font-semibold tracking-[-0.03em]"
                   style={{
                     color: tokens.cardText,
                     fontFamily: "var(--artist-heading-font)",
@@ -587,7 +534,7 @@ function AppearancePreview({
               </div>
 
               <div
-                className="mt-3 rounded-[18px] border p-3"
+                className="mt-2.5 rounded-[16px] border p-2.5"
                 style={{ borderColor: tokens.borderColor, backgroundColor: surfaceBackground }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -595,7 +542,7 @@ function AppearancePreview({
                     <p className="text-[9px] font-semibold uppercase tracking-[0.18em]" style={{ color: tokens.muted }}>
                       {locale === "tr" ? "Adım 1" : "Step 1"}
                     </p>
-                    <h4 className="mt-1 text-[16px] font-semibold tracking-[-0.03em]" style={{ color: tokens.cardText, fontFamily: "var(--artist-heading-font)" }}>
+                    <h4 className="mt-1 text-[15px] font-semibold tracking-[-0.03em]" style={{ color: tokens.cardText, fontFamily: "var(--artist-heading-font)" }}>
                       {welcomeTitle}
                     </h4>
                   </div>
@@ -610,11 +557,11 @@ function AppearancePreview({
                   {welcomeDescription}
                 </p>
 
-                <div className="mt-2.5 grid gap-2">
+                <div className="mt-2 grid gap-2">
                   {optionLabels.map((item, index) => (
                     <div
                       key={item.title}
-                      className="rounded-[14px] border p-2.5"
+                      className="rounded-[13px] border p-2.5"
                       style={{
                         borderColor: index === 0 ? toRgba(theme.primaryColor, 0.28) : tokens.borderColor,
                         background:
@@ -676,37 +623,15 @@ export function CustomizePageForm({
           primaryColorTitle: "Ana Renk",
           primaryColorDescription: "Butonlar, linkler ve ana vurgu alanlarında kullanılır.",
           backgroundColorTitle: "Sayfa Zemini",
-          backgroundColorDescription: "Sayfanın ana arka plan tonudur.",
+          backgroundColorDescription: "Sayfanın ana arka plan tonudur. İstersen görsel de yükleyebilirsin.",
           surfaceColorTitle: "Kart Zemini",
           surfaceColorDescription: "Kartlar ve içerik yüzeylerinde kullanılır.",
           selectColor: "Seç",
-          backgroundModuleTitle: "Sayfa Arka Planı",
-          backgroundModuleDescription: "Arka plan için renk kullanabilir veya görsel yükleyebilirsin.",
-          backgroundKindTitle: "Arka plan türü",
-          backgroundKindSolid: "Sade zemin",
-          backgroundKindImage: "Görsel kullan",
           backgroundImageTitle: "Arka plan görseli",
           backgroundImageDescription: "Geniş kadraj, koyu veya dengeli görseller daha iyi sonuç verir.",
           backgroundUpload: "Görsel yükle",
           backgroundRemove: "Görseli kaldır",
           backgroundAutoNote: "Arka plan görseli otomatik olarak karartılır; böylece yazılar ve butonlar okunaklı kalır.",
-          overlayTitle: "Karartma seviyesi",
-          softnessTitle: "Görsel netliği",
-          focusTitle: "Odak konumu",
-          backgroundUploadEmpty: "Arka plan için bir görsel ekleyebilirsin.",
-          surfacesTitle: "Butonlar ve Kartlar",
-          surfacesDescription: "Sayfanın genel hissini birkaç net seçimle belirle.",
-          cornerStyleTitle: "Köşe yapısı",
-          cardFeelTitle: "Kart hissi",
-          buttonStyleTitle: "Buton stili",
-          badgeStyleTitle: "Küçük etiket stili",
-          modulePreviewTitle: "Mini önizleme",
-          modulePreviewDescription: "Kart, buton ve etiket davranışını tam preview’a bakmadan önce burada gör.",
-          primaryActionLabel: "Ana buton",
-          secondaryActionLabel: "İkincil buton",
-          infoRowLabel: "Bilgi satırı",
-          infoRowValue: "Kart ve aksiyon dengesi",
-          badgePreviewLabel: "Müsait",
           resetDefaults: "Varsayılana dön",
           save: "Kaydet",
           saving: "Kaydediliyor",
@@ -735,37 +660,15 @@ export function CustomizePageForm({
           primaryColorTitle: "Primary Color",
           primaryColorDescription: "Used for buttons, links, and key highlights.",
           backgroundColorTitle: "Page Background",
-          backgroundColorDescription: "The main background tone of the page.",
+          backgroundColorDescription: "The main background tone of the page. You can also upload an image.",
           surfaceColorTitle: "Card Surface",
           surfaceColorDescription: "Used across cards and content surfaces.",
           selectColor: "Pick",
-          backgroundModuleTitle: "Page Background",
-          backgroundModuleDescription: "Use a color or upload an image for the page background.",
-          backgroundKindTitle: "Background type",
-          backgroundKindSolid: "Solid surface",
-          backgroundKindImage: "Use image",
           backgroundImageTitle: "Background image",
           backgroundImageDescription: "Wide, darker, or balanced images usually work best.",
           backgroundUpload: "Upload image",
           backgroundRemove: "Remove image",
           backgroundAutoNote: "The background image is automatically darkened so text and buttons stay readable.",
-          overlayTitle: "Darkening level",
-          softnessTitle: "Image softness",
-          focusTitle: "Focus position",
-          backgroundUploadEmpty: "Add an image for the background.",
-          surfacesTitle: "Buttons & Cards",
-          surfacesDescription: "Shape the overall feel of the page with a few clear choices.",
-          cornerStyleTitle: "Corner style",
-          cardFeelTitle: "Card feel",
-          buttonStyleTitle: "Button style",
-          badgeStyleTitle: "Small badge style",
-          modulePreviewTitle: "Mini preview",
-          modulePreviewDescription: "Check cards, buttons, and badges here before the full preview.",
-          primaryActionLabel: "Primary button",
-          secondaryActionLabel: "Secondary button",
-          infoRowLabel: "Info row",
-          infoRowValue: "Card and action balance",
-          badgePreviewLabel: "Available",
           resetDefaults: "Reset to default",
           save: "Save",
           saving: "Saving",
@@ -785,22 +688,16 @@ export function CustomizePageForm({
 
   const watchedValues = useWatch({ control: form.control });
   const currentPreset = watchedValues.presetTheme ?? theme.presetTheme;
-  const currentBackgroundType = watchedValues.backgroundType ?? theme.backgroundType;
   const currentBackgroundColor = watchedValues.backgroundColor ?? theme.backgroundColor;
   const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
   const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
   const currentBackgroundImageUrl = watchedValues.backgroundImageUrl ?? theme.backgroundImageUrl ?? "";
-  const currentBackgroundOverlayStrength = watchedValues.backgroundOverlayStrength ?? theme.backgroundOverlayStrength;
-  const currentBackgroundImageSoftness = watchedValues.backgroundImageSoftness ?? theme.backgroundImageSoftness;
-  const currentBackgroundImageFocus = watchedValues.backgroundImageFocus ?? theme.backgroundImageFocus;
   const currentPrimaryColor = watchedValues.primaryColor ?? theme.primaryColor;
   const currentSecondaryColor = watchedValues.secondaryColor ?? theme.secondaryColor;
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
   const currentCardOpacity = typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
-  const currentCardFeel = watchedValues.cardFeel ?? theme.cardFeel;
-  const currentButtonStyle = watchedValues.buttonStyle ?? theme.buttonStyle;
-  const currentBadgeStyle = watchedValues.badgeStyle ?? theme.badgeStyle;
   const currentThemeMode = watchedValues.themeMode ?? theme.themeMode;
+  const currentBackgroundType = currentBackgroundImageUrl ? "image" : "solid";
 
   const derivedColorTokens = useMemo(
     () =>
@@ -838,9 +735,16 @@ export function CustomizePageForm({
   }, [demoMode, form]);
 
   function applyBackgroundTone(nextColor: string) {
+    const nextDerived = deriveThemeColorTokens({
+      backgroundColor: nextColor,
+      cardColor: currentCardColor,
+      primaryColor: currentPrimaryColor,
+      secondaryColor: currentSecondaryColor,
+    });
     form.setValue("backgroundColor", nextColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientStart", mixHex(nextColor, currentCardColor, 0.82), { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientEnd", mixHex(nextColor, currentSecondaryColor, 0.68), { shouldDirty: true, shouldValidate: true });
+    form.setValue("textColor", nextDerived.text, { shouldDirty: true, shouldValidate: true });
   }
 
   const previewTheme = useMemo(
@@ -853,17 +757,17 @@ export function CustomizePageForm({
         gradientStart: currentGradientStart,
         gradientEnd: currentGradientEnd,
         backgroundImageUrl: currentBackgroundImageUrl || null,
-        backgroundOverlayStrength: currentBackgroundOverlayStrength,
-        backgroundImageSoftness: currentBackgroundImageSoftness,
-        backgroundImageFocus: currentBackgroundImageFocus,
+        backgroundOverlayStrength: theme.backgroundOverlayStrength,
+        backgroundImageSoftness: theme.backgroundImageSoftness,
+        backgroundImageFocus: theme.backgroundImageFocus,
         textColor: derivedColorTokens.text,
         primaryColor: currentPrimaryColor,
         secondaryColor: currentSecondaryColor,
         cardColor: currentCardColor,
         cardOpacity: currentCardOpacity,
-        cardFeel: currentCardFeel,
-        buttonStyle: currentButtonStyle,
-        badgeStyle: currentBadgeStyle,
+        cardFeel: theme.cardFeel,
+        buttonStyle: theme.buttonStyle,
+        badgeStyle: theme.badgeStyle,
         headingFont: watchedValues.headingFont ?? theme.headingFont,
         bodyFont: watchedValues.bodyFont ?? theme.bodyFont,
         fontPairingPreset: watchedValues.fontPairingPreset ?? theme.fontPairingPreset,
@@ -878,26 +782,26 @@ export function CustomizePageForm({
     [
       artist.profile.id,
       currentBackgroundColor,
-      currentBackgroundImageFocus,
-      currentBackgroundImageSoftness,
       currentBackgroundImageUrl,
-      currentBackgroundOverlayStrength,
       currentBackgroundType,
       currentCardColor,
-      currentCardFeel,
       currentCardOpacity,
       currentSecondaryColor,
-      currentButtonStyle,
-      currentBadgeStyle,
       currentGradientEnd,
       currentGradientStart,
       currentPreset,
       currentPrimaryColor,
       currentThemeMode,
       derivedColorTokens.text,
+      theme.backgroundImageFocus,
+      theme.backgroundImageSoftness,
+      theme.backgroundOverlayStrength,
       theme.bodyFont,
+      theme.buttonStyle,
+      theme.cardFeel,
       theme.fontPairingPreset,
       theme.headingFont,
+      theme.badgeStyle,
       theme.radiusStyle,
       watchedValues.bodyFont,
       watchedValues.customCtaLabel,
@@ -921,6 +825,7 @@ export function CustomizePageForm({
     const resolved = resolveArtistTheme({
       artistId: artist.profile.id,
       ...values,
+      backgroundType: values.backgroundImageUrl ? "image" : "solid",
       textColor: derived.text,
       backgroundImageUrl: values.backgroundImageUrl || null,
       customWelcomeTitle: values.customWelcomeTitle || null,
@@ -940,21 +845,14 @@ export function CustomizePageForm({
     form.setValue("gradientStart", preset.gradientStart, { shouldDirty: true, shouldValidate: true });
     form.setValue("gradientEnd", preset.gradientEnd, { shouldDirty: true, shouldValidate: true });
     form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundOverlayStrength", "balanced", { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundImageSoftness", "soft", { shouldDirty: true, shouldValidate: true });
-    form.setValue("backgroundImageFocus", "center", { shouldDirty: true, shouldValidate: true });
     form.setValue("textColor", preset.textColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("primaryColor", preset.primaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("cardColor", preset.cardColor, { shouldDirty: true, shouldValidate: true });
     form.setValue("cardOpacity", preset.cardOpacity, { shouldDirty: true, shouldValidate: true });
-    form.setValue("cardFeel", "balanced", { shouldDirty: true, shouldValidate: true });
-    form.setValue("buttonStyle", "filled", { shouldDirty: true, shouldValidate: true });
-    form.setValue("badgeStyle", "colored", { shouldDirty: true, shouldValidate: true });
     form.setValue("headingFont", preset.headingFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("bodyFont", preset.bodyFont, { shouldDirty: true, shouldValidate: true });
     form.setValue("fontPairingPreset", preset.fontPairingPreset, { shouldDirty: true, shouldValidate: true });
-    form.setValue("radiusStyle", preset.radiusStyle, { shouldDirty: true, shouldValidate: true });
     form.setValue("themeMode", preset.themeMode, { shouldDirty: true, shouldValidate: true });
   }
 
@@ -988,7 +886,6 @@ export function CustomizePageForm({
         prefix: "background",
       });
       form.setValue("backgroundImageUrl", uploaded.publicUrl, { shouldDirty: true, shouldValidate: true });
-      form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true });
       setFlashMessage(copy.uploadQueued);
     } catch {
       form.setError("root", { message: copy.uploadFailed });
@@ -997,9 +894,6 @@ export function CustomizePageForm({
 
   function clearBackgroundImage() {
     form.setValue("backgroundImageUrl", "", { shouldDirty: true, shouldValidate: true });
-    if (currentBackgroundType === "image") {
-      form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true });
-    }
   }
 
   async function saveTheme(values: ThemeValues) {
@@ -1086,15 +980,6 @@ export function CustomizePageForm({
             onCommit={(next) => form.setValue("primaryColor", next, { shouldDirty: true, shouldValidate: true })}
           />
           <ColorField
-            label={copy.backgroundColorTitle}
-            description={copy.backgroundColorDescription}
-            value={currentBackgroundColor}
-            suggestions={themeColorSuggestions.background}
-            pickerId="theme-background-color"
-            selectLabel={copy.selectColor}
-            onCommit={applyBackgroundTone}
-          />
-          <ColorField
             label={copy.surfaceColorTitle}
             description={copy.surfaceColorDescription}
             value={currentCardColor}
@@ -1104,158 +989,43 @@ export function CustomizePageForm({
             onCommit={(next) => form.setValue("cardColor", next, { shouldDirty: true, shouldValidate: true })}
           />
         </div>
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <p className="text-[13px] font-medium text-white">{copy.backgroundModuleTitle}</p>
-            <p className="text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundModuleDescription}</p>
-          </div>
-          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-            <p className="mb-2 text-[12px] font-medium text-white">{copy.backgroundKindTitle}</p>
-            <div className="grid grid-cols-2 gap-2">
-            <CompactChoice active={currentBackgroundType !== "image"} label={copy.backgroundKindSolid} onClick={() => form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true })} />
-            <CompactChoice active={currentBackgroundType === "image"} label={copy.backgroundKindImage} onClick={() => form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true })} />
-            </div>
-          </div>
-
-          {currentBackgroundType === "image" ? (
-            <>
-              <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-                <p className="text-[12px] font-medium text-white">{copy.backgroundImageTitle}</p>
-                <p className="mt-1 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundImageDescription}</p>
-                <div className="mt-3 overflow-hidden rounded-[16px] border border-white/8 bg-white/[0.03]">
-                  <div className="relative flex h-[116px] items-center justify-center">
-                    {currentBackgroundImageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={currentBackgroundImageUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 px-6 text-center text-[12px] text-[var(--foreground-muted)]">
-                        <ImageIcon className="size-4" />
-                        <span>{copy.backgroundUploadEmpty}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="mt-2.5 flex flex-wrap gap-2">
-                  <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:bg-white/[0.08]">
-                    <Upload className="size-4" />
-                    {copy.backgroundUpload}
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif"
-                      className="hidden"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        if (file) handleBackgroundUpload(file);
-                        event.currentTarget.value = "";
-                      }}
-                    />
-                  </label>
-                  {currentBackgroundImageUrl ? (
-                    <Button type="button" variant="ghost" className="h-9 px-3" onClick={clearBackgroundImage}>
-                      <X className="size-4" />
-                      {copy.backgroundRemove}
-                    </Button>
-                  ) : null}
-                </div>
-                <p className="mt-2 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundAutoNote}</p>
+        <div className="rounded-[16px] border border-white/8 bg-white/[0.025] p-3.5">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <ColorField
+              label={copy.backgroundColorTitle}
+              description={copy.backgroundColorDescription}
+              value={currentBackgroundColor}
+              suggestions={themeColorSuggestions.background}
+              pickerId="theme-background-color"
+              selectLabel={copy.selectColor}
+              onCommit={applyBackgroundTone}
+            />
+            <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+              <p className="text-[12px] font-medium text-white">{copy.backgroundImageTitle}</p>
+              <p className="mt-1 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundImageDescription}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:bg-white/[0.08]">
+                  <Upload className="size-4" />
+                  {copy.backgroundUpload}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) handleBackgroundUpload(file);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </label>
+                {currentBackgroundImageUrl ? (
+                  <Button type="button" variant="ghost" className="h-9 px-3" onClick={clearBackgroundImage}>
+                    <X className="size-4" />
+                    {copy.backgroundRemove}
+                  </Button>
+                ) : null}
               </div>
-
-              <div className="grid gap-3 lg:grid-cols-3">
-                <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-                  <p className="mb-2 text-[12px] font-medium text-white">{copy.overlayTitle}</p>
-                  <div className="grid gap-2">
-                    {backgroundOverlayOptions.map((option) => (
-                      <CompactChoice
-                        key={option.value}
-                        active={currentBackgroundOverlayStrength === option.value}
-                        label={locale === "tr" ? option.labelTr : option.labelEn}
-                        onClick={() => form.setValue("backgroundOverlayStrength", option.value, { shouldDirty: true, shouldValidate: true })}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-                  <p className="mb-2 text-[12px] font-medium text-white">{copy.softnessTitle}</p>
-                  <div className="grid gap-2">
-                    {backgroundSoftnessOptions.map((option) => (
-                      <CompactChoice
-                        key={option.value}
-                        active={currentBackgroundImageSoftness === option.value}
-                        label={locale === "tr" ? option.labelTr : option.labelEn}
-                        onClick={() => form.setValue("backgroundImageSoftness", option.value, { shouldDirty: true, shouldValidate: true })}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-                  <p className="mb-2 text-[12px] font-medium text-white">{copy.focusTitle}</p>
-                  <div className="grid gap-2">
-                    {backgroundFocusOptions.map((option) => (
-                      <CompactChoice
-                        key={option.value}
-                        active={currentBackgroundImageFocus === option.value}
-                        label={locale === "tr" ? option.labelTr : option.labelEn}
-                        onClick={() => form.setValue("backgroundImageFocus", option.value, { shouldDirty: true, shouldValidate: true })}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : null}
-        </div>
-
-        <div className="grid gap-3 xl:grid-cols-2">
-          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-            <p className="mb-2 text-[12px] font-medium text-white">{copy.cornerStyleTitle}</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {cornerStyleOptions.map((option) => (
-                <CompactChoice
-                  key={option.value}
-                  active={previewTheme.radiusStyle === option.value}
-                  label={locale === "tr" ? option.labelTr : option.labelEn}
-                  onClick={() => form.setValue("radiusStyle", option.value, { shouldDirty: true, shouldValidate: true })}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-            <p className="mb-2 text-[12px] font-medium text-white">{copy.cardFeelTitle}</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {cardFeelOptions.map((option) => (
-                <CompactChoice
-                  key={option.value}
-                  active={currentCardFeel === option.value}
-                  label={locale === "tr" ? option.labelTr : option.labelEn}
-                  onClick={() => form.setValue("cardFeel", option.value, { shouldDirty: true, shouldValidate: true })}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-            <p className="mb-2 text-[12px] font-medium text-white">{copy.buttonStyleTitle}</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {buttonStyleOptions.map((option) => (
-                <CompactChoice
-                  key={option.value}
-                  active={currentButtonStyle === option.value}
-                  label={locale === "tr" ? option.labelTr : option.labelEn}
-                  onClick={() => form.setValue("buttonStyle", option.value, { shouldDirty: true, shouldValidate: true })}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
-            <p className="mb-2 text-[12px] font-medium text-white">{copy.badgeStyleTitle}</p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {badgeStyleOptions.map((option) => (
-                <CompactChoice
-                  key={option.value}
-                  active={currentBadgeStyle === option.value}
-                  label={locale === "tr" ? option.labelTr : option.labelEn}
-                  onClick={() => form.setValue("badgeStyle", option.value, { shouldDirty: true, shouldValidate: true })}
-                />
-              ))}
+              <p className="mt-2 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundAutoNote}</p>
             </div>
           </div>
         </div>
@@ -1328,7 +1098,7 @@ export function CustomizePageForm({
           ))}
         </div>
 
-        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_410px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_368px] 2xl:grid-cols-[minmax(0,1fr)_392px]">
           <div className="space-y-3">
             {modulePanel}
             {form.formState.errors.root?.message ? (
