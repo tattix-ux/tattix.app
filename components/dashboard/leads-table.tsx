@@ -1019,14 +1019,13 @@ export function LeadsTable({
 
   return (
     <div className="space-y-4">
-      <Card className="surface-border">
-        <CardContent className="space-y-2.5 pt-4">
+      <div className="space-y-2.5 pt-1">
           {hasPro ? (
             <>
               {statusMessage ? (
                 <p className="text-[12px] text-[var(--accent-soft)]">{statusMessage}</p>
               ) : null}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 pt-1.5">
                 {(["all", "today", "last-7", "last-30"] as LeadRange[]).map((range) => (
                   <button
                     key={range}
@@ -1045,20 +1044,17 @@ export function LeadsTable({
                   </button>
                 ))}
               </div>
-              <div className="rounded-[18px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-1.5">
-                <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-4">
-                  <SummaryStat label={copy.summary.total} value={totalCount} tone="accent" />
-                  <SummaryStat label={copy.summary.waiting} value={waitingCount} />
-                  <SummaryStat label={copy.summary.waitingContacts} value={contactedCount} />
-                  <SummaryStat label={copy.summary.sold} value={`${soldCount} · ${formatConversionRate(contactedCount, soldCount)}`} />
-                </div>
+              <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-4">
+                <SummaryStat label={copy.summary.total} value={totalCount} tone="accent" />
+                <SummaryStat label={copy.summary.waiting} value={waitingCount} />
+                <SummaryStat label={copy.summary.waitingContacts} value={contactedCount} />
+                <SummaryStat label={copy.summary.sold} value={`${soldCount} · ${formatConversionRate(contactedCount, soldCount)}`} />
               </div>
             </>
           ) : (
             <UpgradeCard locale={locale} profile={profilePlan} />
           )}
-        </CardContent>
-      </Card>
+      </div>
 
       <Card className="surface-border">
         <CardHeader className="pb-3">
