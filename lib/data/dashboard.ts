@@ -428,7 +428,7 @@ export async function ensureArtistForUser(user: User) {
       user_id: user.id,
       artist_name: artistName,
       slug,
-      short_bio: "Tell clients what kind of work you love making most.",
+      short_bio: "",
       welcome_headline: "Start your tattoo brief in under two minutes.",
       whatsapp_number: "+905550000000",
       instagram_handle: "@yourstudio",
