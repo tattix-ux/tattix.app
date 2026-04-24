@@ -114,7 +114,7 @@ export default async function DashboardLayout({
                   />
                 ) : null}
               </aside>
-              <main className="min-w-0 w-full max-w-none lg:w-full lg:max-w-none lg:justify-self-stretch">
+              <main className="min-w-0 w-full max-w-none pt-1.5 lg:w-full lg:max-w-none lg:justify-self-stretch xl:pt-2">
                 {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
                 {children}
                 <div className="mt-4 w-full max-w-none lg:max-w-none">

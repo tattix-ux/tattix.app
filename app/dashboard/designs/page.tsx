@@ -15,11 +15,8 @@ export default async function DashboardDesignsPage() {
   const isTurkish = data.locale === "tr";
 
   return (
-    <div className="space-y-2.5 xl:space-y-2">
-      <div className="space-y-0.5 xl:space-y-0.5">
-        <p className="text-[9px] font-medium uppercase tracking-[0.24em] text-[var(--accent-soft)]/95">
-          {isTurkish ? "Tasarımlar" : "Designs"}
-        </p>
+    <div className="space-y-3.5 xl:space-y-3">
+      <div className="space-y-1.5 xl:space-y-1.5">
         <h1 className="font-display text-[1.52rem] font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)] xl:text-[1.42rem]">
           {isTurkish ? "Tasarımlar" : "Ready-made designs"}
         </h1>
