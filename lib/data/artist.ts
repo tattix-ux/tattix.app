@@ -21,6 +21,21 @@ import type {
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+function getTodayIsoDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function filterUpcomingDates(dates: string[]) {
+  const todayIso = getTodayIsoDate();
+
+  return dates.filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= todayIso);
+}
+
 export function mapArtistProfile(row: Record<string, unknown>): ArtistProfile {
   return {
     id: String(row.id),
@@ -67,7 +82,7 @@ export function mapBookingCities(
       return {
         id: locationId,
         cityName: String(row.city_name),
-        availableDates,
+        availableDates: filterUpcomingDates(availableDates),
       };
     })
     .sort((left, right) => left.cityName.localeCompare(right.cityName, "tr"));

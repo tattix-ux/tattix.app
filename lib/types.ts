@@ -534,6 +534,7 @@ export type SubmissionDraft = {
   ageRange: CustomerAgeRangeValue | "";
   hasAllergy: boolean | null;
   hasChronicCondition: boolean | null;
+  chronicConditionDetails: string;
   workStyle: WorkStyleValue | "";
   realismLevel: RealismLevelValue | "";
   layoutStyle: LayoutStyleValue | "";
@@ -621,6 +622,7 @@ export type SubmissionRequest = {
   ageRange?: CustomerAgeRangeValue | null;
   hasAllergy?: boolean | null;
   hasChronicCondition?: boolean | null;
+  chronicConditionDetails?: string | null;
   workStyle?: WorkStyleValue | null;
   realismLevel?: RealismLevelValue | null;
   layoutStyle?: LayoutStyleValue | null;

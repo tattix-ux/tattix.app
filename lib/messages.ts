@@ -226,6 +226,12 @@ export function buildSubmissionMessage(
     lines.push(`${locale === "tr" ? "Kronik rahatsızlık" : "Chronic condition"}: ${chronicConditionLabel}`);
   }
 
+  if (submission.hasChronicCondition && submission.chronicConditionDetails?.trim()) {
+    lines.push(
+      `${locale === "tr" ? "Rahatsızlık detayı" : "Condition details"}: ${submission.chronicConditionDetails.trim()}`,
+    );
+  }
+
   const preferredTiming = formatPreferredTiming(
     submission.preferredStartDate,
     submission.preferredEndDate,

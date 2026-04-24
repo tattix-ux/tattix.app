@@ -61,6 +61,23 @@ export function ProfileRequestSettings({
     return candidate;
   }
 
+  function getTodayIsoDate() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  function sanitizeAvailableDates(dates: string[]) {
+    const todayIso = getTodayIsoDate();
+
+    return Array.from(new Set(dates))
+      .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= todayIso)
+      .sort();
+  }
+
   function normalizeValues(values: RequestSettingsValues) {
     const usedKeys = new Set(styles.filter((style) => !style.isCustom).map((style) => style.styleKey));
 
@@ -93,7 +110,7 @@ export function ProfileRequestSettings({
       bookingCities: values.bookingCities.map((city) => ({
         ...city,
         cityName: city.cityName.trim(),
-        availableDates: Array.from(new Set(city.availableDates)).sort(),
+        availableDates: sanitizeAvailableDates(city.availableDates),
       })),
     } satisfies RequestSettingsValues;
   }
@@ -207,7 +224,7 @@ export function ProfileRequestSettings({
       bookingCities: settings.bookingCities.map((city) => ({
         id: city.id,
         cityName: city.cityName,
-        availableDates: city.availableDates,
+        availableDates: sanitizeAvailableDates(city.availableDates),
       })),
     },
   });

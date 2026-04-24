@@ -140,8 +140,6 @@ export const funnelSettingsSchema = z.object({
   customStyles: z.array(customStyleSchema).default([]),
   bookingCities: z.array(bookingCitySchema).default([]),
 }).superRefine((values, ctx) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const seen = new Set<string>();
 
   values.bookingCities.forEach((city, index) => {
@@ -170,11 +168,11 @@ export const funnelSettingsSchema = z.object({
       }
 
       const parsedDate = new Date(`${date}T00:00:00`);
-      if (Number.isNaN(parsedDate.getTime()) || parsedDate < today) {
+      if (Number.isNaN(parsedDate.getTime())) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["bookingCities", index, "availableDates", dateIndex],
-          message: "Past dates are not allowed.",
+          message: "Invalid date.",
         });
       }
     });
@@ -211,8 +209,6 @@ export const requestSettingsSchema = z.object({
   customStyles: z.array(customStyleSchema).default([]),
   bookingCities: z.array(bookingCitySchema).default([]),
 }).superRefine((values, ctx) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const seen = new Set<string>();
 
   values.bookingCities.forEach((city, index) => {
@@ -241,11 +237,11 @@ export const requestSettingsSchema = z.object({
       }
 
       const parsedDate = new Date(`${date}T00:00:00`);
-      if (Number.isNaN(parsedDate.getTime()) || parsedDate < today) {
+      if (Number.isNaN(parsedDate.getTime())) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["bookingCities", index, "availableDates", dateIndex],
-          message: "Past dates are not allowed.",
+          message: "Invalid date.",
         });
       }
     });
@@ -622,6 +618,7 @@ export const submissionSchema = z.object({
   ageRange: z.enum(["18-24", "25-34", "35-44", "45+"]).nullable().optional(),
   hasAllergy: z.boolean().nullable().optional(),
   hasChronicCondition: z.boolean().nullable().optional(),
+  chronicConditionDetails: z.string().max(280).optional(),
   workStyle: z.enum(workStyleValues as [string, ...string[]]).nullable().optional(),
   realismLevel: z.enum(realismLevelValues as [string, ...string[]]).nullable().optional(),
   layoutStyle: z.enum(layoutStyleValues as [string, ...string[]]).nullable().optional(),

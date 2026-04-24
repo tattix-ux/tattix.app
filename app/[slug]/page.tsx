@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 
 import { DemoArtistPage } from "@/components/artist-page/demo-artist-page";
@@ -23,6 +24,7 @@ export default async function ArtistPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  noStore();
   const { slug } = await params;
 
   if (slug === "dashboard" || slug === "login" || slug === "signup") {

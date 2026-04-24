@@ -115,6 +115,11 @@ export async function POST(request: Request) {
       : locale === "tr"
         ? `Kronik rahatsızlık: ${submission.hasChronicCondition ? "Evet" : "Hayır"}`
         : `Chronic condition: ${submission.hasChronicCondition ? "Yes" : "No"}`,
+    submission.hasChronicCondition && submission.chronicConditionDetails?.trim()
+      ? locale === "tr"
+        ? `Rahatsızlık detayı: ${submission.chronicConditionDetails.trim()}`
+        : `Condition details: ${submission.chronicConditionDetails.trim()}`
+      : null,
   ]
     .filter(Boolean)
     .join(" | ");

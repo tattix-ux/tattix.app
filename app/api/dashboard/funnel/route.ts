@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
@@ -23,6 +24,23 @@ function buildStyleKey(label: string, usedKeys: Set<string>) {
 
   usedKeys.add(candidate);
   return candidate;
+}
+
+function getTodayIsoDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function sanitizeAvailableDates(dates: string[]) {
+  const todayIso = getTodayIsoDate();
+
+  return Array.from(new Set(dates))
+    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= todayIso)
+    .sort();
 }
 
 export async function POST(request: Request) {
@@ -62,18 +80,15 @@ export async function POST(request: Request) {
   const removedBuiltInKeys = new Set(parsed.data.removedBuiltInStyles);
   const hasDuplicateCustomKeys = new Set(customKeys).size !== customKeys.length;
   const conflictsWithBuiltIns = customKeys.some((key) => builtInKeys.has(key));
-  const normalizedCities = parsed.data.bookingCities.map((city) =>
-    city.cityName.trim().toLocaleLowerCase("tr-TR"),
+  const normalizedBookingCities = parsed.data.bookingCities.map((city) => ({
+    ...city,
+    cityName: city.cityName.trim(),
+    availableDates: sanitizeAvailableDates(city.availableDates),
+  }));
+  const normalizedCities = normalizedBookingCities.map((city) =>
+    city.cityName.toLocaleLowerCase("tr-TR"),
   );
   const hasDuplicateCities = new Set(normalizedCities).size !== normalizedCities.length;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const hasPastDates = parsed.data.bookingCities.some((city) =>
-    city.availableDates.some((date) => {
-      const parsedDate = new Date(`${date}T00:00:00`);
-      return Number.isNaN(parsedDate.getTime()) || parsedDate < today;
-    }),
-  );
 
   if (hasDuplicateCustomKeys || conflictsWithBuiltIns) {
     return NextResponse.json(
@@ -84,10 +99,6 @@ export async function POST(request: Request) {
 
   if (hasDuplicateCities) {
     return NextResponse.json({ message: "Cities must be unique." }, { status: 400 });
-  }
-
-  if (hasPastDates) {
-    return NextResponse.json({ message: "Past dates are not allowed." }, { status: 400 });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -168,13 +179,13 @@ export async function POST(request: Request) {
   let locationInsertError: { message: string } | null = null;
   let dateInsertError: { message: string } | null = null;
 
-  if (!deleteDatesError && !deleteLocationsError && parsed.data.bookingCities.length > 0) {
+  if (!deleteDatesError && !deleteLocationsError && normalizedBookingCities.length > 0) {
     const { data: insertedLocations, error } = await supabase
       .from("artist_booking_locations")
       .insert(
-        parsed.data.bookingCities.map((city) => ({
+        normalizedBookingCities.map((city) => ({
           artist_id: artist.id,
-          city_name: city.cityName.trim(),
+          city_name: city.cityName,
         })),
       )
       .select("id,city_name");
@@ -183,9 +194,9 @@ export async function POST(request: Request) {
 
     if (!error && insertedLocations) {
       const cityIdMap = new Map(insertedLocations.map((row) => [row.city_name, row.id]));
-      const dateRows = parsed.data.bookingCities.flatMap((city) =>
+      const dateRows = normalizedBookingCities.flatMap((city) =>
         city.availableDates.map((date) => ({
-          artist_location_id: cityIdMap.get(city.cityName.trim()),
+          artist_location_id: cityIdMap.get(city.cityName),
           available_date: date,
         })),
       ).filter((row) => Boolean(row.artist_location_id));
@@ -210,6 +221,10 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/profile");
+  revalidatePath(`/${artist.slug}`);
 
   return NextResponse.json({ message: "Request settings saved." });
 }

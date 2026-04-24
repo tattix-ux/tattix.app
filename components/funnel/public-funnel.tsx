@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DateCalendarPopover } from "@/components/ui/date-calendar-popover";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -198,6 +199,8 @@ function getCopy(locale: PublicLocale) {
       customerInfo: "Birkaç bilgi daha",
       allergy: "Alerjin var mı?",
       chronicCondition: "Kronik bir rahatsızlığın var mı?",
+      chronicConditionDetails: "Rahatsızlığını kısaca yaz",
+      chronicConditionPlaceholder: "Varsa kısaca yazabilirsin",
       yes: "Evet",
       no: "Hayır",
       cityTitle: "Hangi şehirden randevu almak istersin?",
@@ -404,6 +407,8 @@ function getCopy(locale: PublicLocale) {
     customerInfo: "A few extra details",
     allergy: "Do you have any allergies?",
     chronicCondition: "Do you have any chronic condition?",
+    chronicConditionDetails: "Briefly describe your condition",
+    chronicConditionPlaceholder: "You can briefly write it here",
     yes: "Yes",
     no: "No",
     gender: "Gender",
@@ -897,6 +902,8 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       ageRange: draft.ageRange || undefined,
       hasAllergy: draft.hasAllergy,
       hasChronicCondition: draft.hasChronicCondition,
+      chronicConditionDetails:
+        draft.hasChronicCondition === true ? draft.chronicConditionDetails || undefined : undefined,
       workStyle:
         draft.pricingSource === "custom_request"
           ? draft.workStyle || undefined
@@ -1658,12 +1665,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                               : "no"
                         }
                         onChange={(event) =>
-                          setField(
-                            "hasChronicCondition",
-                            event.target.value === ""
-                              ? null
-                              : event.target.value === "yes",
-                          )
+                          {
+                            const nextValue =
+                              event.target.value === ""
+                                ? null
+                                : event.target.value === "yes";
+                            setField("hasChronicCondition", nextValue);
+                            if (nextValue !== true) {
+                              setField("chronicConditionDetails", "");
+                            }
+                          }
                         }
                       >
                         <option value="">{copy.genderPlaceholder}</option>
@@ -1671,6 +1682,18 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         <option value="no">{copy.no}</option>
                       </NativeSelect>
                     </div>
+                    {draft.hasChronicCondition ? (
+                      <div className="space-y-2 sm:col-span-2">
+                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.chronicConditionDetails}
+                        </span>
+                        <Input
+                          value={draft.chronicConditionDetails}
+                          onChange={(event) => setField("chronicConditionDetails", event.target.value)}
+                          placeholder={copy.chronicConditionPlaceholder}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
