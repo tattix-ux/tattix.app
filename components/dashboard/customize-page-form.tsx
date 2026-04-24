@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { themePresetOptions, themePresets, type ThemePresetKey } from "@/lib/constants/theme";
 import { pageThemeSchema } from "@/lib/forms/schemas";
 import { loadDemoTheme, saveDemoTheme } from "@/lib/demo-theme-storage";
@@ -40,9 +39,9 @@ type CustomizePageArtist = {
 };
 
 const themeColorSuggestions = {
-  primary: ["#C6A27A", "#8B5CF6", "#22D3EE", "#4ADE80", "#F97316", "#0F172A"],
-  background: ["#0E0E0F", "#18181B", "#0A0A23", "#F8F7F4", "#F5EFE6", "#0B1411"],
-  surface: ["#171719", "#232326", "#16163A", "#FFFFFF", "#2A1812", "#141A19"],
+  primary: ["#E5E5E5", "#D1A1A1", "#1A1A1A", "#D4AF37", "#818CF8", "#D6D3D1"],
+  background: ["#101010", "#120A0A", "#F9F8F6", "#080808", "#EFEBE3", "#171C1A"],
+  surface: ["#1B1B1B", "#1C1212", "#FFFFFF", "#121212", "#F7F5F0", "#292524"],
 } as const;
 
 function hexToRgb(hex: string) {
@@ -80,16 +79,6 @@ function mixHex(colorA: string, colorB: string, weightA = 0.68) {
   const blue = Math.round(a.b * ratioA + b.b * ratioB);
 
   return `#${toHex(r)}${toHex(g)}${toHex(blue)}`;
-}
-
-function normalizeHexInput(value: string) {
-  const trimmed = value.trim().replace(/[^#0-9a-f]/gi, "");
-  const withPrefix = trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
-  return withPrefix.slice(0, 7).toUpperCase();
-}
-
-function isValidHexInput(value: string) {
-  return /^#([0-9A-F]{6}|[0-9A-F]{3})$/.test(value);
 }
 
 function buildFormValues(source: ArtistPageTheme): ThemeValues {
@@ -284,7 +273,6 @@ function ColorField({
   pickerId,
   onCommit,
   selectLabel,
-  hideSuggestionsLabel = true,
 }: {
   label: string;
   description: string;
@@ -293,25 +281,7 @@ function ColorField({
   pickerId: string;
   onCommit: (value: string) => void;
   selectLabel: string;
-  hideSuggestionsLabel?: boolean;
 }) {
-  const [draft, setDraft] = useState(value.toUpperCase());
-
-  useEffect(() => {
-    setDraft(value.toUpperCase());
-  }, [value]);
-
-  function commit(next: string) {
-    const normalized = normalizeHexInput(next);
-    if (isValidHexInput(normalized)) {
-      onCommit(normalized);
-      setDraft(normalized);
-      return;
-    }
-
-    setDraft(value.toUpperCase());
-  }
-
   return (
     <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
       <div className="space-y-1">
@@ -319,29 +289,14 @@ function ColorField({
         <p className="text-[11px] leading-[1.35] text-[var(--foreground-muted)]">{description}</p>
       </div>
 
-      <div className="mt-2.5 grid grid-cols-[30px_minmax(0,1fr)_70px] items-center gap-2">
+      <div className="mt-2.5 flex items-center gap-2">
         <span
           className="inline-flex size-[30px] rounded-[10px] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
           style={{ backgroundColor: value }}
         />
-        <Input
-          value={draft}
-          onChange={(event) => {
-            const normalized = normalizeHexInput(event.target.value);
-            if (normalized.length <= 7) setDraft(normalized);
-          }}
-          onBlur={() => commit(draft)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              commit(draft);
-            }
-          }}
-          className="h-9 rounded-[12px] border-white/10 bg-white/[0.03] font-mono text-[12px] uppercase tracking-[0.08em]"
-        />
         <label
           htmlFor={pickerId}
-          className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.05] text-[12px] font-medium text-white transition hover:bg-white/[0.08]"
+          className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:bg-white/[0.08]"
         >
           {selectLabel}
         </label>
@@ -350,11 +305,7 @@ function ColorField({
           type="color"
           value={value}
           className="sr-only"
-          onChange={(event) => {
-            const next = event.target.value.toUpperCase();
-            setDraft(next);
-            onCommit(next);
-          }}
+          onChange={(event) => onCommit(event.target.value.toUpperCase())}
         />
       </div>
 
@@ -367,7 +318,7 @@ function ColorField({
               type="button"
               onClick={() => onCommit(suggestion)}
               aria-label={suggestion}
-              title={hideSuggestionsLabel ? undefined : suggestion}
+              title={suggestion}
               className={cn(
                 "inline-flex size-7 items-center justify-center rounded-full border transition",
                 active
@@ -697,6 +648,7 @@ export function CustomizePageForm({
   const [activeModule, setActiveModule] = useState<CustomizeModule>("presets");
   const [lockedModulePreview, setLockedModulePreview] = useState<Exclude<CustomizeModule, "presets"> | null>(null);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [backgroundUploadState, setBackgroundUploadState] = useState<"idle" | "uploading">("idle");
 
   const moduleItems = useMemo(
     () => [
@@ -865,6 +817,7 @@ export function CustomizePageForm({
     }
 
     try {
+      setBackgroundUploadState("uploading");
       const uploaded = await uploadArtistAsset(file, {
         artistId: artist.profile.id,
         prefix: "background",
@@ -874,6 +827,8 @@ export function CustomizePageForm({
       setFlashMessage(copy.uploadQueued);
     } catch {
       form.setError("root", { message: copy.uploadFailed });
+    } finally {
+      setBackgroundUploadState("idle");
     }
   }
 
@@ -996,6 +951,11 @@ export function CustomizePageForm({
             <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
               <p className="text-[12px] font-medium text-white">{copy.backgroundImageTitle}</p>
               <p className="mt-1 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundImageDescription}</p>
+              {backgroundUploadState === "uploading" ? (
+                <div className="mt-3 overflow-hidden rounded-full border border-white/10 bg-white/[0.04]">
+                  <div className="h-2 w-full animate-[customize-upload_1.15s_ease-in-out_infinite] rounded-full bg-[linear-gradient(90deg,rgba(214,177,122,0.18)_0%,rgba(214,177,122,0.9)_50%,rgba(214,177,122,0.18)_100%)]" />
+                </div>
+              ) : null}
               <div className="mt-3 flex flex-wrap gap-2">
                 <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:bg-white/[0.08]">
                   <Upload className="size-4" />
