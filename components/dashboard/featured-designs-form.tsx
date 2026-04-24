@@ -766,8 +766,8 @@ export function FeaturedDesignsForm({
               ) : null}
             </div>
 
-            <div className="grid gap-2 xl:grid-cols-[136px_minmax(0,1.08fr)_minmax(0,0.92fr)_auto] xl:items-end">
-            <Field label={labels.image} className="min-w-[148px] justify-end">
+            <div className="grid gap-2 xl:grid-cols-[minmax(152px,0.78fr)_minmax(0,1.18fr)_minmax(0,0.98fr)_auto] xl:items-end">
+            <Field label={labels.image} className="min-w-0 justify-end">
               <label className="flex h-8 cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 text-[11.5px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
                 <Upload className="size-4" />
                 {quickAddImageName ? labels.replaceImage : labels.uploadImage}
@@ -787,7 +787,7 @@ export function FeaturedDesignsForm({
               </label>
             </Field>
 
-            <Field label={labels.titleLabel}>
+            <Field label={labels.titleLabel} className="min-w-0">
               <Input
                 value={quickAddTitle}
                 onChange={(event) => setQuickAddTitle(event.target.value)}
@@ -796,7 +796,7 @@ export function FeaturedDesignsForm({
               />
             </Field>
 
-            <Field label={labels.priceLabel} description={labels.priceHelp} className="justify-end">
+            <Field label={labels.priceLabel} description={labels.priceHelp} className="min-w-0 justify-end">
               <div className="grid gap-2 sm:grid-cols-2">
                 <Input
                   type="number"
