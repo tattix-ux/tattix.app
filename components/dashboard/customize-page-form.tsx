@@ -6,14 +6,11 @@ import {
   Check,
   Crown,
   ImageIcon,
-  ImagePlus,
-  Laptop,
   Layers3,
   LoaderCircle,
   LockKeyhole,
   Palette,
   Save,
-  Smartphone,
   Sparkles,
   Upload,
   X,
@@ -23,7 +20,6 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
-import { BrandMonogram } from "@/components/shared/brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,7 +35,6 @@ import { cn } from "@/lib/utils";
 type ThemeFormInput = z.input<typeof pageThemeSchema>;
 type ThemeValues = z.output<typeof pageThemeSchema>;
 type CustomizeModule = "presets" | "colors" | "background" | "surfaces";
-type PreviewViewport = "desktop" | "mobile";
 
 type CustomizePageArtist = {
   profile: ArtistProfile;
@@ -61,22 +56,22 @@ const backgroundOverlayOptions = [
 ] as const;
 
 const backgroundSoftnessOptions = [
-  { value: "sharp", labelTr: "Net", labelEn: "Sharp", blur: "blur(0px)" },
-  { value: "soft", labelTr: "Yumuşak", labelEn: "Soft", blur: "blur(6px)" },
-  { value: "softer", labelTr: "Daha yumuşak", labelEn: "Softer", blur: "blur(12px)" },
+  { value: "sharp", labelTr: "Net", labelEn: "Sharp" },
+  { value: "soft", labelTr: "Yumuşak", labelEn: "Soft" },
+  { value: "softer", labelTr: "Daha yumuşak", labelEn: "Softer" },
 ] as const;
 
 const backgroundFocusOptions = [
-  { value: "center", labelTr: "Ortala", labelEn: "Center", position: "center center" },
-  { value: "top", labelTr: "Üst odaklı", labelEn: "Top focus", position: "center top" },
-  { value: "left", labelTr: "Sol odaklı", labelEn: "Left focus", position: "left center" },
-  { value: "right", labelTr: "Sağ odaklı", labelEn: "Right focus", position: "right center" },
+  { value: "center", labelTr: "Ortala", labelEn: "Center" },
+  { value: "top", labelTr: "Üst odaklı", labelEn: "Top focus" },
+  { value: "left", labelTr: "Sol odaklı", labelEn: "Left focus" },
+  { value: "right", labelTr: "Sağ odaklı", labelEn: "Right focus" },
 ] as const;
 
 const cornerStyleOptions = [
-  { value: "small", labelTr: "Daha düz", labelEn: "Flatter", radius: "12px" },
-  { value: "medium", labelTr: "Dengeli", labelEn: "Balanced", radius: "18px" },
-  { value: "large", labelTr: "Daha yuvarlak", labelEn: "Rounder", radius: "26px" },
+  { value: "small", labelTr: "Daha düz", labelEn: "Flatter" },
+  { value: "medium", labelTr: "Dengeli", labelEn: "Balanced" },
+  { value: "large", labelTr: "Daha yuvarlak", labelEn: "Rounder" },
 ] as const;
 
 const cardFeelOptions = [
@@ -95,18 +90,6 @@ const badgeStyleOptions = [
   { value: "subtle", labelTr: "Sade", labelEn: "Subtle" },
   { value: "colored", labelTr: "Renkli", labelEn: "Colored" },
 ] as const;
-
-const headingPreviewFonts = {
-  inter: '"Inter", "Helvetica Neue", sans-serif',
-  manrope: '"Manrope", "Inter", sans-serif',
-  outfit: '"Outfit", "Inter", sans-serif',
-} as const;
-
-const bodyPreviewFonts = {
-  inter: '"Inter", "Helvetica Neue", sans-serif',
-  manrope: '"Manrope", "Inter", sans-serif',
-  outfit: '"Outfit", "Inter", sans-serif',
-} as const;
 
 function hexToRgb(hex: string) {
   const raw = hex.replace("#", "");
@@ -199,17 +182,17 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_14px_28px_rgba(0,0,0,0.18)]">
-      <CardHeader className="pb-2.5">
-        <div className="flex items-start gap-3">
+    <Card className="border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,var(--bg-section)_100%)] shadow-[0_14px_28px_rgba(0,0,0,0.18)]">
+      <CardHeader className="space-y-1 pb-3 xl:pb-2.5">
+        <div className="flex items-start gap-2.5">
           {icon ? (
-            <div className="mt-0.5 inline-flex size-8 items-center justify-center rounded-[14px] border border-[var(--border-soft)] bg-white/[0.03] text-[var(--accent)]">
+            <div className="inline-flex size-8 items-center justify-center rounded-[12px] border border-[var(--border-soft)] bg-white/[0.03] text-[var(--accent)]">
               {icon}
             </div>
           ) : null}
           <div className="min-w-0">
             <CardTitle className="text-[0.98rem] tracking-[-0.02em]">{title}</CardTitle>
-            {description ? <CardDescription className="mt-1">{description}</CardDescription> : null}
+            {description ? <CardDescription className="mt-1 text-[12px]">{description}</CardDescription> : null}
           </div>
         </div>
       </CardHeader>
@@ -218,45 +201,91 @@ function SectionCard({
   );
 }
 
-function SelectionPill({
+function ModuleTab({
   active,
+  locked,
+  label,
   onClick,
-  children,
-  className,
 }: {
   active: boolean;
+  locked?: boolean;
+  label: string;
   onClick: () => void;
-  children: React.ReactNode;
-  className?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3 py-2 text-[12px] font-medium transition xl:px-2.5 xl:py-1.5",
+        "inline-flex h-9 items-center gap-2 rounded-[12px] border px-3 text-[12px] font-medium transition",
         active
-          ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.14)] text-[var(--text-primary)] shadow-[0_0_0_1px_rgba(214,177,122,0.08),0_8px_24px_rgba(0,0,0,0.2)]"
-          : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] text-[var(--text-secondary)] hover:border-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--text-primary)]",
-        className,
+          ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-white"
+          : "border-white/8 bg-white/[0.03] text-[var(--text-secondary)] hover:border-white/12 hover:bg-white/[0.05] hover:text-white",
       )}
     >
-      {children}
+      <span>{label}</span>
+      {locked ? <LockKeyhole className="size-3.5" /> : null}
     </button>
   );
 }
 
-function ModuleNavItem({
+function ThemeNameCard({
+  active,
+  title,
+  theme,
+  onClick,
+}: {
+  active: boolean;
+  title: string;
+  theme: (typeof themePresets)[ThemePresetKey];
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "relative flex h-[72px] items-center overflow-hidden rounded-[16px] border px-4 text-left transition",
+        active ? "" : "hover:-translate-y-0.5 hover:brightness-[1.03]",
+      )}
+      style={{
+        backgroundColor: theme.surface,
+        borderColor: active ? theme.primary : theme.border,
+        boxShadow: active ? `0 0 0 1px ${toRgba(theme.primary, 0.16)}, 0 12px 24px rgba(0,0,0,0.14)` : undefined,
+      }}
+    >
+      <div
+        className="absolute inset-y-0 left-0 w-1"
+        style={{ background: `linear-gradient(180deg, ${theme.primary}, ${theme.secondary})` }}
+      />
+      <div
+        className="absolute inset-0 opacity-90"
+        style={{ background: `radial-gradient(circle_at_top_left, ${toRgba(theme.primary, 0.18)}, transparent 42%)` }}
+      />
+      <div className="relative flex w-full items-center justify-between gap-3">
+        <span className="text-[13px] font-semibold tracking-[-0.02em]" style={{ color: theme.textColor }}>
+          {title}
+        </span>
+        {active ? (
+          <span
+            className="inline-flex size-5 items-center justify-center rounded-full border"
+            style={{ borderColor: toRgba(theme.primary, 0.46), backgroundColor: toRgba(theme.primary, 0.14), color: theme.primary }}
+          >
+            <Check className="size-3.5" />
+          </span>
+        ) : null}
+      </div>
+    </button>
+  );
+}
+
+function CompactChoice({
   active,
   label,
-  icon,
-  locked = false,
   onClick,
 }: {
   active: boolean;
   label: string;
-  icon: React.ReactNode;
-  locked?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -264,35 +293,18 @@ function ModuleNavItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-9 w-full items-center gap-2.5 rounded-[13px] border px-2.5 text-left text-[12px] font-medium transition xl:h-[34px] xl:px-2",
+        "inline-flex h-9 items-center justify-center rounded-[12px] border px-3 text-[12px] font-medium transition",
         active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_40%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-white shadow-[0_12px_24px_rgba(0,0,0,0.16)]"
-          : locked
-            ? "border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.015))] text-[var(--text-secondary)] hover:border-white/12 hover:bg-white/[0.05] hover:text-white"
-            : "border-white/8 bg-white/[0.025] text-[var(--text-secondary)] hover:border-white/14 hover:bg-white/[0.04] hover:text-white",
+          ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-white"
+          : "border-white/8 bg-white/[0.025] text-[var(--text-secondary)] hover:border-white/12 hover:bg-white/[0.05] hover:text-white",
       )}
     >
-      <span
-        className={cn(
-          "inline-flex size-6 items-center justify-center rounded-[10px] border transition",
-          active ? "border-white/10 bg-black/15 text-[var(--accent)]" : "border-white/8 bg-white/[0.03] text-[var(--text-muted)]",
-        )}
-      >
-        {icon}
-      </span>
-      <span className="truncate">{label}</span>
-      {locked ? <LockKeyhole className="ml-auto size-3.5 text-[var(--text-muted)]" /> : null}
+      {label}
     </button>
   );
 }
 
-function UpgradeFeatureCard({
-  locale,
-  compact = false,
-}: {
-  locale: PublicLocale;
-  compact?: boolean;
-}) {
+function UpgradeFeatureCard({ locale }: { locale: PublicLocale }) {
   const copy =
     locale === "tr"
       ? {
@@ -323,240 +335,32 @@ function UpgradeFeatureCard({
         };
 
   return (
-    <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]">
-      <CardContent className={cn("space-y-3", compact ? "p-3" : "p-3.5")}>
+    <Card className="border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_96%,black_4%)_100%)] shadow-[0_16px_34px_rgba(0,0,0,0.18)]">
+      <CardContent className="space-y-3 p-4 xl:p-3.5">
         <div className="flex items-start gap-3">
-          <div className="rounded-[14px] border border-[color:color-mix(in_srgb,var(--accent)_30%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] p-2 text-[var(--accent)]">
+          <div className="inline-flex size-9 items-center justify-center rounded-[14px] border border-[var(--border-strong)] bg-[rgba(214,177,122,0.14)] text-[var(--accent)]">
             <Crown className="size-4" />
           </div>
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="inline-flex rounded-full border border-[color:color-mix(in_srgb,var(--accent)_30%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 inline-flex rounded-full border border-[var(--border-strong)] bg-[rgba(214,177,122,0.14)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
               {copy.badge}
             </div>
-            <div>
-              <h3 className="text-[0.98rem] font-semibold tracking-[-0.03em] text-white">{copy.title}</h3>
-              <p className="mt-1 text-[11.5px] leading-[1.4] text-[var(--foreground-muted)]">{copy.description}</p>
-            </div>
+            <h3 className="text-[1rem] font-semibold tracking-[-0.03em] text-white">{copy.title}</h3>
+            <p className="mt-1 text-[12px] leading-[1.45] text-[var(--foreground-muted)]">{copy.description}</p>
           </div>
         </div>
-
-        <div className="grid gap-2.5 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           {copy.features.map((item) => (
-            <div
-              key={item}
-              className="rounded-[14px] border border-white/8 bg-white/[0.025] px-3 py-2 text-[11.5px] leading-[1.4] text-[var(--text-secondary)]"
-            >
+            <div key={item} className="rounded-[14px] border border-white/8 bg-white/[0.025] px-3 py-2 text-[11px] text-[var(--text-secondary)]">
               {item}
             </div>
           ))}
         </div>
-
         <Button asChild className="h-[36px] px-4">
           <Link href="/dashboard/upgrade">{copy.cta}</Link>
         </Button>
       </CardContent>
     </Card>
-  );
-}
-
-function CustomGroup({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[16px] border border-white/8 bg-white/[0.02] p-3">
-      <div className="mb-2 space-y-0.5">
-        <p className="text-[12px] font-medium text-white">{title}</p>
-        {description ? <p className="text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{description}</p> : null}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function VisualOptionCard({
-  active,
-  title,
-  description,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  title: string;
-  description: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "relative overflow-hidden rounded-[18px] border p-3 text-left transition",
-        active
-          ? "border-[color:color-mix(in_srgb,var(--accent)_58%,white)] bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] shadow-[0_16px_32px_rgba(0,0,0,0.16)]"
-          : "border-white/8 bg-white/[0.025] hover:border-white/14 hover:bg-white/[0.04]",
-      )}
-    >
-      {active ? (
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
-          <span className="relative size-4 overflow-hidden rounded-full bg-white/5">
-            <BrandMonogram className="inset-[1px]" opacity={0.42} />
-          </span>
-          <Check className="size-3.5 text-[var(--accent)]" />
-        </span>
-      ) : null}
-      <div className="space-y-3">
-        <div className="overflow-hidden rounded-[14px] border border-white/8 p-2.5">
-          {children}
-        </div>
-        <div>
-          <p className="text-[13px] font-semibold text-white">{title}</p>
-          <p className="mt-1 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{description}</p>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function MediaUploadField({
-  imageUrl,
-  emptyLabel,
-  uploadLabel,
-  removeLabel,
-  onUpload,
-  onRemove,
-}: {
-  imageUrl: string;
-  emptyLabel: string;
-  uploadLabel: string;
-  removeLabel: string;
-  onUpload: (file: File) => void;
-  onRemove: () => void;
-}) {
-  return (
-    <div className="space-y-2.5">
-      <div className="relative flex h-32 items-center justify-center overflow-hidden rounded-[20px] border border-white/8 bg-white/[0.03]">
-        {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt={uploadLabel} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex flex-col items-center gap-2 px-6 text-center text-sm text-[var(--foreground-muted)]">
-            <ImagePlus className="size-5" />
-            <span>{emptyLabel}</span>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[12.5px] text-white transition hover:bg-white/[0.08]">
-          <Upload className="size-4" />
-          {uploadLabel}
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) onUpload(file);
-              event.currentTarget.value = "";
-            }}
-          />
-        </label>
-        {imageUrl ? (
-          <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-            <X className="size-4" />
-            {removeLabel}
-          </Button>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function ThemePresetCard({
-  active,
-  title,
-  description,
-  onSelect,
-  theme,
-}: {
-  active: boolean;
-  title: string;
-  description: string;
-  onSelect: () => void;
-  theme: (typeof themePresets)[ThemePresetKey];
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-        style={{
-          backgroundColor: theme.surface,
-          borderColor: active ? theme.primary : theme.border,
-          boxShadow: active ? `0 0 0 1px ${toRgba(theme.primary, 0.12)}, 0 14px 26px rgba(0,0,0,0.16)` : undefined,
-        }}
-      className={cn(
-        "relative min-h-[132px] overflow-hidden rounded-[18px] border p-3 text-left transition",
-        active ? "" : "hover:-translate-y-0.5 hover:brightness-[1.04]",
-      )}
-    >
-      <div
-        className="absolute inset-0 rounded-[inherit]"
-        style={{
-          background: `radial-gradient(circle at top left, ${toRgba(theme.primary, active ? 0.18 : 0.11)}, transparent 44%)`,
-        }}
-      />
-      {active ? (
-        <div
-          className="absolute right-3 top-3 inline-flex size-5 items-center justify-center rounded-full border"
-          style={{ borderColor: toRgba(theme.primary, 0.5), backgroundColor: toRgba(theme.primary, 0.16), color: theme.primary }}
-        >
-          <Check className="size-3.5" />
-        </div>
-      ) : null}
-      <div className="relative flex h-full flex-col justify-between">
-        <div
-          className="rounded-[14px] border p-2.5"
-          style={{
-            background: `linear-gradient(180deg, ${theme.background} 0%, ${theme.overlay} 100%)`,
-            borderColor: toRgba(theme.textColor, 0.08),
-          }}
-        >
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-10 rounded-full" style={{ backgroundColor: theme.primary }} />
-                <div className="h-2 w-7 rounded-full" style={{ backgroundColor: toRgba(theme.secondary, 0.9) }} />
-              </div>
-              <div className="rounded-[12px] border p-2" style={{ backgroundColor: toRgba(theme.surface, 0.92), borderColor: toRgba(theme.textColor, 0.08) }}>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1.5">
-                    <div className="h-2 w-14 rounded-full" style={{ backgroundColor: toRgba(theme.textColor, 0.88) }} />
-                    <div className="h-1.5 w-8 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.9) }} />
-                  </div>
-                  <div className="h-5 w-12 rounded-full" style={{ backgroundColor: theme.primary }} />
-                </div>
-              </div>
-              <div className="flex items-center justify-between rounded-[12px] border px-2 py-1.5" style={{ backgroundColor: toRgba(theme.surface, 0.76), borderColor: toRgba(theme.textColor, 0.08) }}>
-                <div className="h-1.5 w-12 rounded-full" style={{ backgroundColor: toRgba(theme.mutedText, 0.78) }} />
-                <div className="h-1.5 w-7 rounded-full" style={{ backgroundColor: toRgba(theme.primary, 0.72) }} />
-              </div>
-            </div>
-          </div>
-        <div className="pt-2.5">
-          <p className="text-[0.92rem] font-semibold tracking-[-0.03em]" style={{ color: theme.textColor }}>
-            {title}
-          </p>
-          <p className="mt-1 line-clamp-1 text-[11px] leading-[1.35]" style={{ color: theme.mutedText }}>
-            {description}
-          </p>
-        </div>
-      </div>
-    </button>
   );
 }
 
@@ -595,15 +399,15 @@ function ColorField({
   }
 
   return (
-    <div className="rounded-[16px] border border-white/8 bg-white/[0.025] p-3">
+    <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
       <div className="space-y-1">
         <p className="text-[12px] font-medium text-white">{label}</p>
-        <p className="text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{description}</p>
+        <p className="text-[11px] leading-[1.35] text-[var(--foreground-muted)]">{description}</p>
       </div>
 
-      <div className="mt-2.5 flex items-center gap-2">
+      <div className="mt-2.5 grid grid-cols-[30px_minmax(0,1fr)_70px] items-center gap-2">
         <span
-          className="inline-flex size-8 shrink-0 rounded-[12px] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+          className="inline-flex size-[30px] rounded-[10px] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
           style={{ backgroundColor: value }}
         />
         <Input
@@ -619,12 +423,11 @@ function ColorField({
               commit(draft);
             }
           }}
-          className="h-10 rounded-[14px] border-white/10 bg-white/[0.03] font-mono text-[13px] uppercase tracking-[0.08em]"
-          inputMode="text"
+          className="h-9 rounded-[12px] border-white/10 bg-white/[0.03] font-mono text-[12px] uppercase tracking-[0.08em]"
         />
         <label
           htmlFor={pickerId}
-          className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:bg-white/[0.08]"
+          className="inline-flex h-9 cursor-pointer items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.05] text-[12px] font-medium text-white transition hover:bg-white/[0.08]"
         >
           {selectLabel}
         </label>
@@ -641,7 +444,7 @@ function ColorField({
         />
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
         {suggestions.map((suggestion) => {
           const active = suggestion.toLowerCase() === value.toLowerCase();
           return (
@@ -650,16 +453,13 @@ function ColorField({
               type="button"
               onClick={() => onCommit(suggestion)}
               className={cn(
-                "inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-[11px] font-medium transition",
+                "inline-flex h-7 items-center gap-1.5 rounded-full border px-2 text-[10px] font-medium transition",
                 active
-                  ? "border-[color:color-mix(in_srgb,var(--accent)_45%,white_8%)] bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-white"
-                  : "border-white/8 bg-white/[0.025] text-[var(--foreground-muted)] hover:border-white/14 hover:bg-white/[0.05] hover:text-white",
+                  ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-white"
+                  : "border-white/8 bg-white/[0.025] text-[var(--foreground-muted)] hover:border-white/12 hover:bg-white/[0.05] hover:text-white",
               )}
             >
-              <span
-                className="inline-flex size-3 rounded-full border border-white/10"
-                style={{ backgroundColor: suggestion }}
-              />
+              <span className="inline-flex size-2.5 rounded-full border border-white/10" style={{ backgroundColor: suggestion }} />
               {suggestion}
             </button>
           );
@@ -673,187 +473,171 @@ function AppearancePreview({
   artist,
   theme,
   locale,
-  viewport,
 }: {
   artist: CustomizePageArtist;
   theme: ArtistPageTheme;
   locale: PublicLocale;
-  viewport: PreviewViewport;
 }) {
   const { wrapperStyle, tokens, backgroundMedia } = buildThemeStyles(theme);
-  const headingColor = tokens.text;
-  const mutedColor = tokens.muted;
-  const cardText = tokens.cardText;
-  const cardMuted = tokens.cardMuted;
-  const shellBackground = String(wrapperStyle.background ?? theme.backgroundColor);
-  const cardBackground = toRgba(theme.cardColor, theme.cardOpacity);
-  const cardBorder = tokens.borderColor;
-  const title = artist.profile.welcomeHeadline?.trim() || (locale === "tr" ? "Aklında ne var?" : "What do you have in mind?");
-  const intro =
-    artist.profile.shortBio?.trim() ||
+  const profile = artist.profile;
+  const eyebrow = artist.funnelSettings.introEyebrow?.trim() || `@${profile.instagramHandle || profile.slug}`;
+  const heading = profile.artistName || "Artist";
+  const description =
+    profile.shortBio?.trim() ||
     (locale === "tr"
-      ? "Müşteri sana yazmadan önce temel detayları burada paylaşır."
-      : "Clients share the key details here before they message you.");
-  const upperLabel =
-    artist.funnelSettings.introEyebrow?.trim() ||
-    (artist.profile.instagramHandle ? `@${artist.profile.instagramHandle}` : locale === "tr" ? "Stüdyo etiketi" : "Studio label");
-  const profileImageUrl = artist.profile.profileImageUrl;
-  const coverImageUrl = artist.profile.coverImageUrl;
-  const desktopShell = viewport === "desktop";
+      ? "Minimal ve siyah ağırlıklı dövmeler yapıyorum."
+      : "I create minimal, mostly blackwork tattoos.");
+  const welcomeTitle =
+    theme.customWelcomeTitle?.trim() ||
+    (locale === "tr" ? "Nasıl ilerlemek istersin?" : "How would you like to continue?");
+  const welcomeDescription =
+    theme.customIntroText?.trim() ||
+    (locale === "tr"
+      ? "İstersen fikrini anlat, istersen hazır tasarımlardan seç."
+      : "Describe your idea or choose from featured designs.");
+
+  const optionLabels =
+    locale === "tr"
+      ? [
+          {
+            title: "Talebimi anlatacağım",
+            body: "Fikrini birkaç adımda anlatabilirsin.",
+          },
+          {
+            title: "Hazır tasarım seçeceğim",
+            body: "Hazır tasarımlar arasından seçebilirsin.",
+          },
+        ]
+      : [
+          {
+            title: "I will describe my request",
+            body: "Share your idea in a few quick steps.",
+          },
+          {
+            title: "I will choose a design",
+            body: "Pick from the ready-made designs.",
+          },
+        ];
+
+  const surfaceBackground = toRgba(theme.cardColor, theme.cardOpacity);
+  const badgeBackground =
+    theme.badgeStyle === "colored" ? "var(--artist-chip-surface)" : toRgba(theme.cardColor, 0.76);
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1B1D21_0%,#15171B_100%)] p-4 shadow-[0_22px_56px_rgba(0,0,0,0.24)] sm:p-5">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,177,122,0.06),transparent_34%)]" />
-      <div className={cn("relative mx-auto", desktopShell ? "max-w-none" : "max-w-[420px]")}>
-        <div
-          className={cn(
-            "rounded-[34px] border border-[rgba(255,255,255,0.08)] bg-[rgba(16,17,20,0.72)] p-3 shadow-[0_20px_46px_rgba(0,0,0,0.26)]",
-            desktopShell ? "max-w-none" : "",
-          )}
-        >
-          <div className="relative overflow-hidden rounded-[28px] border" style={{ borderColor: cardBorder, background: shellBackground }}>
-            {backgroundMedia.imageUrl ? (
-              <>
-                <div
-                  className="absolute inset-0 scale-[1.04]"
-                  style={{
-                    backgroundImage: `url(${backgroundMedia.imageUrl})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: backgroundMedia.position,
-                    filter: `blur(${backgroundMedia.blurPx}px)`,
-                  }}
+    <div className="overflow-hidden rounded-[22px] border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(180deg,#1B1D21_0%,#15171B_100%)] p-3 shadow-[0_18px_42px_rgba(0,0,0,0.22)] xl:p-2.5">
+      <div className="mx-auto max-w-[420px]">
+        <div className="rounded-[28px] border border-[rgba(255,255,255,0.08)] bg-[rgba(16,17,20,0.72)] p-2.5 shadow-[0_18px_42px_rgba(0,0,0,0.24)]">
+          <div className="overflow-hidden rounded-[24px] border" style={{ borderColor: tokens.borderColor, background: String(wrapperStyle.background ?? theme.backgroundColor) }}>
+            <div className="relative h-[172px] overflow-hidden">
+              {backgroundMedia.imageUrl || profile.coverImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={backgroundMedia.imageUrl || profile.coverImageUrl || ""}
+                  alt=""
+                  className="absolute inset-0 h-full w-full scale-[1.04] object-cover"
+                  style={{ objectPosition: backgroundMedia.position }}
                 />
-                <div className="absolute inset-0" style={{ background: backgroundMedia.overlayGradient }} />
-                <div className="absolute inset-0" style={{ backgroundColor: backgroundMedia.overlayColor }} />
-              </>
-            ) : null}
-            <div className={cn(desktopShell ? "p-4" : "p-4")}>
+              ) : null}
               <div
-                className={cn("relative overflow-hidden rounded-[26px] border", desktopShell ? "h-[220px]" : "h-[250px]")}
-                style={{ borderColor: cardBorder, background: shellBackground }}
-              >
-                {coverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={coverImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                ) : null}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: coverImageUrl
-                      ? "linear-gradient(180deg, rgba(10,10,11,0.08), rgba(10,10,11,0.42) 65%, rgba(10,10,11,0.78))"
+                className="absolute inset-0"
+                style={{
+                  background:
+                    backgroundMedia.imageUrl || profile.coverImageUrl
+                      ? backgroundMedia.overlayGradient
                       : `linear-gradient(145deg, ${theme.gradientStart}, ${theme.gradientEnd})`,
-                  }}
-                />
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <div
-                    className={cn(
-                      "grid gap-3 rounded-[22px] border p-3.5 backdrop-blur-sm",
-                      desktopShell ? "grid-cols-[1fr_auto]" : "grid-cols-1",
-                    )}
-                    style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.58) }}
+                }}
+              />
+              <div className="absolute inset-0" style={{ backgroundColor: backgroundMedia.overlayColor }} />
+            </div>
+
+            <div className="relative px-4 pb-4 pt-0">
+              <div className="-mt-7 flex items-end gap-3">
+                <div className="size-14 overflow-hidden rounded-[18px] border border-white/12 bg-white/10 shadow-[0_12px_24px_rgba(0,0,0,0.22)]">
+                  {profile.profileImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profile.profileImageUrl} alt="" className="h-full w-full object-cover" />
+                  ) : null}
+                </div>
+                <div className="pb-1">
+                  <span
+                    className="inline-flex h-6 items-center rounded-full border px-2.5 text-[10px] font-medium uppercase tracking-[0.08em]"
+                    style={{ backgroundColor: badgeBackground, borderColor: tokens.borderColor, color: "var(--artist-chip-text)" }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="relative size-14 overflow-hidden rounded-[18px] border border-white/12 bg-white/10">
-                        {profileImageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={profileImageUrl} alt="" className="h-full w-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div className="min-w-0">
-                        <div
-                          className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.14em]"
-                          style={{ backgroundColor: "var(--artist-chip-surface)", color: "var(--artist-chip-text)" }}
-                        >
-                          {upperLabel}
-                        </div>
-                        <p
-                          className="mt-2 truncate text-[1.05rem] font-semibold tracking-[-0.03em]"
-                          style={{ color: cardText, fontFamily: headingPreviewFonts[theme.headingFont] }}
-                        >
-                          {artist.profile.artistName}
-                        </p>
-                        <p className="mt-1 text-xs" style={{ color: cardMuted }}>
-                          {artist.profile.instagramHandle ? `@${artist.profile.instagramHandle}` : "tattix"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className={cn("flex items-end", desktopShell ? "justify-end" : "justify-start")}>
-                      <div
-                        className="inline-flex rounded-[var(--artist-button-radius)] border px-4 py-2.5 text-sm font-medium"
-                        style={{
-                          backgroundColor: "var(--artist-primary-button-surface)",
-                          borderColor: "var(--artist-primary-button-border)",
-                          color: "var(--artist-primary-button-text)",
-                          boxShadow: "var(--artist-button-shadow)",
-                        }}
-                      >
-                        {locale === "tr" ? "Fiyat tahmini al" : "Start estimate"}
-                      </div>
-                    </div>
-                  </div>
+                    {eyebrow}
+                  </span>
                 </div>
               </div>
 
-              <div className={cn("mt-4 grid gap-3", desktopShell ? "lg:grid-cols-[minmax(0,1.15fr)_minmax(220px,0.85fr)]" : "grid-cols-1")}>
-                <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: cardBackground }}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: mutedColor }}>
-                    {locale === "tr" ? "Açıklama" : "About"}
-                  </p>
-                  <p
-                    className="mt-3 text-[1.2rem] font-semibold tracking-[-0.03em]"
-                    style={{ color: cardText, fontFamily: headingPreviewFonts[theme.headingFont] }}
-                  >
-                    {title}
-                  </p>
-                  <p className="mt-2 text-[13px] leading-6" style={{ color: cardMuted, fontFamily: bodyPreviewFonts[theme.bodyFont] }}>
-                    {intro}
-                  </p>
-                </div>
+              <div className="mt-3 space-y-1">
+                <h3
+                  className="text-[22px] font-semibold tracking-[-0.03em]"
+                  style={{
+                    color: tokens.cardText,
+                    fontFamily: "var(--artist-heading-font)",
+                    fontWeight: 700,
+                    letterSpacing: theme.headingFont.includes("playfair") || theme.headingFont.includes("garamond") || theme.headingFont.includes("baskerville") ? "0em" : "-0.01em",
+                  }}
+                >
+                  {heading}
+                </h3>
+                <p className="max-w-[32ch] text-[12px] leading-[1.45]" style={{ color: tokens.cardMuted }}>
+                  {description}
+                </p>
+              </div>
 
-                <div className="space-y-3">
-                  <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.5) }}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: mutedColor }}>
-                      {locale === "tr" ? "Kısa bilgi" : "Quick info"}
+              <div
+                className="mt-4 rounded-[20px] border p-3.5"
+                style={{ borderColor: tokens.borderColor, backgroundColor: surfaceBackground }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: tokens.muted }}>
+                      {locale === "tr" ? "Adım 1" : "Step 1"}
                     </p>
-                    <div className="mt-3 grid gap-2.5">
-                      <div className="flex items-center justify-between rounded-[18px] border px-3 py-2.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.42) }}>
-                        <span className="text-[12px]" style={{ color: cardMuted }}>
-                          {locale === "tr" ? "Şehirler" : "Cities"}
-                        </span>
-                        <span className="text-[12px] font-medium" style={{ color: cardText }}>
-                          {artist.funnelSettings.bookingCities.length || 2}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-[18px] border px-3 py-2.5" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.42) }}>
-                        <span className="text-[12px]" style={{ color: cardMuted }}>
-                          {locale === "tr" ? "Talep akışı" : "Request flow"}
-                        </span>
-                        <span className="text-[12px] font-medium" style={{ color: cardText }}>
-                          {locale === "tr" ? "Aktif" : "Active"}
-                        </span>
-                      </div>
-                    </div>
+                    <h4 className="mt-1 text-[18px] font-semibold tracking-[-0.03em]" style={{ color: tokens.cardText, fontFamily: "var(--artist-heading-font)" }}>
+                      {welcomeTitle}
+                    </h4>
                   </div>
-                  <div className="rounded-[24px] border p-4" style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.5) }}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: mutedColor }}>
-                      {locale === "tr" ? "Örnek işler" : "Featured work"}
-                    </p>
-                    <div className="mt-3 grid grid-cols-2 gap-2.5">
-                      {[0, 1].map((index) => (
-                        <div
-                          key={index}
-                          className="rounded-[18px] border p-3"
-                          style={{ borderColor: cardBorder, backgroundColor: toRgba(theme.cardColor, 0.42) }}
-                        >
-                          <div className="h-16 rounded-[14px] border border-white/8 bg-white/[0.05]" />
-                          <p className="mt-2 text-[12px] font-medium" style={{ color: cardText }}>
-                            {locale === "tr" ? "Hazır tasarım" : "Ready design"}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <span
+                    className="inline-flex h-6 items-center rounded-full border px-2.5 text-[10px] font-medium"
+                    style={{ borderColor: tokens.borderColor, backgroundColor: toRgba(theme.primaryColor, 0.12), color: theme.primaryColor }}
+                  >
+                    1 / 7
+                  </span>
                 </div>
+                <p className="mt-1.5 text-[12px] leading-[1.45]" style={{ color: tokens.cardMuted }}>
+                  {welcomeDescription}
+                </p>
+
+                <div className="mt-3 grid gap-2">
+                  {optionLabels.map((item, index) => (
+                    <div
+                      key={item.title}
+                      className="rounded-[16px] border p-3"
+                      style={{
+                        borderColor: index === 0 ? toRgba(theme.primaryColor, 0.28) : tokens.borderColor,
+                        background:
+                          index === 0
+                            ? `linear-gradient(180deg, ${toRgba(theme.primaryColor, 0.16)}, ${toRgba(theme.primaryColor, 0.08)})`
+                            : toRgba(theme.cardColor, 0.72),
+                      }}
+                    >
+                      <p className="text-[13px] font-semibold" style={{ color: tokens.cardText }}>
+                        {item.title}
+                      </p>
+                      <p className="mt-1 text-[11px] leading-[1.4]" style={{ color: tokens.cardMuted }}>
+                        {item.body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-center gap-2 text-[11px]" style={{ color: tokens.cardMuted }}>
+                <span className="inline-flex h-6 items-center rounded-full border px-2.5" style={{ borderColor: tokens.borderColor, backgroundColor: toRgba(theme.cardColor, 0.76) }}>
+                  {locale === "tr" ? "Profil hazır" : "Profile ready"}
+                </span>
+                <span>{locale === "tr" ? "Tema burada gerçek akış üstünde görünür." : "Theme updates show on the real flow here."}</span>
               </div>
             </div>
           </div>
@@ -882,17 +666,10 @@ export function CustomizePageForm({
   const copy =
     locale === "tr"
       ? {
-          eyebrow: "PRO",
-          title: "Sayfayı Özelleştir",
-          description: "Müşterinin gördüğü sayfayı kendi tarzına göre düzenle.",
-          desktopLabel: "Masaüstü",
-          mobileLabel: "Mobil",
-          previewTitle: "Önizleme",
-          previewDescription: "Seçtiğin görünüm burada anlık görünür.",
+          title: "Sayfanı Özelleştir",
+          description: "Sayfanın görünümünü kontrol et, tarzını yansıt.",
           livePreviewTitle: "Canlı Önizleme",
-          livePreviewDescription: "Yaptığın değişiklikler burada anında görünür.",
-          moduleMenuTitle: "Modüller",
-          moduleMenuDescription: "Bir modül seç ve sadece o ayarı düzenle.",
+          livePreviewDescription: "Müşterinin gördüğü ilk adım burada anında güncellenir.",
           presetSectionTitle: "Hazır Temalar",
           presetSectionDescription: "Bir temel görünüm seç, sonra istersen kendi renklerinle düzenle.",
           presetHelp: "Hazır temalar iyi bir başlangıç noktasıdır. İstersen sonraki adımlarda renkleri ve arka planı değiştirebilirsin.",
@@ -912,12 +689,12 @@ export function CustomizePageForm({
           surfaceColorDescription: "Kartlar ve içerik yüzeylerinde kullanılır.",
           selectColor: "Seç",
           tokenPreviewTitle: "Renk sistemi önizlemesi",
-          tokenPreviewDescription: "Seçtiğin ana tonların arayüzde nasıl dengelendiğini burada görebilirsin.",
+          tokenPreviewDescription: "Seçtiğin tonların buton, kart ve metin dengesini burada hızlıca gör.",
           primaryButtonSample: "Ana buton",
           secondaryButtonSample: "İkincil buton",
           cardSampleTitle: "Kart örneği",
-          cardSampleBody: "Başlık, açıklama ve etiketler otomatik dengelenmiş tonlarla görünür.",
-          badgeSample: "Küçük rozet",
+          cardSampleBody: "Başlık, açıklama ve etiketler otomatik olarak dengelenir.",
+          badgeSample: "Etiket",
           backgroundModuleTitle: "Arka Plan",
           backgroundModuleDescription: "Kendi görselini yükle veya sade bir zemin kullan. Sistem yazıların okunmasını otomatik korur.",
           backgroundKindTitle: "Arka plan türü",
@@ -931,56 +708,47 @@ export function CustomizePageForm({
           overlayTitle: "Karartma seviyesi",
           softnessTitle: "Görsel netliği",
           focusTitle: "Odak konumu",
-          backgroundUploadEmpty: "Arka plan görseli ekleyebilirsin.",
+          backgroundUploadEmpty: "Arka plan için bir görsel ekleyebilirsin.",
           surfacesTitle: "Butonlar ve Kartlar",
           surfacesDescription: "Sayfanın genel hissini birkaç net seçimle belirle.",
           cornerStyleTitle: "Köşe yapısı",
           cardFeelTitle: "Kart hissi",
           buttonStyleTitle: "Buton stili",
           badgeStyleTitle: "Küçük etiket stili",
-          modulePreviewTitle: "Örnek görünüm",
-          modulePreviewDescription: "Seçimlerin kartları, butonları ve küçük etiketleri nasıl etkilediğini burada görebilirsin.",
+          modulePreviewTitle: "Mini önizleme",
+          modulePreviewDescription: "Kart, buton ve etiket davranışını tam preview’a bakmadan önce burada gör.",
           primaryActionLabel: "Ana buton",
           secondaryActionLabel: "İkincil buton",
           infoRowLabel: "Bilgi satırı",
-          infoRowValue: "Kart ve buton dengesi",
+          infoRowValue: "Kart ve aksiyon dengesi",
           badgePreviewLabel: "Müsait",
           resetDefaults: "Varsayılana dön",
           save: "Kaydet",
-          resetCurrent: "Değişiklikleri geri al",
           saving: "Kaydediliyor",
           demo: "Demo modunda yalnızca önizleme",
-          selected: "Seçili",
           savedToast: "Görünüm güncellendi",
-          uploadUnavailable: "Demo modunda arka plan görseli yüklenemiyor.",
-          uploadType: "Sadece görsel dosyaları yükleyebilirsin.",
+          uploadUnavailable: "Arka plan yükleme demo modunda kullanılamıyor.",
+          uploadType: "Sadece görsel dosyaları yüklenebilir.",
           uploadSize: "Görseller en fazla 6 MB olabilir.",
           uploadQueued: "Arka plan görseli yüklendi.",
           uploadFailed: "Arka plan görseli yüklenemedi.",
         }
       : {
-          eyebrow: "PRO",
-          title: "Customize Page",
-          description: "Shape the page your clients see to match your style.",
-          desktopLabel: "Desktop",
-          mobileLabel: "Mobile",
-          previewTitle: "Preview",
-          previewDescription: "Your selected look updates here instantly.",
+          title: "Customize Your Page",
+          description: "Control the look of your page and reflect your style.",
           livePreviewTitle: "Live Preview",
-          livePreviewDescription: "Your changes appear here instantly.",
-          moduleMenuTitle: "Modules",
-          moduleMenuDescription: "Choose one module and adjust only that section.",
-          presetSectionTitle: "Ready-made themes",
-          presetSectionDescription: "Choose a base look first, then refine it with your own colors if you want.",
-          presetHelp: "Ready-made themes are a strong starting point. You can refine colors and background in the next steps.",
-          presetModule: "Ready-made themes",
+          livePreviewDescription: "The customer's first step updates here instantly.",
+          presetSectionTitle: "Ready Themes",
+          presetSectionDescription: "Choose a base appearance, then refine it with your own colors if you want.",
+          presetHelp: "Ready-made themes are a great starting point. You can change colors and background in the next steps.",
+          presetModule: "Ready Themes",
           colorsModule: "Colors",
           backgroundModule: "Background",
           surfacesModule: "Buttons & Cards",
           colorsTitle: "Colors",
           colorsDescription: "Choose the main tones of the page. Text and supporting tones are balanced automatically.",
           primaryColorTitle: "Primary Color",
-          primaryColorDescription: "Used for buttons, links, and the main accent moments.",
+          primaryColorDescription: "Used for buttons, links, and key highlights.",
           secondaryColorTitle: "Secondary Color",
           secondaryColorDescription: "Used for secondary emphasis and supporting details.",
           backgroundColorTitle: "Page Background",
@@ -989,14 +757,14 @@ export function CustomizePageForm({
           surfaceColorDescription: "Used across cards and content surfaces.",
           selectColor: "Pick",
           tokenPreviewTitle: "Color system preview",
-          tokenPreviewDescription: "See how your core tones balance the interface before checking the full preview.",
+          tokenPreviewDescription: "Check the balance between buttons, cards, and text before the full preview.",
           primaryButtonSample: "Primary button",
           secondaryButtonSample: "Secondary button",
           cardSampleTitle: "Card sample",
-          cardSampleBody: "Heading, description, and small labels stay automatically balanced.",
+          cardSampleBody: "Heading, description, and badges remain automatically balanced.",
           badgeSample: "Badge",
           backgroundModuleTitle: "Background",
-          backgroundModuleDescription: "Upload your own image or stay with a quiet surface. The system keeps text readable automatically.",
+          backgroundModuleDescription: "Upload your own image or use a simple surface. The system keeps text readable automatically.",
           backgroundKindTitle: "Background type",
           backgroundKindSolid: "Solid surface",
           backgroundKindImage: "Use image",
@@ -1008,15 +776,15 @@ export function CustomizePageForm({
           overlayTitle: "Darkening level",
           softnessTitle: "Image softness",
           focusTitle: "Focus position",
-          backgroundUploadEmpty: "You can add a background image.",
+          backgroundUploadEmpty: "Add an image for the background.",
           surfacesTitle: "Buttons & Cards",
-          surfacesDescription: "Set the overall feel of the page with a few clear choices.",
+          surfacesDescription: "Shape the overall feel of the page with a few clear choices.",
           cornerStyleTitle: "Corner style",
           cardFeelTitle: "Card feel",
           buttonStyleTitle: "Button style",
           badgeStyleTitle: "Small badge style",
-          modulePreviewTitle: "Sample preview",
-          modulePreviewDescription: "See how cards, buttons, and badges react before checking the full page preview.",
+          modulePreviewTitle: "Mini preview",
+          modulePreviewDescription: "Check cards, buttons, and badges here before the full preview.",
           primaryActionLabel: "Primary button",
           secondaryActionLabel: "Secondary button",
           infoRowLabel: "Info row",
@@ -1024,10 +792,8 @@ export function CustomizePageForm({
           badgePreviewLabel: "Available",
           resetDefaults: "Reset to default",
           save: "Save",
-          resetCurrent: "Revert changes",
           saving: "Saving",
           demo: "Preview only in demo mode",
-          selected: "Selected",
           savedToast: "Appearance updated",
           uploadUnavailable: "Background uploads are unavailable in demo mode.",
           uploadType: "Only image files are allowed.",
@@ -1048,21 +814,18 @@ export function CustomizePageForm({
   const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
   const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
   const currentBackgroundImageUrl = watchedValues.backgroundImageUrl ?? theme.backgroundImageUrl ?? "";
-  const currentBackgroundOverlayStrength =
-    watchedValues.backgroundOverlayStrength ?? theme.backgroundOverlayStrength;
-  const currentBackgroundImageSoftness =
-    watchedValues.backgroundImageSoftness ?? theme.backgroundImageSoftness;
-  const currentBackgroundImageFocus =
-    watchedValues.backgroundImageFocus ?? theme.backgroundImageFocus;
+  const currentBackgroundOverlayStrength = watchedValues.backgroundOverlayStrength ?? theme.backgroundOverlayStrength;
+  const currentBackgroundImageSoftness = watchedValues.backgroundImageSoftness ?? theme.backgroundImageSoftness;
+  const currentBackgroundImageFocus = watchedValues.backgroundImageFocus ?? theme.backgroundImageFocus;
   const currentPrimaryColor = watchedValues.primaryColor ?? theme.primaryColor;
   const currentSecondaryColor = watchedValues.secondaryColor ?? theme.secondaryColor;
   const currentCardColor = watchedValues.cardColor ?? theme.cardColor;
-  const currentCardOpacity =
-    typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
+  const currentCardOpacity = typeof watchedValues.cardOpacity === "number" ? watchedValues.cardOpacity : theme.cardOpacity;
   const currentCardFeel = watchedValues.cardFeel ?? theme.cardFeel;
   const currentButtonStyle = watchedValues.buttonStyle ?? theme.buttonStyle;
   const currentBadgeStyle = watchedValues.badgeStyle ?? theme.badgeStyle;
   const currentThemeMode = watchedValues.themeMode ?? theme.themeMode;
+
   const derivedColorTokens = useMemo(
     () =>
       deriveThemeColorTokens({
@@ -1076,15 +839,14 @@ export function CustomizePageForm({
 
   const [activeModule, setActiveModule] = useState<CustomizeModule>("presets");
   const [lockedModulePreview, setLockedModulePreview] = useState<Exclude<CustomizeModule, "presets"> | null>(null);
-  const [previewViewport, setPreviewViewport] = useState<PreviewViewport>("mobile");
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   const moduleItems = useMemo(
     () => [
-      { key: "presets" as const, label: copy.presetModule, icon: <Sparkles className="size-3.5" />, locked: false },
-      { key: "colors" as const, label: copy.colorsModule, icon: <Palette className="size-3.5" />, locked: !hasPro },
-      { key: "background" as const, label: copy.backgroundModule, icon: <ImageIcon className="size-3.5" />, locked: !hasPro },
-      { key: "surfaces" as const, label: copy.surfacesModule, icon: <Layers3 className="size-3.5" />, locked: !hasPro },
+      { key: "presets" as const, label: copy.presetModule, locked: false },
+      { key: "colors" as const, label: copy.colorsModule, locked: !hasPro },
+      { key: "background" as const, label: copy.backgroundModule, locked: !hasPro },
+      { key: "surfaces" as const, label: copy.surfacesModule, locked: !hasPro },
     ],
     [copy.backgroundModule, copy.colorsModule, copy.presetModule, copy.surfacesModule, hasPro],
   );
@@ -1103,14 +865,8 @@ export function CustomizePageForm({
 
   function applyBackgroundTone(nextColor: string) {
     form.setValue("backgroundColor", nextColor, { shouldDirty: true, shouldValidate: true });
-    form.setValue("gradientStart", mixHex(nextColor, currentCardColor, 0.82), {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-    form.setValue("gradientEnd", mixHex(nextColor, currentSecondaryColor, 0.68), {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
+    form.setValue("gradientStart", mixHex(nextColor, currentCardColor, 0.82), { shouldDirty: true, shouldValidate: true });
+    form.setValue("gradientEnd", mixHex(nextColor, currentSecondaryColor, 0.68), { shouldDirty: true, shouldValidate: true });
   }
 
   const previewTheme = useMemo(
@@ -1159,12 +915,12 @@ export function CustomizePageForm({
       currentSecondaryColor,
       currentButtonStyle,
       currentBadgeStyle,
-      derivedColorTokens.text,
       currentGradientEnd,
       currentGradientStart,
       currentPreset,
       currentPrimaryColor,
       currentThemeMode,
+      derivedColorTokens.text,
       theme.bodyFont,
       theme.fontPairingPreset,
       theme.headingFont,
@@ -1180,7 +936,6 @@ export function CustomizePageForm({
       watchedValues.radiusStyle,
     ],
   );
-  const surfacePreviewPresentation = useMemo(() => buildThemeStyles(previewTheme), [previewTheme]);
 
   function normalizeThemeValues(values: ThemeValues): ThemeValues {
     const derived = deriveThemeColorTokens({
@@ -1229,13 +984,8 @@ export function CustomizePageForm({
     form.setValue("themeMode", preset.themeMode, { shouldDirty: true, shouldValidate: true });
   }
 
-  function resetThemeToCurrent() {
-    form.reset(buildFormValues(theme));
-    form.clearErrors("root");
-  }
-
   function resetThemeToDefault() {
-    const defaultTheme = resolveArtistTheme({ presetTheme: "bronze-studio", artistId: artist.profile.id });
+    const defaultTheme = resolveArtistTheme({ presetTheme: "obsidian-bronze", artistId: artist.profile.id });
     form.reset(buildFormValues(defaultTheme));
     form.clearErrors("root");
   }
@@ -1327,502 +1077,277 @@ export function CustomizePageForm({
   }
 
   const displayModule = !hasPro && lockedModulePreview ? lockedModulePreview : activeModule;
-  const activeModuleItem = moduleItems.find((item) => item.key === displayModule);
   const activeModuleLocked = !hasPro && lockedModulePreview !== null;
 
+  const tokenPreview = (
+    <div className="rounded-[18px] border p-3" style={{ background: `linear-gradient(180deg, ${currentBackgroundColor} 0%, ${derivedColorTokens.overlay} 100%)`, borderColor: derivedColorTokens.border }}>
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px]">
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex h-9 items-center rounded-full px-3.5 text-[12px] font-medium shadow-[0_10px_20px_rgba(0,0,0,0.18)]" style={{ backgroundColor: currentPrimaryColor, color: derivedColorTokens.buttonText }}>
+              {copy.primaryButtonSample}
+            </div>
+            <div className="inline-flex h-9 items-center rounded-full border px-3.5 text-[12px] font-medium" style={{ backgroundColor: toRgba(currentCardColor, 0.76), borderColor: derivedColorTokens.border, color: derivedColorTokens.text }}>
+              {copy.secondaryButtonSample}
+            </div>
+            <span className="inline-flex h-6 items-center rounded-full px-2.5 text-[10px] font-medium" style={{ backgroundColor: derivedColorTokens.chipBackground, color: derivedColorTokens.chipText }}>
+              {copy.badgeSample}
+            </span>
+          </div>
+          <div className="rounded-[16px] border p-3" style={{ backgroundColor: toRgba(currentCardColor, 0.88), borderColor: derivedColorTokens.border }}>
+            <p className="text-[14px] font-semibold tracking-[-0.03em]" style={{ color: derivedColorTokens.text }}>
+              {copy.cardSampleTitle}
+            </p>
+            <p className="mt-1.5 text-[12px] leading-[1.45]" style={{ color: derivedColorTokens.mutedText }}>
+              {copy.cardSampleBody}
+            </p>
+          </div>
+        </div>
+        <div className="rounded-[16px] border p-3" style={{ backgroundColor: toRgba(currentCardColor, 0.72), borderColor: derivedColorTokens.border }}>
+          <div className="flex items-center justify-between text-[11px]">
+            <span style={{ color: derivedColorTokens.mutedText }}>{copy.infoRowLabel}</span>
+            <span style={{ color: derivedColorTokens.text }}>{copy.infoRowValue}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const modulePanel = activeModuleLocked ? (
-    <SectionCard title={activeModuleItem?.label ?? copy.surfacesModule} icon={<LockKeyhole className="size-4" />}>
-      <UpgradeFeatureCard locale={locale} compact />
+    <SectionCard title={moduleItems.find((item) => item.key === displayModule)?.label ?? copy.colorsModule} icon={<LockKeyhole className="size-4" />}>
+      <UpgradeFeatureCard locale={locale} />
     </SectionCard>
   ) : displayModule === "presets" ? (
-      <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
-        <div className="grid gap-4 md:grid-cols-2">
-          {themePresetOptions.map((presetKey) => {
-            const preset = themePresets[presetKey];
-
-            return (
-              <ThemePresetCard
-                key={presetKey}
-                active={currentPreset === presetKey}
-                title={preset.label}
-                description={preset.description}
-                onSelect={() => applyPreset(presetKey)}
-                theme={preset}
-              />
-            );
-          })}
+    <SectionCard title={copy.presetSectionTitle} description={copy.presetSectionDescription} icon={<Sparkles className="size-4" />}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {themePresetOptions.map((presetKey) => (
+          <ThemeNameCard
+            key={presetKey}
+            active={currentPreset === presetKey}
+            title={themePresets[presetKey].label}
+            theme={themePresets[presetKey]}
+            onClick={() => applyPreset(presetKey)}
+          />
+        ))}
+      </div>
+      <p className="mt-3 text-[12px] leading-[1.45] text-[var(--foreground-muted)]">{copy.presetHelp}</p>
+    </SectionCard>
+  ) : displayModule === "colors" ? (
+    <SectionCard title={copy.colorsTitle} description={copy.colorsDescription} icon={<Palette className="size-4" />}>
+      <div className="space-y-3">
+        <div className="grid gap-3 lg:grid-cols-2">
+          <ColorField
+            label={copy.primaryColorTitle}
+            description={copy.primaryColorDescription}
+            value={currentPrimaryColor}
+            suggestions={themeColorSuggestions.primary}
+            pickerId="theme-primary-color"
+            selectLabel={copy.selectColor}
+            onCommit={(next) => form.setValue("primaryColor", next, { shouldDirty: true, shouldValidate: true })}
+          />
+          <ColorField
+            label={copy.secondaryColorTitle}
+            description={copy.secondaryColorDescription}
+            value={currentSecondaryColor}
+            suggestions={themeColorSuggestions.secondary}
+            pickerId="theme-secondary-color"
+            selectLabel={copy.selectColor}
+            onCommit={(next) => form.setValue("secondaryColor", next, { shouldDirty: true, shouldValidate: true })}
+          />
+          <ColorField
+            label={copy.backgroundColorTitle}
+            description={copy.backgroundColorDescription}
+            value={currentBackgroundColor}
+            suggestions={themeColorSuggestions.background}
+            pickerId="theme-background-color"
+            selectLabel={copy.selectColor}
+            onCommit={applyBackgroundTone}
+          />
+          <ColorField
+            label={copy.surfaceColorTitle}
+            description={copy.surfaceColorDescription}
+            value={currentCardColor}
+            suggestions={themeColorSuggestions.surface}
+            pickerId="theme-surface-color"
+            selectLabel={copy.selectColor}
+            onCommit={(next) => form.setValue("cardColor", next, { shouldDirty: true, shouldValidate: true })}
+          />
         </div>
-        <p className="mt-4 text-[13px] leading-6 text-[var(--foreground-muted)]">{copy.presetHelp}</p>
-      </SectionCard>
-    ) : displayModule === "colors" ? (
-      <SectionCard title={copy.colorsTitle} description={copy.colorsDescription} icon={<Palette className="size-4" />}>
-        <div className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-2">
-            <ColorField
-              label={copy.primaryColorTitle}
-              description={copy.primaryColorDescription}
-              value={currentPrimaryColor}
-              suggestions={themeColorSuggestions.primary}
-              pickerId="theme-primary-color"
-              selectLabel={copy.selectColor}
-              onCommit={(next) => form.setValue("primaryColor", next, { shouldDirty: true, shouldValidate: true })}
-            />
-            <ColorField
-              label={copy.secondaryColorTitle}
-              description={copy.secondaryColorDescription}
-              value={currentSecondaryColor}
-              suggestions={themeColorSuggestions.secondary}
-              pickerId="theme-secondary-color"
-              selectLabel={copy.selectColor}
-              onCommit={(next) => {
-                form.setValue("secondaryColor", next, { shouldDirty: true, shouldValidate: true });
-                if (currentBackgroundType !== "image") {
-                  form.setValue("gradientEnd", mixHex(currentBackgroundColor, next, 0.68), {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }
-              }}
-            />
-            <ColorField
-              label={copy.backgroundColorTitle}
-              description={copy.backgroundColorDescription}
-              value={currentBackgroundColor}
-              suggestions={themeColorSuggestions.background}
-              pickerId="theme-background-color"
-              selectLabel={copy.selectColor}
-              onCommit={applyBackgroundTone}
-            />
-            <ColorField
-              label={copy.surfaceColorTitle}
-              description={copy.surfaceColorDescription}
-              value={currentCardColor}
-              suggestions={themeColorSuggestions.surface}
-              pickerId="theme-surface-color"
-              selectLabel={copy.selectColor}
-              onCommit={(next) => form.setValue("cardColor", next, { shouldDirty: true, shouldValidate: true })}
-            />
+        <div>
+          <p className="mb-2 text-[13px] font-medium text-white">{copy.tokenPreviewTitle}</p>
+          <p className="mb-3 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.tokenPreviewDescription}</p>
+          {tokenPreview}
+        </div>
+      </div>
+    </SectionCard>
+  ) : displayModule === "background" ? (
+    <SectionCard title={copy.backgroundModuleTitle} description={copy.backgroundModuleDescription} icon={<ImageIcon className="size-4" />}>
+      <div className="space-y-3">
+        <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+          <p className="mb-2 text-[12px] font-medium text-white">{copy.backgroundKindTitle}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <CompactChoice active={currentBackgroundType !== "image"} label={copy.backgroundKindSolid} onClick={() => form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true })} />
+            <CompactChoice active={currentBackgroundType === "image"} label={copy.backgroundKindImage} onClick={() => form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true })} />
           </div>
+        </div>
 
-          <CustomGroup title={copy.tokenPreviewTitle} description={copy.tokenPreviewDescription}>
-            <div
-              className="rounded-[20px] border p-4"
-              style={{
-                background: `linear-gradient(180deg, ${currentBackgroundColor} 0%, ${derivedColorTokens.overlay} 100%)`,
-                borderColor: derivedColorTokens.border,
-              }}
-            >
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className="inline-flex rounded-full px-3 py-1.5 text-[11px] font-medium"
-                      style={{ backgroundColor: derivedColorTokens.chipBackground, color: derivedColorTokens.chipText }}
-                    >
-                      {copy.badgeSample}
-                    </span>
-                    <div
-                      className="inline-flex h-10 items-center rounded-full px-4 text-[13px] font-medium shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
-                      style={{ backgroundColor: currentPrimaryColor, color: derivedColorTokens.buttonText }}
-                    >
-                      {copy.primaryButtonSample}
+        {currentBackgroundType === "image" ? (
+          <>
+            <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+              <p className="text-[12px] font-medium text-white">{copy.backgroundImageTitle}</p>
+              <p className="mt-1 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundImageDescription}</p>
+              <div className="mt-3 overflow-hidden rounded-[16px] border border-white/8 bg-white/[0.03]">
+                <div className="relative flex h-[116px] items-center justify-center">
+                  {currentBackgroundImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={currentBackgroundImageUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 px-6 text-center text-[12px] text-[var(--foreground-muted)]">
+                      <ImageIcon className="size-4" />
+                      <span>{copy.backgroundUploadEmpty}</span>
                     </div>
-                    <div
-                      className="inline-flex h-10 items-center rounded-full border px-4 text-[13px] font-medium"
-                      style={{
-                        backgroundColor: toRgba(currentCardColor, 0.72),
-                        borderColor: derivedColorTokens.border,
-                        color: derivedColorTokens.text,
-                      }}
-                    >
-                      {copy.secondaryButtonSample}
-                    </div>
-                  </div>
-
-                  <div
-                    className="rounded-[18px] border p-4"
-                    style={{ backgroundColor: toRgba(currentCardColor, 0.88), borderColor: derivedColorTokens.border }}
-                  >
-                    <p className="text-[1rem] font-semibold tracking-[-0.03em]" style={{ color: derivedColorTokens.text }}>
-                      {copy.cardSampleTitle}
-                    </p>
-                    <p className="mt-2 text-[13px] leading-6" style={{ color: derivedColorTokens.mutedText }}>
-                      {copy.cardSampleBody}
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  className="rounded-[18px] border p-4"
-                  style={{ backgroundColor: toRgba(currentCardColor, 0.72), borderColor: derivedColorTokens.border }}
-                >
-                  <div className="space-y-2">
-                    <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: derivedColorTokens.mutedText }}>
-                      Tokens
-                    </p>
-                    <div className="space-y-2 text-[12px]">
-                      {[
-                        ["Text", derivedColorTokens.text],
-                        ["Muted", derivedColorTokens.mutedText],
-                        ["Border", derivedColorTokens.border],
-                        ["Soft Accent", derivedColorTokens.softAccent],
-                      ].map(([tokenLabel, tokenValue]) => (
-                        <div key={tokenLabel} className="flex items-center justify-between gap-3">
-                          <span style={{ color: derivedColorTokens.mutedText }}>{tokenLabel}</span>
-                          <span className="inline-flex items-center gap-2">
-                            <span
-                              className="inline-flex size-3 rounded-full border border-white/10"
-                              style={{ backgroundColor: String(tokenValue).startsWith("#") ? String(tokenValue) : currentPrimaryColor }}
-                            />
-                            <span className="font-mono text-[11px] uppercase" style={{ color: derivedColorTokens.text }}>
-                              {String(tokenValue)}
-                            </span>
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:bg-white/[0.08]">
+                  <Upload className="size-4" />
+                  {copy.backgroundUpload}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) handleBackgroundUpload(file);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </label>
+                {currentBackgroundImageUrl ? (
+                  <Button type="button" variant="ghost" className="h-9 px-3" onClick={clearBackgroundImage}>
+                    <X className="size-4" />
+                    {copy.backgroundRemove}
+                  </Button>
+                ) : null}
+              </div>
+              <p className="mt-2 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.backgroundAutoNote}</p>
             </div>
-          </CustomGroup>
-        </div>
-      </SectionCard>
-    ) : displayModule === "background" ? (
-      <SectionCard title={copy.backgroundModuleTitle} description={copy.backgroundModuleDescription} icon={<ImageIcon className="size-4" />}>
-        <div className="space-y-4">
-          <CustomGroup title={copy.backgroundKindTitle}>
-            <div className="inline-grid grid-cols-2 gap-2 rounded-[16px] border border-white/8 bg-white/[0.03] p-1">
-              <SelectionPill
-                active={currentBackgroundType !== "image"}
-                onClick={() => form.setValue("backgroundType", "solid", { shouldDirty: true, shouldValidate: true })}
-                className="rounded-[12px] border-0 px-3.5 py-2"
-              >
-                {copy.backgroundKindSolid}
-              </SelectionPill>
-              <SelectionPill
-                active={currentBackgroundType === "image"}
-                onClick={() => form.setValue("backgroundType", "image", { shouldDirty: true, shouldValidate: true })}
-                className="rounded-[12px] border-0 px-3.5 py-2"
-              >
-                {copy.backgroundKindImage}
-              </SelectionPill>
-            </div>
-          </CustomGroup>
 
-          {currentBackgroundType === "image" ? (
-            <>
-              <CustomGroup title={copy.backgroundImageTitle} description={copy.backgroundImageDescription}>
-                <MediaUploadField
-                  imageUrl={currentBackgroundImageUrl}
-                  emptyLabel={copy.backgroundUploadEmpty}
-                  uploadLabel={copy.backgroundUpload}
-                  removeLabel={copy.backgroundRemove}
-                  onUpload={handleBackgroundUpload}
-                  onRemove={clearBackgroundImage}
-                />
-                <p className="mt-3 text-[12px] leading-5 text-[var(--foreground-muted)]">{copy.backgroundAutoNote}</p>
-              </CustomGroup>
-
-              <CustomGroup title={copy.overlayTitle}>
-                <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+                <p className="mb-2 text-[12px] font-medium text-white">{copy.overlayTitle}</p>
+                <div className="grid gap-2">
                   {backgroundOverlayOptions.map((option) => (
-                    <SelectionPill
+                    <CompactChoice
                       key={option.value}
                       active={currentBackgroundOverlayStrength === option.value}
-                      onClick={() =>
-                        form.setValue("backgroundOverlayStrength", option.value, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        })
-                      }
-                      className="justify-start rounded-[16px] px-4 py-3"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="inline-flex h-5 w-7 rounded-full border border-white/10" style={{ backgroundColor: option.overlay }} />
-                        {locale === "tr" ? option.labelTr : option.labelEn}
-                      </span>
-                    </SelectionPill>
+                      label={locale === "tr" ? option.labelTr : option.labelEn}
+                      onClick={() => form.setValue("backgroundOverlayStrength", option.value, { shouldDirty: true, shouldValidate: true })}
+                    />
                   ))}
                 </div>
-              </CustomGroup>
-
-              <CustomGroup title={copy.softnessTitle}>
-                <div className="grid gap-2 sm:grid-cols-3">
+              </div>
+              <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+                <p className="mb-2 text-[12px] font-medium text-white">{copy.softnessTitle}</p>
+                <div className="grid gap-2">
                   {backgroundSoftnessOptions.map((option) => (
-                    <SelectionPill
+                    <CompactChoice
                       key={option.value}
                       active={currentBackgroundImageSoftness === option.value}
-                      onClick={() =>
-                        form.setValue("backgroundImageSoftness", option.value, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        })
-                      }
-                      className="justify-center rounded-[16px] px-4 py-3"
-                    >
-                      {locale === "tr" ? option.labelTr : option.labelEn}
-                    </SelectionPill>
+                      label={locale === "tr" ? option.labelTr : option.labelEn}
+                      onClick={() => form.setValue("backgroundImageSoftness", option.value, { shouldDirty: true, shouldValidate: true })}
+                    />
                   ))}
                 </div>
-              </CustomGroup>
-
-              <CustomGroup title={copy.focusTitle}>
-                <div className="grid gap-2 sm:grid-cols-2">
+              </div>
+              <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+                <p className="mb-2 text-[12px] font-medium text-white">{copy.focusTitle}</p>
+                <div className="grid gap-2">
                   {backgroundFocusOptions.map((option) => (
-                    <SelectionPill
+                    <CompactChoice
                       key={option.value}
                       active={currentBackgroundImageFocus === option.value}
-                      onClick={() =>
-                        form.setValue("backgroundImageFocus", option.value, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        })
-                      }
-                      className="justify-center rounded-[16px] px-4 py-3"
-                    >
-                      {locale === "tr" ? option.labelTr : option.labelEn}
-                    </SelectionPill>
+                      label={locale === "tr" ? option.labelTr : option.labelEn}
+                      onClick={() => form.setValue("backgroundImageFocus", option.value, { shouldDirty: true, shouldValidate: true })}
+                    />
                   ))}
-                </div>
-              </CustomGroup>
-            </>
-          ) : null}
-        </div>
-      </SectionCard>
-    ) : (
-      <SectionCard title={copy.surfacesTitle} description={copy.surfacesDescription} icon={<Layers3 className="size-4" />}>
-        <div className="space-y-4">
-          <CustomGroup title={copy.cornerStyleTitle}>
-            <div className="grid gap-3 md:grid-cols-3">
-              {cornerStyleOptions.map((option) => (
-                <VisualOptionCard
-                  key={option.value}
-                  active={previewTheme.radiusStyle === option.value}
-                  title={locale === "tr" ? option.labelTr : option.labelEn}
-                  description={`${option.radius}`}
-                  onClick={() => form.setValue("radiusStyle", option.value, { shouldDirty: true, shouldValidate: true })}
-                >
-                  <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
-                    <div className="h-11 border border-white/10" style={{ borderRadius: option.radius, backgroundColor: toRgba(currentCardColor, 0.82) }} />
-                    <div className="flex gap-2">
-                      <div className="h-8 flex-1 border border-white/10" style={{ borderRadius: option.radius, backgroundColor: toRgba(currentPrimaryColor, 0.22) }} />
-                      <div className="h-8 w-16 border border-white/10" style={{ borderRadius: option.radius, backgroundColor: toRgba(currentCardColor, 0.72) }} />
-                    </div>
-                  </div>
-                </VisualOptionCard>
-              ))}
-            </div>
-          </CustomGroup>
-
-          <CustomGroup title={copy.cardFeelTitle}>
-            <div className="grid gap-3 md:grid-cols-3">
-              {cardFeelOptions.map((option) => {
-                const active = currentCardFeel === option.value;
-                const sampleBorder =
-                  option.value === "subtle"
-                    ? toRgba(currentCardColor, 0.22)
-                    : option.value === "defined"
-                      ? toRgba(derivedColorTokens.text, 0.16)
-                      : toRgba(derivedColorTokens.border, 0.68);
-                const sampleShadow =
-                  option.value === "subtle"
-                    ? "0 10px 18px rgba(0,0,0,0.12)"
-                    : option.value === "defined"
-                      ? "0 22px 34px rgba(0,0,0,0.22)"
-                      : "0 14px 24px rgba(0,0,0,0.16)";
-
-                return (
-                  <VisualOptionCard
-                    key={option.value}
-                    active={active}
-                    title={locale === "tr" ? option.labelTr : option.labelEn}
-                    description={locale === "tr" ? "Kart sınırı ve gölgesi" : "Card edge and shadow"}
-                    onClick={() => form.setValue("cardFeel", option.value, { shouldDirty: true, shouldValidate: true })}
-                  >
-                    <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
-                      <div
-                        className="rounded-[18px] border p-3"
-                        style={{
-                          borderColor: sampleBorder,
-                          backgroundColor: toRgba(currentCardColor, 0.86),
-                          boxShadow: sampleShadow,
-                        }}
-                      >
-                        <div className="h-2.5 w-20 rounded-full" style={{ backgroundColor: toRgba(derivedColorTokens.text, 0.82) }} />
-                        <div className="mt-2 h-2 w-full rounded-full" style={{ backgroundColor: toRgba(derivedColorTokens.mutedText, 0.56) }} />
-                        <div className="mt-1.5 h-2 w-3/4 rounded-full" style={{ backgroundColor: toRgba(derivedColorTokens.mutedText, 0.42) }} />
-                      </div>
-                    </div>
-                  </VisualOptionCard>
-                );
-              })}
-            </div>
-          </CustomGroup>
-
-          <CustomGroup title={copy.buttonStyleTitle}>
-            <div className="grid gap-3 md:grid-cols-3">
-              {buttonStyleOptions.map((option) => {
-                const active = currentButtonStyle === option.value;
-                const sampleStyle =
-                  option.value === "soft"
-                    ? {
-                        backgroundColor: toRgba(currentPrimaryColor, 0.2),
-                        borderColor: toRgba(currentPrimaryColor, 0.26),
-                        color: derivedColorTokens.text,
-                      }
-                    : option.value === "outline"
-                      ? {
-                          backgroundColor: toRgba(currentPrimaryColor, 0.05),
-                          borderColor: toRgba(currentPrimaryColor, 0.46),
-                          color: derivedColorTokens.text,
-                        }
-                      : {
-                          backgroundColor: currentPrimaryColor,
-                          borderColor: toRgba(currentPrimaryColor, 0.26),
-                          color: derivedColorTokens.buttonText,
-                        };
-
-                return (
-                  <VisualOptionCard
-                    key={option.value}
-                    active={active}
-                    title={locale === "tr" ? option.labelTr : option.labelEn}
-                    description={locale === "tr" ? "Ana çağrı butonu" : "Main action button"}
-                    onClick={() => form.setValue("buttonStyle", option.value, { shouldDirty: true, shouldValidate: true })}
-                  >
-                    <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
-                      <div className="inline-flex h-10 items-center justify-center rounded-[18px] border px-4 text-sm font-medium" style={sampleStyle}>
-                        {copy.primaryActionLabel}
-                      </div>
-                      <div
-                        className="inline-flex h-10 items-center justify-center rounded-[18px] border px-4 text-sm font-medium"
-                        style={{
-                          backgroundColor: toRgba(currentCardColor, 0.72),
-                          borderColor: derivedColorTokens.border,
-                          color: derivedColorTokens.text,
-                        }}
-                      >
-                        {copy.secondaryActionLabel}
-                      </div>
-                    </div>
-                  </VisualOptionCard>
-                );
-              })}
-            </div>
-          </CustomGroup>
-
-          <CustomGroup title={copy.badgeStyleTitle}>
-            <div className="grid gap-3 md:grid-cols-2">
-              {badgeStyleOptions.map((option) => {
-                const active = currentBadgeStyle === option.value;
-                const badgeStyle =
-                  option.value === "colored"
-                    ? {
-                        backgroundColor: derivedColorTokens.chipBackground,
-                        borderColor: toRgba(currentPrimaryColor, 0.18),
-                        color: derivedColorTokens.chipText,
-                      }
-                    : {
-                        backgroundColor: toRgba(currentCardColor, 0.7),
-                        borderColor: toRgba(currentCardColor, 0.22),
-                        color: derivedColorTokens.text,
-                      };
-
-                return (
-                  <VisualOptionCard
-                    key={option.value}
-                    active={active}
-                    title={locale === "tr" ? option.labelTr : option.labelEn}
-                    description={locale === "tr" ? "Şehir ve uygunluk etiketleri" : "City and availability badges"}
-                    onClick={() => form.setValue("badgeStyle", option.value, { shouldDirty: true, shouldValidate: true })}
-                  >
-                    <div className="space-y-2 rounded-[16px] bg-[#111215] p-3">
-                      <div className="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium" style={badgeStyle}>
-                        {copy.badgePreviewLabel}
-                      </div>
-                    </div>
-                  </VisualOptionCard>
-                );
-              })}
-            </div>
-          </CustomGroup>
-
-          <CustomGroup title={copy.modulePreviewTitle} description={copy.modulePreviewDescription}>
-            <div
-              className="rounded-[22px] border p-4"
-              style={{
-                ...surfacePreviewPresentation.wrapperStyle,
-                borderColor: surfacePreviewPresentation.tokens.borderColor,
-                background: "var(--artist-background-base)",
-              }}
-            >
-              <div
-                className="rounded-[var(--artist-card-radius)] border p-4"
-                style={{
-                  borderColor: "var(--artist-border)",
-                  backgroundColor: "color-mix(in srgb, var(--artist-card) calc(var(--artist-card-alpha) * 100%), transparent)",
-                  boxShadow: "var(--artist-card-shadow)",
-                }}
-              >
-                <p className="text-sm font-semibold" style={{ color: "var(--artist-card-text)", fontFamily: "var(--artist-heading-font)" }}>
-                  {copy.cardSampleTitle}
-                </p>
-                <p className="mt-1 text-[13px] leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                  {copy.cardSampleBody}
-                </p>
-                <div className="mt-4 flex flex-wrap items-center gap-2.5">
-                  <div
-                    className="inline-flex h-10 items-center rounded-[var(--artist-button-radius)] border px-4 text-sm font-medium"
-                    style={{
-                      backgroundColor: "var(--artist-primary-button-surface)",
-                      borderColor: "var(--artist-primary-button-border)",
-                      color: "var(--artist-primary-button-text)",
-                      boxShadow: "var(--artist-button-shadow)",
-                    }}
-                  >
-                    {copy.primaryActionLabel}
-                  </div>
-                  <div
-                    className="inline-flex h-10 items-center rounded-[var(--artist-button-radius)] border px-4 text-sm font-medium"
-                    style={{
-                      backgroundColor: "var(--artist-secondary-button-surface)",
-                      borderColor: "var(--artist-secondary-button-border)",
-                      color: "var(--artist-secondary-button-text)",
-                    }}
-                  >
-                    {copy.secondaryActionLabel}
-                  </div>
-                  <div
-                    className="inline-flex rounded-full border px-3 py-1.5 text-xs font-medium"
-                    style={{
-                      backgroundColor: "var(--artist-chip-surface)",
-                      borderColor: "var(--artist-border)",
-                      color: "var(--artist-chip-text)",
-                    }}
-                  >
-                    {copy.badgePreviewLabel}
-                  </div>
-                </div>
-                <div
-                  className="mt-4 flex items-center justify-between rounded-[calc(var(--artist-card-radius)-4px)] border px-3.5 py-2.5 text-[13px]"
-                  style={{
-                    borderColor: "var(--artist-border)",
-                    backgroundColor: "color-mix(in srgb, var(--artist-card) 82%, transparent)",
-                  }}
-                >
-                  <span style={{ color: "var(--artist-card-muted)" }}>{copy.infoRowLabel}</span>
-                  <span style={{ color: "var(--artist-card-text)" }}>{copy.infoRowValue}</span>
                 </div>
               </div>
             </div>
-          </CustomGroup>
+          </>
+        ) : null}
+      </div>
+    </SectionCard>
+  ) : (
+    <SectionCard title={copy.surfacesTitle} description={copy.surfacesDescription} icon={<Layers3 className="size-4" />}>
+      <div className="space-y-3">
+        <div className="grid gap-3 xl:grid-cols-2">
+          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+            <p className="mb-2 text-[12px] font-medium text-white">{copy.cornerStyleTitle}</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {cornerStyleOptions.map((option) => (
+                <CompactChoice
+                  key={option.value}
+                  active={previewTheme.radiusStyle === option.value}
+                  label={locale === "tr" ? option.labelTr : option.labelEn}
+                  onClick={() => form.setValue("radiusStyle", option.value, { shouldDirty: true, shouldValidate: true })}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+            <p className="mb-2 text-[12px] font-medium text-white">{copy.cardFeelTitle}</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {cardFeelOptions.map((option) => (
+                <CompactChoice
+                  key={option.value}
+                  active={currentCardFeel === option.value}
+                  label={locale === "tr" ? option.labelTr : option.labelEn}
+                  onClick={() => form.setValue("cardFeel", option.value, { shouldDirty: true, shouldValidate: true })}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+            <p className="mb-2 text-[12px] font-medium text-white">{copy.buttonStyleTitle}</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {buttonStyleOptions.map((option) => (
+                <CompactChoice
+                  key={option.value}
+                  active={currentButtonStyle === option.value}
+                  label={locale === "tr" ? option.labelTr : option.labelEn}
+                  onClick={() => form.setValue("buttonStyle", option.value, { shouldDirty: true, shouldValidate: true })}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[15px] border border-white/8 bg-white/[0.025] p-3">
+            <p className="mb-2 text-[12px] font-medium text-white">{copy.badgeStyleTitle}</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {badgeStyleOptions.map((option) => (
+                <CompactChoice
+                  key={option.value}
+                  active={currentBadgeStyle === option.value}
+                  label={locale === "tr" ? option.labelTr : option.labelEn}
+                  onClick={() => form.setValue("badgeStyle", option.value, { shouldDirty: true, shouldValidate: true })}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-      </SectionCard>
-    );
+
+        <div>
+          <p className="mb-2 text-[13px] font-medium text-white">{copy.modulePreviewTitle}</p>
+          <p className="mb-3 text-[11px] leading-[1.4] text-[var(--foreground-muted)]">{copy.modulePreviewDescription}</p>
+          {tokenPreview}
+        </div>
+      </div>
+    </SectionCard>
+  );
 
   return (
-    <div className="space-y-2.5 xl:space-y-2">
+    <div className="space-y-3 xl:space-y-2.5">
       {flashMessage ? (
         <div className="fixed right-4 top-4 z-30 rounded-full border border-white/10 bg-[rgba(12,12,14,0.94)] px-4 py-2 text-sm text-white shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
           {flashMessage}
@@ -1834,155 +1359,77 @@ export function CustomizePageForm({
         onSubmit={form.handleSubmit(onSubmit)}
         onKeyDown={(event) => {
           if (event.key === "Enter" && event.target instanceof HTMLInputElement) event.preventDefault();
-          if (event.key === "Escape") {
-            event.preventDefault();
-            resetThemeToCurrent();
-          }
         }}
       >
-        <div className="space-y-2.5">
-          <div className="flex flex-col gap-2.5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[var(--accent)]">{copy.eyebrow}</p>
-              <div className="space-y-0.5">
-                <h1 className="text-[1.62rem] font-semibold tracking-[-0.04em] text-[var(--text-primary)] xl:text-[1.48rem]">{copy.title}</h1>
-                <p className="max-w-[620px] text-[11.5px] leading-[1.4] text-[var(--foreground-muted)]">{copy.description}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5 xl:justify-end">
-              <div className="inline-grid grid-cols-2 gap-1 rounded-[14px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                <SelectionPill
-                  active={previewViewport === "desktop"}
-                  onClick={() => setPreviewViewport("desktop")}
-                  className="rounded-[10px] border-0 px-3 py-1.5"
-                >
-                  <span className="flex items-center gap-2">
-                    <Laptop className="size-3.5" />
-                    {copy.desktopLabel}
-                  </span>
-                </SelectionPill>
-                <SelectionPill
-                  active={previewViewport === "mobile"}
-                  onClick={() => setPreviewViewport("mobile")}
-                  className="rounded-[10px] border-0 px-3 py-1.5"
-                >
-                  <span className="flex items-center gap-2">
-                    <Smartphone className="size-3.5" />
-                    {copy.mobileLabel}
-                  </span>
-                </SelectionPill>
-              </div>
-              <Button type="button" variant="ghost" className="h-[36px] px-3.5" onClick={resetThemeToDefault}>
-                {copy.resetDefaults}
-              </Button>
-              <Button type="submit" className="h-[36px] px-3.5" disabled={form.formState.isSubmitting || !form.formState.isDirty}>
-                {form.formState.isSubmitting ? (
-                  <>
-                    <LoaderCircle className="size-4 animate-spin" />
-                    {copy.saving}
-                  </>
-                ) : (
-                  <>
-                    <Save className="size-4" />
-                    {copy.save}
-                  </>
-                )}
-              </Button>
-              {demoMode ? (
-                <span className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-[var(--foreground-muted)]">
-                  {copy.demo}
-                </span>
-              ) : null}
-            </div>
+        <div className="flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-0.5">
+            <h1 className="text-[1.55rem] font-semibold tracking-[-0.04em] text-[var(--text-primary)] xl:text-[1.45rem]">
+              {copy.title}
+            </h1>
+            <p className="max-w-[620px] text-[12px] leading-[1.4] text-[var(--foreground-muted)]">{copy.description}</p>
           </div>
+          <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+            <Button type="button" variant="ghost" className="h-[36px] px-3.5" onClick={resetThemeToDefault}>
+              {copy.resetDefaults}
+            </Button>
+            <Button type="submit" className="h-[36px] px-3.5" disabled={form.formState.isSubmitting || !form.formState.isDirty}>
+              {form.formState.isSubmitting ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" />
+                  {copy.saving}
+                </>
+              ) : (
+                <>
+                  <Save className="size-4" />
+                  {copy.save}
+                </>
+              )}
+            </Button>
+            {demoMode ? <span className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-[11px] text-[var(--foreground-muted)]">{copy.demo}</span> : null}
+          </div>
+        </div>
 
-          {!hasPro ? <UpgradeFeatureCard locale={locale} /> : null}
+        {!hasPro ? <UpgradeFeatureCard locale={locale} /> : null}
 
-          <div className="grid gap-4 xl:hidden">
-            <div className="grid grid-cols-2 gap-2">
-              {moduleItems.map((item) => (
-                <ModuleNavItem
-                  key={item.key}
-                  active={activeModule === item.key && (!item.locked || hasPro)}
-                  locked={item.locked}
-                  label={item.label}
-                  icon={item.icon}
-                  onClick={() => {
-                    if (item.locked && !hasPro) {
-                      setLockedModulePreview(item.key as Exclude<CustomizeModule, "presets">);
-                      return;
-                    }
+        <div className="flex flex-wrap gap-2">
+          {moduleItems.map((item) => (
+            <ModuleTab
+              key={item.key}
+              active={activeModule === item.key && (!item.locked || hasPro)}
+              locked={item.locked}
+              label={item.label}
+              onClick={() => {
+                if (item.locked && !hasPro) {
+                  setLockedModulePreview(item.key as Exclude<CustomizeModule, "presets">);
+                  return;
+                }
 
-                    setLockedModulePreview(null);
-                    setActiveModule(item.key);
-                  }}
-                />
-              ))}
-            </div>
+                setLockedModulePreview(null);
+                setActiveModule(item.key);
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_410px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
+          <div className="space-y-3">
             {modulePanel}
             {form.formState.errors.root?.message ? (
-              <div className="rounded-[22px] border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+              <div className="rounded-[18px] border border-red-300/20 bg-red-400/10 px-4 py-3 text-[12px] text-red-100">
                 {form.formState.errors.root.message}
               </div>
             ) : null}
-            <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-[1.02rem] tracking-[-0.02em]">{copy.livePreviewTitle}</CardTitle>
-                <CardDescription>{copy.livePreviewDescription}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <AppearancePreview artist={artist} theme={previewTheme} locale={locale} viewport={previewViewport} />
-              </CardContent>
-            </Card>
           </div>
 
-          <div className="hidden xl:grid xl:grid-cols-[180px_minmax(360px,1fr)_360px] xl:items-start xl:gap-3 2xl:grid-cols-[184px_minmax(380px,1fr)_388px]">
-            <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-[1rem] tracking-[-0.02em]">{copy.moduleMenuTitle}</CardTitle>
-                <CardDescription>{copy.moduleMenuDescription}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2 pt-0">
-                {moduleItems.map((item) => (
-                  <ModuleNavItem
-                    key={item.key}
-                    active={activeModule === item.key && (!item.locked || hasPro)}
-                    locked={item.locked}
-                    label={item.label}
-                    icon={item.icon}
-                    onClick={() => {
-                      if (item.locked && !hasPro) {
-                        setLockedModulePreview(item.key as Exclude<CustomizeModule, "presets">);
-                        return;
-                      }
-
-                      setLockedModulePreview(null);
-                      setActiveModule(item.key);
-                    }}
-                  />
-                ))}
-              </CardContent>
-            </Card>
-
-            <div className="space-y-2.5">
-              {modulePanel}
-              {form.formState.errors.root?.message ? (
-                <div className="rounded-[22px] border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
-                  {form.formState.errors.root.message}
-                </div>
-              ) : null}
-            </div>
-
-            <Card className="surface-border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)] xl:sticky xl:top-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-[1.02rem] tracking-[-0.02em]">{copy.livePreviewTitle}</CardTitle>
-                <CardDescription>{copy.livePreviewDescription}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <AppearancePreview artist={artist} theme={previewTheme} locale={locale} viewport={previewViewport} />
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)] xl:sticky xl:top-3">
+            <CardHeader className="pb-2.5">
+              <CardTitle className="text-[1rem] tracking-[-0.02em]">{copy.livePreviewTitle}</CardTitle>
+              <CardDescription className="text-[11px]">{copy.livePreviewDescription}</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <AppearancePreview artist={artist} theme={previewTheme} locale={locale} />
+            </CardContent>
+          </Card>
         </div>
       </form>
     </div>

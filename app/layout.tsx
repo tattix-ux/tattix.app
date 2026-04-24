@@ -1,5 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Manrope, Outfit } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  Courier_Prime,
+  DM_Sans,
+  IBM_Plex_Mono,
+  Inter,
+  JetBrains_Mono,
+  Libre_Baskerville,
+  Manrope,
+  Playfair_Display,
+  Plus_Jakarta_Sans,
+  Poppins,
+  Source_Sans_3,
+  Space_Grotesk,
+} from "next/font/google";
 import { AuthStateListener } from "@/components/auth/auth-state-listener";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
@@ -16,11 +30,17 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
-  display: "swap",
-});
+const playfairDisplay = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair-display", display: "swap" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", display: "swap" });
+const sourceSans3 = Source_Sans_3({ subsets: ["latin"], variable: "--font-source-sans-3", display: "swap" });
+const cormorantGaramond = Cormorant_Garamond({ subsets: ["latin"], variable: "--font-cormorant-garamond", display: "swap" });
+const libreBaskerville = Libre_Baskerville({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-libre-baskerville", display: "swap" });
+const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta-sans", display: "swap" });
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins", display: "swap" });
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", display: "swap" });
+const courierPrime = Courier_Prime({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-courier-prime", display: "swap" });
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono", display: "swap" });
+const ibmPlexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-ibm-plex-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -54,12 +74,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full antialiased ${inter.variable} ${manrope.variable} ${outfit.variable}`}
+      className={`h-full antialiased ${inter.variable} ${manrope.variable} ${playfairDisplay.variable} ${spaceGrotesk.variable} ${sourceSans3.variable} ${cormorantGaramond.variable} ${libreBaskerville.variable} ${plusJakartaSans.variable} ${poppins.variable} ${dmSans.variable} ${courierPrime.variable} ${jetbrainsMono.variable} ${ibmPlexMono.variable}`}
       style={
         {
           "--font-body": 'var(--font-inter), "Inter", "Segoe UI", sans-serif',
           "--font-display": 'var(--font-manrope), "Manrope", "Segoe UI", sans-serif',
-          "--font-mono": '"SFMono-Regular", "Consolas", monospace',
+          "--font-mono": 'var(--font-jetbrains-mono), "SFMono-Regular", "Consolas", monospace',
         } as React.CSSProperties
       }
     >
