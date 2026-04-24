@@ -54,12 +54,12 @@ const profileCopy = {
     saveFailed: "Unable to save profile.",
   },
   tr: {
-    sectionTitle: "Profil Bilgileri",
-    coreSectionDescription: "Sayfan açıldığında müşterinin ilk gördüğü alanlar bunlar olur.",
+    sectionTitle: "Profil Bilgilerin",
+    coreSectionDescription: "",
     contactSectionDescription: "Profil linkini ve iletişim bilgilerini düzenle.",
     artistName: "İsim",
     upperLabel: "Etiket",
-    upperLabelDescription: "Buraya stüdyo veya marka adını yazabilirsin.",
+    upperLabelDescription: "(Buraya stüdyo veya marka adını yazabilirsin.)",
     upperLabelPlaceholder: "Dövme stüdyosu",
     profileImage: "Profil fotoğrafı",
     coverImage: "Kapak fotoğrafı",
@@ -338,10 +338,10 @@ export function ProfileForm({
     <div className="space-y-2 xl:space-y-1.5">
       <div className="space-y-2.5 xl:space-y-2">
         <SectionBlock
-          title={locale === "tr" ? "Temel profil" : "Core profile"}
-          description={copy.coreSectionDescription}
+          title={copy.sectionTitle}
+          description={copy.coreSectionDescription || undefined}
         >
-          <div className="grid gap-2 xl:grid-cols-[138px_138px_minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
+          <div className="grid gap-2 xl:grid-cols-[120px_120px_minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
             <MediaUploadField
               label={copy.profileImage}
               imageUrl={form.watch("profileImageUrl") || ""}
@@ -360,30 +360,33 @@ export function ProfileForm({
               uploadLabel={copy.upload}
               removeLabel={copy.remove}
             />
-            <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
-            <Input {...form.register("artistName")} className="h-8 text-[13px]" />
-            </Field>
-            <Field
-              label={copy.upperLabel}
-              description={copy.upperLabelDescription}
-              error={form.formState.errors.upperLabel?.message}
-            >
-              <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-8 text-[13px]" />
-            </Field>
+            <div className="space-y-2 xl:col-span-2">
+              <div className="grid gap-2 xl:grid-cols-2">
+                <Field label={copy.artistName} error={form.formState.errors.artistName?.message}>
+                  <Input {...form.register("artistName")} className="h-8 text-[13px]" />
+                </Field>
+                <Field
+                  label={copy.upperLabel}
+                  description={copy.upperLabelDescription}
+                  error={form.formState.errors.upperLabel?.message}
+                >
+                  <Input {...form.register("upperLabel")} placeholder={copy.upperLabelPlaceholder} className="h-8 text-[13px]" />
+                </Field>
+              </div>
+
+              <Field
+                label={copy.shortBio}
+                description={copy.shortBioDescription}
+                error={form.formState.errors.shortBio?.message}
+              >
+                <Textarea
+                  {...form.register("shortBio")}
+                  placeholder={copy.shortBioPlaceholder}
+                  className="min-h-[64px] text-[13px] xl:min-h-[56px]"
+                />
+              </Field>
+            </div>
           </div>
-
-          <Field
-            label={copy.shortBio}
-            description={copy.shortBioDescription}
-            error={form.formState.errors.shortBio?.message}
-          >
-            <Textarea
-              {...form.register("shortBio")}
-              placeholder={copy.shortBioPlaceholder}
-              className="min-h-[70px] text-[13px] xl:min-h-[60px]"
-            />
-          </Field>
-
         </SectionBlock>
 
         <SectionBlock

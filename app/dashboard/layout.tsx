@@ -72,19 +72,11 @@ export default async function DashboardLayout({
                           planType={dashboardData.profile.planType}
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[12px] font-medium tracking-[-0.02em] text-white">
+                          <p className="text-[12px] font-medium leading-[1.25] tracking-[-0.02em] text-white break-words">
                             {dashboardData.profile.artistName}
-                          </p>
-                          <p className="truncate text-[10px] text-[var(--foreground-muted)]">
-                            @{dashboardData.profile.slug}
                           </p>
                         </div>
                       </div>
-                      {isProActive ? (
-                        <Badge variant="accent" className="mt-1 rounded-full px-2 py-0.5 text-[8.5px]">
-                          {isTurkish ? "Pro Üye" : "Pro member"}
-                        </Badge>
-                      ) : null}
                     </div>
                   </div>
                   <div className="mt-2.5">
