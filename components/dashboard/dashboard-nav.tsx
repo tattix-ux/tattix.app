@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   BookImage,
   CircleDollarSign,
-  Crown,
+  LockKeyhole,
   MessageSquareText,
   PaintbrushVertical,
   UserRound,
@@ -102,19 +102,18 @@ export function DashboardNav({
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex min-w-0 items-center justify-start gap-2 rounded-[12px] border px-2.5 py-1.5 text-[11.5px] transition xl:min-h-[34px] xl:px-2 xl:py-1",
+              "inline-flex min-w-0 items-center justify-start gap-1.5 rounded-[12px] border px-2 py-1.5 text-[10.5px] transition xl:min-h-[34px] xl:px-1.5 xl:py-1",
               active
                 ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(255,255,255,0.03)_0%,rgba(214,177,122,0.07)_100%)] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
                 : "border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-soft)] hover:bg-[rgba(255,255,255,0.024)] hover:text-[var(--text-primary)]",
             )}
           >
             <Icon className="size-3" />
-            <span className="min-w-0 flex-1 break-words">{item.label}</span>
+            <span className="min-w-0 flex-1 break-words leading-[1.15]">{item.label}</span>
             {item.pro && !hideProBadges ? (
-              <Badge variant="muted" className="ml-auto gap-1 px-1.5 py-0.5 text-[8.5px]">
-                <Crown className="size-3" />
-                Pro
-              </Badge>
+              <span className="ml-auto inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-[var(--text-muted)]">
+                <LockKeyhole className="size-2.5" />
+              </span>
             ) : null}
             {item.unreadCount ? (
               <Badge variant="accent" className="ml-auto px-1.5 py-0.5 text-[8.5px]">

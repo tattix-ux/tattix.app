@@ -185,11 +185,13 @@ function ModuleTab({
 
 function ThemeNameCard({
   active,
+  locked = false,
   title,
   theme,
   onClick,
 }: {
   active: boolean;
+  locked?: boolean;
   title: string;
   theme: (typeof themePresets)[ThemePresetKey];
   onClick: () => void;
@@ -198,9 +200,10 @@ function ThemeNameCard({
     <button
       type="button"
       onClick={onClick}
+      disabled={locked}
       className={cn(
         "relative flex h-[72px] items-center overflow-hidden rounded-[16px] border px-4 text-left transition",
-        active ? "" : "hover:-translate-y-0.5 hover:brightness-[1.03]",
+        locked ? "cursor-not-allowed opacity-75" : active ? "" : "hover:-translate-y-0.5 hover:brightness-[1.03]",
       )}
       style={{
         backgroundColor: theme.surface,
@@ -220,7 +223,11 @@ function ThemeNameCard({
         <span className="text-[13px] font-semibold tracking-[-0.02em]" style={{ color: theme.textColor }}>
           {title}
         </span>
-        {active ? (
+        {locked ? (
+          <span className="inline-flex size-5 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/80">
+            <LockKeyhole className="size-3" />
+          </span>
+        ) : active ? (
           <span
             className="inline-flex size-5 items-center justify-center rounded-full border"
             style={{ borderColor: toRgba(theme.primary, 0.46), backgroundColor: toRgba(theme.primary, 0.14), color: theme.primary }}
@@ -237,29 +244,15 @@ function UpgradeFeatureCard({ locale }: { locale: PublicLocale }) {
   const copy =
     locale === "tr"
       ? {
-          badge: "PRO",
           title: "Kendi görünümünü oluştur",
           description:
             "Hazır temaların ötesine geç. Kendi renklerini kullan, arka plan görselini yükle ve sayfanı markana göre düzenle.",
-          features: [
-            "Kendi renk paletini oluştur",
-            "Arka plan görseli yükle",
-            "Buton ve kart stilini değiştir",
-            "Canlı önizleme ile anında gör",
-          ],
           cta: "PRO'ya geç",
         }
       : {
-          badge: "PRO",
           title: "Create your own look",
           description:
             "Go beyond ready-made themes. Use your own colors, upload a background image, and shape the page around your brand.",
-          features: [
-            "Build your own color palette",
-            "Upload a background image",
-            "Change button and card style",
-            "See changes instantly in live preview",
-          ],
           cta: "Upgrade to Pro",
         };
 
@@ -271,19 +264,9 @@ function UpgradeFeatureCard({ locale }: { locale: PublicLocale }) {
             <Crown className="size-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="mb-2 inline-flex rounded-full border border-[var(--border-strong)] bg-[rgba(214,177,122,0.14)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-              {copy.badge}
-            </div>
             <h3 className="text-[1rem] font-semibold tracking-[-0.03em] text-white">{copy.title}</h3>
             <p className="mt-1 text-[12px] leading-[1.45] text-[var(--foreground-muted)]">{copy.description}</p>
           </div>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {copy.features.map((item) => (
-            <div key={item} className="rounded-[14px] border border-white/8 bg-white/[0.025] px-3 py-2 text-[11px] text-[var(--text-secondary)]">
-              {item}
-            </div>
-          ))}
         </div>
         <Button asChild className="h-[36px] px-4">
           <Link href="/dashboard/upgrade">{copy.cta}</Link>
@@ -687,7 +670,8 @@ export function CustomizePageForm({
   });
 
   const watchedValues = useWatch({ control: form.control });
-  const currentPreset = watchedValues.presetTheme ?? theme.presetTheme;
+  const currentPreset =
+    !hasPro ? "obsidian-bronze" : (watchedValues.presetTheme ?? theme.presetTheme);
   const currentBackgroundColor = watchedValues.backgroundColor ?? theme.backgroundColor;
   const currentGradientStart = watchedValues.gradientStart ?? theme.gradientStart;
   const currentGradientEnd = watchedValues.gradientEnd ?? theme.gradientEnd;
@@ -904,7 +888,7 @@ export function CustomizePageForm({
       : buildFormValues(
           resolveArtistTheme({
             artistId: artist.profile.id,
-            presetTheme: values.presetTheme,
+            presetTheme: "obsidian-bronze",
           }),
         );
 
@@ -960,9 +944,16 @@ export function CustomizePageForm({
           <ThemeNameCard
             key={presetKey}
             active={currentPreset === presetKey}
+            locked={!hasPro && presetKey !== "obsidian-bronze"}
             title={themePresets[presetKey].label}
             theme={themePresets[presetKey]}
-            onClick={() => applyPreset(presetKey)}
+            onClick={() => {
+              if (!hasPro && presetKey !== "obsidian-bronze") {
+                setLockedModulePreview("customize");
+                return;
+              }
+              applyPreset(presetKey);
+            }}
           />
         ))}
       </div>
@@ -1104,8 +1095,6 @@ export function CustomizePageForm({
             {demoMode ? <span className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-[11px] text-[var(--foreground-muted)]">{copy.demo}</span> : null}
           </div>
         </div>
-
-        {!hasPro ? <UpgradeFeatureCard locale={locale} /> : null}
 
         <div className="flex flex-wrap gap-2">
           {moduleItems.map((item) => (

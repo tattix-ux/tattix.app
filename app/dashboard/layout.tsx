@@ -8,7 +8,6 @@ import { DashboardNotificationBell } from "@/components/dashboard/dashboard-noti
 import { DemoModeBanner } from "@/components/dashboard/demo-mode-banner";
 import { DashboardSupportCard } from "@/components/dashboard/dashboard-support-card";
 import { LogoutButton } from "@/components/dashboard/logout-button";
-import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { AvatarTile } from "@/components/shared/avatar-tile";
 import { BrandWordmark } from "@/components/shared/logo";
 import { AppShell, Container } from "@/components/shared/shell";
@@ -98,13 +97,6 @@ export default async function DashboardLayout({
                     </div>
                   </div>
                 </div>
-                {!isProActive ? (
-                  <UpgradeCard
-                    locale={isTurkish ? "tr" : "en"}
-                    profile={dashboardData.profile}
-                    compact
-                  />
-                ) : null}
               </aside>
               <main className="min-w-0 w-full max-w-none pt-1.5 lg:w-full lg:max-w-none lg:justify-self-stretch xl:pt-2">
                 {dashboardData.demoMode ? <Badge variant="accent">Demo mode</Badge> : null}
