@@ -24,13 +24,12 @@ import { cn, formatCompactCurrencyRange, notesPreview } from "@/lib/utils";
 
 type LeadSort =
   | "newest"
-  | "oldest"
-  | "highest-estimate"
-  | "lowest-estimate"
   | "new-first"
   | "contacted-first"
   | "sold-first"
   | "lost-first";
+
+type LeadRange = "all" | "today" | "last-7" | "last-30";
 
 const leadCopy = {
   en: {
@@ -40,20 +39,22 @@ const leadCopy = {
     empty: "No requests yet.",
     emptyDescription: "Share your link to start collecting requests.",
     summary: {
-      waiting: "Contacted",
+      waiting: "Waiting",
       total: "Total requests",
+      waitingContacts: "Waiting for contact",
       sold: "Sold",
       rate: "Sale rate",
     },
     filters: {
-      newFirst: "Waiting first",
-      contactedFirst: "Contacted first",
-      soldFirst: "Sold first",
-      lostFirst: "Lost first",
+      all: "All",
+      today: "Today",
+      last7: "Last 7 days",
+      last30: "Last 30 days",
+      newFirst: "Waiting for contact",
+      contactedFirst: "Contacted",
+      soldFirst: "Sold",
+      lostFirst: "Lost",
       newest: "Newest",
-      oldest: "Oldest",
-      highestEstimate: "Highest estimate",
-      lowestEstimate: "Lowest estimate",
       sort: "Sort",
     },
     statusLabels: {
@@ -107,20 +108,22 @@ const leadCopy = {
     empty: "Henüz talep yok.",
     emptyDescription: "Linkini paylaşarak müşteri toplamaya başla.",
     summary: {
-      waiting: "İletişime geçilen",
+      waiting: "İletişim beklenen",
       total: "Toplam talep",
+      waitingContacts: "İletişime geçilen",
       sold: "Satış yapıldı",
       rate: "Satış oranı",
     },
     filters: {
-      newFirst: "İletişim bekleyen önce",
-      contactedFirst: "İletişime geçildi önce",
-      soldFirst: "Satış yapıldı önce",
-      lostFirst: "Satış olmadı önce",
+      all: "Tümü",
+      today: "Bugün",
+      last7: "Son 7 gün",
+      last30: "Son 30 gün",
+      newFirst: "İletişim beklenenler",
+      contactedFirst: "İletişime geçilenler",
+      soldFirst: "Satış yapılanlar",
+      lostFirst: "Satış yapılmayanlar",
       newest: "En yeni",
-      oldest: "En eski",
-      highestEstimate: "En yüksek tahmin",
-      lowestEstimate: "En düşük tahmin",
       sort: "Sıralama",
     },
     statusLabels: {
@@ -647,48 +650,6 @@ function sortLeads(leads: ClientSubmission[], sort: LeadSort) {
       return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
     }
 
-    if (sort === "oldest") {
-      return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
-    }
-
-    if (sort === "highest-estimate") {
-      const leftCenter = getEstimateCenter(left);
-      const rightCenter = getEstimateCenter(right);
-
-      if (leftCenter === null && rightCenter === null) {
-        return 0;
-      }
-
-      if (leftCenter === null) {
-        return 1;
-      }
-
-      if (rightCenter === null) {
-        return -1;
-      }
-
-      return rightCenter - leftCenter;
-    }
-
-    if (sort === "lowest-estimate") {
-      const leftCenter = getEstimateCenter(left);
-      const rightCenter = getEstimateCenter(right);
-
-      if (leftCenter === null && rightCenter === null) {
-        return 0;
-      }
-
-      if (leftCenter === null) {
-        return 1;
-      }
-
-      if (rightCenter === null) {
-        return -1;
-      }
-
-      return leftCenter - rightCenter;
-    }
-
     return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
   });
 
@@ -701,6 +662,25 @@ function formatConversionRate(total: number, sold: number) {
   }
 
   return `${Math.round((sold / total) * 100)}%`;
+}
+
+function isLeadInRange(lead: ClientSubmission, range: LeadRange) {
+  if (range === "all") {
+    return true;
+  }
+
+  const createdAt = new Date(lead.createdAt);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (range === "today") {
+    return createdAt >= todayStart;
+  }
+
+  const days = range === "last-7" ? 7 : 30;
+  const cutoff = new Date(todayStart);
+  cutoff.setDate(cutoff.getDate() - (days - 1));
+  return createdAt >= cutoff;
 }
 
 function StatusBadge({
@@ -739,13 +719,13 @@ function SummaryStat({
     >
       <p
         className={cn(
-          "text-[11px] uppercase tracking-[0.18em]",
+          "text-[10px] uppercase tracking-[0.16em]",
           tone === "accent" ? "text-[var(--accent-soft)]" : "text-[var(--text-muted)]",
         )}
       >
         {label}
       </p>
-      <p className={cn("mt-1.5 text-[1.58rem] font-semibold tracking-[-0.03em]", tone === "accent" ? "text-[var(--text-primary)]" : "text-white")}>
+      <p className={cn("mt-1 text-[1.38rem] font-semibold tracking-[-0.03em]", tone === "accent" ? "text-[var(--text-primary)]" : "text-white")}>
         {value}
       </p>
     </div>
@@ -788,7 +768,7 @@ function StatusSelect({
         className={cn(
           "min-w-[190px] shadow-none",
           getStatusControlTone(value),
-          compact ? "h-10 rounded-[16px] text-sm" : "h-11 rounded-[18px]",
+          compact ? "h-8.5 rounded-[14px] text-[12px]" : "h-10 rounded-[16px] text-[13px]",
         )}
       >
         <option value="new">{copy.statusLabels.new}</option>
@@ -819,6 +799,8 @@ export function LeadsTable({
   const [localLeads, setLocalLeads] = useState(leads);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [sort, setSort] = useState<LeadSort>("newest");
+  const [listRange, setListRange] = useState<LeadRange>("all");
+  const [summaryRange, setSummaryRange] = useState<LeadRange>("all");
   const [page, setPage] = useState(1);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const pageSize = 10;
@@ -866,12 +848,20 @@ export function LeadsTable({
     }
   }
 
-  const filteredLeads = useMemo(() => sortLeads(localLeads, sort), [localLeads, sort]);
+  const listFilteredLeads = useMemo(
+    () => localLeads.filter((lead) => isLeadInRange(lead, listRange)),
+    [localLeads, listRange],
+  );
+  const filteredLeads = useMemo(() => sortLeads(listFilteredLeads, sort), [listFilteredLeads, sort]);
+  const summaryFilteredLeads = useMemo(
+    () => localLeads.filter((lead) => isLeadInRange(lead, summaryRange)),
+    [localLeads, summaryRange],
+  );
 
-  const totalCount = localLeads.length;
-  const contactedCount = localLeads.filter((lead) => lead.status !== "new").length;
-  const soldCount = localLeads.filter((lead) => lead.status === "sold").length;
-  const waitingCount = localLeads.filter((lead) => lead.status === "new").length;
+  const totalCount = summaryFilteredLeads.length;
+  const contactedCount = summaryFilteredLeads.filter((lead) => lead.status !== "new").length;
+  const soldCount = summaryFilteredLeads.filter((lead) => lead.status === "sold").length;
+  const waitingCount = summaryFilteredLeads.filter((lead) => lead.status === "new").length;
   const totalPages = Math.max(1, Math.ceil(filteredLeads.length / pageSize));
   const paginatedLeads = useMemo(
     () => filteredLeads.slice((page - 1) * pageSize, page * pageSize),
@@ -891,7 +881,7 @@ export function LeadsTable({
 
   useEffect(() => {
     setPage(1);
-  }, [sort]);
+  }, [sort, listRange]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -1030,24 +1020,36 @@ export function LeadsTable({
   return (
     <div className="space-y-4">
       <Card className="surface-border">
-        <CardHeader>
-          <CardTitle>{copy.title}</CardTitle>
-          <CardDescription>{copy.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3.5">
+        <CardContent className="space-y-2.5 pt-4">
           {hasPro ? (
             <>
               {statusMessage ? (
-                <p className="text-sm text-[var(--accent-soft)]">{statusMessage}</p>
+                <p className="text-[12px] text-[var(--accent-soft)]">{statusMessage}</p>
               ) : null}
-              <div className="rounded-[16px] border border-white/8 bg-white/[0.025] px-3 py-2 text-[12px] text-[var(--text-muted)]">
-                {copy.note}
+              <div className="flex flex-wrap gap-1.5">
+                {(["all", "today", "last-7", "last-30"] as LeadRange[]).map((range) => (
+                  <button
+                    key={range}
+                    type="button"
+                    onClick={() => setSummaryRange(range)}
+                    className={cn(
+                      "inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium transition",
+                      summaryRange === range
+                        ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-white"
+                        : "border-white/8 bg-white/[0.03] text-[var(--text-secondary)] hover:border-white/12 hover:text-white",
+                    )}
+                  >
+                    {copy.filters[
+                      range === "all" ? "all" : range === "today" ? "today" : range === "last-7" ? "last7" : "last30"
+                    ]}
+                  </button>
+                ))}
               </div>
-              <div className="rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-2">
-                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-[18px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-1.5">
+                <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-4">
                   <SummaryStat label={copy.summary.total} value={totalCount} tone="accent" />
-                  <SummaryStat label={copy.statusLabels.new} value={waitingCount} />
-                  <SummaryStat label={copy.summary.waiting} value={contactedCount} />
+                  <SummaryStat label={copy.summary.waiting} value={waitingCount} />
+                  <SummaryStat label={copy.summary.waitingContacts} value={contactedCount} />
                   <SummaryStat label={copy.summary.sold} value={`${soldCount} · ${formatConversionRate(contactedCount, soldCount)}`} />
                 </div>
               </div>
@@ -1059,33 +1061,51 @@ export function LeadsTable({
       </Card>
 
       <Card className="surface-border">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle>{locale === "tr" ? "Talepler" : "Requests"}</CardTitle>
           <CardDescription>
             {locale === "tr" ? "Filtrele, sırala ve detayları tek bakışta yönet." : "Filter, sort, and manage details at a glance."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center justify-end">
-            <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.025] px-3 py-1.5">
+          <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap gap-1.5">
+              {(["all", "today", "last-7", "last-30"] as LeadRange[]).map((range) => (
+                <button
+                  key={range}
+                  type="button"
+                  onClick={() => setListRange(range)}
+                  className={cn(
+                    "inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium transition",
+                    listRange === range
+                      ? "border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] text-white"
+                      : "border-white/8 bg-white/[0.03] text-[var(--text-secondary)] hover:border-white/12 hover:text-white",
+                  )}
+                >
+                  {copy.filters[
+                    range === "all" ? "all" : range === "today" ? "today" : range === "last-7" ? "last7" : "last30"
+                  ]}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-end">
+            <div className="flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.025] px-2.5 py-1">
               <ArrowUpDown className="size-4 text-[var(--text-muted)]" />
-              <span className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
                 {copy.filters.sort}
               </span>
               <NativeSelect
                 value={sort}
                 onChange={(event) => setSort(event.target.value as LeadSort)}
-                className="h-8 min-w-[176px] rounded-full border-white/8 bg-[var(--surface-1)] py-0 text-[13px]"
+                className="h-7 min-w-[170px] rounded-full border-white/8 bg-[var(--surface-1)] py-0 text-[12px]"
               >
                 <option value="newest">{copy.filters.newest}</option>
-                <option value="oldest">{copy.filters.oldest}</option>
-                <option value="highest-estimate">{copy.filters.highestEstimate}</option>
-                <option value="lowest-estimate">{copy.filters.lowestEstimate}</option>
                 <option value="new-first">{copy.filters.newFirst}</option>
                 <option value="contacted-first">{copy.filters.contactedFirst}</option>
                 <option value="sold-first">{copy.filters.soldFirst}</option>
                 <option value="lost-first">{copy.filters.lostFirst}</option>
               </NativeSelect>
+            </div>
             </div>
           </div>
 
@@ -1115,35 +1135,35 @@ export function LeadsTable({
               return (
                 <div
                   key={lead.id}
-                  className="group rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-3 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
+                  className="group rounded-[18px] border border-white/8 bg-[linear-gradient(180deg,var(--surface-1)_0%,rgba(16,17,20,0.92)_100%)] p-2.5 transition hover:border-white/14 hover:bg-[linear-gradient(180deg,var(--surface-2)_0%,rgba(18,20,24,0.98)_100%)]"
                 >
-                  <div className="grid gap-2.5 xl:grid-cols-[minmax(156px,0.78fr)_minmax(0,1.52fr)_minmax(196px,0.92fr)] xl:items-center">
-                    <div className="space-y-1">
+                  <div className="grid gap-2 xl:grid-cols-[minmax(142px,0.76fr)_minmax(0,1.6fr)_minmax(188px,0.9fr)] xl:items-center">
+                    <div className="space-y-0.5">
                       <div className="flex items-center justify-between gap-3 xl:block">
                         <div>
-                          <p className="text-[1.28rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency, locale)}</p>
-                          <p className="mt-1 text-xs text-[var(--text-muted)]">{formatLeadDate(lead.createdAt, locale)}</p>
+                          <p className="text-[1.12rem] font-semibold tracking-[-0.03em] text-white">{getDisplayedEstimate(lead, currency, locale)}</p>
+                          <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">{formatLeadDate(lead.createdAt, locale)}</p>
                         </div>
                         <StatusBadge status={lead.status} locale={locale} />
                       </div>
                     </div>
 
-                    <div className="min-w-0 space-y-1.5">
+                    <div className="min-w-0 space-y-1">
                       <div className="min-w-0">
-                        <p className="truncate text-[14px] font-semibold text-white">{requestLabel}</p>
-                        <p className="mt-0.5 text-[12.5px] text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
+                        <p className="truncate text-[13px] font-semibold text-white">{requestLabel}</p>
+                        <p className="mt-0.5 text-[11.5px] text-[var(--text-secondary)]">{[placementSummary, sizeLabel].filter(Boolean).join(" • ")}</p>
                       </div>
                       {lead.city ? (
-                        <p className="text-sm text-[var(--text-muted)]">{lead.city}</p>
+                        <p className="text-[11.5px] text-[var(--text-muted)]">{lead.city}</p>
                       ) : null}
                       {notesLabel ? (
-                        <p className="line-clamp-2 text-[13px] leading-5 text-[var(--text-muted)]">{notesLabel}</p>
+                        <p className="line-clamp-2 text-[11.5px] leading-[1.4] text-[var(--text-muted)]">{notesLabel}</p>
                       ) : null}
-                      <div className="flex flex-wrap gap-1.5 text-[10.5px] text-[var(--text-muted)]">
+                      <div className="flex flex-wrap gap-1 text-[10px] text-[var(--text-muted)]">
                         {metadataTags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1"
+                            className="rounded-full border border-white/8 bg-white/[0.03] px-2 py-0.5"
                           >
                             {tag}
                           </span>
@@ -1151,8 +1171,8 @@ export function LeadsTable({
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 xl:items-end">
-                      <div className="w-full xl:max-w-[208px]">
+                    <div className="flex flex-col gap-2 xl:items-end">
+                      <div className="w-full xl:max-w-[196px]">
                         <StatusSelect
                           value={lead.status}
                           locale={locale}
@@ -1164,7 +1184,7 @@ export function LeadsTable({
                         <Button
                           size="sm"
                           variant="outline"
-                          className="rounded-full"
+                          className="rounded-full px-2.5"
                           onClick={() => toggleLeadDetails(lead.id)}
                         >
                           {copy.table.detailButton}
@@ -1178,8 +1198,8 @@ export function LeadsTable({
             })}
           </div>
 
-          <div className="flex flex-col gap-2 rounded-[18px] border border-white/8 bg-white/[0.025] p-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[13px] text-[var(--text-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
+          <div className="flex flex-col gap-2 rounded-[16px] border border-white/8 bg-white/[0.025] p-2.5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[12px] text-[var(--text-muted)]">{copy.table.pageSummary(page, totalPages)}</p>
             <div className="flex gap-2">
               <Button
                 type="button"
