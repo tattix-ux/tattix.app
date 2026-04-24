@@ -75,11 +75,11 @@ function EditorSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-2.5 rounded-[18px] border border-white/8 bg-white/[0.025] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+    <section className="space-y-2 rounded-[16px] border border-white/8 bg-white/[0.025] p-3 xl:p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
       <div className="space-y-1">
-        <h3 className="text-[15px] font-semibold tracking-[-0.02em] text-white">{title}</h3>
+        <h3 className="text-[14px] font-semibold tracking-[-0.02em] text-white">{title}</h3>
         {description ? (
-          <p className="text-[12px] leading-5 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
+          <p className="text-[11px] leading-[1.4] text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
             {description}
           </p>
         ) : null}
@@ -721,7 +721,7 @@ export function FeaturedDesignsForm({
 
   return (
     <form
-      className="space-y-5"
+      className="space-y-4"
       onSubmit={form.handleSubmit(onSubmit)}
       onKeyDown={(event) => {
         const target = event.target as HTMLElement;
@@ -746,29 +746,29 @@ export function FeaturedDesignsForm({
         </div>
       ) : null}
       <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-        <CardContent className="relative overflow-hidden p-4 sm:p-4.5">
+        <CardContent className="relative overflow-hidden px-3.5 pb-3.5 pt-4.5 sm:px-4 sm:pb-4 sm:pt-5">
           <BrandMonogram className="left-auto right-[-4%] top-[-16%] h-[180px] w-[180px]" opacity={0.06} />
-          <div className="relative space-y-4">
+          <div className="relative space-y-3">
             <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-[36rem] space-y-1.5 pt-1">
-                <p className="text-[13px] leading-5 text-[var(--text-secondary)]">{labels.introHint}</p>
+              <div className="max-w-[34rem] space-y-1 pt-1.5">
+                <p className="text-[12px] leading-[1.4] text-[var(--text-secondary)]">{labels.introHint}</p>
                 {labels.introSteps.length > 0 ? (
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
                     {labels.introSteps.join(" • ")}
                   </p>
                 ) : null}
                 {statusMessage && !editingDesign ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
               </div>
               {quickAddImageName ? (
-                <div className="rounded-full border border-[var(--border-soft)] bg-white/[0.03] px-3 py-1.5 text-xs text-[var(--text-secondary)]">
+                <div className="rounded-full border border-[var(--border-soft)] bg-white/[0.03] px-2.5 py-1 text-[11px] text-[var(--text-secondary)]">
                   {quickAddImageName}
                 </div>
               ) : null}
             </div>
 
-            <div className="grid gap-3 xl:grid-cols-[160px_minmax(0,1.15fr)_minmax(0,1fr)_auto] xl:items-end">
-            <Field label={labels.image} className="min-w-[160px] justify-end">
-              <label className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-[15px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 text-[12.5px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
+            <div className="grid gap-2.5 xl:grid-cols-[148px_minmax(0,1.08fr)_minmax(0,0.92fr)_auto] xl:items-end">
+            <Field label={labels.image} className="min-w-[148px] justify-end">
+              <label className="flex h-8.5 cursor-pointer items-center justify-center gap-2 rounded-[13px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 text-[12px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
                 <Upload className="size-4" />
                 {quickAddImageName ? labels.replaceImage : labels.uploadImage}
                 <input
@@ -791,23 +791,23 @@ export function FeaturedDesignsForm({
               <Input
                 value={quickAddTitle}
                 onChange={(event) => setQuickAddTitle(event.target.value)}
-                className="h-9 rounded-[15px] bg-white/[0.03]"
+                className="h-8.5 rounded-[13px] bg-white/[0.03] text-[13px]"
                 placeholder={labels.titlePlaceholder}
               />
             </Field>
 
             <Field label={labels.priceLabel} description={labels.priceHelp} className="justify-end">
-              <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <Input
                   type="number"
-                  className="h-9 rounded-[15px] bg-white/[0.03]"
+                  className="h-8.5 rounded-[13px] bg-white/[0.03] text-[13px]"
                   placeholder="6000"
                   value={quickAddPriceMin}
                   onChange={(event) => setQuickAddPriceMin(event.target.value)}
                 />
                 <Input
                   type="number"
-                  className="h-9 rounded-[15px] bg-white/[0.03]"
+                  className="h-8.5 rounded-[13px] bg-white/[0.03] text-[13px]"
                   placeholder="8500"
                   value={quickAddPriceMax}
                   onChange={(event) => setQuickAddPriceMax(event.target.value)}
@@ -815,7 +815,7 @@ export function FeaturedDesignsForm({
               </div>
             </Field>
 
-            <div className="flex items-center gap-2 xl:pb-[1px]">
+            <div className="flex items-center gap-1.5 xl:pb-[1px]">
               {quickAddImageName ? (
                 <Button type="button" variant="ghost" size="sm" onClick={resetQuickAdd}>
                   <X className="size-4" />
@@ -823,7 +823,7 @@ export function FeaturedDesignsForm({
               ) : null}
               <Button
                 type="button"
-                className="h-9 px-4"
+                className="h-8.5 px-3.5 text-[13px]"
                 onClick={() => {
                   addDesign(
                     undefined,
@@ -869,7 +869,7 @@ export function FeaturedDesignsForm({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {orderedDesignEntries.map(({ field, index, design }) => {
             const title = design?.title?.trim() || `${labels.newItem} ${index + 1}`;
             const category = getCategoryLabel(design?.category || "flash-designs");
@@ -891,7 +891,7 @@ export function FeaturedDesignsForm({
                     : "bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)]",
                 )}
               >
-                <CardContent className={cn("p-3", isEditing ? "space-y-3.5" : "")}>
+                <CardContent className={cn("p-2.5 xl:p-2.5", isEditing ? "space-y-3" : "")}>
                   <div
                     role={isEditing ? undefined : "button"}
                     tabIndex={isEditing ? -1 : 0}
@@ -911,12 +911,12 @@ export function FeaturedDesignsForm({
                       }
                     }}
                     className={cn(
-                      "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
-                      isEditing ? "rounded-[20px] border border-white/8 bg-white/[0.02] px-3.5 py-3.5" : "",
+                      "flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3",
+                      isEditing ? "rounded-[18px] border border-white/8 bg-white/[0.02] px-3 py-3.5" : "",
                     )}
                   >
-                    <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <div className="relative size-12 shrink-0 overflow-hidden rounded-[14px] border border-white/8 bg-white/[0.03]">
+                    <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                      <div className="relative size-10 shrink-0 overflow-hidden rounded-[12px] border border-white/8 bg-white/[0.03]">
                         {design?.imageUrl ? (
                           <img
                             src={design.imageUrl}
@@ -930,23 +930,23 @@ export function FeaturedDesignsForm({
                         )}
                       </div>
 
-                      <div className="min-w-0 space-y-2">
+                      <div className="min-w-0 space-y-1.5">
                         <div className="space-y-1">
                           {isEditing ? (
                             <div className="space-y-1">
-                              <p className="text-xs uppercase tracking-[0.16em] text-[color:color-mix(in_srgb,var(--foreground-muted)_72%,white_10%)]">
+                              <p className="text-[10px] uppercase tracking-[0.16em] text-[color:color-mix(in_srgb,var(--foreground-muted)_72%,white_10%)]">
                                 {labels.drawerTitle}
                               </p>
-                              <p className="truncate text-[1.05rem] font-semibold tracking-[-0.02em] text-white">
+                              <p className="truncate text-[0.98rem] font-semibold tracking-[-0.02em] text-white">
                                 {title}
                               </p>
                             </div>
                           ) : (
                             <>
-                              <p className="truncate text-[1.02rem] font-semibold tracking-[-0.02em] text-white">
+                              <p className="truncate text-[0.98rem] font-semibold tracking-[-0.02em] text-white">
                                 {title}
                               </p>
-                              <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
+                              <p className="text-[12px] leading-[1.35] text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
                                 {metaText || "—"}
                               </p>
                             </>
@@ -954,13 +954,13 @@ export function FeaturedDesignsForm({
                         </div>
 
                         {!isEditing ? (
-                          <div className="flex flex-wrap gap-2">
-                            <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/88">
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-[10px] text-white/88">
                               {priceText}
                             </span>
                             <span
                               className={cn(
-                                "rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                                "rounded-full border px-2.5 py-1 text-[10px] font-medium",
                                 design?.active
                                   ? "border-[var(--accent)]/22 bg-[var(--accent)]/10 text-[var(--accent-soft)]"
                                   : "border-white/8 bg-white/[0.03] text-[color:color-mix(in_srgb,var(--foreground-muted)_80%,white_10%)]",
@@ -970,7 +970,7 @@ export function FeaturedDesignsForm({
                             </span>
                           </div>
                         ) : (
-                          <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
+                          <p className="text-[12px] leading-[1.35] text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
                             {metaText || "—"}
                           </p>
                         )}
@@ -978,11 +978,11 @@ export function FeaturedDesignsForm({
                     </div>
 
                     {isEditing ? (
-                      <div className="sticky top-3 z-10 flex flex-wrap items-center justify-end gap-2 self-start sm:ml-3 sm:min-w-[320px]">
-                        <div className="flex items-center gap-3 rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 py-2">
+                      <div className="sticky top-2 z-10 flex flex-wrap items-center justify-end gap-1.5 self-start sm:ml-3 sm:min-w-[286px]">
+                        <div className="flex items-center gap-2.5 rounded-[14px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1.5">
                           <div className="space-y-0.5">
-                            <p className="text-sm font-medium text-[var(--text-primary)]">{labels.statusLabel}</p>
-                            <p className="text-[11px] leading-5 text-[var(--text-muted)]">
+                            <p className="text-[12px] font-medium text-[var(--text-primary)]">{labels.statusLabel}</p>
+                            <p className="text-[10px] leading-[1.35] text-[var(--text-muted)]">
                               {labels.statusHelp}
                             </p>
                           </div>
@@ -992,19 +992,19 @@ export function FeaturedDesignsForm({
                               className="peer sr-only"
                               {...form.register(`designs.${editingIndex}.active`)}
                             />
-                            <span className="h-7 w-12 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
-                            <span className="pointer-events-none absolute left-1 size-5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
+                            <span className="h-6 w-11 rounded-full bg-white/10 transition peer-checked:bg-[var(--accent)]/35" />
+                            <span className="pointer-events-none absolute left-1 size-4.5 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5 peer-checked:bg-[var(--accent)]" />
                           </label>
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
-                          <Button type="button" variant="secondary" onClick={cancelEditing} className="h-9">
+                        <div className="flex flex-wrap gap-1.5">
+                          <Button type="button" variant="secondary" onClick={cancelEditing} className="h-8.5 px-3 text-[12px]">
                             {labels.cancel}
                           </Button>
                           <Button
                             type="submit"
                             disabled={form.formState.isSubmitting || !form.formState.isDirty}
-                            className="h-9"
+                            className="h-8.5 px-3 text-[12px]"
                           >
                             {form.formState.isSubmitting ? (
                               <>
@@ -1061,10 +1061,10 @@ export function FeaturedDesignsForm({
 
                       {statusMessage ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
 
-                      <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)] xl:items-start">
+                      <div className="grid gap-3 xl:grid-cols-[248px_minmax(0,1fr)] xl:items-start">
                         <EditorSection title={labels.image}>
-                          <div className="space-y-3">
-                            <div className="relative flex h-[248px] items-center justify-center overflow-hidden rounded-[22px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))]">
+                          <div className="space-y-2.5">
+                            <div className="relative flex h-[196px] items-center justify-center overflow-hidden rounded-[18px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))]">
                               {editingDesign?.imageUrl ? (
                                 <img
                                   src={editingDesign.imageUrl}
@@ -1072,16 +1072,16 @@ export function FeaturedDesignsForm({
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <div className="space-y-2 text-center text-[var(--text-muted)]">
-                                  <div className="mx-auto flex size-12 items-center justify-center rounded-full border border-[var(--border-soft)] bg-white/[0.03]">
-                                    <ImagePlus className="size-5" />
+                                <div className="space-y-1.5 text-center text-[var(--text-muted)]">
+                                  <div className="mx-auto flex size-10 items-center justify-center rounded-full border border-[var(--border-soft)] bg-white/[0.03]">
+                                    <ImagePlus className="size-4" />
                                   </div>
-                                  <p className="text-xs text-[var(--text-muted)]">{labels.noImage}</p>
+                                  <p className="text-[11px] text-[var(--text-muted)]">{labels.noImage}</p>
                                 </div>
                               )}
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                              <label className="inline-flex cursor-pointer items-center gap-2 rounded-[16px] border border-[var(--border-soft)] bg-white/[0.03] px-3.5 py-2 text-[12.5px] text-[var(--text-primary)] transition hover:bg-white/[0.06]">
+                            <div className="flex flex-wrap gap-1.5">
+                              <label className="inline-flex h-8.5 cursor-pointer items-center gap-2 rounded-[14px] border border-[var(--border-soft)] bg-white/[0.03] px-3 text-[12px] text-[var(--text-primary)] transition hover:bg-white/[0.06]">
                                 <Upload className="size-4" />
                                 {editingDesign?.imageUrl ? labels.replaceImage : labels.uploadImage}
                                 <input
@@ -1102,7 +1102,7 @@ export function FeaturedDesignsForm({
                                   type="button"
                                   variant="ghost"
                                   size="sm"
-                                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                  className="h-8.5 px-2.5 text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                   onClick={() => void handleImageRemove(editingIndex)}
                                 >
                                   <X className="size-4" />
@@ -1113,9 +1113,9 @@ export function FeaturedDesignsForm({
                           </div>
                         </EditorSection>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           <EditorSection title={labels.detailsTitle} description={labels.detailsDescription}>
-                            <div className="grid gap-3 xl:grid-cols-2">
+                            <div className="grid gap-2.5 xl:grid-cols-2">
                               <Field
                                 label={labels.titleLabel}
                                 error={form.formState.errors.designs?.[editingIndex]?.title?.message}
@@ -1130,7 +1130,7 @@ export function FeaturedDesignsForm({
                                         titleRegistration.ref(node);
                                         titleInputRef.current = node;
                                       }}
-                                      className="h-9 rounded-[16px] bg-white/[0.03]"
+                                      className="h-8.5 rounded-[14px] bg-white/[0.03] text-[13px]"
                                       placeholder={labels.titlePlaceholder}
                                       name={titleRegistration.name}
                                       onBlur={titleRegistration.onBlur}
@@ -1148,7 +1148,7 @@ export function FeaturedDesignsForm({
                                 <div className="relative">
                                   <Input
                                     type="number"
-                                    className="h-9 rounded-[16px] bg-white/[0.03] pr-12"
+                                    className="h-8.5 rounded-[14px] bg-white/[0.03] pr-12 text-[13px]"
                                     placeholder={labels.sizePlaceholder}
                                     {...form.register(`designs.${editingIndex}.referenceSizeCm`)}
                                   />
@@ -1162,24 +1162,24 @@ export function FeaturedDesignsForm({
                                 <div className="grid gap-2.5 sm:grid-cols-2">
                                   <Field
                                     label={labels.priceMin}
-                                    className="gap-2"
+                                    className="gap-1.5"
                                     error={form.formState.errors.designs?.[editingIndex]?.referencePriceMin?.message}
                                   >
                                     <Input
                                       type="number"
-                                      className="h-9 rounded-[16px] bg-white/[0.03]"
+                                      className="h-8.5 rounded-[14px] bg-white/[0.03] text-[13px]"
                                       placeholder="6000"
                                       {...form.register(`designs.${editingIndex}.referencePriceMin`)}
                                     />
                                   </Field>
                                   <Field
                                     label={labels.priceMax}
-                                    className="gap-2"
+                                    className="gap-1.5"
                                     error={form.formState.errors.designs?.[editingIndex]?.referencePriceMax?.message}
                                   >
                                     <Input
                                       type="number"
-                                      className="h-9 rounded-[16px] bg-white/[0.03]"
+                                      className="h-8.5 rounded-[14px] bg-white/[0.03] text-[13px]"
                                       placeholder="8500"
                                       {...form.register(`designs.${editingIndex}.referencePriceMax`)}
                                     />
@@ -1190,10 +1190,10 @@ export function FeaturedDesignsForm({
                           </EditorSection>
 
                           <EditorSection title={labels.optionalTitle} description={labels.optionalDescription}>
-                            <div className="grid gap-3 xl:grid-cols-2">
+                            <div className="grid gap-2.5 xl:grid-cols-2">
                               <Field label={labels.category}>
                                 <NativeSelect
-                                  className="h-9 rounded-[16px] bg-white/[0.03]"
+                                  className="h-8.5 rounded-[14px] bg-white/[0.03] text-[13px]"
                                   value={getCategorySelectValue(editingDesign?.category || "")}
                                   onChange={(event) =>
                                     form.setValue(
@@ -1212,7 +1212,7 @@ export function FeaturedDesignsForm({
                               {getCategorySelectValue(editingDesign?.category || "") === "__custom__" ? (
                                 <Field label={labels.customCategory}>
                                   <Input
-                                    className="h-9 rounded-[16px] bg-white/[0.03]"
+                                    className="h-8.5 rounded-[14px] bg-white/[0.03] text-[13px]"
                                     placeholder={labels.customCategoryPlaceholder}
                                     value={editingDesign?.category || ""}
                                     onChange={(event) =>
@@ -1230,7 +1230,7 @@ export function FeaturedDesignsForm({
                                 className="xl:col-span-2"
                               >
                                 <Textarea
-                                  className="min-h-[104px] rounded-[18px] bg-white/[0.03]"
+                                  className="min-h-[82px] rounded-[16px] bg-white/[0.03] text-[13px]"
                                   placeholder={labels.shortDescriptionPlaceholder}
                                   {...form.register(`designs.${editingIndex}.shortDescription`)}
                                 />
