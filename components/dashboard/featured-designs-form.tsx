@@ -100,8 +100,8 @@ const copy = {
     saved: "Saved",
     introDescription:
       "These designs appear on your profile page. Clients can send a request from the design they like.",
-    introHint: "Add a design with an image, a name, and a price range.",
-    introSteps: ["Upload image", "Add a name", "Set price"],
+    introHint: "Upload the image, design name, and price range in one quick step.",
+    introSteps: ["Upload image", "Add design name", "Set price range"],
     addDesign: "Add new design",
     emptyTitle: "Add your first design",
     emptyDescription: "Start with an image, a name, and an approximate price.",
@@ -125,33 +125,26 @@ const copy = {
     detailsDescription: "",
     titleLabel: "Design name",
     titlePlaceholder: "e.g. Fine line rose",
-    sizeLabel: "What size (cm) do you want to tattoo this design at?",
-    sizeHelp: "Set the price range for this size.",
+    sizeLabel: "What size (cm) would you like to work this design at?",
+    sizeHelp: "",
     sizePlaceholder: "10",
-    priceLabel: "Price shown to clients",
-    priceHelp: "Set the price range for this size.",
+    priceLabel: "What should the price range be for this size?",
+    priceHelp: "",
     priceMin: "Lower price",
     priceMax: "Upper price",
-    pricingSettingsTitle: "Pricing behavior",
-    pricingSettingsDescription: "Choose how this design should behave in the estimate engine.",
     detailLevelLabel: "Reference detail level",
     detailLevelHelp: "The price range above is entered for this detail level.",
     colorModeLabel: "Reference color mode",
     colorModeHelp: "The price range above is entered for this color setup.",
-    pricingModeLabel: "How should the price react?",
-    pricingModeHelp: "Use fixed range for the same band, or allow size and placement to move it.",
-    colorImpactLabel: "How much does color affect this design?",
-    colorImpactHelp: "This controls how strongly color complexity influences scaling.",
     chooseOption: "Select",
-    optionalTitle: "Category and short note",
-    optionalDescription: "Keep your flash collection organized and add a short client-facing note if you want.",
+    optionalTitle: "Category",
+    optionalDescription: "Categories help keep designs organized in the showcase.",
     category: "Category",
     customCategory: "Custom category",
     customCategoryPlaceholder: "e.g. Floral",
     shortDescription: "Short note",
-    shortDescriptionHelp: "If you want, you can show a short explanation to clients.",
     shortDescriptionPlaceholder:
-      "e.g. Fine line piece. Looks good on the forearm and upper arm.",
+      "Discounted design / I want to work this on the upper arm, etc.",
     statusLabel: "Show on your profile page",
     statusHelp: "When on, clients can see it.",
     drawerTitle: "Edit design",
@@ -192,9 +185,9 @@ const copy = {
     saveFailed: "Tasarım kaydedilemedi.",
     saved: "Kaydedildi",
     introDescription:
-      "Buradaki tasarımlar profil sayfanda görünür. Müşteri beğendiği tasarımdan talep gönderebilir.",
-    introHint: "Görsel, tasarım adı ve fiyat aralığıyla hızlıca ekleyebilirsin.",
-    introSteps: ["Görsel ekle", "Tasarım adını yaz", "Fiyat gir"],
+      "Çalışmak istediğin özel tasarımlarını buraya yükleyebilirsin.",
+    introHint: "Görseli, tasarım adını ve fiyat aralığını hızlıca ekleyebilirsin.",
+    introSteps: [],
     addDesign: "Yeni tasarım ekle",
     emptyTitle: "İlk tasarımını ekle",
     emptyDescription: "Görsel, ad ve yaklaşık fiyat girerek başlayabilirsin.",
@@ -219,32 +212,25 @@ const copy = {
     titleLabel: "Tasarım adı",
     titlePlaceholder: "Örn: Minimal gül",
     sizeLabel: "Bu tasarım için çalışmak istediğin boyut (cm)",
-    sizeHelp: "Bu boyut için fiyat aralıklarını belirle",
+    sizeHelp: "",
     sizePlaceholder: "10",
-    priceLabel: "Müşteriye gösterilecek fiyat",
-    priceHelp: "Bu boyut için fiyat aralıklarını belirle",
+    priceLabel: "Bu boyut için fiyat aralığı ne kadar olsun?",
+    priceHelp: "",
     priceMin: "Alt fiyat",
     priceMax: "Üst fiyat",
-    pricingSettingsTitle: "Fiyat davranışı",
-    pricingSettingsDescription: "Bu tasarımın estimate motorunda nasıl davranacağını seç.",
     detailLevelLabel: "Referans detay seviyesi",
     detailLevelHelp: "Yukarıdaki fiyat aralığı bu detay seviyesi için girilir.",
     colorModeLabel: "Referans renk yapısı",
     colorModeHelp: "Yukarıdaki fiyat aralığı bu renk yapısı için girilir.",
-    pricingModeLabel: "Fiyat nasıl davransın?",
-    pricingModeHelp: "Sabit kalsın ya da boyut ve bölgeye göre değişsin.",
-    colorImpactLabel: "Renk bu tasarımı ne kadar etkilese iyi olur?",
-    colorImpactHelp: "Renk karmaşıklığının ölçeklemeyi ne kadar etkileyeceğini belirler.",
     chooseOption: "Seç",
-    optionalTitle: "Kategori ve kısa not",
-    optionalDescription: "Tasarımı kategorize et ve müşteriye göstermek istersen kısa bir not ekle.",
+    optionalTitle: "Kategori",
+    optionalDescription: "Kategori, tasarımları vitrinde düzenli göstermene yardımcı olur.",
     category: "Kategori",
     customCategory: "Özel kategori",
     customCategoryPlaceholder: "Örn: Floral",
     shortDescription: "Kısa not",
-    shortDescriptionHelp: "İstersen müşteriye kısa bir açıklama gösterebilirsin.",
     shortDescriptionPlaceholder:
-      "Örn: İnce çizgi çalışılır. Ön kol ve üst kolda iyi durur.",
+      "İndirimli tasarım/Üst kolda çalışmak istiyorum vb.",
     statusLabel: "Profil sayfanda göster",
     statusHelp: "Açık olduğunda müşteri görür.",
     drawerTitle: "Tasarımı düzenle",
@@ -308,13 +294,13 @@ function normalizeDesign(design: PartialDesignDraft, sortOrder: number): DesignD
     imageUrl: design.imageUrl ?? "",
     imagePath: design.imagePath ?? "",
     priceNote: design.priceNote ?? "",
-    referenceDetailLevel: design.referenceDetailLevel ?? null,
+    referenceDetailLevel: design.referenceDetailLevel ?? "standard",
     referencePriceMin: design.referencePriceMin ?? null,
     referencePriceMax: design.referencePriceMax ?? null,
     referenceSizeCm: design.referenceSizeCm ?? null,
-    referenceColorMode: design.referenceColorMode ?? null,
-    pricingMode: design.pricingMode ?? null,
-    colorImpactPreference: design.colorImpactPreference ?? null,
+    referenceColorMode: design.referenceColorMode ?? "black-grey",
+    pricingMode: "size_adjusted",
+    colorImpactPreference: "low",
     active: design.active ?? false,
     sortOrder,
   };
@@ -329,6 +315,17 @@ function cloneDesign(design: PartialDesignDraft, sortOrder: number): DesignDraft
     title: normalized.title ? `${normalized.title} kopya` : "",
     active: false,
     sortOrder,
+  };
+}
+
+function getNormalizedDesignForSave(design: DesignDraft, sortOrder: number): DesignDraft {
+  return {
+    ...design,
+    sortOrder,
+    referenceDetailLevel: design.referenceDetailLevel ?? "standard",
+    referenceColorMode: design.referenceColorMode ?? "black-grey",
+    pricingMode: "size_adjusted",
+    colorImpactPreference: "low",
   };
 }
 
@@ -682,10 +679,7 @@ export function FeaturedDesignsForm({
 
   async function onSubmit(_values: FeaturedDesignValues) {
     const normalizedValues: FeaturedDesignValues = {
-      designs: getCurrentDesigns().map((design, index) => ({
-        ...design,
-        sortOrder: index,
-      })),
+      designs: getCurrentDesigns().map((design, index) => getNormalizedDesignForSave(design, index)),
     };
 
     const response = await fetch("/api/dashboard/designs", {
@@ -752,15 +746,17 @@ export function FeaturedDesignsForm({
         </div>
       ) : null}
       <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-        <CardContent className="relative overflow-hidden p-3.5 sm:p-4">
+        <CardContent className="relative overflow-hidden p-4 sm:p-4.5">
           <BrandMonogram className="left-auto right-[-4%] top-[-16%] h-[180px] w-[180px]" opacity={0.06} />
-          <div className="relative space-y-3">
-            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-[34rem] space-y-1.5">
-                <p className="text-[13px] text-[var(--text-secondary)]">{labels.introHint}</p>
-                <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-dim)]">
-                  {labels.introSteps.join(" • ")}
-                </p>
+          <div className="relative space-y-4">
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-[36rem] space-y-1.5 pt-1">
+                <p className="text-[13px] leading-5 text-[var(--text-secondary)]">{labels.introHint}</p>
+                {labels.introSteps.length > 0 ? (
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
+                    {labels.introSteps.join(" • ")}
+                  </p>
+                ) : null}
                 {statusMessage && !editingDesign ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
               </div>
               {quickAddImageName ? (
@@ -770,8 +766,8 @@ export function FeaturedDesignsForm({
               ) : null}
             </div>
 
-            <div className="grid gap-2 xl:grid-cols-[138px_minmax(0,1fr)_minmax(0,0.92fr)_auto] xl:items-end">
-            <Field label={labels.image} className="min-w-[150px]">
+            <div className="grid gap-3 xl:grid-cols-[160px_minmax(0,1.15fr)_minmax(0,1fr)_auto] xl:items-end">
+            <Field label={labels.image} className="min-w-[160px] justify-end">
               <label className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-[15px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 text-[12.5px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
                 <Upload className="size-4" />
                 {quickAddImageName ? labels.replaceImage : labels.uploadImage}
@@ -800,7 +796,7 @@ export function FeaturedDesignsForm({
               />
             </Field>
 
-            <Field label={labels.priceLabel} description={labels.priceHelp}>
+            <Field label={labels.priceLabel} description={labels.priceHelp} className="justify-end">
               <div className="grid gap-2.5 sm:grid-cols-2">
                 <Input
                   type="number"
@@ -819,7 +815,7 @@ export function FeaturedDesignsForm({
               </div>
             </Field>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 xl:pb-[1px]">
               {quickAddImageName ? (
                 <Button type="button" variant="ghost" size="sm" onClick={resetQuickAdd}>
                   <X className="size-4" />
@@ -858,8 +854,8 @@ export function FeaturedDesignsForm({
               <ImagePlus className="size-7" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold tracking-[-0.02em] text-white">{labels.emptyTitle}</h3>
-              <p className="max-w-[34ch] text-sm leading-7 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
+              <h3 className="text-lg font-semibold tracking-[-0.02em] text-white">{labels.emptyTitle}</h3>
+              <p className="max-w-[34ch] text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_8%)]">
                 {labels.emptyDescription}
               </p>
             </div>
@@ -1193,103 +1189,6 @@ export function FeaturedDesignsForm({
                             </div>
                           </EditorSection>
 
-                          <EditorSection title={labels.pricingSettingsTitle} description={labels.pricingSettingsDescription}>
-                            <div className="grid gap-3 xl:grid-cols-2">
-                              <Field
-                                label={labels.detailLevelLabel}
-                                description={labels.detailLevelHelp}
-                                error={form.formState.errors.designs?.[editingIndex]?.referenceDetailLevel?.message}
-                              >
-                                <NativeSelect
-                                  className="h-9 rounded-[16px] bg-white/[0.03]"
-                                  value={editingDesign?.referenceDetailLevel ?? ""}
-                                  onChange={(event) =>
-                                    form.setValue(
-                                      `designs.${editingIndex}.referenceDetailLevel`,
-                                      event.target.value ? (event.target.value as DesignDraft["referenceDetailLevel"]) : null,
-                                      { shouldDirty: true, shouldValidate: true },
-                                    )
-                                  }
-                                >
-                                  <option value="">{labels.chooseOption}</option>
-                                  <option value="simple">{labels.detailLevels.simple}</option>
-                                  <option value="standard">{labels.detailLevels.standard}</option>
-                                  <option value="detailed">{labels.detailLevels.detailed}</option>
-                                </NativeSelect>
-                              </Field>
-
-                              <Field
-                                label={labels.colorModeLabel}
-                                description={labels.colorModeHelp}
-                                error={form.formState.errors.designs?.[editingIndex]?.referenceColorMode?.message}
-                              >
-                                <NativeSelect
-                                  className="h-9 rounded-[16px] bg-white/[0.03]"
-                                  value={editingDesign?.referenceColorMode ?? ""}
-                                  onChange={(event) =>
-                                    form.setValue(
-                                      `designs.${editingIndex}.referenceColorMode`,
-                                      event.target.value ? (event.target.value as DesignDraft["referenceColorMode"]) : null,
-                                      { shouldDirty: true, shouldValidate: true },
-                                    )
-                                  }
-                                >
-                                  <option value="">{labels.chooseOption}</option>
-                                  <option value="black-only">{labels.referenceColorModes["black-only"]}</option>
-                                  <option value="black-grey">{labels.referenceColorModes["black-grey"]}</option>
-                                  <option value="full-color">{labels.referenceColorModes["full-color"]}</option>
-                                </NativeSelect>
-                              </Field>
-
-                              <Field
-                                label={labels.pricingModeLabel}
-                                description={labels.pricingModeHelp}
-                                error={form.formState.errors.designs?.[editingIndex]?.pricingMode?.message}
-                              >
-                                <NativeSelect
-                                  className="h-9 rounded-[16px] bg-white/[0.03]"
-                                  value={editingDesign?.pricingMode ?? ""}
-                                  onChange={(event) =>
-                                    form.setValue(
-                                      `designs.${editingIndex}.pricingMode`,
-                                      event.target.value ? (event.target.value as DesignDraft["pricingMode"]) : null,
-                                      { shouldDirty: true, shouldValidate: true },
-                                    )
-                                  }
-                                >
-                                  <option value="">{labels.chooseOption}</option>
-                                  <option value="fixed_range">{labels.pricingModes.fixed_range}</option>
-                                  <option value="size_adjusted">{labels.pricingModes.size_adjusted}</option>
-                                  <option value="size_and_placement_adjusted">{labels.pricingModes.size_and_placement_adjusted}</option>
-                                  <option value="starting_from">{labels.pricingModes.starting_from}</option>
-                                </NativeSelect>
-                              </Field>
-
-                              <Field
-                                label={labels.colorImpactLabel}
-                                description={labels.colorImpactHelp}
-                                error={form.formState.errors.designs?.[editingIndex]?.colorImpactPreference?.message}
-                              >
-                                <NativeSelect
-                                  className="h-9 rounded-[16px] bg-white/[0.03]"
-                                  value={editingDesign?.colorImpactPreference ?? ""}
-                                  onChange={(event) =>
-                                    form.setValue(
-                                      `designs.${editingIndex}.colorImpactPreference`,
-                                      event.target.value ? (event.target.value as DesignDraft["colorImpactPreference"]) : null,
-                                      { shouldDirty: true, shouldValidate: true },
-                                    )
-                                  }
-                                >
-                                  <option value="">{labels.chooseOption}</option>
-                                  <option value="low">{labels.colorImpactOptions.low}</option>
-                                  <option value="medium">{labels.colorImpactOptions.medium}</option>
-                                  <option value="high">{labels.colorImpactOptions.high}</option>
-                                </NativeSelect>
-                              </Field>
-                            </div>
-                          </EditorSection>
-
                           <EditorSection title={labels.optionalTitle} description={labels.optionalDescription}>
                             <div className="grid gap-3 xl:grid-cols-2">
                               <Field label={labels.category}>
@@ -1324,21 +1223,14 @@ export function FeaturedDesignsForm({
                                     }
                                   />
                                 </Field>
-                              ) : (
-                                <div className="rounded-[18px] border border-[var(--border-soft)] bg-white/[0.03] px-4 py-3 text-sm text-[var(--text-secondary)]">
-                                  {locale === "tr"
-                                    ? "Kategori, tasarımları vitrinde düzenli göstermene yardımcı olur."
-                                    : "Categories help keep your flash collection organized."}
-                                </div>
-                              )}
+                              ) : null}
 
                               <Field
                                 label={labels.shortDescription}
-                                description={labels.shortDescriptionHelp}
                                 className="xl:col-span-2"
                               >
                                 <Textarea
-                                  className="min-h-[120px] rounded-[18px] bg-white/[0.03]"
+                                  className="min-h-[104px] rounded-[18px] bg-white/[0.03]"
                                   placeholder={labels.shortDescriptionPlaceholder}
                                   {...form.register(`designs.${editingIndex}.shortDescription`)}
                                 />

@@ -21,12 +21,12 @@ export default async function DashboardDesignsPage() {
         eyebrow={isTurkish ? "Tasarımlar" : "Designs"}
         title={
           isTurkish
-            ? "Hazır tasarımlar"
+            ? "Tasarımlar"
             : "Ready-made designs"
         }
         description={
           isTurkish
-            ? "Buradaki tasarımlar profil sayfanda görünür. Müşteri beğendiği tasarımdan talep gönderebilir."
+            ? "Çalışmak istediğin özel tasarımlarını buraya yükleyebilirsin."
             : "These designs appear on your profile page. Clients can send a request from the design they like."
         }
       />
