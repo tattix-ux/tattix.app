@@ -253,7 +253,7 @@ function ThemeNameCard({
       }}
     >
       <div
-        className="absolute inset-y-0 left-0 w-1"
+        className="absolute inset-y-0 left-0 w-1.5"
         style={{ background: `linear-gradient(180deg, ${theme.primary}, ${theme.secondary})` }}
       />
       <div
