@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 
 import { PricingForm } from "@/components/dashboard/pricing-form";
 import { SectionHeading } from "@/components/shared/shell";
@@ -9,6 +10,8 @@ import { getSupabaseSession } from "@/lib/supabase/server";
 export const metadata: Metadata = buildPageMetadata("/dashboard/pricing", { noIndex: true });
 
 export default async function DashboardPricingPage() {
+  noStore();
+
   const session = await getSupabaseSession();
   const data = await getDashboardPricingData(session?.user.id ?? null);
   const isTurkish = data.locale === "tr";

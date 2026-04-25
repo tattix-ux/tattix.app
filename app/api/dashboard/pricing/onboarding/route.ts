@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { getAuthenticatedArtist } from "@/lib/data/dashboard";
@@ -69,6 +70,9 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/pricing");
 
   return NextResponse.json({
     message: "Pricing settings saved.",
