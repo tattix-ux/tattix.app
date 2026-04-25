@@ -259,12 +259,18 @@ function buildSoftAccent(primary: string, surface: string) {
 }
 
 function buildChipColors(primary: string, secondary: string, surface: string) {
-  const chipBackgroundHex = mixHex(primary, surface, 0.26);
-  const candidateText = contrastRatio(primary, chipBackgroundHex) >= contrastRatio(secondary, chipBackgroundHex) ? primary : secondary;
-  const chipText = contrastRatio(candidateText, chipBackgroundHex) >= 4.5 ? candidateText : "#F5F1EA";
+  const chipBackgroundHex = mixHex(primary, surface, 0.62);
+  const candidates = [primary, secondary, "#FFFFFF", "#F5F1EA", "#111111"];
+  const chipText =
+    candidates
+      .map((candidate) => ({
+        candidate,
+        contrast: contrastRatio(candidate, chipBackgroundHex),
+      }))
+      .sort((left, right) => right.contrast - left.contrast)[0]?.candidate ?? "#F5F1EA";
 
   return {
-    chipBackground: toRgba(chipBackgroundHex, 0.42),
+    chipBackground: toRgba(chipBackgroundHex, 0.92),
     chipText,
   };
 }
@@ -330,8 +336,8 @@ function buildCardFeelTokens(input: {
     return {
       borderColor: mixHex(input.border, input.cardColor, 0.28),
       cardShadow: "0 12px 24px rgba(0,0,0,0.14)",
-      selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.1)}, ${toRgba(input.primary, 0.06)})`,
-      selectedBorder: toRgba(input.primary, 0.24),
+      selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.18)}, ${toRgba(input.primary, 0.1)})`,
+      selectedBorder: toRgba(input.primary, 0.38),
     };
   }
 
@@ -339,16 +345,16 @@ function buildCardFeelTokens(input: {
     return {
       borderColor: mixHex(input.border, input.text, 0.74),
       cardShadow: "0 24px 54px rgba(0,0,0,0.28)",
-      selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.18)}, ${toRgba(input.primary, 0.11)})`,
-      selectedBorder: toRgba(input.primary, 0.38),
+      selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.24)}, ${toRgba(input.primary, 0.14)})`,
+      selectedBorder: toRgba(input.primary, 0.48),
     };
   }
 
   return {
     borderColor: input.border,
     cardShadow: "0 18px 38px rgba(0,0,0,0.2)",
-    selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.14)}, ${toRgba(input.primary, 0.09)})`,
-    selectedBorder: toRgba(input.primary, 0.3),
+    selectedSurface: `linear-gradient(180deg, ${toRgba(input.primary, 0.2)}, ${toRgba(input.primary, 0.12)})`,
+    selectedBorder: toRgba(input.primary, 0.42),
   };
 }
 

@@ -146,9 +146,6 @@ export function IntentSelectionStep({
             <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
               {locale === "tr" ? "Yaklaşık boyut ne kadar olsun?" : "About how large should it be?"}
             </p>
-            <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-              {locale === "tr" ? "Sana en yakın seçeneği seç." : "Choose the option that feels closest."}
-            </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {areaScopeOptions.map((option) => {
@@ -188,11 +185,6 @@ export function IntentSelectionStep({
             <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
               {locale === "tr" ? "Önce bir kategori seç" : "Choose a category first"}
             </p>
-            <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-              {locale === "tr"
-                ? "Dövmecinin eklediği kategorilerden birini seç. Sonra ilgili tasarımları görebilirsin."
-                : "Pick one of the artist’s categories. Then you can browse the matching designs."}
-            </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {designCategories.map((category) => {
@@ -216,11 +208,6 @@ export function IntentSelectionStep({
                     <p className="font-medium">{getFeaturedCategoryLabel(category, locale)}</p>
                     {active ? <Check className="mt-0.5 size-4 shrink-0" /> : null}
                   </div>
-                  <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
-                    {locale === "tr"
-                      ? "Bu kategorideki tasarımları göster"
-                      : "Show the designs in this category"}
-                  </p>
                 </button>
               );
             })}
@@ -230,12 +217,14 @@ export function IntentSelectionStep({
             <div className="space-y-3">
               <div>
                 <p className="font-medium" style={{ color: "var(--artist-card-text)" }}>
-                  {locale === "tr" ? "Bu kategorideki tasarımlar" : "Designs in this category"}
+                  {locale === "tr"
+                    ? `${getFeaturedCategoryLabel(selectedDesignCategory, locale)} kategorisindeki tasarımlar`
+                    : `Designs in ${getFeaturedCategoryLabel(selectedDesignCategory, locale)}`}
                 </p>
                 <p className="mt-1 text-sm leading-6" style={{ color: "var(--artist-card-muted)" }}>
                   {locale === "tr"
-                    ? "Tasarıma tıklayarak tam boy görebilir, alttan seçebilirsin."
-                    : "Tap a design to see it full size, then select it below."}
+                    ? "Tasarıma tıklayarak tam boy görebilirsin."
+                    : "Tap a design to see it full size."}
                 </p>
               </div>
               <div className="grid gap-3">

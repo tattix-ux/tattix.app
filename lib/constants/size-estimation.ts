@@ -35,7 +35,7 @@ type GuidanceRule = {
 };
 
 const DEFAULT_CONSTRAINT: PlacementSizeConstraint = {
-  minCm: 3,
+  minCm: 2,
   maxCm: 24,
   defaultCm: 9,
 };
@@ -49,26 +49,26 @@ export const sizeCategoryThresholds: SizeThreshold[] = [
 
 const placementSizeOverrides: Partial<Record<BodyAreaDetailValue, PlacementSizeConstraint>> = {
   wrist: { minCm: 2, maxCm: 10, defaultCm: 4 },
-  "forearm-outer": { minCm: 4, maxCm: 22, defaultCm: 9 },
-  "upper-arm-outer": { minCm: 5, maxCm: 22, defaultCm: 10 },
+  "forearm-outer": { minCm: 2, maxCm: 22, defaultCm: 9 },
+  "upper-arm-outer": { minCm: 2, maxCm: 22, defaultCm: 10 },
   hand: { minCm: 2, maxCm: 10, defaultCm: 5 },
-  "thigh-front": { minCm: 6, maxCm: 30, defaultCm: 14 },
-  calf: { minCm: 5, maxCm: 22, defaultCm: 10 },
+  "thigh-front": { minCm: 2, maxCm: 30, defaultCm: 14 },
+  calf: { minCm: 2, maxCm: 22, defaultCm: 10 },
   ankle: { minCm: 2, maxCm: 8, defaultCm: 4 },
-  foot: { minCm: 3, maxCm: 14, defaultCm: 6 },
-  "chest-center": { minCm: 5, maxCm: 24, defaultCm: 10 },
-  ribs: { minCm: 5, maxCm: 25, defaultCm: 11 },
-  stomach: { minCm: 5, maxCm: 24, defaultCm: 10 },
-  "upper-back": { minCm: 8, maxCm: 30, defaultCm: 14 },
-  "lower-back": { minCm: 8, maxCm: 30, defaultCm: 14 },
-  "spine-area": { minCm: 8, maxCm: 28, defaultCm: 13 },
+  foot: { minCm: 2, maxCm: 14, defaultCm: 6 },
+  "chest-center": { minCm: 2, maxCm: 24, defaultCm: 10 },
+  ribs: { minCm: 2, maxCm: 25, defaultCm: 11 },
+  stomach: { minCm: 2, maxCm: 24, defaultCm: 10 },
+  "upper-back": { minCm: 2, maxCm: 30, defaultCm: 14 },
+  "lower-back": { minCm: 2, maxCm: 30, defaultCm: 14 },
+  "spine-area": { minCm: 2, maxCm: 28, defaultCm: 13 },
   "neck-side": { minCm: 2, maxCm: 8, defaultCm: 4 },
   "neck-front": { minCm: 2, maxCm: 8, defaultCm: 4 },
   "neck-back": { minCm: 2, maxCm: 8, defaultCm: 4 },
   head: { minCm: 2, maxCm: 12, defaultCm: 5 },
-  fingers: { minCm: 1, maxCm: 5, defaultCm: 3 },
-  toes: { minCm: 1, maxCm: 5, defaultCm: 3 },
-  "placement-not-sure": { minCm: 3, maxCm: 24, defaultCm: 9 },
+  fingers: { minCm: 2, maxCm: 5, defaultCm: 3 },
+  toes: { minCm: 2, maxCm: 5, defaultCm: 3 },
+  "placement-not-sure": { minCm: 2, maxCm: 24, defaultCm: 9 },
 };
 
 const styleTimeMultiplier: Partial<Record<StyleValue, number>> = {

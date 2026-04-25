@@ -80,7 +80,7 @@ function getCopy(locale: PublicLocale) {
       featuredFlowTitle: "Tasarımlardan birini seç, kalanını birlikte netleştirelim",
       featuredFlowDescription: "Seçtiğin tasarıma göre yaklaşık başlangıç fiyatını gösterelim.",
       areaScopeTitle: "Yaklaşık boyut ne kadar olsun?",
-      areaScopeDescription: "Sana en yakın seçeneği seç.",
+      areaScopeDescription: "",
       areaScopes: {
         standard_piece: "Küçük / orta",
         large_single_area: "Tek bölgede büyük",
@@ -108,7 +108,7 @@ function getCopy(locale: PublicLocale) {
         almost_full: "Neredeyse tamamını",
       },
       wideAreaTargetTitle: "En çok hangisine yakın?",
-      wideAreaTargetDescription: "Sana en yakın seçeneği seç.",
+      wideAreaTargetDescription: "",
       wideAreaTargets: {
         half_arm: "Kolun yarısı",
         full_arm: "Tüm kol",
@@ -198,6 +198,8 @@ function getCopy(locale: PublicLocale) {
       referenceSectionDescription: "Varsa ekleyebilirsin. Yoksa bu adımı geçebilirsin.",
       customerInfo: "Birkaç bilgi daha",
       allergy: "Alerjin var mı?",
+      allergyDetails: "Alerjini kısaca yaz",
+      allergyPlaceholder: "Varsa kısaca yazabilirsin",
       chronicCondition: "Kronik bir rahatsızlığın var mı?",
       chronicConditionDetails: "Rahatsızlığını kısaca yaz",
       chronicConditionPlaceholder: "Varsa kısaca yazabilirsin",
@@ -276,7 +278,7 @@ function getCopy(locale: PublicLocale) {
     featuredFlowTitle: "Pick one of the designs and let’s clarify the rest together",
     featuredFlowDescription: "We’ll show you an approximate starting price based on the design you choose.",
     areaScopeTitle: "About how much area?",
-    areaScopeDescription: "Choose the option that feels closest.",
+    areaScopeDescription: "",
     areaScopes: {
       standard_piece: "Small / medium",
       large_single_area: "Large in one area",
@@ -304,7 +306,7 @@ function getCopy(locale: PublicLocale) {
       almost_full: "Almost all of it",
     },
     wideAreaTargetTitle: "Which one is it closest to?",
-    wideAreaTargetDescription: "Choose the option that feels closest.",
+    wideAreaTargetDescription: "",
     wideAreaTargets: {
       half_arm: "Half arm",
       full_arm: "Full arm",
@@ -406,6 +408,8 @@ function getCopy(locale: PublicLocale) {
     noDates: "There are no selectable dates for this city right now.",
     customerInfo: "A few extra details",
     allergy: "Do you have any allergies?",
+    allergyDetails: "Briefly describe your allergy",
+    allergyPlaceholder: "Write a short note if needed",
     chronicCondition: "Do you have any chronic condition?",
     chronicConditionDetails: "Briefly describe your condition",
     chronicConditionPlaceholder: "You can briefly write it here",
@@ -593,13 +597,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
 
   const copy = getCopy(locale);
   const activeDesigns = artist.featuredDesigns.filter((design) => design.active);
+  const isUnlimitedDemoBooking = artist.profile.slug === "mystudio";
   const selectedDesign =
     draft.selectedDesignId
       ? activeDesigns.find((design) => design.id === draft.selectedDesignId) ?? null
       : null;
   const bookingCities = artist.funnelSettings.bookingCities;
   const selectedBookingCity = bookingCities.find((city) => city.cityName === draft.city) ?? null;
-  const availableDatesForSelectedCity = selectedBookingCity?.availableDates ?? [];
+  const availableDatesForSelectedCity = isUnlimitedDemoBooking
+    ? undefined
+    : selectedBookingCity?.availableDates ?? [];
   const requiresBookingSelection = bookingCities.length > 0;
   const introTitle =
     artist.pageTheme.customWelcomeTitle?.trim() ||
@@ -632,7 +639,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   ? draft.pricingSource === "featured_design"
                     ? copy.colorTitleFeatured
                     : copy.colorTitleCustom
-                  : currentFlowStep === "extras"
+      : currentFlowStep === "extras"
                     ? draft.pricingSource === "featured_design"
                       ? copy.featuredNoteTitle
                       : copy.referenceTitle
@@ -654,7 +661,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   ? draft.pricingSource === "featured_design"
                     ? copy.colorDescriptionFeatured
                     : copy.colorDescriptionCustom
-                  : currentFlowStep === "extras"
+      : currentFlowStep === "extras"
                     ? draft.pricingSource === "featured_design"
                       ? copy.featuredNoteDescription
                       : copy.referenceDescription
@@ -843,13 +850,19 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
         return;
       }
 
-      if (!availableDatesForSelectedCity.includes(draft.preferredStartDate)) {
+      if (
+        availableDatesForSelectedCity &&
+        !availableDatesForSelectedCity.includes(draft.preferredStartDate)
+      ) {
         setBookingError(copy.invalidBooking);
         return;
       }
 
       if (bookingMode === "range" && draft.preferredEndDate) {
-        if (!availableDatesForSelectedCity.includes(draft.preferredEndDate)) {
+        if (
+          availableDatesForSelectedCity &&
+          !availableDatesForSelectedCity.includes(draft.preferredEndDate)
+        ) {
           setBookingError(copy.invalidBooking);
           return;
         }
@@ -901,6 +914,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
       gender: draft.gender || undefined,
       ageRange: draft.ageRange || undefined,
       hasAllergy: draft.hasAllergy,
+      allergyDetails: draft.hasAllergy === true ? draft.allergyDetails || undefined : undefined,
       hasChronicCondition: draft.hasChronicCondition,
       chronicConditionDetails:
         draft.hasChronicCondition === true ? draft.chronicConditionDetails || undefined : undefined,
@@ -1002,7 +1016,18 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
             planType={artist.profile.planType}
           />
           <div className="space-y-3">
-            {artist.funnelSettings.introEyebrow?.trim() ? <Badge variant="accent">{artist.funnelSettings.introEyebrow}</Badge> : null}
+            {artist.funnelSettings.introEyebrow?.trim() ? (
+              <Badge
+                variant="accent"
+                style={{
+                  color: "var(--artist-chip-text)",
+                  backgroundColor: "var(--artist-chip-surface)",
+                  borderColor: "color-mix(in srgb, var(--artist-primary) 38%, transparent)",
+                }}
+              >
+                {artist.funnelSettings.introEyebrow}
+              </Badge>
+            ) : null}
             {introTitle ? (
               <h1 className="leading-tight sm:text-3xl" style={{ fontFamily: "var(--artist-heading-font)", color: "var(--artist-card-text)", fontSize: "clamp(1.58rem, calc(1.42rem * var(--artist-heading-scale)), 2.35rem)" }}>
                 {introTitle}
@@ -1257,9 +1282,11 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                 <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
                   {copy.wideAreaTargetTitle}
                 </p>
-                <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                  {copy.wideAreaTargetDescription}
-                </p>
+                {copy.wideAreaTargetDescription ? (
+                  <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                    {copy.wideAreaTargetDescription}
+                  </p>
+                ) : null}
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {wideAreaChoices.map((option) => {
                     const active = draft.wideAreaTarget === option.value;
@@ -1526,75 +1553,81 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                   </div>
                 ) : null}
 
-                <div
-                  className="rounded-[24px] border p-4"
-                  style={{
-                    borderColor: "var(--artist-border)",
-                    backgroundColor: "var(--artist-section-surface-strong)",
-                  }}
-                >
-                  <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
-                    {copy.referenceSectionTitle}
-                  </p>
-                  <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
-                    {copy.referenceSectionDescription}
-                  </p>
-                  <div className="mt-4 space-y-4">
-                    {draft.pricingSource === "custom_request" ? (
-                      <>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
-                            {isUploadingReference ? <LoaderCircle className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
-                            {copy.referenceUpload}
-                            <input
-                              type="file"
-                              accept="image/png,image/jpeg,image/webp,image/gif"
-                              className="hidden"
-                              onChange={(event) => {
-                                const file = event.target.files?.[0];
-                                if (file) {
-                                  void handleReferenceUpload(file);
-                                }
-                                event.currentTarget.value = "";
-                              }}
-                            />
-                          </label>
-                          {draft.referenceImage ? (
-                            <div className="size-14 overflow-hidden rounded-[16px] border border-white/10 bg-black/20">
-                              <img src={draft.referenceImage} alt="Reference" className="h-full w-full object-cover" />
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="space-y-2">
-                          <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
-                            {copy.referenceNote}
-                          </span>
-                          <Textarea
-                            style={{
-                              backgroundColor: "var(--artist-input-surface)",
-                              borderColor: "var(--artist-border)",
-                              color: "var(--artist-card-text)",
+                {draft.pricingSource === "custom_request" ? (
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "var(--artist-section-surface-strong)",
+                    }}
+                  >
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--artist-primary)" }}>
+                      {copy.referenceSectionTitle}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: "var(--artist-card-muted)" }}>
+                      {copy.referenceSectionDescription}
+                    </p>
+                    <div className="mt-4 space-y-4">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]">
+                          {isUploadingReference ? <LoaderCircle className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
+                          {copy.referenceUpload}
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              if (file) {
+                                void handleReferenceUpload(file);
+                              }
+                              event.currentTarget.value = "";
                             }}
-                            value={draft.referenceDescription}
-                            onChange={(event) => setField("referenceDescription", event.target.value)}
-                            placeholder={copy.referencePlaceholder}
                           />
-                        </div>
-                      </>
-                    ) : (
-                      <Textarea
-                        style={{
-                          backgroundColor: "var(--artist-input-surface)",
-                          borderColor: "var(--artist-border)",
-                          color: "var(--artist-card-text)",
-                        }}
-                        value={draft.notes}
-                        onChange={(event) => setField("notes", event.target.value)}
-                        placeholder={copy.featuredNotePlaceholder}
-                      />
-                    )}
+                        </label>
+                        {draft.referenceImage ? (
+                          <div className="size-14 overflow-hidden rounded-[16px] border border-white/10 bg-black/20">
+                            <img src={draft.referenceImage} alt="Reference" className="h-full w-full object-cover" />
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.referenceNote}
+                        </span>
+                        <Textarea
+                          style={{
+                            backgroundColor: "var(--artist-input-surface)",
+                            borderColor: "var(--artist-border)",
+                            color: "var(--artist-card-text)",
+                          }}
+                          value={draft.referenceDescription}
+                          onChange={(event) => setField("referenceDescription", event.target.value)}
+                          placeholder={copy.referencePlaceholder}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className="rounded-[24px] border p-4"
+                    style={{
+                      borderColor: "var(--artist-border)",
+                      backgroundColor: "var(--artist-section-surface-strong)",
+                    }}
+                  >
+                    <Textarea
+                      style={{
+                        backgroundColor: "var(--artist-input-surface)",
+                        borderColor: "var(--artist-border)",
+                        color: "var(--artist-card-text)",
+                      }}
+                      value={draft.notes}
+                      onChange={(event) => setField("notes", event.target.value)}
+                      placeholder={copy.featuredNotePlaceholder}
+                    />
+                  </div>
+                )}
 
                 <div
                   className="rounded-[24px] border p-4"
@@ -1639,12 +1672,16 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           draft.hasAllergy === null ? "" : draft.hasAllergy ? "yes" : "no"
                         }
                         onChange={(event) =>
-                          setField(
-                            "hasAllergy",
-                            event.target.value === ""
-                              ? null
-                              : event.target.value === "yes",
-                          )
+                          {
+                            const nextValue =
+                              event.target.value === ""
+                                ? null
+                                : event.target.value === "yes";
+                            setField("hasAllergy", nextValue);
+                            if (nextValue !== true) {
+                              setField("allergyDetails", "");
+                            }
+                          }
                         }
                       >
                         <option value="">{copy.genderPlaceholder}</option>
@@ -1652,6 +1689,18 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                         <option value="no">{copy.no}</option>
                       </NativeSelect>
                     </div>
+                    {draft.hasAllergy ? (
+                      <div className="space-y-2 sm:col-span-2">
+                        <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
+                          {copy.allergyDetails}
+                        </span>
+                        <Input
+                          value={draft.allergyDetails}
+                          onChange={(event) => setField("allergyDetails", event.target.value)}
+                          placeholder={copy.allergyPlaceholder}
+                        />
+                      </div>
+                    ) : null}
                     <div className="space-y-2">
                       <span className="text-sm font-medium" style={{ color: "var(--artist-card-text)" }}>
                         {copy.chronicCondition}
@@ -1763,7 +1812,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                             <DateCalendarPopover
                               locale={locale}
                               mode="single"
-                              disabled={!draft.city || availableDatesForSelectedCity.length === 0}
+                              disabled={
+                                !draft.city || (!isUnlimitedDemoBooking && (availableDatesForSelectedCity?.length ?? 0) === 0)
+                              }
                               triggerLabel={copy.timingTitle}
                               emptyLabel={copy.startDate}
                               selectedDate={draft.preferredStartDate}
@@ -1784,7 +1835,9 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                               <DateCalendarPopover
                                 locale={locale}
                                 mode="single"
-                                disabled={!draft.city || availableDatesForSelectedCity.length === 0}
+                                disabled={
+                                  !draft.city || (!isUnlimitedDemoBooking && (availableDatesForSelectedCity?.length ?? 0) === 0)
+                                }
                                 triggerLabel={copy.timingTitle}
                                 emptyLabel={copy.startDate}
                                 selectedDate={draft.preferredStartDate}
@@ -1805,11 +1858,13 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                               <DateCalendarPopover
                                 locale={locale}
                                 mode="single"
-                                disabled={!draft.city || !draft.preferredStartDate || availableDatesForSelectedCity.length === 0}
+                                disabled={!draft.city || !draft.preferredStartDate || (!isUnlimitedDemoBooking && (availableDatesForSelectedCity?.length ?? 0) === 0)}
                                 triggerLabel={copy.timingTitle}
                                 emptyLabel={copy.endDate}
                                 selectedDate={draft.preferredEndDate}
-                                availableDates={availableDatesForSelectedCity.filter((date) => date >= draft.preferredStartDate)}
+                                availableDates={
+                                  availableDatesForSelectedCity?.filter((date) => date >= draft.preferredStartDate)
+                                }
                                 onSelectDate={(date) => {
                                   setField("preferredEndDate", date);
                                   setBookingError(null);
@@ -1819,7 +1874,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                           </div>
                         )}
                       </div>
-                      {draft.city && availableDatesForSelectedCity.length === 0 ? (
+                      {draft.city && !isUnlimitedDemoBooking && (availableDatesForSelectedCity?.length ?? 0) === 0 ? (
                         <p className="mt-3 text-sm" style={{ color: "var(--artist-card-muted)" }}>
                           {copy.noDates}
                         </p>

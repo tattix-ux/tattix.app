@@ -41,7 +41,15 @@ export function AvatarTile({
       )}
       {planType ? (
         <div
-          className={`absolute ${badgePosition} inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/85 text-white shadow-lg ${badgeSize}`}
+          className={`absolute ${badgePosition} inline-flex items-center gap-1 rounded-full border shadow-lg ${badgeSize}`}
+          style={{
+            borderColor: "color-mix(in srgb, var(--artist-primary) 44%, transparent)",
+            background:
+              planType === "pro"
+                ? "linear-gradient(180deg, color-mix(in srgb, var(--artist-primary) 34%, rgba(9,9,11,0.95)), rgba(9,9,11,0.94))"
+                : "linear-gradient(180deg, color-mix(in srgb, var(--artist-secondary) 28%, rgba(9,9,11,0.95)), rgba(9,9,11,0.94))",
+            color: planType === "pro" ? "var(--artist-chip-text)" : "var(--artist-card-text)",
+          }}
         >
           {planType === "pro" ? (
             <Crown className="size-3 text-[var(--accent-soft)]" />
