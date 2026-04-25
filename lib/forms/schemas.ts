@@ -531,55 +531,6 @@ export const featuredDesignSchema = z
     }
 
     if (
-      (values.referenceDetailLevel === null || values.referenceDetailLevel === undefined) &&
-      values.referencePriceMin !== null &&
-      values.referencePriceMin !== undefined
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["referenceDetailLevel"],
-        message: "Referans detay seviyesini seç.",
-      });
-    }
-
-    if (
-      (values.pricingMode === null || values.pricingMode === undefined) &&
-      values.referencePriceMin !== null &&
-      values.referencePriceMin !== undefined
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["pricingMode"],
-        message: "Fiyat davranışını seç.",
-      });
-    }
-
-    if (
-      (values.referenceColorMode === null || values.referenceColorMode === undefined) &&
-      values.referencePriceMin !== null &&
-      values.referencePriceMin !== undefined
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["referenceColorMode"],
-        message: "Referans renk yapısını seç.",
-      });
-    }
-
-    if (
-      (values.colorImpactPreference === null ||
-        values.colorImpactPreference === undefined) &&
-      values.referencePriceMin !== null &&
-      values.referencePriceMin !== undefined
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["colorImpactPreference"],
-        message: "Renk etkisini seç.",
-      });
-    }
-
-    if (
       values.referencePriceMin !== null &&
       values.referencePriceMin !== undefined &&
       values.referencePriceMax !== null &&
@@ -595,7 +546,7 @@ export const featuredDesignSchema = z
   });
 
 export const featuredDesignsSchema = z.object({
-  designs: z.array(featuredDesignSchema).min(1),
+  designs: z.array(featuredDesignSchema),
 });
 
 export const submissionSchema = z.object({
@@ -617,6 +568,7 @@ export const submissionSchema = z.object({
   gender: z.enum(["female", "male", "prefer_not_to_say"]).nullable().optional(),
   ageRange: z.enum(["18-24", "25-34", "35-44", "45+"]).nullable().optional(),
   hasAllergy: z.boolean().nullable().optional(),
+  allergyDetails: z.string().max(280).optional(),
   hasChronicCondition: z.boolean().nullable().optional(),
   chronicConditionDetails: z.string().max(280).optional(),
   workStyle: z.enum(workStyleValues as [string, ...string[]]).nullable().optional(),

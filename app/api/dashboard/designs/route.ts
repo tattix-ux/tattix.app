@@ -61,30 +61,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: deleteError.message }, { status: 400 });
   }
 
-  const { error: insertError } = await supabase.from("artist_featured_designs").insert(
-    parsed.data.designs.map((design, index) => ({
-      id: design.id ?? randomUUID(),
-      artist_id: artist.id,
-      category: design.category,
-      title: design.title,
-      short_description: design.shortDescription,
-      image_url: design.imageUrl || null,
-      image_path: design.imagePath || null,
-      price_note: design.priceNote || null,
-      reference_detail_level: design.referenceDetailLevel || null,
-      reference_price_min: design.referencePriceMin ?? null,
-      reference_price_max: design.referencePriceMax ?? null,
-      reference_size_cm: design.referenceSizeCm ?? null,
-      reference_color_mode: design.referenceColorMode ?? null,
-      pricing_mode: design.pricingMode ?? null,
-      color_impact_preference: design.colorImpactPreference ?? null,
-      active: design.active ?? true,
-      sort_order: index,
-    })),
-  );
+  if (parsed.data.designs.length > 0) {
+    const { error: insertError } = await supabase.from("artist_featured_designs").insert(
+      parsed.data.designs.map((design, index) => ({
+        id: design.id ?? randomUUID(),
+        artist_id: artist.id,
+        category: design.category,
+        title: design.title,
+        short_description: design.shortDescription,
+        image_url: design.imageUrl || null,
+        image_path: design.imagePath || null,
+        price_note: design.priceNote || null,
+        reference_detail_level: design.referenceDetailLevel || null,
+        reference_price_min: design.referencePriceMin ?? null,
+        reference_price_max: design.referencePriceMax ?? null,
+        reference_size_cm: design.referenceSizeCm ?? null,
+        reference_color_mode: design.referenceColorMode ?? null,
+        pricing_mode: design.pricingMode ?? null,
+        color_impact_preference: design.colorImpactPreference ?? null,
+        active: design.active ?? true,
+        sort_order: index,
+      })),
+    );
 
-  if (insertError) {
-    return NextResponse.json({ message: insertError.message }, { status: 400 });
+    if (insertError) {
+      return NextResponse.json({ message: insertError.message }, { status: 400 });
+    }
   }
 
   revalidatePath("/dashboard/designs");

@@ -273,13 +273,13 @@ function createEmptyDesign(sortOrder: number): DesignDraft {
     imageUrl: "",
     imagePath: "",
     priceNote: "",
-    referenceDetailLevel: null,
+    referenceDetailLevel: "standard",
     referencePriceMin: null,
     referencePriceMax: null,
     referenceSizeCm: null,
-    referenceColorMode: null,
-    pricingMode: null,
-    colorImpactPreference: null,
+    referenceColorMode: "black-grey",
+    pricingMode: "size_adjusted",
+    colorImpactPreference: "low",
     active: false,
     sortOrder,
   };
@@ -657,29 +657,12 @@ export function FeaturedDesignsForm({
   }
 
   function confirmRemoval() {
-    if (!pendingRemoval) {
-      return;
-    }
-
-    const nextDesigns = getCurrentDesigns().filter((design) => design.id !== pendingRemoval.designId);
-    form.reset({
-      designs: nextDesigns.map((design, index) => ({
-        ...design,
-        sortOrder: index,
-      })),
-    });
-
-    if (editingSnapshotRef.current?.designId === pendingRemoval.designId) {
-      resetEditorState();
-    }
-
-    setPendingRemoval(null);
-    form.clearErrors("root");
+    void persistRemoval();
   }
 
-  async function onSubmit(_values: FeaturedDesignValues) {
+  async function persistDesignsSnapshot(nextDesigns: DesignDraft[]) {
     const normalizedValues: FeaturedDesignValues = {
-      designs: getCurrentDesigns().map((design, index) => getNormalizedDesignForSave(design, index)),
+      designs: nextDesigns.map((design, index) => getNormalizedDesignForSave(design, index)),
     };
 
     const response = await fetch("/api/dashboard/designs", {
@@ -693,12 +676,42 @@ export function FeaturedDesignsForm({
 
     if (!response.ok) {
       form.setError("root", { message: payload?.message ?? labels.saveFailed });
-      return;
+      return null;
     }
 
     form.reset(normalizedValues);
     form.clearErrors("root");
     setFlashMessage(labels.saved);
+    router.refresh();
+    return normalizedValues;
+  }
+
+  async function persistRemoval() {
+    if (!pendingRemoval) {
+      return;
+    }
+
+    const nextDesigns = getCurrentDesigns().filter((design) => design.id !== pendingRemoval.designId);
+    const saved = await persistDesignsSnapshot(nextDesigns);
+
+    if (!saved) {
+      return;
+    }
+
+    if (editingSnapshotRef.current?.designId === pendingRemoval.designId) {
+      resetEditorState();
+    }
+
+    setPendingRemoval(null);
+    form.clearErrors("root");
+  }
+
+  async function onSubmit(_values: FeaturedDesignValues) {
+    const normalizedValues = await persistDesignsSnapshot(getCurrentDesigns());
+
+    if (!normalizedValues) {
+      return;
+    }
 
     if (editingDesignId) {
       const savedDesign = normalizedValues.designs.find((design) => design.id === editingDesignId);
@@ -713,7 +726,6 @@ export function FeaturedDesignsForm({
       }
     }
 
-    router.refresh();
   }
 
   const statusMessage = form.formState.errors.root?.message ?? null;
