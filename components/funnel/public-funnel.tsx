@@ -188,7 +188,7 @@ function getCopy(locale: PublicLocale) {
       referenceNote: "Kısa not",
       referencePlaceholder: "Aklındaki fikir, önemli detaylar veya istediğin değişiklikler",
       featuredNoteTitle: "Birkaç bilgi daha ekleyelim",
-      featuredNoteDescription: "İstersen aklındaki tasarımı yükleyebilir, kısa bir not bırakabilir ve randevu bilgilerini buradan seçebilirsin.",
+      featuredNoteDescription: "Randevu bilgilerini ve birkaç temel detayı buradan seçebilirsin.",
       featuredNotePlaceholder: "Randevu, yerleşim veya önemli bir not yazabilirsin",
       coverUpTitle: "Mevcut bir dövmenin üstüne mi yapılacak?",
       coverUpDescription: "Bu bilgi fiyatı etkileyebilir.",
@@ -218,7 +218,7 @@ function getCopy(locale: PublicLocale) {
       endDate: "Bitiş tarihi",
       noDates: "Bu şehir için seçilebilir tarih görünmüyor.",
       gender: "Cinsiyet",
-      genderPlaceholder: "Belirtmek istemiyorum",
+      genderPlaceholder: "Seç",
       ageRange: "Yaş aralığı",
       ageRangePlaceholder: "Belirtmek istemiyorum",
       genders: {
@@ -385,8 +385,8 @@ function getCopy(locale: PublicLocale) {
     referenceUpload: "Add reference image",
     referenceNote: "Short note",
     referencePlaceholder: "The idea you have in mind, important details, or any change you want",
-    featuredNoteTitle: "Would you like to add a short note?",
-    featuredNoteDescription: "You can write it if you want. If not, you can skip it.",
+    featuredNoteTitle: "A few more details",
+    featuredNoteDescription: "You can choose your booking info and a few basic details here.",
     featuredNotePlaceholder: "You can write a note about placement, timing, or anything important",
     coverUpTitle: "Will it go over an existing tattoo?",
     coverUpDescription: "This can affect the estimate.",
@@ -416,7 +416,7 @@ function getCopy(locale: PublicLocale) {
     yes: "Yes",
     no: "No",
     gender: "Gender",
-    genderPlaceholder: "If you want",
+    genderPlaceholder: "Select",
     ageRange: "Age range",
     ageRangePlaceholder: "If you want",
     genders: {
@@ -1608,26 +1608,7 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div
-                    className="rounded-[24px] border p-4"
-                    style={{
-                      borderColor: "var(--artist-border)",
-                      backgroundColor: "var(--artist-section-surface-strong)",
-                    }}
-                  >
-                    <Textarea
-                      style={{
-                        backgroundColor: "var(--artist-input-surface)",
-                        borderColor: "var(--artist-border)",
-                        color: "var(--artist-card-text)",
-                      }}
-                      value={draft.notes}
-                      onChange={(event) => setField("notes", event.target.value)}
-                      placeholder={copy.featuredNotePlaceholder}
-                    />
-                  </div>
-                )}
+                ) : null}
 
                 <div
                   className="rounded-[24px] border p-4"
