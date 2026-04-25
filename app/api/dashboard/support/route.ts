@@ -6,7 +6,7 @@ import { getAuthenticatedArtist } from "@/lib/data/dashboard";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { mapSupportMessage, sendAdminSupportNotification } from "@/lib/support";
+import { mapSupportMessage, sendAdminInboxNotification, sendAdminSupportNotification } from "@/lib/support";
 
 const payloadSchema = z.object({
   message: z.string().trim().min(4).max(1200),
@@ -53,7 +53,15 @@ export async function POST(request: Request) {
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/messages");
-  await sendAdminSupportNotification(mapSupportMessage(data as Record<string, unknown>));
+  const mappedMessage = mapSupportMessage(data as Record<string, unknown>);
+  await Promise.all([
+    sendAdminSupportNotification(mappedMessage),
+    sendAdminInboxNotification({
+      title: "Yeni destek mesajı",
+      body: `${artist.artistName} yeni bir destek mesajı gönderdi.`,
+      senderLabel: artist.artistName,
+    }),
+  ]);
 
   return NextResponse.json({ message: "Support message sent." });
 }

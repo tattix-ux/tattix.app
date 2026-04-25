@@ -114,3 +114,105 @@ export async function sendAdminSupportNotification(message: SupportMessage) {
     }),
   }).catch(() => undefined);
 }
+
+function getAdminEmailList() {
+  return (process.env.TATBOT_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export async function sendAdminInboxNotification({
+  title,
+  body,
+  senderLabel,
+}: {
+  title: string;
+  body: string;
+  senderLabel: string;
+}) {
+  const adminEmails = getAdminEmailList();
+
+  if (adminEmails.length === 0) {
+    return;
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data: usersData, error: usersError } = await admin.auth.admin.listUsers({
+    page: 1,
+    perPage: 200,
+  });
+
+  if (usersError) {
+    return;
+  }
+
+  const adminUserIds = (usersData?.users ?? [])
+    .filter((user) => adminEmails.includes(user.email?.trim().toLowerCase() ?? ""))
+    .map((user) => user.id);
+
+  if (adminUserIds.length === 0) {
+    return;
+  }
+
+  const { data: artistRows, error: artistError } = await admin
+    .from("artists")
+    .select("id")
+    .in("user_id", adminUserIds);
+
+  if (artistError || !artistRows?.length) {
+    return;
+  }
+
+  await admin
+    .from("artist_notifications")
+    .insert(
+      artistRows.map((artist) => ({
+        artist_id: String((artist as Record<string, unknown>).id),
+        title,
+        body,
+        sender_label: senderLabel,
+      })),
+    )
+    .then(() => undefined, () => undefined);
+}
+
+export async function sendAdminProAccessEmail({
+  artistName,
+  accountEmail,
+  slug,
+  createdAt,
+}: {
+  artistName: string;
+  accountEmail: string;
+  slug: string;
+  createdAt: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    return;
+  }
+
+  const recipient = process.env.SUPPORT_INBOX_EMAIL ?? "gizemoderr@gmail.com";
+  const from = process.env.RESEND_FROM_EMAIL ?? "Tattix <onboarding@resend.dev>";
+
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [recipient],
+      subject: `New Pro access request - ${artistName || accountEmail}`,
+      text: [
+        `Artist name: ${artistName}`,
+        `Account email: ${accountEmail}`,
+        `Artist slug: ${slug}`,
+        `Requested at: ${createdAt}`,
+      ].join("\n"),
+    }),
+  }).catch(() => undefined);
+}
