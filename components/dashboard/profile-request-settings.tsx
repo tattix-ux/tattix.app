@@ -363,6 +363,13 @@ export function ProfileRequestSettings({
     }
 
     const frame = window.requestAnimationFrame(() => {
+      const lastField = bookingCitiesFieldArray.fields.at(-1);
+      if (lastField) {
+        setExpandedCities((current) => ({
+          ...current,
+          [lastField.id]: true,
+        }));
+      }
       const inputs = Array.from(
         document.querySelectorAll<HTMLInputElement>("[data-city-input-key]"),
       );
@@ -630,61 +637,64 @@ export function ProfileRequestSettings({
               {bookingCitiesFieldArray.fields.map((field, index) => {
                 const city = bookingCities[index];
                 const availableDates = city?.availableDates ?? [];
-                const isExpanded = expandedCities[field.id] ?? true;
+                const isExpanded = expandedCities[field.id] ?? false;
+                const cityLabel = city?.cityName?.trim() || copy.cityPlaceholder;
 
                 return (
                   <div key={field.id} className="rounded-[16px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] p-2.5 xl:p-3">
                     <div className="flex flex-col gap-2.5">
-                      <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between">
-                        <div className="min-w-0 flex-1 space-y-2">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                            <Input
-                              data-city-input-key={field.id}
-                              value={city?.cityName ?? ""}
-                              onChange={(event) =>
-                                form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
-                                  shouldDirty: true,
-                                  shouldValidate: true,
-                                })
-                              }
-                              placeholder={copy.cityPlaceholder}
-                              className="h-8 text-[13px]"
-                            />
-                            <Badge variant="accent" className="w-fit border-[var(--border-strong)] bg-[rgba(214,177,122,0.12)] px-2 py-0.5 text-[10px] text-[var(--text-primary)]">
-                              {availableDates.length} {copy.selectedDays}
-                            </Badge>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className={cn(
+                            "flex min-w-0 flex-1 items-center justify-between gap-2 rounded-[14px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.02)] px-3 py-2 text-left transition hover:border-[var(--border-strong)] hover:bg-white/[0.035]",
+                            isExpanded && "border-[var(--border-strong)] bg-white/[0.04]",
+                          )}
+                          onClick={() =>
+                            setExpandedCities((current) => ({
+                              ...current,
+                              [field.id]: !isExpanded,
+                            }))
+                          }
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-[13px] font-medium text-white">{cityLabel}</p>
+                            <p className="mt-0.5 text-[10.5px] text-[var(--foreground-muted)]">
+                              {availableDates.length === 0
+                                ? copy.noDates
+                                : `${availableDates.length} ${copy.selectedDays}`}
+                            </p>
                           </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className={cn("rounded-full", isExpanded && "border-[var(--border-strong)] bg-white/[0.04]")}
-                            onClick={() =>
-                              setExpandedCities((current) => ({
-                                ...current,
-                                [field.id]: !isExpanded,
-                              }))
-                            }
-                          >
-                            <ChevronDown className={cn("size-3.5 transition", isExpanded && "rotate-180")} />
-                            {isExpanded ? copy.closeDays : copy.openDays}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => bookingCitiesFieldArray.remove(index)}
-                          >
-                            <Trash2 className="size-3.5" />
-                            {copy.remove}
-                          </Button>
-                        </div>
+                          <ChevronDown className={cn("size-3.5 shrink-0 text-[var(--foreground-muted)] transition", isExpanded && "rotate-180")} />
+                        </button>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2.5 text-[12px]"
+                          onClick={() => bookingCitiesFieldArray.remove(index)}
+                        >
+                          <Trash2 className="size-3.5" />
+                          {copy.remove}
+                        </Button>
                       </div>
 
                       {isExpanded ? (
-                        <div className="mt-2 space-y-2 border-t border-[var(--border-soft)] pt-2.5">
+                        <div className="space-y-2 border-t border-[var(--border-soft)] pt-2.5">
+                          <Input
+                            data-city-input-key={field.id}
+                            value={city?.cityName ?? ""}
+                            onChange={(event) =>
+                              form.setValue(`bookingCities.${index}.cityName`, event.target.value, {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              })
+                            }
+                            placeholder={copy.cityPlaceholder}
+                            className="h-8 text-[13px]"
+                          />
+
                           <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between">
                             <div className="space-y-0.5">
                               <p className="text-[12px] font-medium text-white">{copy.dates}</p>
@@ -700,12 +710,8 @@ export function ProfileRequestSettings({
                               onToggleDate={(date) => toggleBookingDate(index, date)}
                             />
                           </div>
-
-                          {availableDates.length === 0 ? (
-                            <p className="text-[11.5px] text-[var(--foreground-muted)]">{copy.noDates}</p>
-                          ) : null}
                         </div>
-                    ) : null}
+                      ) : null}
                     </div>
                   </div>
                 );

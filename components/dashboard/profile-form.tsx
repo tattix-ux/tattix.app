@@ -369,9 +369,9 @@ export function ProfileForm({
                 </Field>
                 <Field
                   label={
-                    <span className="inline-flex flex-wrap items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1.5">
                       <span>{copy.upperLabel}</span>
-                      <span className="text-[10.5px] font-normal text-[var(--text-muted)] xl:text-[10px]">
+                      <span className="whitespace-nowrap text-[10.5px] font-normal text-[var(--text-muted)] xl:text-[10px]">
                         {copy.upperLabelDescription}
                       </span>
                     </span>
@@ -400,8 +400,10 @@ export function ProfileForm({
 
       <div
         className={cn(
-          "space-y-2",
-          layout === "split" && secondaryPanel && "grid min-w-0 gap-2 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start lg:space-y-0",
+          "space-y-5",
+          layout === "split" &&
+            secondaryPanel &&
+            "grid min-w-0 gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start lg:space-y-0 lg:pt-4",
         )}
       >
         <div>
