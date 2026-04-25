@@ -533,6 +533,7 @@ export type SubmissionDraft = {
   gender: CustomerGenderValue | "";
   ageRange: CustomerAgeRangeValue | "";
   hasAllergy: boolean | null;
+  allergyDetails: string;
   hasChronicCondition: boolean | null;
   chronicConditionDetails: string;
   workStyle: WorkStyleValue | "";
@@ -621,6 +622,7 @@ export type SubmissionRequest = {
   gender?: CustomerGenderValue | null;
   ageRange?: CustomerAgeRangeValue | null;
   hasAllergy?: boolean | null;
+  allergyDetails?: string | null;
   hasChronicCondition?: boolean | null;
   chronicConditionDetails?: string | null;
   workStyle?: WorkStyleValue | null;

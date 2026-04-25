@@ -36,6 +36,7 @@ const initialDraft: SubmissionDraft = {
   gender: "",
   ageRange: "",
   hasAllergy: null,
+  allergyDetails: "",
   hasChronicCondition: null,
   chronicConditionDetails: "",
   workStyle: "",

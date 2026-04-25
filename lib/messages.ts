@@ -221,6 +221,12 @@ export function buildSubmissionMessage(
     lines.push(`${locale === "tr" ? "Alerji" : "Allergy"}: ${allergyLabel}`);
   }
 
+  if (submission.hasAllergy && submission.allergyDetails?.trim()) {
+    lines.push(
+      `${locale === "tr" ? "Alerji detayı" : "Allergy details"}: ${submission.allergyDetails.trim()}`,
+    );
+  }
+
   const chronicConditionLabel = getBooleanLabel(submission.hasChronicCondition, locale);
   if (chronicConditionLabel) {
     lines.push(`${locale === "tr" ? "Kronik rahatsızlık" : "Chronic condition"}: ${chronicConditionLabel}`);

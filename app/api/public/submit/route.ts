@@ -110,6 +110,11 @@ export async function POST(request: Request) {
       : locale === "tr"
         ? `Alerji: ${submission.hasAllergy ? "Evet" : "Hayır"}`
         : `Allergy: ${submission.hasAllergy ? "Yes" : "No"}`,
+    submission.hasAllergy && submission.allergyDetails?.trim()
+      ? locale === "tr"
+        ? `Alerji detayı: ${submission.allergyDetails.trim()}`
+        : `Allergy details: ${submission.allergyDetails.trim()}`
+      : null,
     submission.hasChronicCondition === null || submission.hasChronicCondition === undefined
       ? null
       : locale === "tr"
