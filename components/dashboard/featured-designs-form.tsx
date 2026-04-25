@@ -17,7 +17,6 @@ import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
-import { BrandMonogram } from "@/components/shared/logo";
 import { Field } from "@/components/shared/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -280,7 +279,7 @@ function createEmptyDesign(sortOrder: number): DesignDraft {
     referenceColorMode: "black-grey",
     pricingMode: "size_adjusted",
     colorImpactPreference: "low",
-    active: false,
+    active: true,
     sortOrder,
   };
 }
@@ -301,7 +300,7 @@ function normalizeDesign(design: PartialDesignDraft, sortOrder: number): DesignD
     referenceColorMode: design.referenceColorMode ?? "black-grey",
     pricingMode: "size_adjusted",
     colorImpactPreference: "low",
-    active: design.active ?? false,
+    active: design.active ?? true,
     sortOrder,
   };
 }
@@ -313,7 +312,7 @@ function cloneDesign(design: PartialDesignDraft, sortOrder: number): DesignDraft
     ...normalized,
     id: crypto.randomUUID(),
     title: normalized.title ? `${normalized.title} kopya` : "",
-    active: false,
+    active: true,
     sortOrder,
   };
 }
@@ -394,11 +393,6 @@ export function FeaturedDesignsForm({
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval>(null);
   const [focusTitleOnOpen, setFocusTitleOnOpen] = useState(false);
-  const [quickAddTitle, setQuickAddTitle] = useState("");
-  const [quickAddPriceMin, setQuickAddPriceMin] = useState("");
-  const [quickAddPriceMax, setQuickAddPriceMax] = useState("");
-  const [quickAddImageFile, setQuickAddImageFile] = useState<File | null>(null);
-  const [quickAddImageName, setQuickAddImageName] = useState<string | null>(null);
   const editingSnapshotRef = useRef<EditingSnapshot | null>(null);
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -422,14 +416,6 @@ export function FeaturedDesignsForm({
       }
       return left.index - right.index;
     });
-
-  function resetQuickAdd() {
-    setQuickAddTitle("");
-    setQuickAddPriceMin("");
-    setQuickAddPriceMax("");
-    setQuickAddImageFile(null);
-    setQuickAddImageName(null);
-  }
 
   function getCurrentDesigns() {
     return (form.getValues("designs") ?? []).map((design, index) =>
@@ -724,12 +710,12 @@ export function FeaturedDesignsForm({
           isNew: false,
         };
       }
-    }
 
+      resetEditorState();
+    }
   }
 
   const statusMessage = form.formState.errors.root?.message ?? null;
-  const quickAddReady = Boolean(quickAddTitle.trim() || quickAddPriceMin.trim() || quickAddPriceMax.trim() || quickAddImageFile);
 
   return (
     <form
@@ -757,107 +743,16 @@ export function FeaturedDesignsForm({
           {flashMessage}
         </div>
       ) : null}
-      <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_94%,black_6%)_100%)] shadow-[0_18px_46px_rgba(0,0,0,0.16)]">
-        <CardContent className="relative overflow-hidden px-3.5 pb-3.5 pt-5 sm:px-4 sm:pb-4 sm:pt-5.5">
-          <BrandMonogram className="left-auto right-[-4%] top-[-16%] h-[180px] w-[180px]" opacity={0.06} />
-          <div className="relative space-y-2.5">
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-[34rem] space-y-1.5 pt-1.5">
-                <p className="text-[11.5px] leading-[1.45] text-[var(--text-secondary)]">{labels.introHint}</p>
-                {labels.introSteps.length > 0 ? (
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--text-dim)]">
-                    {labels.introSteps.join(" • ")}
-                  </p>
-                ) : null}
-                {statusMessage && !editingDesign ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
-              </div>
-              {quickAddImageName ? (
-                <div className="rounded-full border border-[var(--border-soft)] bg-white/[0.03] px-2.5 py-1 text-[11px] text-[var(--text-secondary)]">
-                  {quickAddImageName}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="grid gap-2 xl:grid-cols-[minmax(152px,0.78fr)_minmax(0,1.18fr)_minmax(0,0.98fr)_auto] xl:items-end">
-            <Field label={labels.image} className="min-w-0 justify-end">
-              <label className="flex h-8 cursor-pointer items-center justify-center gap-2 rounded-[12px] border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-3 text-[11.5px] text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.05)]">
-                <Upload className="size-4" />
-                {quickAddImageName ? labels.replaceImage : labels.uploadImage}
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  className="hidden"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      setQuickAddImageFile(file);
-                      setQuickAddImageName(file.name);
-                    }
-                    event.currentTarget.value = "";
-                  }}
-                />
-              </label>
-            </Field>
-
-            <Field label={labels.titleLabel} className="min-w-0">
-              <Input
-                value={quickAddTitle}
-                onChange={(event) => setQuickAddTitle(event.target.value)}
-                className="h-8 rounded-[12px] bg-white/[0.03] text-[12.5px]"
-                placeholder={labels.titlePlaceholder}
-              />
-            </Field>
-
-            <Field label={labels.priceLabel} description={labels.priceHelp} className="min-w-0 justify-end">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Input
-                  type="number"
-                  className="h-8 rounded-[12px] bg-white/[0.03] text-[12.5px]"
-                  placeholder="6000"
-                  value={quickAddPriceMin}
-                  onChange={(event) => setQuickAddPriceMin(event.target.value)}
-                />
-                <Input
-                  type="number"
-                  className="h-8 rounded-[12px] bg-white/[0.03] text-[12.5px]"
-                  placeholder="8500"
-                  value={quickAddPriceMax}
-                  onChange={(event) => setQuickAddPriceMax(event.target.value)}
-                />
-              </div>
-            </Field>
-
-            <div className="flex items-center gap-1.5 xl:pb-[1px]">
-              {quickAddImageName ? (
-                <Button type="button" variant="ghost" size="sm" onClick={resetQuickAdd}>
-                  <X className="size-4" />
-                </Button>
-              ) : null}
-              <Button
-                type="button"
-                className="h-8 px-3 text-[12px]"
-                onClick={() => {
-                  addDesign(
-                    undefined,
-                    {
-                      title: quickAddTitle,
-                      referencePriceMin: quickAddPriceMin ? Number(quickAddPriceMin) : null,
-                      referencePriceMax: quickAddPriceMax ? Number(quickAddPriceMax) : null,
-                    },
-                    quickAddImageFile,
-                  );
-                  resetQuickAdd();
-                }}
-                disabled={!quickAddReady}
-              >
-                <Plus className="size-4" />
-                {labels.addDesign}
-              </Button>
-            </div>
-          </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-start justify-between gap-3">
+        <div className="max-w-[34rem] space-y-1.5 pt-1">
+          <p className="text-[11.5px] leading-[1.5] text-[var(--text-secondary)]">{labels.introHint}</p>
+          {statusMessage && !editingDesign ? <p className="text-sm text-red-300">{statusMessage}</p> : null}
+        </div>
+        <Button type="button" className="h-8 px-3 text-[12px]" onClick={() => addDesign()}>
+          <Plus className="size-4" />
+          {labels.addDesign}
+        </Button>
+      </div>
 
       {designsFieldArray.fields.length === 0 ? (
         <Card className="surface-border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_93%,white_3%)] shadow-[0_18px_42px_rgba(0,0,0,0.14)]">
@@ -1263,8 +1158,8 @@ export function FeaturedDesignsForm({
       {pendingRemoval ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
           <Card className="surface-border w-full max-w-md border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,black_6%)] shadow-[0_24px_64px_rgba(0,0,0,0.32)]">
-            <CardContent className="space-y-5 p-5">
-              <div className="space-y-2">
+            <CardContent className="space-y-5 p-5 pt-6">
+              <div className="space-y-2.5">
                 <h3 className="text-lg font-semibold tracking-[-0.02em] text-white">{labels.removeConfirm}</h3>
                 <p className="text-sm leading-6 text-[color:color-mix(in_srgb,var(--foreground-muted)_82%,white_10%)]">
                   {labels.removeDescription}
