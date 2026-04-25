@@ -59,7 +59,7 @@ function SurfaceBlock({
   return (
     <div
       className={cn(
-        "rounded-[20px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] xl:rounded-[18px]",
+        "rounded-[18px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_92%,black_8%)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] xl:rounded-[16px]",
         className,
       )}
     >
@@ -82,7 +82,7 @@ function StepHeaderButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-[13px] border px-2.5 py-1.5 text-left text-[10.5px] leading-[1.35] transition",
+        "rounded-[12px] border px-2.5 py-1.5 text-left text-[10px] leading-[1.3] transition",
         active
           ? "border-[var(--border-strong)] bg-[linear-gradient(180deg,rgba(214,177,122,0.18),rgba(155,110,69,0.10))] text-[var(--text-primary)] shadow-[0_12px_28px_rgba(0,0,0,0.18)]"
           : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.02)] text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:bg-[rgba(255,255,255,0.035)] hover:text-[var(--text-primary)]",
@@ -104,10 +104,10 @@ function AnchorInputCard({
 }) {
   return (
     <SurfaceBlock className="p-3 xl:p-2.5">
-      <div className="space-y-2">
-        <div className="space-y-1">
-          <p className="text-[13px] font-semibold text-[var(--text-primary)]">{title}</p>
-          {description ? <p className="text-[11px] leading-[1.35] text-[var(--text-secondary)]">{description}</p> : null}
+      <div className="space-y-1.5">
+        <div className="space-y-0.5">
+          <p className="text-[12px] font-semibold text-[var(--text-primary)]">{title}</p>
+          {description ? <p className="text-[10.5px] leading-[1.3] text-[var(--text-secondary)]">{description}</p> : null}
         </div>
         {children}
       </div>
@@ -121,7 +121,7 @@ function getText(locale: PublicLocale) {
       phases: [
         {
           navLabel: "1. Temel fiyat ayarları",
-          title: "Temel fiyatarlarını yapalım",
+          title: "Temel fiyat ayarlarını yapalım",
           description: "",
         },
         {
@@ -295,9 +295,9 @@ function CurrencyInput({
 
             onChange(String(roundToFriendlyPrice(toInputNumber(value), "nearest")));
           }}
-          className="h-8 rounded-[13px] border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] pr-11 text-[13px]"
+          className="h-7.5 rounded-[12px] border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] pr-10 text-[12px]"
         />
-        <span className="pointer-events-none absolute right-3 top-1/2 inline-flex h-4 -translate-y-1/2 items-center text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        <span className="pointer-events-none absolute right-2.5 top-1/2 inline-flex h-4 -translate-y-1/2 items-center text-[9px] font-medium uppercase tracking-[0.14em] text-[var(--text-muted)]">
           {suffix}
         </span>
       </div>
@@ -321,9 +321,9 @@ function ChoiceGroup<T extends string>({
   return (
     <div
       className={cn(
-        "grid gap-2",
+        "grid gap-1.5",
         columnsClassName,
-        segmented && "rounded-[20px] border border-white/8 bg-white/[0.03] p-1.5",
+        segmented && "rounded-[16px] border border-white/8 bg-white/[0.03] p-1",
       )}
     >
       {options.map((option) => {
@@ -334,7 +334,7 @@ function ChoiceGroup<T extends string>({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "rounded-[18px] border px-3.5 py-2.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35 focus-visible:ring-offset-0",
+              "rounded-[14px] border px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/35 focus-visible:ring-offset-0",
               active
                 ? "border-[var(--accent)]/34 bg-[var(--accent)]/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                 : segmented
@@ -342,11 +342,11 @@ function ChoiceGroup<T extends string>({
                   : "border-white/8 bg-white/[0.015] text-[color:color-mix(in_srgb,var(--foreground-muted)_84%,white_8%)] hover:border-white/16 hover:bg-white/[0.04]",
             )}
           >
-            <span className="text-sm font-medium">{option.label}</span>
+            <span className="text-[12px] font-medium">{option.label}</span>
             {option.description ? (
               <span
                 className={cn(
-                  "mt-1 block text-xs leading-5",
+                  "mt-0.5 block text-[10.5px] leading-[1.3]",
                   active
                     ? "text-[color:color-mix(in_srgb,white_88%,var(--foreground-muted)_12%)]"
                     : "text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]",
@@ -546,14 +546,14 @@ function ImageSlotPreview({
   const sizeClassName =
     imagePresentation?.sizeClassName ??
     (variant === "case"
-      ? "h-[248px] md:h-[292px]"
+      ? "h-[148px] md:h-[164px]"
       : variant === "showcase"
-        ? "h-[300px] md:h-[360px]"
-        : "h-[224px] md:h-[248px]");
+        ? "h-[220px] md:h-[248px]"
+        : "h-[144px] md:h-[156px]");
 
   if (!imageSlot || hasError) {
     return (
-      <div className={cn("flex flex-col items-center justify-center rounded-[22px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] px-4 text-center", sizeClassName)}>
+      <div className={cn("flex flex-col items-center justify-center rounded-[18px] border border-dashed border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] px-3 text-center", sizeClassName)}>
         <ImageIcon className="size-5 text-[var(--accent-soft)]" />
         <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent-soft)]">
           {placeholderAsset}
@@ -569,17 +569,17 @@ function ImageSlotPreview({
     <button
       type="button"
       onClick={onPreview}
-      className="group relative block w-full overflow-hidden rounded-[22px] text-left transition hover:-translate-y-0.5"
+      className="group relative block w-full overflow-hidden rounded-[18px] text-left transition hover:-translate-y-0.5"
     >
-      <div className={cn("overflow-hidden rounded-[22px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", sizeClassName)}>
+      <div className={cn("overflow-hidden rounded-[16px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", sizeClassName)}>
         <div className={cn("relative flex h-full w-full items-center justify-center", frameClassName)}>
           <img
             src={imageSlot}
             alt=""
-            className={cn("h-full w-full transition duration-200 group-hover:scale-[1.02]", fitClassName, imagePresentation?.imageClassName)}
+            className={cn("h-full w-full transition duration-200 group-hover:scale-[1.06]", fitClassName, imagePresentation?.imageClassName)}
             onError={() => setHasError(true)}
           />
-          <span className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-black/8 bg-white/92 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-black/72 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
+          <span className="pointer-events-none absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full border border-black/8 bg-white/92 px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.16em] text-black/72 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
             <Expand className="size-3" />
             {previewLabel}
           </span>
@@ -587,7 +587,7 @@ function ImageSlotPreview({
       </div>
     </button>
   ) : (
-    <div className={cn("overflow-hidden rounded-[22px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", sizeClassName)}>
+    <div className={cn("overflow-hidden rounded-[16px] border border-white/10 bg-[color:color-mix(in_srgb,var(--background)_94%,white_2%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", sizeClassName)}>
       <div className={cn("flex h-full w-full items-center justify-center", frameClassName)}>
         <img
           src={imageSlot}
@@ -986,13 +986,13 @@ export function PricingForm({
   return (
     <>
     <Card className="surface-border overflow-hidden border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-1)_0%,color-mix(in_srgb,var(--bg-section)_90%,black_8%)_100%)] shadow-[0_18px_44px_rgba(0,0,0,0.16)]">
-      <CardHeader className="space-y-2 pb-2">
-        <div className="space-y-1">
+      <CardHeader className="space-y-1.5 pb-1.5">
+        <div className="space-y-0.5">
           <div className="inline-flex items-center rounded-full border border-[var(--border-soft)] bg-[rgba(255,255,255,0.03)] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[var(--text-dim)]">
             {locale === "tr" ? `Adım ${phase} / 4` : `Step ${phase} / 4`}
           </div>
           <div>
-            <CardTitle className="text-[1rem] tracking-[-0.02em]">{currentPhaseCopy.title}</CardTitle>
+            <CardTitle className="text-[0.92rem] tracking-[-0.02em]">{currentPhaseCopy.title}</CardTitle>
             <CardDescription className="mt-0.5 max-w-[62ch] text-[11.5px] leading-[1.35] text-[var(--text-secondary)]">
               {currentPhaseCopy.description}
             </CardDescription>
@@ -1010,7 +1010,7 @@ export function PricingForm({
           ))}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+      <CardContent className="space-y-2.5 pt-0">
 
         {phase === 1 ? (
           <div className="space-y-3">
@@ -1146,9 +1146,9 @@ export function PricingForm({
         ) : null}
 
         {phase === 2 ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="grid gap-3 2xl:grid-cols-2">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <div className="grid gap-2.5 xl:grid-cols-2">
                 {specialCases.map((item) => {
                   const currentCase = onboardingCases.find((entry) => entry.id === item.id);
 
@@ -1157,8 +1157,8 @@ export function PricingForm({
                   }
 
                   return (
-                    <SurfaceBlock key={item.id} className="p-3 sm:p-3.5">
-                      <div className="grid gap-3 lg:grid-cols-[188px_minmax(0,1fr)] lg:items-start">
+                    <SurfaceBlock key={item.id} className="p-2.5">
+                      <div className="grid gap-2.5">
                         <ImageSlotPreview
                           imageSlot={item.imageSlot}
                           imagePresentation={item.imagePresentation}
@@ -1174,17 +1174,17 @@ export function PricingForm({
                             })
                           }
                         />
-                        <div className="space-y-2.5 lg:pt-0.5">
-                          <div className="space-y-1">
-                            <p className="text-[13px] font-semibold leading-snug text-white">{item.title[locale]}</p>
-                            <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent)]">
+                        <div className="space-y-2">
+                          <div className="space-y-0.5">
+                            <p className="text-[12px] font-semibold leading-snug text-white">{item.title[locale]}</p>
+                            <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--accent)]">
                               {getSizeLabel(item.referenceSizeCm, locale)}
                             </p>
-                            <p className="text-[12px] leading-[1.35] text-[var(--text-secondary)]">
+                            <p className="text-[11px] leading-[1.3] text-[var(--text-secondary)]">
                               {item.metaLine[locale]}
                             </p>
                           </div>
-                          <div className="grid gap-2 sm:grid-cols-2">
+                          <div className="grid gap-1.5 sm:grid-cols-2">
                             <CurrencyInput
                               value={currentCase.min}
                               onChange={(value) => {
@@ -1221,11 +1221,11 @@ export function PricingForm({
         ) : null}
 
         {phase === 3 ? (
-          <div className="space-y-2.5">
-            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+          <div className="space-y-2">
+            <p className="text-[12px] text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
               {copy.reviewNote}
             </p>
-            <div className="grid gap-3 2xl:grid-cols-2">
+            <div className="grid gap-2.5 xl:grid-cols-2">
             {reviewEstimates.map((item) => {
               const reviewCase = reviewCases[item.id] ?? createDefaultReviewCase();
               const needsReason = Boolean(
@@ -1233,8 +1233,8 @@ export function PricingForm({
               );
 
               return (
-                <SurfaceBlock key={item.id} className="p-3 sm:p-3.5">
-                  <div className="grid gap-3 lg:grid-cols-[188px_minmax(0,1fr)] lg:items-start">
+                <SurfaceBlock key={item.id} className="p-2.5">
+                  <div className="grid gap-2.5">
                     <ImageSlotPreview
                       imageSlot={item.imageSlot}
                       imagePresentation={item.imagePresentation}
@@ -1250,16 +1250,16 @@ export function PricingForm({
                         })
                       }
                     />
-                    <div className="space-y-2.5 lg:pt-0.5">
-                      <div className="space-y-1">
-                        <p className="text-[13px] font-semibold leading-snug text-white">{item.title[locale]}</p>
-                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--accent)]">
+                    <div className="space-y-2">
+                      <div className="space-y-0.5">
+                        <p className="text-[12px] font-semibold leading-snug text-white">{item.title[locale]}</p>
+                        <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--accent)]">
                           {getSizeLabel(item.referenceSizeCm, locale)}
                         </p>
-                        <p className="text-[12px] leading-[1.35] text-[var(--text-secondary)]">
+                        <p className="text-[11px] leading-[1.3] text-[var(--text-secondary)]">
                           {item.metaLine[locale]}
                         </p>
-                        <p className="pt-0.5 text-[12px] text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                        <p className="pt-0.5 text-[10.5px] text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
                           {copy.estimate}
                         </p>
                         <p className={cn("font-semibold tracking-tight text-white", getEstimateDisplayClass(item.estimate.displayLabel))}>
@@ -1281,7 +1281,7 @@ export function PricingForm({
                       </Field>
 
                       {needsReason ? (
-                        <div className="space-y-2 rounded-[16px] border border-[var(--accent)]/12 bg-[linear-gradient(180deg,rgba(247,177,93,0.06),rgba(255,255,255,0.01))] p-2.5">
+                        <div className="space-y-2 rounded-[14px] border border-[var(--accent)]/12 bg-[linear-gradient(180deg,rgba(247,177,93,0.06),rgba(255,255,255,0.01))] p-2">
                           <Field
                             label={copy.reviewReasonLabel}
                             description={
@@ -1303,7 +1303,7 @@ export function PricingForm({
                             />
                           </Field>
                           <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="text-xs text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
+                            <p className="text-[10.5px] text-[color:color-mix(in_srgb,var(--foreground-muted)_88%,white_6%)]">
                               {reviewCase.iterationCount > 0
                                 ? locale === "tr"
                                   ? `${reviewCase.iterationCount}. düzeltme uygulandı`
@@ -1331,7 +1331,7 @@ export function PricingForm({
         ) : null}
 
         {phase === 4 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Field label={copy.largeAreasChoice}>
               <ChoiceGroup
                 value={largeAreaChoice}
@@ -1343,17 +1343,17 @@ export function PricingForm({
                 columnsClassName="sm:grid-cols-2"
               />
             </Field>
-            <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+            <p className="text-[12px] text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
               {copy.phaseFiveNote}
             </p>
 
             {largeAreaChoice === "enabled" ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-[var(--text-primary)]">{copy.largeAreaCasesTitle}</p>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <div className="space-y-0.5">
+                    <p className="text-[12px] font-medium text-[var(--text-primary)]">{copy.largeAreaCasesTitle}</p>
                   </div>
-                  <div className="grid gap-3 2xl:grid-cols-2">
+                  <div className="grid gap-2.5 xl:grid-cols-2">
                     {largeAreaDisplayCases.map((item) => {
                       const currentCase = largeAreaCases.find((entry) => entry.id === item.id);
 
@@ -1362,11 +1362,11 @@ export function PricingForm({
                       }
 
                       return (
-                        <SurfaceBlock key={item.id} className="p-3 sm:p-3.5">
+                        <SurfaceBlock key={item.id} className="p-2.5">
                           <div
                             className={cn(
-                              "grid gap-3.5 lg:items-start",
-                              item.cardLayoutClassName ?? "lg:grid-cols-[204px_minmax(0,1fr)]",
+                              "grid gap-2.5",
+                              item.cardLayoutClassName ?? "",
                             )}
                           >
                             <ImageSlotPreview
@@ -1384,14 +1384,14 @@ export function PricingForm({
                                 })
                               }
                             />
-                            <div className="space-y-3 lg:pt-0.5">
-                              <div className="space-y-1">
-                                <p className="text-[13px] font-semibold leading-snug text-white">{item.title[locale]}</p>
-                                <p className="text-[12px] leading-[1.35] text-[var(--text-secondary)]">
+                            <div className="space-y-2">
+                              <div className="space-y-0.5">
+                                <p className="text-[12px] font-semibold leading-snug text-white">{item.title[locale]}</p>
+                                <p className="text-[11px] leading-[1.3] text-[var(--text-secondary)]">
                                   {item.metaLine[locale]}
                                 </p>
                                 </div>
-                              <div className="grid gap-2 sm:grid-cols-2">
+                              <div className="grid gap-1.5 sm:grid-cols-2">
                                 <CurrencyInput
                                   value={currentCase.min}
                                   onChange={(value) => {
@@ -1425,14 +1425,14 @@ export function PricingForm({
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-[var(--text-primary)]">{copy.wideAreaCasesTitle}</p>
-                    <p className="text-sm text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
+                <div className="space-y-1.5">
+                  <div className="space-y-0.5">
+                    <p className="text-[12px] font-medium text-[var(--text-primary)]">{copy.wideAreaCasesTitle}</p>
+                    <p className="text-[11px] text-[color:color-mix(in_srgb,var(--foreground-muted)_86%,white_6%)]">
                       {copy.optionalSinglePriceHint}
                     </p>
                   </div>
-                  <div className="grid gap-3 2xl:grid-cols-2">
+                  <div className="grid gap-2.5 xl:grid-cols-2">
                     {wideAreaDisplayCases.map((item) => {
                       const currentCase = wideAreaCases.find((entry) => entry.id === item.id);
 
@@ -1441,11 +1441,11 @@ export function PricingForm({
                       }
 
                       return (
-                        <SurfaceBlock key={item.id} className="p-3 sm:p-3.5">
+                        <SurfaceBlock key={item.id} className="p-2.5">
                           <div
                             className={cn(
-                              "grid gap-3.5 lg:items-start",
-                              item.cardLayoutClassName ?? "lg:grid-cols-[204px_minmax(0,1fr)]",
+                              "grid gap-2.5",
+                              item.cardLayoutClassName ?? "",
                             )}
                           >
                             <ImageSlotPreview
@@ -1463,14 +1463,14 @@ export function PricingForm({
                                 })
                               }
                             />
-                            <div className="space-y-3 lg:pt-0.5">
-                              <div className="space-y-1">
-                                <p className="text-[13px] font-semibold leading-snug text-white">{item.title[locale]}</p>
-                                <p className="text-[12px] leading-[1.35] text-[var(--text-secondary)]">
+                            <div className="space-y-2">
+                              <div className="space-y-0.5">
+                                <p className="text-[12px] font-semibold leading-snug text-white">{item.title[locale]}</p>
+                                <p className="text-[11px] leading-[1.3] text-[var(--text-secondary)]">
                                   {item.metaLine[locale]}
                                 </p>
                               </div>
-                              <div className="max-w-xs">
+                              <div className="max-w-[240px]">
                                 <CurrencyInput
                                   value={currentCase.startingFrom}
                                   onChange={(value) => {
@@ -1486,7 +1486,7 @@ export function PricingForm({
                                   normalizeOnBlur
                                 />
                               </div>
-                              <p className="border-t border-white/8 pt-3 text-[2rem] font-semibold tracking-tight text-white">
+                              <p className="border-t border-white/8 pt-2 text-[1.55rem] font-semibold tracking-tight text-white">
                                 {`${toDisplayCurrency(toInputNumber(currentCase.startingFrom), locale)}+`}
                               </p>
                             </div>
