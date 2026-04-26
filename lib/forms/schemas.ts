@@ -177,29 +177,6 @@ export const funnelSettingsSchema = z.object({
       }
     });
   });
-
-  values.enabledStyles.forEach((styleKey) => {
-    const builtInStyleIndex = values.builtInStyles.findIndex((style) => style.styleKey === styleKey);
-    if (builtInStyleIndex !== -1 && !values.builtInStyles[builtInStyleIndex]?.imageUrl?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["builtInStyles", builtInStyleIndex, "imageUrl"],
-        message:
-          "Add at least one example image for this style. Clients may not understand the style name on its own.",
-      });
-    }
-  });
-
-  values.customStyles.forEach((style, index) => {
-    if (!style.imageUrl?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["customStyles", index, "imageUrl"],
-        message:
-          "Add at least one example image for this style. Clients may not understand the style name on its own.",
-      });
-    }
-  });
 });
 
 export const requestSettingsSchema = z.object({
@@ -245,29 +222,6 @@ export const requestSettingsSchema = z.object({
         });
       }
     });
-  });
-
-  values.enabledStyles.forEach((styleKey) => {
-    const builtInStyleIndex = values.builtInStyles.findIndex((style) => style.styleKey === styleKey);
-    if (builtInStyleIndex !== -1 && !values.builtInStyles[builtInStyleIndex]?.imageUrl?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["builtInStyles", builtInStyleIndex, "imageUrl"],
-        message:
-          "Add at least one example image for this style. Clients may not understand the style name on its own.",
-      });
-    }
-  });
-
-  values.customStyles.forEach((style, index) => {
-    if (!style.imageUrl?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["customStyles", index, "imageUrl"],
-        message:
-          "Add at least one example image for this style. Clients may not understand the style name on its own.",
-      });
-    }
   });
 });
 
