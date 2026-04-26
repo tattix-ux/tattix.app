@@ -844,29 +844,29 @@ export function PublicFunnel({ artist, locale }: { artist: ArtistPageData; local
   }
 
   async function handleFinalSubmit() {
-    if (requiresBookingSelection) {
-      if (!draft.city || !selectedBookingCity || !draft.preferredStartDate) {
-        setBookingError(copy.invalidBooking);
-        return;
-      }
+    if (
+      requiresBookingSelection &&
+      draft.city &&
+      selectedBookingCity &&
+      draft.preferredStartDate &&
+      availableDatesForSelectedCity &&
+      !availableDatesForSelectedCity.includes(draft.preferredStartDate)
+    ) {
+      setBookingError(copy.invalidBooking);
+      return;
+    }
 
-      if (
-        availableDatesForSelectedCity &&
-        !availableDatesForSelectedCity.includes(draft.preferredStartDate)
-      ) {
-        setBookingError(copy.invalidBooking);
-        return;
-      }
-
-      if (bookingMode === "range" && draft.preferredEndDate) {
-        if (
-          availableDatesForSelectedCity &&
-          !availableDatesForSelectedCity.includes(draft.preferredEndDate)
-        ) {
-          setBookingError(copy.invalidBooking);
-          return;
-        }
-      }
+    if (
+      requiresBookingSelection &&
+      bookingMode === "range" &&
+      draft.city &&
+      selectedBookingCity &&
+      draft.preferredEndDate &&
+      availableDatesForSelectedCity &&
+      !availableDatesForSelectedCity.includes(draft.preferredEndDate)
+    ) {
+      setBookingError(copy.invalidBooking);
+      return;
     }
 
     setBookingError(null);

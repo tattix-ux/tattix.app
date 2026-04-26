@@ -49,22 +49,35 @@ export async function POST(request: Request) {
   const artist = await getPublicArtistPageData(submission.artistSlug);
   const locale = (submission.locale ?? artist.funnelSettings.defaultLanguage ?? "tr") as PublicLocale;
   const bookingCities = artist.funnelSettings.bookingCities;
-  const selectedBookingCity = bookingCities.find((city) => city.cityName === submission.city?.trim()) ?? null;
+  const submittedCity = submission.city?.trim() || null;
+  const selectedBookingCity = bookingCities.find((city) => city.cityName === submittedCity) ?? null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  if (bookingCities.length > 0) {
+  if (bookingCities.length > 0 && submittedCity) {
     if (!selectedBookingCity) {
       return NextResponse.json({ message: "Invalid city selection." }, { status: 400 });
     }
 
-    if (!submission.preferredStartDate || !selectedBookingCity.availableDates.includes(submission.preferredStartDate)) {
+    if (
+      submission.preferredStartDate &&
+      !selectedBookingCity.availableDates.includes(submission.preferredStartDate)
+    ) {
       return NextResponse.json({ message: "Invalid appointment date selection." }, { status: 400 });
     }
 
-    const selectedDate = new Date(`${submission.preferredStartDate}T00:00:00`);
-    if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) {
-      return NextResponse.json({ message: "Appointment date is no longer available." }, { status: 400 });
+    if (submission.preferredStartDate) {
+      const selectedDate = new Date(`${submission.preferredStartDate}T00:00:00`);
+      if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) {
+        return NextResponse.json({ message: "Appointment date is no longer available." }, { status: 400 });
+      }
+    }
+
+    if (
+      submission.preferredEndDate &&
+      !selectedBookingCity.availableDates.includes(submission.preferredEndDate)
+    ) {
+      return NextResponse.json({ message: "Invalid appointment date selection." }, { status: 400 });
     }
   }
 
@@ -129,6 +142,10 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join(" | ");
 
+  const resolvedCity = bookingCities.length > 0 ? selectedBookingCity?.cityName ?? null : submittedCity;
+  const resolvedPreferredStartDate = resolvedCity ? submission.preferredStartDate || null : null;
+  const resolvedPreferredEndDate = resolvedCity ? submission.preferredEndDate || null : null;
+
   if (isSupabaseConfigured()) {
     const supabase = await createSupabaseServerClient();
     const insertPayload = {
@@ -148,9 +165,9 @@ export async function POST(request: Request) {
       reference_image_url: submission.referenceImage ?? null,
       reference_image_path: submission.referenceImagePath ?? null,
       reference_description: submission.referenceDescription?.trim() || null,
-      city: bookingCities.length > 0 ? selectedBookingCity?.cityName ?? null : submission.city?.trim() || null,
-      preferred_start_date: bookingCities.length > 0 ? submission.preferredStartDate || null : submission.preferredStartDate || null,
-      preferred_end_date: bookingCities.length > 0 ? null : submission.preferredEndDate || null,
+      city: resolvedCity,
+      preferred_start_date: resolvedPreferredStartDate,
+      preferred_end_date: resolvedPreferredEndDate,
       customer_gender: submission.gender ?? null,
       customer_age_range: submission.ageRange ?? null,
       color_mode: submission.colorMode ?? null,
