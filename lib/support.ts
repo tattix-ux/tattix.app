@@ -1,6 +1,8 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { ArtistNotification, SupportMessage } from "@/lib/types";
 
+const FALLBACK_ADMIN_EMAIL = "gizemoderr@gmail.com";
+
 export function mapSupportMessage(row: Record<string, unknown>): SupportMessage {
   return {
     id: String(row.id),
@@ -84,17 +86,33 @@ export async function getUnreadArtistNotificationCount(artistId: string) {
   return count ?? 0;
 }
 
-export async function sendAdminSupportNotification(message: SupportMessage) {
+function getAdminMailRecipients() {
+  const configured = [process.env.SUPPORT_INBOX_EMAIL, process.env.TATBOT_ADMIN_EMAILS]
+    .flatMap((value) => (value ?? "").split(","))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+
+  return Array.from(new Set([FALLBACK_ADMIN_EMAIL, ...configured]));
+}
+
+async function sendAdminEmail({
+  subject,
+  text,
+}: {
+  subject: string;
+  text: string;
+}) {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
+    console.error("[support] RESEND_API_KEY is missing; admin email notification was skipped.");
     return;
   }
 
-  const recipient = process.env.SUPPORT_INBOX_EMAIL ?? "gizemoderr@gmail.com";
   const from = process.env.RESEND_FROM_EMAIL ?? "Tattix <onboarding@resend.dev>";
+  const recipients = getAdminMailRecipients();
 
-  await fetch("https://api.resend.com/emails", {
+  const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -102,17 +120,36 @@ export async function sendAdminSupportNotification(message: SupportMessage) {
     },
     body: JSON.stringify({
       from,
-      to: [recipient],
-      subject: `New support message - ${message.artistName || message.accountEmail}`,
-      text: [
-        `Artist name: ${message.artistName}`,
-        `Account email: ${message.accountEmail}`,
-        `Created at: ${message.createdAt}`,
-        "",
-        message.message,
-      ].join("\n"),
+      to: recipients,
+      subject,
+      text,
     }),
-  }).catch(() => undefined);
+  }).catch((error) => {
+    console.error("[support] Failed to reach Resend while sending admin email.", error);
+    return null;
+  });
+
+  if (!response) {
+    return;
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    console.error("[support] Resend rejected admin email.", response.status, errorText);
+  }
+}
+
+export async function sendAdminSupportNotification(message: SupportMessage) {
+  await sendAdminEmail({
+    subject: `New support message - ${message.artistName || message.accountEmail}`,
+    text: [
+      `Artist name: ${message.artistName}`,
+      `Account email: ${message.accountEmail}`,
+      `Created at: ${message.createdAt}`,
+      "",
+      message.message,
+    ].join("\n"),
+  });
 }
 
 function getAdminEmailList() {
@@ -188,31 +225,13 @@ export async function sendAdminProAccessEmail({
   slug: string;
   createdAt: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY;
-
-  if (!apiKey) {
-    return;
-  }
-
-  const recipient = process.env.SUPPORT_INBOX_EMAIL ?? "gizemoderr@gmail.com";
-  const from = process.env.RESEND_FROM_EMAIL ?? "Tattix <onboarding@resend.dev>";
-
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: [recipient],
-      subject: `New Pro access request - ${artistName || accountEmail}`,
-      text: [
-        `Artist name: ${artistName}`,
-        `Account email: ${accountEmail}`,
-        `Artist slug: ${slug}`,
-        `Requested at: ${createdAt}`,
-      ].join("\n"),
-    }),
-  }).catch(() => undefined);
+  await sendAdminEmail({
+    subject: `New Pro access request - ${artistName || accountEmail}`,
+    text: [
+      `Artist name: ${artistName}`,
+      `Account email: ${accountEmail}`,
+      `Artist slug: ${slug}`,
+      `Requested at: ${createdAt}`,
+    ].join("\n"),
+  });
 }
