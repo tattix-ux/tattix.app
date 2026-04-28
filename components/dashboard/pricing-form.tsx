@@ -716,7 +716,7 @@ export function PricingForm({
   }, [previewItem]);
 
   useEffect(() => {
-    if (hasEditedCaseRanges || !storedProfile) {
+    if (hasEditedCaseRanges || storedProfile) {
       return;
     }
 
