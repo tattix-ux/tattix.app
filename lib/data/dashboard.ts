@@ -235,7 +235,7 @@ export const getDashboardShellData = cache(async function getDashboardShellData(
   };
 });
 
-export const getDashboardPricingData = cache(async function getDashboardPricingData(
+export async function getDashboardPricingData(
   userId: string | null,
 ) {
   const artistId = await resolveDashboardArtistId(userId);
@@ -260,7 +260,7 @@ export const getDashboardPricingData = cache(async function getDashboardPricingD
       .defaultLanguage,
     demoMode: false,
   };
-});
+}
 
 export async function getDashboardDesignsData(userId: string | null) {
   const artistId = await resolveDashboardArtistId(userId);
